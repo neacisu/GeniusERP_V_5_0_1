@@ -34,4 +34,22 @@ export default defineConfig({
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
   },
+  server: {
+    // Setări pentru watch (important pentru Docker)
+    watch: {
+      usePolling: true, // Necesar pentru Docker volumes
+      interval: 100,    // Check interval pentru modificări
+    },
+    // Setări HMR pentru Docker
+    hmr: {
+      // Portul pentru HMR websocket
+      port: 5000,
+      // Permite toate host-urile (necesar pentru Docker)
+      host: '0.0.0.0',
+      // Protocol pentru HMR
+      protocol: 'ws',
+      // Clientul se va conecta la localhost:5000 (sau VITE_HMR_CLIENT_URL)
+      clientPort: 5000,
+    },
+  },
 });

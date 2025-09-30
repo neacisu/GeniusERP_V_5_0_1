@@ -25,8 +25,17 @@ export function log(message: string, source = "express") {
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
-    hmr: { server },
+    hmr: { 
+      server,
+      // Override cu setări din vite.config.ts pentru a asigura compatibilitate Docker
+      overlay: true,
+    },
     allowedHosts: true as true,
+    // Setări watch pentru Docker (override dacă nu sunt în config)
+    watch: {
+      usePolling: true,
+      interval: 100,
+    },
   };
 
   const vite = await createViteServer({

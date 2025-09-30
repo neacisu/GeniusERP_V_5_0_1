@@ -51,8 +51,18 @@ services:
       - OPENAI_ORGANIZATION=${OPENAI_ORGANIZATION}
       - OPENAI_DEFAULT_MODEL=${OPENAI_DEFAULT_MODEL:-gpt-4}
       
-      # Setări pentru debugare
-      - VITE_DEV_SERVER_URL=http://localhost:3000
+      # Setări pentru debugare și HMR
+      - VITE_DEV_SERVER_URL=http://localhost:5000
+      
+      # Setări Vite HMR pentru Hot Reload în Docker
+      - VITE_HMR_PROTOCOL=ws
+      - VITE_HMR_HOST=localhost
+      - VITE_HMR_PORT=5000
+      - VITE_HMR_CLIENT_PORT=5000
+      
+      # Enable watch polling pentru Docker volumes (important pentru HMR)
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=100
     depends_on:
       - postgres
     restart: unless-stopped
