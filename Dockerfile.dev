@@ -1,0 +1,32 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Instalăm dependențele pentru build și pentru pachete native
+RUN apk add --no-cache python3 make g++ git postgresql-client redis
+
+# Instalăm nodemon pentru dezvoltare și instrumente utile CLI
+RUN npm install -g nodemon drizzle-kit tsx ts-node
+
+# Copiem fișierele de dependințe
+COPY package*.json ./
+
+# Instalăm toate dependențele inclusiv cele de dezvoltare
+RUN npm install
+
+# Copiem TOATE fișierele, inclusiv .env și credențiale
+COPY . .
+
+# Expunem porturile pentru aplicație și pentru Vite HMR
+EXPOSE 5000 
+EXPOSE 3000
+
+# Asigurăm recursiv permisiuni de scriere în directorul de lucru
+RUN chmod -R 777 /app
+
+# Script pentru a aștepta ca baza de date să fie disponibilă înainte de a porni aplicația
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["npm", "run", "dev"]

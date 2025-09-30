@@ -1,0 +1,117 @@
+Here's a **refactored and fully Express + Drizzle-compliant** version of **Step 108**, with added intelligence to:
+
+- **Search for existing worker setup first**
+- Enforce consistent base path: `/api/`
+- Use security standards: `AuthGuard.protect(JwtAuthMode.REQUIRED)`, `AuthGuard.roleGuard()`, `AuthGuard.companyGuard()`
+- Avoid duplication, support upgrade path
+
+---
+
+```markdown
+### ⚙️ Step 108: Create or Upgrade Inventory Alert Queue Worker (Express + Drizzle)
+
+**📌 Description:**  
+Define a background queue worker to process `inventory`-related alerts triggered by low stock events. This BullMQ job consumer will integrate with `NotificationService` to simulate notifications (e.g., via `console.log`, email, or Slack later). Queue logic will be mocked locally in Replit, and will run in full mode on VPS infrastructure.
+
+---
+
+### 🧠 Agent Instructions
+
+#### 1. 🔍 Check for Existing Worker Logic First
+
+Look in:
+
+- `src/modules/inventory/inventory.worker.ts`
+- `server/modules/inventory/worker.ts`
+- Any BullMQ consumer registered for `inventory` queue
+
+✅ If found:
+- Extend the file to **register the `alert` job handler**
+- Confirm it already injects `NotificationService`
+
+🚫 If missing:
+- Proceed to create the worker file below
+
+---
+
+### 2. 🧱 Create Worker File (If Not Existing)
+
+Path:  
+`src/modules/inventory/inventory.worker.ts`
+
+```ts
+import { Worker } from "bullmq";
+import { notificationService } from "../../common/services/notification.service";
+import { redis } from "../../services/redis.service";
+
+const inventoryWorker = new Worker("inventory", async job => {
+  if (job.name === "alert") {
+    const { sku, warehouseId } = job.data;
+
+    // Send mock notification
+    await notificationService.sendNotification(
+      "inventory_team@example.com",
+      `📦 Processed alert: Low stock for SKU ${sku} in warehouse ${warehouseId}`
+    );
+
+    return { processed: true };
+  }
+}, { connection: redis });
+
+inventoryWorker.on("completed", job => {
+  console.log(`✅ Inventory job #${job.id} completed`);
+});
+
+inventoryWorker.on("failed", (job, err) => {
+  console.error(`❌ Inventory job #${job?.id} failed:`, err);
+});
+
+export default inventoryWorker;
+```
+
+---
+
+### 3. 🔗 Register Worker on App Start
+
+In your `server.ts` or `main.ts` file:
+
+```ts
+import inventoryWorker from "./modules/inventory/inventory.worker"; // this starts the worker
+```
+
+✅ **Note:** This can be conditionally registered based on `process.env.IS_WORKER === "true"` if you want worker scaling later.
+
+---
+
+### 🧪 4. Test It with a Job
+
+You can enqueue a test job directly using `queueService` or `curl`:
+
+```ts
+await queueService.stockQueue.add("alert", {
+  sku: "ABC-123",
+  warehouseId: "WH001"
+});
+```
+
+Then watch console output in Replit:
+
+```bash
+📦 Processed alert: Low stock for SKU ABC-123 in warehouse WH001
+```
+
+---
+
+### ✅ Outcome
+
+- Queue listener created for `"inventory"` queue
+- Handles `"alert"` jobs using `NotificationService`
+- Worker runs independently and logs successful alerts
+- All queues managed through Redis (mocked or real)
+
+---
+
+### 🧠 Optional: Want to scaffold a production-ready `queue.service.ts` with fallback + deduplication logic?
+
+Let me know and I’ll create that too.
+```

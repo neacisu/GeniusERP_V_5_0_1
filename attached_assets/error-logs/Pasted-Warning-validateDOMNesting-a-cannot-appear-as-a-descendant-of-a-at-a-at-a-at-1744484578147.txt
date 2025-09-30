@@ -1,0 +1,62 @@
+Warning: validateDOMNesting(...): <a> cannot appear as a descendant of <a>.
+    at a
+    at a
+    at https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=099b33ad:337:18
+    at li
+    at ul
+    at nav
+    at div
+    at aside
+    at div
+    at div
+    at main
+    at div
+    at div
+    at AppLayout (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/src/components/layout/AppLayout.tsx:21:37)
+    at SettingsModule (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/src/modules/settings/index.tsx?t=1744484454085:220:22)
+    at Route (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=099b33ad:323:16)
+    at ProtectedRoute (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/src/lib/protected-route.tsx:22:3)
+    at Switch (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=099b33ad:379:17)
+    at Router
+    at AuthProvider (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/src/hooks/use-auth.tsx:26:32)
+    at QueryClientProvider (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=099b33ad:2805:3)
+    at App (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/src/App.tsx?t=1744484454085&v=F6kGLNXP00bRYkB4un0I_:929:9)
+printWarning @ chunk-RPCDYKBN.js?v=099b33ad:521
+error @ chunk-RPCDYKBN.js?v=099b33ad:505
+validateDOMNesting @ chunk-RPCDYKBN.js?v=099b33ad:8256
+createInstance @ chunk-RPCDYKBN.js?v=099b33ad:8328
+completeWork @ chunk-RPCDYKBN.js?v=099b33ad:16290
+completeUnitOfWork @ chunk-RPCDYKBN.js?v=099b33ad:19224
+performUnitOfWork @ chunk-RPCDYKBN.js?v=099b33ad:19206
+workLoopSync @ chunk-RPCDYKBN.js?v=099b33ad:19137
+renderRootSync @ chunk-RPCDYKBN.js?v=099b33ad:19116
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=099b33ad:18874
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=099b33ad:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=099b33ad:18627
+Show 12 more frames
+Show less
+index.tsx:289 Settings index route matched
+PageHeader.tsx:35 Warning: Each child in a list should have a unique "key" prop.
+
+Check the render method of `PageHeader`. See https://reactjs.org/link/warning-keys for more information.
+    at PageHeader (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/src/modules/settings/components/common/PageHeader.tsx?t=1744484454085:20:3)
+    at div
+    at SettingsIndexPageContent (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/src/modules/settings/pages/index.tsx?t=1744484454085:110:20)
+    at SettingsIndexPage
+    at Route (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=099b33ad:323:16)
+    at Switch (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=099b33ad:379:17)
+    at div
+    at div
+    at div
+    at main
+    at div
+    at div
+    at AppLayout (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/src/components/layout/AppLayout.tsx:21:37)
+    at SettingsModule (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/src/modules/settings/index.tsx?t=1744484454085:220:22)
+    at Route (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=099b33ad:323:16)
+    at ProtectedRoute (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/src/lib/protected-route.tsx:22:3)
+    at Switch (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=099b33ad:379:17)
+    at Router
+    at AuthProvider (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/src/hooks/use-auth.tsx:26:32)
+    at QueryClientProvider (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=099b33ad:2805:3)
+    at App (https://8e4050df-386d-493c-b2d2-3cdd7bf4acbe-00-200tlt51tw5o.worf.replit.dev/src/App.tsx?t=1744484454085&v=F6kGLNXP00bRYkB4un0I_:929:9)

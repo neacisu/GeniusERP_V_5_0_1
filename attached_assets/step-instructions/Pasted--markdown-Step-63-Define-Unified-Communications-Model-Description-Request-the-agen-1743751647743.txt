@@ -1,0 +1,62 @@
+```markdown
+### Step 63: Define Unified Communications Model
+
+**🧠 Description:**  
+Request the agent to design a **comprehensive and extensible communications model** for a future **universal inbox system**, integrating the following sources:
+
+- Emails (via IMAP/SMTP/POP3)
+- Shopify Chat & Shopify Inbox
+- WhatsApp (via WAMM.ro or similar)
+- Facebook Messenger & Comments
+- Phone transcripts (VoIP integrations)
+- Website contact forms
+- SMS or other 3rd-party messengers
+
+This model must support:
+- Omni-channel message tracking
+- Threading and conversation grouping
+- Sentiment tagging and classification
+- Multi-company and franchise separation
+- Role-based visibility and access control
+- Integration-ready schema for AI agents, analytics, CRM, and support
+
+**📎 Dependencies:**  
+Step 8 (initial schema defined)
+
+---
+
+**⚙️ Prompt for Agent:**
+
+"Design a robust communications model for GeniusERP v.2 in Replit:
+
+1. Create a new model in `schema/communications.schema.ts` named `Message`, supporting a universal inbox architecture.
+2. Include fields for:
+   - `id` (UUID, primary key)
+   - `company_id`, `franchise_id` (multi-tenancy support)
+   - `external_id` (original message/thread ID from external systems)
+   - `channel` (e.g., email, whatsapp, messenger, comment, call, shopify-inbox)
+   - `source_system` (e.g., Shopify, Gmail, Facebook, WhatsApp)
+   - `sender_id`, `recipient_id`, `user_id` (internal and external identifiers)
+   - `thread_id` (for grouping)
+   - `subject`, `content`, `attachments`
+   - `sentiment`, `language`, `direction` (inbound/outbound)
+   - `status` (e.g., new, read, responded, archived)
+   - `tags` (JSON array for labels, categorization)
+   - `received_at`, `processed_at`
+   - Timestamps: `created_at`, `updated_at`
+3. Save the schema and run:
+   ```
+   npx drizzle-kit push:sqlite
+   ```
+   or
+   ```
+   npx drizzle-kit push:pg
+   ```
+   depending on your configured adapter.
+
+Ensure the model is:
+- 🔄 Extensible (for future AI-generated replies, automation, lead scoring)
+- 🔍 Searchable (supporting text/content search and filtering)
+- 🔐 Secure (access restricted per user role and company)
+"
+```

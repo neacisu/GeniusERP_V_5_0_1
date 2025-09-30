@@ -1,0 +1,45 @@
+6:48:57 PM [inventory-assessment] Added assessmentNumber from name: Inventariere mai 2025
+6:48:57 PM [inventory-assessment] Validating request body: {
+  "warehouseId": "bd22a32b-ec3d-4e13-841e-18768564ca24",
+  "assessmentType": "annual",
+  "name": "Inventariere mai 2025",
+  "description": "",
+  "startDate": "2025-05-12T18:48:44.950Z",
+  "commissionOrderNumber": "123/2025",
+  "legalBasis": "OMFP 2861/2009, Legea contabilității 82/1991",
+  "valuationMethod": "WEIGHTED_AVERAGE",
+  "notes": "",
+  "type": "annual",
+  "documentNumber": "123/2025",
+  "assessmentNumber": "Inventariere mai 2025"
+}
+6:48:57 PM [inventory-assessment] Request headers: {
+  "authorization": "Bearer ***",
+  "contentType": "application/json",
+  "userId": "49e12af8-dbd0-48db-b5bd-4fb3f6a39787",
+  "companyId": "7196288d-7314-4512-8b67-2c82449b5465"
+}
+6:48:57 PM [inventory-assessment] Auth not from middleware, trying X-User-ID and X-Company-ID headers
+6:48:57 PM [inventory-assessment] Creating assessment with user=49e12af8-dbd0-48db-b5bd-4fb3f6a39787, company=7196288d-7314-4512-8b67-2c82449b5465
+6:48:57 PM [inventory-assessment] Creating assessment with body: {
+  "warehouseId": "bd22a32b-ec3d-4e13-841e-18768564ca24",
+  "assessmentType": "annual",
+  "name": "Inventariere mai 2025",
+  "description": "",
+  "startDate": "2025-05-12T18:48:44.950Z",
+  "commissionOrderNumber": "123/2025",
+  "legalBasis": "OMFP 2861/2009, Legea contabilității 82/1991",
+  "valuationMethod": "WEIGHTED_AVERAGE",
+  "notes": "",
+  "type": "annual",
+  "documentNumber": "123/2025",
+  "assessmentNumber": "Inventariere mai 2025"
+}
+6:48:57 PM [inventory-assessment] Request headers: {
+  "authorization": "Bearer ***",
+  "contentType": "application/json",
+  "userId": "49e12af8-dbd0-48db-b5bd-4fb3f6a39787",
+  "companyId": "7196288d-7314-4512-8b67-2c82449b5465"
+}
+6:48:57 PM [inventory-assessment] Error creating inventory assessment: this.db.insertInto is not a function
+6:48:57 PM [express] POST /api/inventory/assessments 500 in 4ms :: {"error":"Eroare la crearea docum…

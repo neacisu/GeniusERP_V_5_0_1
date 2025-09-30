@@ -1,0 +1,72 @@
+Here is the **reformulated version of Step 120**, fully aligned with **Express + Drizzle**, and following GeniusERP's API conventions and security standards:
+
+---
+
+```markdown
+### 🧪 Step 120: Test Customer Creation Endpoint (/api/sales/customer)
+
+📌 **Purpose**  
+Test the `/api/sales/customer` POST route implemented in Step 119 to validate that new customer records are correctly stored in the `Customer` table using Drizzle ORM. This verifies that the CRM module’s customer management logic is functional in the Replit environment.
+
+---
+
+### 🧠 Agent Instructions
+
+#### 1. 🔍 Preflight Audit
+
+✅ Check if the endpoint already exists in:
+- `src/modules/sales/sales.controller.ts`
+
+Ensure:
+- Path: `/api/sales/customer`
+- Uses `CustomerService.createCustomer(...)`
+- Protected by:
+  - `AuthGuard.protect(JwtAuthMode.REQUIRED)`
+  - `AuthGuard.roleGuard(['sales_team'])`
+  - `AuthGuard.companyGuard()`
+
+🔧 If missing or misconfigured:
+- Refactor or enhance based on Step 119 before testing.
+
+---
+
+#### 2. ✅ Run Test Command in Replit
+
+Use a valid JWT token obtained in Step 78. Replace `YOUR_TOKEN_HERE` accordingly:
+
+```bash
+curl -X POST http://localhost:3000/api/sales/customer \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -d '{
+    "companyId": "test-co",
+    "franchiseId": "test-franchise",
+    "name": "John Doe",
+    "email": "john@example.com"
+  }'
+```
+
+---
+
+#### 3. 🔍 Verify Persistence
+
+After sending the request:
+- Check console for a 200 response
+- Open your Drizzle-connected DB viewer or run a raw query to inspect:
+
+```sql
+SELECT * FROM "Customer" WHERE name = 'John Doe';
+```
+
+or check directly in Replit using your preferred database explorer or logs.
+
+---
+
+### ✅ Expected Outcome
+
+> The endpoint returns a successful JSON response containing the new customer record. The data is inserted into the `Customer` table under the correct `company_id` and `franchise_id`, confirming CRM module functionality is active and integrated.
+
+Let me know if you’d like to also:
+- Test uniqueness on email/name combo
+- Add GET/PUT routes for customer CRUD
+```

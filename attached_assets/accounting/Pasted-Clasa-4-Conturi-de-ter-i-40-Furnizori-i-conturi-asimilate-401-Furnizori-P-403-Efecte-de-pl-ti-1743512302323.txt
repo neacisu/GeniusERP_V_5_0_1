@@ -1,0 +1,58 @@
+Clasa 4 -Conturi de terţi40. Furnizori şi conturi asimilate401. Furnizori (P)403. Efecte de plătit (P)404. Furnizori de imobilizări (P)405. Efecte de plătit pentru imobilizări (P)408. Furnizori -facturi nesosite (P)409. Furnizori -debitori
+4091. Furnizori -debitori pentru cumpărări de bunuri de natura stocurilor (A)
+4092. Furnizori -debitori pentru prestări de servicii (A)
+4093. Avansuri acordate pentru imobilizări corporale (A)
+4094. Avansuri acordate pentru imobilizări necorporale (A)41. Clienţi şi conturi asimilate411. Clienţi
+4111. Clienţi (A)
+4118. Clienţi incerţi sau în litigiu (A)413. Efecte de primit de la clienţi (A)418. Clienţi -facturi de întocmit (A)419. Clienţi -creditori (P)42. Personal şi conturi asimilate421. Personal -salarii datorate (P)423. Personal -ajutoare materiale datorate (P)424. Prime reprezentând participarea personalului la profit (P)425. Avansuri acordate personalului (A)426. Drepturi de personal neridicate (P)427. Reţineri din salarii datorate terţilor (P)428. Alte datorii şi creanţe în legătură cu personalul
+4281. Alte datorii în legătură cu personalul (P)
+4282. Alte creanţe în legătură cu personalul (A)43. Asigurări sociale, protecţia socială şi conturi asimilate431. Asigurări sociale
+4311. Contribuţia unităţii la asigurările sociale (P)
+4312. Contribuţia personalului la asigurările sociale (P)
+4313. Contribuţia angajatorului pentru asigurările sociale de sănătate (P)
+4314. Contribuţia angajaţilor pentru asigurările sociale de sănătate (P)
+4315 Contribuţia de asigurări sociale (P)
+4316. Contribuţia de asigurări sociale de sănătate (P)
+4318. Alte contribuţii pentru asigurările sociale de sănătate (P)
+436. Contribuţia asiguratorie pentru muncă (P)
+437. Ajutor de şomaj
+4371. Contribuţia unităţii la fondul de şomaj (P)
+4372. Contribuţia personalului la fondul de şomaj (P)438. Alte datorii şi creanţe sociale4381. Alte datorii sociale (P)4382. Alte creanţe sociale (A)44. Bugetul statului, fonduri speciale şi conturi asimilate441. Impozitul pe profit şi alte impozite
+4411. Impozitul pe profit (P)
+4415. Impozitul specific unor activităţi (P)
+4417. Impozitul pe profit la nivelul impozitului minim pe cifra de afaceri (P)
+4418. Impozitul pe venit15 (P)
+442. Taxa pe valoarea adăugată
+4423. TVA de plată (P)
+4424. TVA de recuperat (A)4426. TVA deductibilă (A)
+4427. TVA colectată (P)
+4428. TVA neexigibilă (A/P)444. Impozitul pe venituri de natura salariilor (P)445. Subvenţii 4451. Subvenţii guvernamentale (A)
+4452. Împrumuturi nerambursabile cu caracter de subvenţii (A)
+4458. Alte sume primite cu caracter de subvenţii (A)446. Alte impozite, taxe şi vărsăminte asimilate (P)447. Fonduri speciale -taxe şi vărsăminte asimilate (P)448. Alte datorii şi creanţe cu bugetul statului
+4481. Alte datorii faţă de bugetul statului (P)
+4482. Alte creanţe privind bugetul statului (A)
+45. Grup şi acţionari/asociaţi451. Decontări între entităţile afiliate
+4511. Decontări între entităţile afiliate (A/P)
+4518. Dobânzi aferente decontărilor între entităţile afiliate (A/P)453. Decontări cu entităţile asociate şi entităţile controlate în comun
+4531. Decontări cu entităţile asociate şi entităţile controlate (A/P)
+4538. Dobânzi aferente decontărilor cu entităţile asociate şi entităţile controlate în comun (A/P)455. Sume datorate acţionarilor/asociaţilor
+4551. Acţionari/Asociaţi -conturi curente (P)
+4558. Acţionari/Asociaţi -dobânzi la conturi curente (P)456. Decontări cu acţionarii/asociaţii privind capitalul (A/P)457. Dividende de plată (P)458. Decontări din operaţiuni în participaţie
+4581. Decontări din operaţiuni în participaţie -pasiv (P)
+4582. Decontări din operaţiuni în participaţie -activ (A)46. Debitori şi creditori diverşi461. Debitori diverşi (A)462. Creditori diverşi (P)
+463 Creanţe reprezentând dividende repartizate în cursul exerciţiului financiar (A)
+466. Decontări din operaţiuni de fiducie
+4661. Datorii din operaţiuni de fiducie (P)
+4662. Creanţe din operaţiuni de fiducie (A)
+467. Datorii aferente distribuirilor interimare de dividende
+47. Conturi de subvenţii, regularizare şi asimilate471. Cheltuieli înregistrate în avans (A)472. Venituri înregistrate în avans (P)473. Decontări din operaţiuni în curs de clarificare (A/P)475. Subvenţii pentru investiţii
+4751. Subvenţii guvernamentale pentru investiţii (P)
+4752. Împrumuturi nerambursabile cu caracter de subvenţii pentru investiţii (P)
+4753. Donaţii pentru investiţii (P)
+4754. Plusuri de inventar de natura imobilizărilor (P)
+4758. Alte sume primite cu caracter de subvenţii pentru investiţii (P)478. Venituri în avans aferente activelor primite prin transfer de la clienţi (P)48. Decontări în cadrul unităţii481. Decontări între unitate şi subunităţi (A/P)482. Decontări între subunităţi (A/P)49. Ajustări pentru deprecierea creanţelor490. Ajustări pentru deprecierea creanţelor reprezentând avansuri acordate furnizorilor
+4901. Ajustări pentru deprecierea creanţelor aferente cumpărărilor de bunuri de natura stocurilor (P)
+4902. Ajustări pentru deprecierea creanţelor aferente prestărilor de servicii (P)
+4903. Ajustări pentru deprecierea creanţelor aferente imobilizărilor corporale (P)
+4904. Ajustări pentru deprecierea creanţelor aferente imobilizărilor necorporale (P)
+491. Ajustări pentru deprecierea creanţelor - clienţi (P)495. Ajustări pentru deprecierea creanţelor - decontări în cadrul grupului şi cu acţionarii/asociaţii (P)496. Ajustări pentru deprecierea creanţelor - debitori diverşi (P)

@@ -1,0 +1,80 @@
+Here’s the **reformulated Step 94** for an **Express + Drizzle** environment, with a proper audit-first approach to prevent duplication or redundant controllers:
+
+---
+
+```markdown
+### 🔄 Step 94: Audit & Create Integrations Controller (Express + Drizzle)
+
+**📌 Description:**  
+Set up the foundational `IntegrationsController` in the GeniusERP v.2 platform to manage and orchestrate third-party services such as Shopify, DocuSign, PandaDoc, Stripe, Sameday, Revolut, Termene.ro, MFinante, etc. This controller should expose a secured placeholder endpoint (`/activate-placeholder`) that will later be extended into a complete integrations hub.
+
+---
+
+### 🧠 Agent Instructions:
+
+#### 1. 🔍 **Audit First**:
+Search for any existing integration-related route or controller:
+- Location to inspect: `src/modules/integrations/`
+- File names to check: `integrations.controller.ts`, `integrations.routes.ts`, etc.
+
+If found:
+- Ensure the placeholder route `/activate-placeholder` does **not** already exist.
+- If missing, append the route with `requireAuth` middleware.
+- Do not create redundant routes — enhance existing controller.
+
+---
+
+#### 2. 🆕 **If Missing, Create Controller**:
+
+Create a new Express router:  
+`src/modules/integrations/integrations.controller.ts`
+
+```ts
+import { Router } from "express";
+import { requireAuth } from "../../common/middleware/auth.middleware";
+
+const router = Router();
+
+router.post("/activate-placeholder", requireAuth, async (req, res) => {
+  return res.json({
+    message: "Integration activation placeholder",
+    data: req.body,
+  });
+});
+
+export default router;
+```
+
+---
+
+#### 3. 🔗 **Register Route in Main App**:
+
+In `server.ts` or your main router registration:
+
+```ts
+import integrationRoutes from "./modules/integrations/integrations.controller";
+app.use("/v1/integrations", integrationRoutes);
+```
+
+---
+
+#### 4. 🧪 Test the Endpoint:
+
+```bash
+curl -X POST http://localhost:3000/v1/integrations/activate-placeholder \
+  -H "Authorization: Bearer <your_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"provider":"shopify","companyId":"co123"}'
+```
+
+---
+
+### ✅ Result:
+> A secure, testable `/v1/integrations/activate-placeholder` route exists, ready to be extended with full API logic for supported providers. This controller anchors the **Integrations Hub** for GeniusERP v.2.
+
+Let me know if you'd like to scaffold:
+- Provider enum types
+- Drizzle schema for integration config
+- Multi-tenant API credential storage
+- Activation/validation flow for Shopify, DocuSign, or Stripe
+```

@@ -1,0 +1,122 @@
+Here is a fully **reformulated version of Step 124**, tailored for **Express with Drizzle**, running on **port 5000**, and structured under the `/api/` base path with proper **authentication enforcement**:
+
+---
+
+### 🧾 Step 124: Create `LedgerService` for Double-Entry Accounting (Express + Drizzle)
+
+**📌 Purpose:**  
+Create a `LedgerService` within the `FinanceModule` to manage recording of financial transactions — credit/debit — following double-entry logic, as outlined in 📘 Section 4.1.4.2. This will insert entries into the `ledger` table based on Romanian accounting rules.
+
+---
+
+### 🧠 Agent Instructions
+
+#### ✅ Before You Code – Audit First:
+1. **Check if service exists already**:
+   - Path: `src/modules/finance/`
+   - Look for: `ledger.service.ts` or similar
+   - If it exists, **upgrade** the existing logic, don’t duplicate.
+
+2. **Check FinanceModule registration**:
+   - Ensure `finance.module.ts` includes `LedgerService` in `providers[]`.
+
+3. **Ensure Ledger table exists** in your Drizzle schema:
+   - Look for `ledger` table in `drizzle/schema.ts`
+   - Confirm `company_id`, `franchise_id`, `type`, `amount`, `description`, `debit`, `credit`, `account_code`, etc.
+
+---
+
+### ✨ Implementation: `src/modules/finance/ledger.service.ts`
+
+```ts
+import { Injectable } from "express";
+import { db } from "../../common/drizzle/db";
+import { ledger } from "../../common/drizzle/schema";
+
+interface RecordTransactionInput {
+  companyId: string;
+  franchiseId: string;
+  amount: number;
+  debitAccount: string;
+  creditAccount: string;
+  description?: string;
+  fiscalPeriod?: string;
+}
+
+@Injectable()
+export class LedgerService {
+  async recordTransaction(input: RecordTransactionInput) {
+    const now = new Date();
+
+    const result = await db.transaction(async (trx) => {
+      await trx.insert(ledger).values([
+        {
+          company_id: input.companyId,
+          franchise_id: input.franchiseId,
+          account_code: input.debitAccount,
+          debit: input.amount,
+          credit: 0,
+          description: input.description,
+          fiscal_period: input.fiscalPeriod,
+          posted_at: now,
+        },
+        {
+          company_id: input.companyId,
+          franchise_id: input.franchiseId,
+          account_code: input.creditAccount,
+          debit: 0,
+          credit: input.amount,
+          description: input.description,
+          fiscal_period: input.fiscalPeriod,
+          posted_at: now,
+        },
+      ]);
+    });
+
+    return { success: true, message: "Double-entry transaction recorded." };
+  }
+}
+```
+
+---
+
+### 🧩 Integration: `finance.module.ts`
+
+Make sure the module registers the service:
+
+```ts
+import { LedgerService } from "./ledger.service";
+
+@Module({
+  providers: [LedgerService],
+  exports: [LedgerService],
+})
+export class FinanceModule {}
+```
+
+---
+
+### 🔐 Auth Strategy for Later Endpoints
+
+Ensure all routes that use `LedgerService` enforce:
+```ts
+AuthGuard.protect(JwtAuthMode.REQUIRED)
+AuthGuard.roleGuard()
+AuthGuard.companyGuard()
+```
+
+---
+
+### ✅ Result
+
+> `LedgerService` now supports proper double-entry recording, enabling secure and compliant financial journaling across modules like invoicing, cash/bank, payroll, and more.
+
+---
+
+Let me know if you'd like to:
+- Add automatic contra-account logic (e.g. based on invoice type)
+- Support VAT distribution
+- Generate `nota contabila` artifacts
+- Integrate this with `DocumentService` for validation workflows
+
+Ready to continue? 🧾📊

@@ -1,0 +1,24 @@
+[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.028Z - Started listening on: /tmp/86eddcb4f3675083317d/d.sock
+[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.030Z - [WATCHER]: Subscribed to changes within: /var/www/GeniusERP (native)
+[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.035Z - Established a connection. Number of open connections: 1
+[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.036Z - Established a connection. Number of open connections: 2
+[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.038Z - Closed a connection. Number of open connections: 1
+[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.039Z - [REQUEST]: Responding to the client. Shutdown initiated
+[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.040Z - Done responding to the client Shutdown initiated
+[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.040Z - Handled FORCE_SHUTDOWN. Handling time: 0. Response time: 1.
+[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.040Z - [WATCHER]: Stopping the watcher for /var/www/GeniusERP (sources)
+[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.040Z - Closed a connection. Number of open connections: 0
+[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.041Z - [WATCHER]: Stopping the watcher for /var/www/GeniusERP (outputs)
+[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.041Z - Server stopped because: "Request to shutdown"
+[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.427Z - Started listening on: /var/folders/ns/7pylqyns1450zw311nrf168h0000gn/T/c04b4b5f7aafaff89512/d.sock
+[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.430Z - [WATCHER]: Subscribed to changes within: /Volumes/Storage/Data/Proiecte/GeniusERP/GeniusERP_V_5 (native)
+[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.439Z - Established a connection. Number of open connections: 1
+[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.441Z - Established a connection. Number of open connections: 2
+[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.443Z - Closed a connection. Number of open connections: 1
+[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.445Z - [REQUEST]: Responding to the client. Shutdown initiated
+[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.446Z - Done responding to the client Shutdown initiated
+[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.446Z - Handled FORCE_SHUTDOWN. Handling time: 0. Response time: 1.
+[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.447Z - Closed a connection. Number of open connections: 0
+[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.448Z - [WATCHER]: Stopping the watcher for /Volumes/Storage/Data/Proiecte/GeniusERP/GeniusERP_V_5 (sources)
+[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.448Z - [WATCHER]: Stopping the watcher for /Volumes/Storage/Data/Proiecte/GeniusERP/GeniusERP_V_5 (outputs)
+[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.448Z - Server stopped because: "Request to shutdown"

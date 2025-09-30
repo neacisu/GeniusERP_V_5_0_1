@@ -1,0 +1,117 @@
+Here's the **reformulated Step 99** tailored for **Express with Drizzle**, ensuring all modules consistently use the `/api/` base path and proper authentication enforcement via `AuthGuard.protect(JwtAuthMode.REQUIRED)`, `AuthGuard.roleGuard()`, and `AuthGuard.companyGuard()`:
+
+---
+
+```markdown
+### ✅ Step 99: Validate API Controller Endpoints (Express + Drizzle, Secure, Modular)
+
+**📌 Description:**  
+Perform full integration testing of all module placeholder endpoints created in Steps 90–98. This test ensures each module is correctly wired under the `/api/` path, protected using standardized authentication and authorization patterns:  
+- ✅ `AuthGuard.protect(JwtAuthMode.REQUIRED)`
+- ✅ `AuthGuard.roleGuard()`
+- ✅ `AuthGuard.companyGuard()`
+
+---
+
+### 🧠 Agent Instructions
+
+#### 1. 🔍 Pre-flight Audit
+
+For each module listed below, **verify** the following:
+
+- [ ] Is the controller file defined in `src/modules/<module>/<module>.controller.ts`?
+- [ ] Is the controller route registered with `/api/<module>` in `server.ts` or root router?
+- [ ] Are routes protected with `AuthGuard.protect(JwtAuthMode.REQUIRED)`?
+- [ ] Are `roleGuard()` and `companyGuard()` also applied if applicable?
+
+> **If already implemented**, do NOT duplicate. Instead, ensure correct middlewares and refactor paths to use `/api/`.
+
+---
+
+#### 2. 🧪 Run Endpoint Tests
+
+Use the token from Step 78. Replace `YOUR_TOKEN_HERE` with a valid JWT.
+
+```bash
+# Sales
+curl -X POST http://localhost:3000/api/sales/placeholder \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"test":"data"}'
+
+# HR
+curl -X POST http://localhost:3000/api/hr/placeholder \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"test":"data"}'
+
+# E-commerce
+curl -X POST http://localhost:3000/api/ecommerce/order-placeholder \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"test":"data"}'
+
+# Marketing
+curl -X POST http://localhost:3000/api/marketing/campaign-placeholder \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"test":"data"}'
+
+# Integrations
+curl -X POST http://localhost:3000/api/integrations/activate-placeholder \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"test":"data"}'
+
+# BPM
+curl -X POST http://localhost:3000/api/bpm/process-placeholder \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"test":"data"}'
+
+# Collaboration
+curl -X POST http://localhost:3000/api/collab/task-placeholder \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"test":"data"}'
+
+# AI
+curl -X POST http://localhost:3000/api/ai/report-placeholder \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"test":"data"}'
+
+# Settings
+curl -X POST http://localhost:3000/api/settings/setup-placeholder \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"test":"data"}'
+```
+
+---
+
+### ✅ Expected Response Format
+
+```json
+{
+  "message": "Placeholder confirmation message",
+  "data": {
+    "test": "data"
+  }
+}
+```
+
+Any `401`, `403`, `404`, or `500` responses should be **logged** and the corresponding controller audited for:
+- Missing `AuthGuard.protect(JwtAuthMode.REQUIRED)`
+- Incorrect base path (should be `/api/`)
+- Route not registered in main app
+- Misconfigured middleware
+
+---
+
+### 🎯 Outcome
+
+> All modules’ base APIs are verified under `/api/`, secured consistently using shared guards. The platform’s modularity, security, and extensibility are now production-ready.
+
+Let me know if you want to auto-generate a Postman collection or `.http` file for VS Code testing.
+```

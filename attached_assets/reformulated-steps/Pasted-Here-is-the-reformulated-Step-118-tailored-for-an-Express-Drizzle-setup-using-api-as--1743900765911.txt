@@ -1,0 +1,94 @@
+Here is the **reformulated Step 118**, tailored for an **Express + Drizzle** setup using `/api/` as the base path. This version enforces **JWT-based auth**, **role-based access**, and **company context validation** via `AuthGuard.protect(JwtAuthMode.REQUIRED)`, `AuthGuard.roleGuard()`, and `AuthGuard.companyGuard()`.
+
+---
+
+```markdown
+### 👥 Step 118: Audit & Create CustomerService for CRM (Express + Drizzle)
+
+📌 **Description**  
+Implement or enhance `CustomerService` within the Sales module to manage customer creation and data persistence. This service uses Drizzle to insert into the `customer` table and will be wired into future CRM endpoints.
+
+---
+
+### 🧠 Agent Instructions
+
+#### 1. 🔍 Audit for Existing Service
+
+Check first if a service already exists in:
+
+- `src/modules/sales/customer.service.ts`
+- Or a similar file like `sales.service.ts`
+
+**If it exists:**
+- ✅ Do not duplicate.
+- ➕ Instead, extend it with a `createCustomer()` method if missing.
+
+**If it doesn’t exist:**
+- ➕ Create a new file and implement it as below.
+
+---
+
+#### 2. 🧱 If Not Found — Create Service
+
+Create file:  
+`src/modules/sales/customer.service.ts`
+
+```ts
+import { Injectable } from "express";
+import { db } from "../../db";
+import { customers } from "../../db/schema";
+import { eq } from "drizzle-orm";
+
+@Injectable()
+export class CustomerService {
+  async createCustomer(companyId: string, franchiseId: string, name: string, email?: string) {
+    const inserted = await db.insert(customers).values({
+      company_id: companyId,
+      franchise_id: franchiseId,
+      name,
+      email,
+      created_at: new Date(),
+      updated_at: new Date()
+    }).returning();
+
+    return inserted[0];
+  }
+}
+```
+
+---
+
+#### 3. 🔗 Register Service in SalesModule
+
+Open:  
+`src/modules/sales/sales.module.ts`
+
+Make sure `CustomerService` is added to the `providers` array:
+
+```ts
+import { CustomerService } from "./customer.service";
+
+export const SalesModule = {
+  providers: [CustomerService],
+};
+```
+
+---
+
+#### 4. 🔐 Auth Integration (Planned for Controller)
+
+When wiring this service into an endpoint:
+- Protect it with:
+  - `AuthGuard.protect(JwtAuthMode.REQUIRED)`
+  - `AuthGuard.roleGuard(["sales_team"])`
+  - `AuthGuard.companyGuard()`
+- Route pattern should use: `/api/sales/*`
+
+---
+
+### ✅ Outcome
+
+> `CustomerService` is now prepared to handle customer creation, persisted via Drizzle into the CRM schema. This service is designed to be reused by the `/api/sales/customers` endpoint and other CRM automations like lead capture, segmentation, and analytics.
+
+Let me know if you want to scaffold the controller next (`Step 119: Create CustomerController`) or integrate with Shopify/Inbox automation.
+```

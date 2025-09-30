@@ -1,0 +1,63 @@
+```markdown
+### Step 69: Define Business Process Automation (BPM) Model
+
+**🧠 Description:**  
+Request the Agent to design and define the most advanced Business Process Automation (BPM) schema ever, using **Drizzle ORM only** — strictly no Prisma. This model will be the foundation for orchestrating intelligent workflows such as:
+
+- Auto-invoicing workflows (based on system triggers or data changes)
+- Self-billed invoice handling ("Autofactura" for supplier-side invoicing)
+- Automatic AWB (AirWay Bill) creation with Sameday API
+- Segmented customer/vendor list processing
+- Automated notifications, billing, logistics, and CRM follow-up
+
+This module will later integrate with the **Invoicing**, **Sameday**, **CRM**, **Inventory**, and **Analytics** modules — acting as a central decisioning engine.
+
+**📎 Dependencies:**  
+Step 8 (initial schema defined)
+
+---
+
+**⚙️ Prompt for Agent:**
+
+"Using **Drizzle ORM only**, define a comprehensive schema for Business Process Automation (BPM) in `schema/bpm.schema.ts` for GeniusERP v.2:
+
+1. Create the following Drizzle model:
+
+```ts
+// schema/bpm.schema.ts
+import { pgTable, uuid, text, jsonb, timestamp, index } from 'drizzle-orm/pg-core';
+
+export const bpmProcesses = pgTable('bpm_processes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  companyId: uuid('company_id').notNull(),
+  franchiseId: uuid('franchise_id'),
+  name: text('name').notNull(),
+  steps: jsonb('steps').notNull(), // contains dynamic step-based workflow
+  status: text('status').default('draft'), // draft, active, archived
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  idx: index('bpm_idx').on(table.companyId, table.franchiseId, table.createdAt),
+}));
+```
+
+2. Add this model to `schema/index.ts` so it gets included in Drizzle migrations.
+
+3. Run:
+```bash
+npx drizzle-kit push:pg
+```
+
+4. Confirm the table was created:
+```sql
+SELECT * FROM bpm_processes LIMIT 1;
+```
+
+5. Prepare for future extensions:
+   - Step templates
+   - Trigger conditions (e.g. "invoice issued", "order shipped")
+   - Linked module actions (e.g. auto-generate AWB, auto-invoice creation)
+
+✅ This BPM foundation will become the operational brain of GeniusERP.
+"
+```

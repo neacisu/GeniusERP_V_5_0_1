@@ -1,0 +1,99 @@
+```markdown
+### 🔧 Step 87: Configure BullMQ Module (Express + Drizzle + Redis)
+
+**📌 Description:**  
+Set up a centralized BullMQ job queue system in GeniusERP v.2, used for asynchronous background tasks like low-stock alerts, document processing, and invoice automation. Redis is mocked or connected to Redis Cloud in Replit for development (see Section 4.1.1.2.5).
+
+---
+
+### ✅ Dependencies:
+- Redis client & BullMQ installed (`npm install bullmq`)
+- Redis mock or Redis Cloud URL set in `.env`
+- Project is built with **Express** (not NestJS)
+- Using **Drizzle ORM** and `ioredis` or `bullmq`
+
+---
+
+### 🤖 Agent Instructions:
+
+1. **Check if already implemented**:  
+   - Is there an existing BullMQ setup (e.g., `bull.config.ts`, or RedisQueueService)?
+   - Is Redis queue instantiation already handled globally?
+
+2. **If not**, proceed to create a BullMQ config module and initialize the `inventory` queue globally.
+
+---
+
+### 🛠️ File: `server/common/bullmq/queue.ts`
+
+```ts
+import { Queue } from "bullmq";
+
+export const inventoryQueue = new Queue("inventory", {
+  connection: {
+    host: process.env.REDIS_HOST || "localhost",
+    port: parseInt(process.env.REDIS_PORT || "6379"),
+  },
+});
+```
+
+---
+
+### 🛠️ File: `server/common/bullmq/index.ts`
+
+```ts
+import { inventoryQueue } from "./queue";
+
+export const Queues = {
+  inventory: inventoryQueue,
+  // add more queues here in future
+};
+```
+
+---
+
+### 📦 Update `.env` file (if missing):
+
+```
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+Or if using Redis Cloud:
+
+```
+REDIS_HOST=redis-xxxx.cloud.redislabs.com
+REDIS_PORT=13341
+REDIS_PASSWORD=your_redis_password
+```
+
+---
+
+### 📌 Usage Example
+
+In any service (e.g., `CheckStockLevelsService`):
+
+```ts
+import { Queues } from "../../common/bullmq";
+
+await Queues.inventory.add("low-stock-alert", {
+  sku: "PRODUCT_SKU",
+  warehouseId: "WH_ID",
+});
+```
+
+---
+
+### 🧪 Verification
+
+Run the app and confirm:
+- Redis connects without errors
+- You can enqueue jobs (e.g., log job ID after `.add(...)`)
+- BullMQ dashboard (optional) reflects added jobs
+
+---
+
+### ✅ Outcome
+
+This step enables asynchronous background processing with full support for Redis queues, while being adaptable for Replit development and production-ready VPS deployment.
+```

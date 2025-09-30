@@ -1,0 +1,166 @@
+logger.ts:168 [06:00:50.965] [app] Application initializing {context: {…}}
+logger.ts:168 [06:00:50.965] [audit-logger] AUDIT [SUCCESS]: create session "app-session" by anonymous user {context: {…}}
+use-auth.tsx:51 Auth: New page load detected, clearing cached auth data for security
+queryClient.ts:270 No auth token available for query ['/api/user'] Error Component Stack
+    at AuthProvider (use-auth.tsx:23:32)
+    at QueryClientProvider (@tanstack_react-query.js?v=ac40c652:2805:3)
+    at App (App.tsx:314:9)
+overrideMethod @ hook.js:608
+(anonymous) @ queryClient.ts:270
+fetchFn @ @tanstack_react-query.js?v=ac40c652:840
+run @ @tanstack_react-query.js?v=ac40c652:494
+start @ @tanstack_react-query.js?v=ac40c652:536
+fetch @ @tanstack_react-query.js?v=ac40c652:926
+executeFetch_fn @ @tanstack_react-query.js?v=ac40c652:2211
+onSubscribe @ @tanstack_react-query.js?v=ac40c652:1898
+subscribe @ @tanstack_react-query.js?v=ac40c652:24
+(anonymous) @ @tanstack_react-query.js?v=ac40c652:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=ac40c652:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=ac40c652:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=ac40c652:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=ac40c652:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=ac40c652:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=ac40c652:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=ac40c652:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=ac40c652:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=ac40c652:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=ac40c652:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=ac40c652:19432
+commitRoot @ chunk-RPCDYKBN.js?v=ac40c652:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=ac40c652:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=ac40c652:18718
+workLoop @ chunk-RPCDYKBN.js?v=ac40c652:197
+flushWork @ chunk-RPCDYKBN.js?v=ac40c652:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=ac40c652:384
+Show 26 more frames
+Show less
+queryClient.ts:288 Query Request: /api/user
+queryClient.ts:338 Received HTML instead of JSON: <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style data-vite-theme="" data-inject-first="">:root {...
+overrideMethod @ hook.js:608
+(anonymous) @ queryClient.ts:338
+await in (anonymous)
+fetchFn @ @tanstack_react-query.js?v=ac40c652:840
+run @ @tanstack_react-query.js?v=ac40c652:494
+start @ @tanstack_react-query.js?v=ac40c652:536
+fetch @ @tanstack_react-query.js?v=ac40c652:926
+executeFetch_fn @ @tanstack_react-query.js?v=ac40c652:2211
+onSubscribe @ @tanstack_react-query.js?v=ac40c652:1898
+subscribe @ @tanstack_react-query.js?v=ac40c652:24
+(anonymous) @ @tanstack_react-query.js?v=ac40c652:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=ac40c652:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=ac40c652:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=ac40c652:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=ac40c652:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=ac40c652:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=ac40c652:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=ac40c652:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=ac40c652:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=ac40c652:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=ac40c652:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=ac40c652:19432
+commitRoot @ chunk-RPCDYKBN.js?v=ac40c652:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=ac40c652:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=ac40c652:18718
+workLoop @ chunk-RPCDYKBN.js?v=ac40c652:197
+flushWork @ chunk-RPCDYKBN.js?v=ac40c652:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=ac40c652:384
+Show 26 more frames
+Show less
+queryClient.ts:348 Authentication issue detected in query - redirecting to login
+overrideMethod @ hook.js:608
+(anonymous) @ queryClient.ts:348
+await in (anonymous)
+fetchFn @ @tanstack_react-query.js?v=ac40c652:840
+run @ @tanstack_react-query.js?v=ac40c652:494
+start @ @tanstack_react-query.js?v=ac40c652:536
+fetch @ @tanstack_react-query.js?v=ac40c652:926
+executeFetch_fn @ @tanstack_react-query.js?v=ac40c652:2211
+onSubscribe @ @tanstack_react-query.js?v=ac40c652:1898
+subscribe @ @tanstack_react-query.js?v=ac40c652:24
+(anonymous) @ @tanstack_react-query.js?v=ac40c652:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=ac40c652:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=ac40c652:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=ac40c652:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=ac40c652:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=ac40c652:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=ac40c652:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=ac40c652:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=ac40c652:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=ac40c652:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=ac40c652:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=ac40c652:19432
+commitRoot @ chunk-RPCDYKBN.js?v=ac40c652:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=ac40c652:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=ac40c652:18718
+workLoop @ chunk-RPCDYKBN.js?v=ac40c652:197
+flushWork @ chunk-RPCDYKBN.js?v=ac40c652:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=ac40c652:384
+Show 26 more frames
+Show less
+queryClient.ts:363 Error parsing API response in query: Error: Invalid response format: Expected JSON but received HTML
+    at queryClient.ts:357:17
+overrideMethod @ hook.js:608
+(anonymous) @ queryClient.ts:363
+await in (anonymous)
+fetchFn @ @tanstack_react-query.js?v=ac40c652:840
+run @ @tanstack_react-query.js?v=ac40c652:494
+start @ @tanstack_react-query.js?v=ac40c652:536
+fetch @ @tanstack_react-query.js?v=ac40c652:926
+executeFetch_fn @ @tanstack_react-query.js?v=ac40c652:2211
+onSubscribe @ @tanstack_react-query.js?v=ac40c652:1898
+subscribe @ @tanstack_react-query.js?v=ac40c652:24
+(anonymous) @ @tanstack_react-query.js?v=ac40c652:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=ac40c652:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=ac40c652:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=ac40c652:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=ac40c652:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=ac40c652:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=ac40c652:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=ac40c652:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=ac40c652:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=ac40c652:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=ac40c652:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=ac40c652:19432
+commitRoot @ chunk-RPCDYKBN.js?v=ac40c652:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=ac40c652:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=ac40c652:18718
+workLoop @ chunk-RPCDYKBN.js?v=ac40c652:197
+flushWork @ chunk-RPCDYKBN.js?v=ac40c652:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=ac40c652:384
+Show 26 more frames
+Show less
+queryClient.ts:367 Query failed for /api/user: Error: Failed to parse response: Invalid response format: Expected JSON but received HTML
+    at queryClient.ts:364:15
+overrideMethod @ hook.js:608
+(anonymous) @ queryClient.ts:367
+await in (anonymous)
+fetchFn @ @tanstack_react-query.js?v=ac40c652:840
+run @ @tanstack_react-query.js?v=ac40c652:494
+start @ @tanstack_react-query.js?v=ac40c652:536
+fetch @ @tanstack_react-query.js?v=ac40c652:926
+executeFetch_fn @ @tanstack_react-query.js?v=ac40c652:2211
+onSubscribe @ @tanstack_react-query.js?v=ac40c652:1898
+subscribe @ @tanstack_react-query.js?v=ac40c652:24
+(anonymous) @ @tanstack_react-query.js?v=ac40c652:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=ac40c652:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=ac40c652:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=ac40c652:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=ac40c652:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=ac40c652:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=ac40c652:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=ac40c652:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=ac40c652:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=ac40c652:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=ac40c652:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=ac40c652:19432
+commitRoot @ chunk-RPCDYKBN.js?v=ac40c652:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=ac40c652:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=ac40c652:18718
+workLoop @ chunk-RPCDYKBN.js?v=ac40c652:197
+flushWork @ chunk-RPCDYKBN.js?v=ac40c652:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=ac40c652:384
+Show 26 more frames
+Show less

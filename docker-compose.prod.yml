@@ -1,0 +1,168 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: geniuserp-app
+    restart: unless-stopped
+    environment:
+      # Variabile de bază
+      - NODE_ENV=production
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/geniuserp
+      - RUN_MIGRATIONS=true
+      
+      # Redis Cloud - securizat cu credentialele din Replit Secrets
+      - REDIS_URL=${REDIS_URL}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_USERNAME=${REDIS_USERNAME}
+      
+      # Secrets pentru securitate
+      - JWT_SECRET=${JWT_SECRET:-jwt_secret_key_for_prod_environment}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-jwt_refresh_secret_key_for_prod_environment}
+      - SESSION_SECRET=${SESSION_SECRET:-prod_session_secret_key}
+      
+      # ANAF API
+      - ANAF_API_URL=https://webservicesp.anaf.ro/PlatitorTvaRest/api/v7/ws/tva
+      - ANAF_API_VERSION=v7
+      
+      # Date pentru email
+      - SMTP_HOST=${SMTP_HOST:-smtp.example.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-noreply@example.com}
+      - SMTP_PASS=${SMTP_PASS:-smtp_password_here}
+      - EMAIL_FROM=${EMAIL_FROM:-noreply@example.com}
+      
+      # Setări pentru logging
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - ENABLE_SQL_LOGGING=${ENABLE_SQL_LOGGING:-false}
+    volumes:
+      - app_logs:/app/logs
+      - db_backups:/app/db-backups
+    depends_on:
+      - postgres
+    networks:
+      - geniuserp-network
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: geniuserp-nginx
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./client/dist:/usr/share/nginx/html
+    depends_on:
+      - app
+    networks:
+      - geniuserp-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: geniuserp-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_NAME:-geniuserp}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - db_backups:/backups
+    command: postgres -c 'max_connections=200' -c 'shared_buffers=512MB'
+    networks:
+      - geniuserp-network
+
+  db-backup:
+    image: postgres:15-alpine
+    container_name: geniuserp-db-backup
+    restart: unless-stopped
+    volumes:
+      - db_backups:/backups
+    environment:
+      - PGHOST=postgres
+      - PGUSER=${DB_USER:-postgres}
+      - PGPASSWORD=${DB_PASSWORD:-postgres}
+      - PGDATABASE=${DB_NAME:-geniuserp}
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-7}
+    entrypoint: |
+      sh -c '
+        mkdir -p /backups;
+        while true; do
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S);
+          echo "Crearea backup-ului $TIMESTAMP";
+          pg_dump -h postgres -U $$PGUSER $$PGDATABASE | gzip > /backups/$$PGDATABASE-$$TIMESTAMP.sql.gz;
+          echo "Backup creat cu succes: /backups/$$PGDATABASE-$$TIMESTAMP.sql.gz";
+          echo "Ștergerea backup-urilor mai vechi de $$BACKUP_RETENTION_DAYS zile";
+          find /backups -name "$$PGDATABASE-*.sql.gz" -type f -mtime +$$BACKUP_RETENTION_DAYS -delete;
+          echo "Așteptare până la următorul backup (24 ore)";
+          sleep 86400;
+        done
+      '
+    depends_on:
+      - postgres
+    networks:
+      - geniuserp-network
+
+  db-seed:
+    image: postgres:15-alpine
+    container_name: geniuserp-db-seed
+    restart: "no"
+    volumes:
+      - db_backups:/backups
+    environment:
+      - PGHOST=postgres
+      - PGUSER=${DB_USER:-postgres}
+      - PGPASSWORD=${DB_PASSWORD:-postgres}
+      - PGDATABASE=${DB_NAME:-geniuserp}
+      - INITIAL_BACKUP=${INITIAL_BACKUP:-}
+    entrypoint: |
+      sh -c '
+        echo "Verificare dacă există un backup inițial specificat...";
+        if [ -n "$$INITIAL_BACKUP" ] && [ -f "/backups/$$INITIAL_BACKUP" ]; then
+          echo "S-a găsit backup-ul inițial: /backups/$$INITIAL_BACKUP";
+          
+          # Așteptăm până când serviciul PostgreSQL este disponibil
+          until pg_isready -h postgres -U $$PGUSER; do
+            echo "Așteptare pentru disponibilitatea serviciului PostgreSQL...";
+            sleep 2;
+          done
+          
+          echo "Restaurare din backup-ul inițial...";
+          if [[ "$$INITIAL_BACKUP" == *.gz ]]; then
+            gunzip -c /backups/$$INITIAL_BACKUP | psql -h postgres -U $$PGUSER -d $$PGDATABASE;
+          else
+            psql -h postgres -U $$PGUSER -d $$PGDATABASE < /backups/$$INITIAL_BACKUP;
+          fi
+          
+          if [ $? -eq 0 ]; then
+            echo "Restaurare finalizată cu succes!";
+          else
+            echo "Eroare la restaurarea din backup!";
+            exit 1;
+          fi
+        else
+          echo "Nu s-a specificat un backup inițial sau fișierul nu există.";
+          echo "Baza de date va fi inițializată cu schema implicită.";
+        fi
+        
+        exit 0;
+      '
+    depends_on:
+      - postgres
+    networks:
+      - geniuserp-network
+
+networks:
+  geniuserp-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  app_logs:
+  db_backups:

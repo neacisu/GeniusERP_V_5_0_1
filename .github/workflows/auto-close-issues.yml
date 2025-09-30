@@ -1,0 +1,61 @@
+name: Auto Close Issues
+
+on:
+  push:
+
+jobs:
+  close-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Close referenced issues
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const commits = context.payload.commits;
+            
+            for (const commit of commits) {
+              // Look for issue references in commit message
+              const issueMatches = commit.message.match(/#(\d+)/g);
+              
+              if (issueMatches) {
+                for (const match of issueMatches) {
+                  const issueNumber = match.substring(1); // Remove the # symbol
+                  
+                  try {
+                    // Get the issue to check its state
+                    const issue = await github.rest.issues.get({
+                      owner,
+                      repo,
+                      issue_number: issueNumber
+                    });
+                    
+                    // Only close if the issue is open
+                    if (issue.data.state === 'open') {
+                      await github.rest.issues.update({
+                        owner,
+                        repo,
+                        issue_number: issueNumber,
+                        state: 'closed'
+                      });
+                      
+                      // Add a comment to the issue
+                      await github.rest.issues.createComment({
+                        owner,
+                        repo,
+                        issue_number: issueNumber,
+                        body: `This issue has been automatically closed by commit ${commit.id} (${commit.message})`
+                      });
+                    }
+                  } catch (error) {
+                    console.log(`Error processing issue #${issueNumber}: ${error.message}`);
+                  }
+                }
+              }
+            } 

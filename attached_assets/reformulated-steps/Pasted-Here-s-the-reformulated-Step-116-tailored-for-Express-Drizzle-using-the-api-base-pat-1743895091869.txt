@@ -1,0 +1,105 @@
+Here’s the reformulated **Step 116**, tailored for **Express + Drizzle**, using the `/api/` base path and enforcing proper authentication:
+
+---
+
+```markdown
+### 💰 Step 116: Update `EcommerceController` with Payment Endpoint (Express + Drizzle)
+
+📌 **Description**  
+Enhance the existing `EcommerceController` by replacing the placeholder endpoint with a real `/api/ecommerce/payment` route. This endpoint will call the `PaymentService` to process payments through Stripe and log them in the `transactions` table using Drizzle ORM.
+
+🔒 It must enforce:
+- `AuthGuard.protect(JwtAuthMode.REQUIRED)`
+- `AuthGuard.roleGuard()`
+- `AuthGuard.companyGuard()`
+
+---
+
+### 🧠 Agent Instructions
+
+#### 1. 🔍 Check for Existing
+
+First, **search for existing controller logic** in:
+- `src/modules/ecommerce/ecommerce.controller.ts`
+- `src/modules/ecommerce/routes.ts`
+- Any payment-specific sub-router
+
+If an endpoint for payment already exists:
+- ✅ **Do not duplicate**
+- 🔄 Instead, refactor or extend it to:
+  - Use the newly implemented `PaymentService`
+  - Use `/api/ecommerce` path
+  - Use all proper `AuthGuard` variants
+
+---
+
+#### 2. 🧱 If Missing, Replace Placeholder or Add Route
+
+In `src/modules/ecommerce/ecommerce.controller.ts`, update or insert:
+
+```ts
+import { Router } from "express";
+import { PaymentService } from "./payment.service";
+import { AuthGuard } from "../../common/middleware/auth.middleware";
+
+const router = Router();
+const paymentService = new PaymentService();
+
+router.post(
+  "/payment",
+  AuthGuard.protect("JwtAuthMode.REQUIRED"),
+  AuthGuard.roleGuard(["sales_team"]),
+  AuthGuard.companyGuard(),
+  async (req, res) => {
+    const { companyId, franchiseId, amount, paymentMethodId } = req.body;
+
+    try {
+      const result = await paymentService.processPayment({
+        companyId,
+        franchiseId,
+        amount,
+        paymentMethodId,
+      });
+
+      res.json(result);
+    } catch (err) {
+      console.error("❌ Payment error:", err);
+      res.status(400).json({ error: "Payment failed", detail: err.message });
+    }
+  }
+);
+
+export default router;
+```
+
+---
+
+#### 3. 🔗 Register Under `/api/ecommerce`
+
+In your app entry (e.g. `server.ts`):
+
+```ts
+import ecommerceRoutes from "./modules/ecommerce/ecommerce.controller";
+app.use("/api/ecommerce", ecommerceRoutes);
+```
+
+---
+
+### ✅ Result
+
+You now have a fully functional, secure payment endpoint accessible via:
+
+```
+POST /api/ecommerce/payment
+```
+
+⛳ Protected by:
+- `JwtAuthMode.REQUIRED`
+- `roleGuard: sales_team`
+- `companyGuard`
+
+Let me know if you'd like to:
+- Add input validation using Zod
+- Wire this to frontend
+- Add Stripe webhook to finalize the flow
+```

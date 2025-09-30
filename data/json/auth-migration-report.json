@@ -1,0 +1,74 @@
+{
+  "totalFilesProcessed": 163,
+  "totalFilesModified": 33,
+  "totalImportLinesReplaced": 21,
+  "totalAuthLinesReplaced": 96,
+  "moduleStats": {
+    "crm": {
+      "filesProcessed": 14,
+      "filesModified": 0,
+      "importLinesReplaced": 0,
+      "authLinesReplaced": 0
+    },
+    "inventory": {
+      "filesProcessed": 12,
+      "filesModified": 2,
+      "importLinesReplaced": 1,
+      "authLinesReplaced": 10
+    },
+    "hr": {
+      "filesProcessed": 10,
+      "filesModified": 0,
+      "importLinesReplaced": 0,
+      "authLinesReplaced": 0
+    },
+    "ecommerce": {
+      "filesProcessed": 16,
+      "filesModified": 7,
+      "importLinesReplaced": 3,
+      "authLinesReplaced": 27
+    },
+    "accounting": {
+      "filesProcessed": 19,
+      "filesModified": 3,
+      "importLinesReplaced": 0,
+      "authLinesReplaced": 9
+    },
+    "documents": {
+      "filesProcessed": 20,
+      "filesModified": 1,
+      "importLinesReplaced": 0,
+      "authLinesReplaced": 4
+    },
+    "settings": {
+      "filesProcessed": 12,
+      "filesModified": 1,
+      "importLinesReplaced": 1,
+      "authLinesReplaced": 0
+    },
+    "bpm": {
+      "filesProcessed": 11,
+      "filesModified": 7,
+      "importLinesReplaced": 7,
+      "authLinesReplaced": 7
+    },
+    "ai": {
+      "filesProcessed": 9,
+      "filesModified": 0,
+      "importLinesReplaced": 0,
+      "authLinesReplaced": 0
+    },
+    "admin": {
+      "filesProcessed": 14,
+      "filesModified": 9,
+      "importLinesReplaced": 9,
+      "authLinesReplaced": 23
+    },
+    "integrations": {
+      "filesProcessed": 26,
+      "filesModified": 3,
+      "importLinesReplaced": 0,
+      "authLinesReplaced": 16
+    }
+  }
+}

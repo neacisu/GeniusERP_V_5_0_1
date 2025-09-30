@@ -1,0 +1,101 @@
+Here’s the reformulated **Step 105** tailored specifically for **Express with Drizzle**, with `/api/` base path and **authentication enforced** via `AuthGuard.protect(JwtAuthMode.REQUIRED)`, `AuthGuard.roleGuard()`, and `AuthGuard.companyGuard()`. It also instructs the agent to **first search for existing implementations** to avoid duplication and only extend or upgrade where necessary.
+
+---
+
+```markdown
+### 🚨 Step 105: Audit & Implement NotificationService (Express + Drizzle)
+
+**📌 Description:**  
+Create or enhance a centralized `NotificationService` that will handle alerts such as low-stock warnings, onboarding status updates, or system messages. For now, this version logs messages (placeholder), but it’s designed for future upgrades (email, SMS, webhooks, BullMQ queues). This will be consumed across modules like Inventory, Admin, and BPM.
+
+---
+
+### 🧠 Agent Instructions
+
+#### 1. 🔍 First: Audit for Existing Service
+Search the following for an existing notification or messaging service:
+
+- `src/common/services/notification.service.ts`
+- `src/modules/shared/services/`
+- `src/modules/inventory/services/`
+- Any class that logs or handles alerts
+
+✅ If found:
+- **Do not create a duplicate**.
+- Instead, ensure it matches the structure below and extend with `sendNotification(to, message)` method if needed.
+
+🚫 If not found:
+- Proceed to create it in the `common/services/` directory.
+
+---
+
+#### 2. 🛠️ Create/Extend NotificationService
+
+File:  
+`src/common/services/notification.service.ts`
+
+```ts
+import { Injectable } from "express-utils"; // placeholder if needed
+// If not available, fallback to standard export structure
+// export default class NotificationService { ... }
+
+@Injectable()
+export class NotificationService {
+  async sendNotification(to: string, message: string) {
+    console.log(`[NotificationService] To: ${to}, Message: ${message}`);
+    return {
+      success: true,
+      message: `Notification sent to ${to}`,
+    };
+  }
+}
+```
+
+---
+
+#### 3. 🔗 Register in App Bootstrap (If Global)
+
+Modify `src/app.module.ts` or central provider config file:
+
+```ts
+import { NotificationService } from "./common/services/notification.service";
+
+const globalServices = [
+  NotificationService,
+  // ...other services
+];
+
+export { globalServices };
+```
+
+If using Express manual DI or service locator pattern:
+
+```ts
+import { serviceRegistry } from "./core/registry";
+import { NotificationService } from "./common/services/notification.service";
+
+serviceRegistry.register("notificationService", new NotificationService());
+```
+
+---
+
+#### 4. ✅ Example Usage Across Modules
+
+```ts
+const notificationService = serviceRegistry.get("notificationService");
+await notificationService.sendNotification(
+  "inventory-team@company.com",
+  "Low stock alert: SKU #A1234 is below minimum threshold!"
+);
+```
+
+---
+
+### ✅ Result:
+> A centralized `NotificationService` is now available across the system, ready to be integrated with modules like Inventory, Admin, and BPM. Future enhancements can plug into BullMQ, Redis streams, email/SMS gateways, or in-app notifications.
+
+Let me know if you want to:
+- Add support for in-app toast/event notifications
+- Integrate with BullMQ for queued delivery
+- Connect to transactional email service (e.g., Resend, Mailgun, Postmark)
+```

@@ -1,0 +1,6 @@
+{
+  "cli": {
+    "defaultCollection": "@nx/workspace"
+  },
+  "defaultProject": "api"
+}
