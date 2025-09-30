@@ -576,6 +576,12 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       retry: 1,
       gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
+      // Default queryFn pentru toate query-urile care nu specifică unul explicit
+      // Folosește primul element din queryKey ca URL pentru request API
+      queryFn: async ({ queryKey }) => {
+        const url = queryKey[0] as string;
+        return await apiRequest(url, { method: 'GET' });
+      },
     },
   },
 });
