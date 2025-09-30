@@ -717,28 +717,21 @@ export default function ChartOfAccountsPage() {
                       <Fragment key={`group-${group.id}`}>
                         {/* Group header row */}
                         <TableRow 
-                          className={`bg-gray-50 ${grade1Accounts.length > 0 ? 'cursor-pointer hover:bg-gray-100' : 'cursor-not-allowed opacity-60'}`}
-                          onClick={() => grade1Accounts.length > 0 && toggleGroupExpansion(`group-${group.id}`)}
+                          className="bg-gray-50 cursor-pointer hover:bg-gray-100"
+                          onClick={() => toggleGroupExpansion(`group-${group.id}`)}
                         >
                           <TableCell colSpan={2} className="py-2">
                             <div className="flex items-center">
-                              {grade1Accounts.length > 0 ? (
-                                isGroupExpanded ? (
-                                  <ChevronDown className="h-4 w-4 mr-2 text-gray-500" />
-                                ) : (
-                                  <ChevronRight className="h-4 w-4 mr-2 text-gray-500" />
-                                )
+                              {isGroupExpanded ? (
+                                <ChevronDown className="h-4 w-4 mr-2 text-gray-500" />
                               ) : (
-                                <div className="h-4 w-4 mr-2 text-gray-400">•</div>
+                                <ChevronRight className="h-4 w-4 mr-2 text-gray-500" />
                               )}
                               <span className="font-medium">
                                 {group.code}
                                 <span className="text-gray-500 ml-2">
                                   {group.name}
                                 </span>
-                                {grade1Accounts.length === 0 && (
-                                  <span className="text-xs text-gray-400 ml-2">(fără conturi)</span>
-                                )}
                               </span>
                             </div>
                           </TableCell>
