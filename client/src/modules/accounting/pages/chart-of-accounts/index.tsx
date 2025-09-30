@@ -662,13 +662,13 @@ export default function ChartOfAccountsPage() {
                     accountClasses?.find(cls => cls.code === activeClass)?.name
                   )}
                 </h3>
-                <p className="text-sm text-blue-700">
+                <div className="text-sm text-blue-700">
                   {isLoadingClasses ? (
                     <div className="h-4 w-72 bg-blue-200 animate-pulse rounded mt-1"></div>
                   ) : (
                     accountClasses?.find(cls => cls.code === activeClass)?.description
                   )}
-                </p>
+                </div>
               </div>
             </div>
           </div>
