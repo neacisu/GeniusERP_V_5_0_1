@@ -1,0 +1,97 @@
+```
+Step 42: Define CRM Models (Advanced Kanban Sales Pipeline, Better than HubSpot)
+
+🎯 Description:  
+Design advanced CRM models using Drizzle ORM to enable a fully featured **Kanban-based sales pipeline**, targeting functionality that surpasses HubSpot.  
+This CRM system will power a next-gen sales engine with:
+- Deal stages & pipelines
+- Lead scoring
+- Segmentation & qualification
+- Revenue forecasting
+- Contact enrichment
+- Stage transition history
+- Assignments & reminders
+
+📦 Technologies:
+- ORM: Drizzle
+- DB: PostgreSQL (Neon)
+- Structure: NX Monorepo, modular
+
+🧱 Dependencies:
+- Step 8: Schema system in place
+
+⚙️ Instructions:
+
+1. ✅ Create schema file:
+```
+apps/api/src/modules/crm/schema/crm.schema.ts
+```
+
+2. ✅ Define core models: `customers` and `deals`
+```ts
+import {
+  pgTable,
+  uuid,
+  varchar,
+  text,
+  integer,
+  float,
+  timestamp,
+  index,
+} from 'drizzle-orm/pg-core';
+
+export const customers = pgTable('customers', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  company_id: uuid('company_id').notNull(),
+  franchise_id: uuid('franchise_id'),
+  name: varchar('name', { length: 100 }).notNull(),
+  email: varchar('email', { length: 100 }),
+  phone: varchar('phone', { length: 50 }),
+  segment: varchar('segment', { length: 50 }),
+  lead_score: integer('lead_score').default(0),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  crmCustomerIndex: index('customer_idx').on(table.company_id, table.franchise_id, table.created_at),
+}));
+
+export const deals = pgTable('deals', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  company_id: uuid('company_id').notNull(),
+  franchise_id: uuid('franchise_id'),
+  customer_id: uuid('customer_id').notNull(),
+  amount: float('amount').notNull(),
+  stage: varchar('stage', { length: 50 }).notNull(), // e.g. Lead, Qualified, Proposal, Won, Lost
+  pipeline: varchar('pipeline', { length: 50 }).default('default'),
+  title: varchar('title', { length: 100 }),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  crmDealIndex: index('deal_idx').on(table.company_id, table.franchise_id, table.customer_id, table.created_at),
+}));
+```
+
+3. ✅ Export models:
+```ts
+// apps/api/src/db/schema/index.ts
+export * from '../../modules/crm/schema/crm.schema';
+```
+
+4. ✅ Generate + apply migration:
+```bash
+npx drizzle-kit generate:pg --out drizzle/migrations --name create-crm
+npx drizzle-kit push:pg
+```
+
+🧪 Validation:
+- Create test customers and deals via direct insert
+- Stage tracking enabled via `stage` field (will evolve into `deal_stage_history` table)
+- Lead score and segment enable AI-driven prioritization later
+
+📎 Notes:
+- Future steps will add:
+  - Stage history log per deal
+  - Pipeline templates & Kanban drag/drop
+  - Assignment, reminders & notifications
+  - CRM widgets for dashboard
+```

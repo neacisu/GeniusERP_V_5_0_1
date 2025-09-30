@@ -1,0 +1,79 @@
+```
+Step 41: Create ManageWarehouseService (for Gestiune Creation)
+
+🎯 Description:  
+Implement `ManageWarehouseService` in the `inventory` module to handle creation of warehouse locations ("gestiuni") including their type (depozit, magazin, custodie, transfer).  
+This service will be used to register new physical or virtual inventory locations as part of the Romanian multi-gestiune model (see Section 2.2.2.3).  
+Ensure the agent uses **Drizzle ORM** and **granular structure**, and **first checks** if the service already exists.
+
+📦 Technologies:
+- ORM: Drizzle
+- Language: TypeScript
+- Structure: NX monorepo
+- DB: PostgreSQL (Neon)
+
+🧱 Dependencies:
+- Step 40: Inventory module structure confirmed
+
+⚙️ Instructions:
+
+1. ✅ Check if this file already exists:
+```
+apps/api/src/modules/inventory/services/manage-warehouse.service.ts
+```
+
+- If yes: audit and enhance it to support all `gestiune_type`
+- If no: create from scratch
+
+2. ✅ Create the service:
+```ts
+import { drizzleClient } from '@/common/drizzle/drizzle.client';
+import { warehouses } from '../schema/inventory.schema';
+import { gestiune_type } from 'drizzle-orm/pg-core';
+
+type WarehouseInput = {
+  company_id: string;
+  franchise_id?: string;
+  name: string;
+  location?: string;
+  type: typeof gestiune_type extends (...args: any[]) => infer R ? R : string;
+};
+
+export class ManageWarehouseService {
+  static async create(input: WarehouseInput) {
+    return drizzleClient.insert(warehouses).values({
+      company_id: input.company_id,
+      franchise_id: input.franchise_id,
+      name: input.name,
+      location: input.location || '',
+      type: input.type,
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+  }
+}
+```
+
+3. ✅ Register the service:
+```ts
+// inventory.module.ts
+import { ManageWarehouseService } from './services/manage-warehouse.service';
+
+export class InventoryModule {
+  static register() {
+    return {
+      services: [ManageWarehouseService],
+    };
+  }
+}
+```
+
+🧪 Validation:
+- Create gestiune of all types (`depozit`, `magazin`, `custodie`, `transfer`)
+- Auto-fills timestamps and stores in DB correctly
+
+📎 Notes:
+- Will later add GET/PUT/DELETE support per warehouse
+- Use enums and validators to restrict to valid `gestiune_type`
+- Used by warehouse admin and system automation (e.g. transfer stock)
+```

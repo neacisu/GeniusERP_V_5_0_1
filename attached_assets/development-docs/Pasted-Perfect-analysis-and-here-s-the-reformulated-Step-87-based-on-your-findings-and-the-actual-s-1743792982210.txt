@@ -1,0 +1,71 @@
+Perfect analysis — and here’s the reformulated **✅ Step 87** based on your findings and the actual state of the codebase:
+
+---
+
+```markdown
+### ✅ Step 87: Audit & Enhance Existing BullMQ Integration (Express + Drizzle)
+
+**📌 Description:**  
+A complete BullMQ system is already implemented in GeniusERP v.2, including RedisService, QueueService, and usage in Inventory workflows. This step ensures that integration is fully documented, configured with `.env`, and optionally modularized for maintainability (Section 4.1.1.2.5).
+
+---
+
+### 🔍 Agent Task
+
+Please **audit** and, if needed, **enhance** the existing BullMQ integration using the following checklist:
+
+---
+
+### ✅ What Already Exists:
+
+- `server/services/redis.service.ts` — Robust RedisService with failover and Redis Cloud compatibility
+- `server/services/queue.service.ts` — Queues: `balanceQueue`, `stockQueue`, `reportQueue` (using BullMQ)
+- `server/modules/inventory/services/check-stock-levels.service.ts` — Proper low-stock alerting with queue
+- `server/monkey-patch.ts` — Suppresses Redis eviction warnings
+- Queue jobs and workers registered with fallback if Redis is down
+
+---
+
+### 🟡 What’s Missing or Needs Improvement:
+
+1. **.env File:**
+   Add Redis connection details if not already present.
+
+   ```
+   REDIS_HOST=localhost
+   REDIS_PORT=6379
+   REDIS_PASSWORD=optional
+   ```
+
+2. **Unify Queue Naming Convention:**
+   - Rename `stockQueue` to `inventoryQueue` if consistency is needed across modules.
+
+3. **Organize BullMQ Codebase (Optional but Recommended):**
+   - Create `server/common/bullmq/` directory with:
+     - `queues.ts` → export all queues in a single place
+     - `worker.ts` → centralized job handlers (optional)
+     - `types.ts` → define BullMQ job payload types
+
+4. **Docs + Logs:**
+   - Add in-code documentation on all queue jobs
+   - Add `console.log()` or structured logs for every queued job and worker event (e.g., `job completed`, `job failed`)
+
+---
+
+### 🧪 Verification:
+
+- Run `npm start`
+- Confirm Redis connects cleanly
+- Trigger low-stock event → confirm job is added and processed
+- Log shows proper job lifecycle
+
+---
+
+### 🏁 Outcome:
+
+> A fully working, production-grade BullMQ system powered by Redis, cleanly integrated into the inventory module — now with environment variables, unified structure, and documentation.
+
+No need to rewrite — just reinforce and organize what’s already robust. 🚀
+```
+
+Let me know if you’d like help restructuring the current BullMQ implementation under `common/bullmq` for better maintainability.

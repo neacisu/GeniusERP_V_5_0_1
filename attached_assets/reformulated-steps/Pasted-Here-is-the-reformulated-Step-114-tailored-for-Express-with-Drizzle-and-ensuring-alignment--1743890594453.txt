@@ -1,0 +1,89 @@
+Here is the reformulated **Step 114**, tailored for **Express with Drizzle** and ensuring alignment with your authentication strategy and modular design:
+
+---
+
+```markdown
+### 🔐 Step 114: Configure Stripe API Key for Payment Processing (Express + Drizzle)
+
+📌 **Description**:  
+Securely configure your Stripe integration by defining the `STRIPE_SECRET_KEY` in the environment. This key will authorize server-side communication with the Stripe API for payment processing via the **E-commerce** module (Section 4.1.4.8).
+
+---
+
+### 🧠 Agent Instructions
+
+#### 1. 🔍 Check for Existing Stripe Configs
+
+Before adding anything, **search for existing usage** of `process.env.STRIPE_SECRET_KEY` in:
+- `src/modules/ecommerce/`
+- `src/modules/transactions/`
+- `src/common/services/`
+- `.env` or `.env.example`
+
+➡️ **If it already exists**:
+- ✅ Confirm it’s named properly (`STRIPE_SECRET_KEY`)
+- ✅ If outdated or invalid, replace the value but DO NOT duplicate the variable
+- ✅ Skip re-adding if it is already present and correctly named
+
+➡️ **If it does NOT exist**:
+Proceed with the steps below.
+
+---
+
+### ✍️ 2. Update `.env` File
+
+Append the following line to your `.env` file:
+
+```dotenv
+STRIPE_SECRET_KEY=your_stripe_secret_key_here
+```
+
+> 🔐 Replace `your_stripe_secret_key_here` with your actual secret key from Stripe dashboard (starts with `sk_live_...` or `sk_test_...`)
+
+---
+
+### 📁 3. Update `.env.example` (If Exists)
+
+If your repo includes a `.env.example` file, also add:
+
+```dotenv
+STRIPE_SECRET_KEY=
+```
+
+To help other developers configure their environments correctly.
+
+---
+
+### ✅ 4. Verify Environment Setup
+
+In the terminal:
+
+```bash
+cat .env | grep STRIPE_SECRET_KEY
+```
+
+Expected result:
+```bash
+STRIPE_SECRET_KEY=sk_test_abc123...
+```
+
+---
+
+### 🔒 5. Secure Usage (Preview)
+
+When integrating into your `StripeService` later:
+- Always access via `process.env.STRIPE_SECRET_KEY`
+- Never hardcode keys in source files
+- Use `/api/` route base
+- Enforce authentication with:
+  - `AuthGuard.protect(JwtAuthMode.REQUIRED)`
+  - `AuthGuard.roleGuard()`
+  - `AuthGuard.companyGuard()`
+
+---
+
+### ✅ Result
+The Stripe API key is securely injected into the runtime environment, enabling authenticated interactions with Stripe for payment processing in the E-commerce module.
+
+Let me know if you'd like to scaffold a secure `StripeService` next with Express, Drizzle, and role-based protection.
+```

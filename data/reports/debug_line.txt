@@ -1,0 +1,8 @@
+console.debug("[DEBUG] Values being passed to employees.values():", JSON.stringify({
+        companyId,
+        firstName,
+        lastName,
+        email,
+        position,
+        cnp: cnpValue
+      }, null, 2));

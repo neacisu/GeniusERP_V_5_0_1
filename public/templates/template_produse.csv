@@ -1,0 +1,3 @@
+name,code,sku,barcode,description,categoryId,unitId,purchasePrice,sellingPrice,vatRate,stockAlert,isActive
+"Produs exemplu 1","PROD001","SKU001","1234567890123","Descriere pentru produs exemplu 1","","",100.00,150.00,19,10,true
+"Produs exemplu 2","PROD002","SKU002","1234567890124","Descriere pentru produs exemplu 2","","",200.00,300.00,19,5,true

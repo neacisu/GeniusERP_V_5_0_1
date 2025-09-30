@@ -1,0 +1,79 @@
+**Step 95** tailored for **Express with Drizzle**, following best practices — including auditing for existing logic and avoiding redundant files or routes:
+
+---
+
+```markdown
+### 🔄 Step 95: Audit & Create BPM Controller (Express + Drizzle)
+
+**📌 Description:**  
+Implement a `BpmController` to handle Business Process Modeling (BPM) actions in GeniusERP v.2. This controller will expose a secured placeholder endpoint (`/process-placeholder`) that acts as a scaffold for more advanced process automation features such as "auto-factura", AWB generation, and workflow orchestration. This ensures the BPM module is properly wired into the app.
+
+---
+
+### 🧠 Agent Instructions:
+
+#### 1. 🔍 **Audit Before Implementing**:
+- Check if a BPM-related route or controller already exists:
+  - Look in: `src/modules/bpm/`
+  - Check for: `bpm.controller.ts`, `bpm.routes.ts`, or `index.ts` using Express router
+
+➡️ **If already exists:**
+- DO NOT create a duplicate.
+- Instead, **extend** the existing router/controller with a new `POST /process-placeholder` route.
+- Ensure the route is protected with `requireAuth` middleware.
+
+---
+
+#### 2. 🆕 **If Not Found, Create It**:
+
+Create file:  
+`src/modules/bpm/bpm.controller.ts`
+
+```ts
+import { Router } from "express";
+import { requireAuth } from "../../common/middleware/auth.middleware";
+
+const router = Router();
+
+router.post("/process-placeholder", requireAuth, async (req, res) => {
+  return res.json({
+    message: "BPM process definition placeholder",
+    data: req.body,
+  });
+});
+
+export default router;
+```
+
+---
+
+#### 3. 🔗 **Register the Route**:
+
+In your central app entry point (e.g., `server.ts`):
+
+```ts
+import bpmRoutes from "./modules/bpm/bpm.controller";
+app.use("/v1/bpm", bpmRoutes);
+```
+
+---
+
+#### 4. 🧪 **Test It**:
+
+```bash
+curl -X POST http://localhost:3000/v1/bpm/process-placeholder \
+  -H "Authorization: Bearer <your_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"AWB Auto-Generation","companyId":"co123"}'
+```
+
+---
+
+### ✅ Result:
+> The `/v1/bpm/process-placeholder` route is now accessible and secured. It acts as the foundation for upcoming business automation logic. The controller can be progressively expanded to include features like step-based workflows, automation triggers, and scheduled execution.
+
+Let me know if you'd like to scaffold:
+- `ProcessService` with Drizzle
+- Workflow definitions loader
+- BPM state engine or timeline tracker
+```

@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1743540320219,
+      "tag": "0000_silly_magneto",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1743571844585,
+      "tag": "0001_create-documents",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1743597988384,
+      "tag": "0002_daffy_earthquake",
+      "breakpoints": true
+    }
+  ]
+}

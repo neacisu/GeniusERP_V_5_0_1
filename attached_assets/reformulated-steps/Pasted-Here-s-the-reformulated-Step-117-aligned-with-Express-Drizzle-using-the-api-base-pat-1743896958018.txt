@@ -1,0 +1,90 @@
+Here’s the **reformulated Step 117**, aligned with **Express + Drizzle**, using the `/api/` base path, and enforcing proper authentication (`AuthGuard.protect(JwtAuthMode.REQUIRED)`, `AuthGuard.roleGuard()`, and `AuthGuard.companyGuard()`):
+
+---
+
+```markdown
+### 💳 Step 117: Test `/api/ecommerce/payment` Endpoint (Express + Drizzle + Stripe)
+
+📌 **Description**  
+Test the Stripe-powered payment endpoint in the `EcommerceController` by sending a test request using a valid Stripe test payment method ID. This confirms:
+- Stripe payment intent is created successfully
+- The transaction is stored in the `transactions` table (via Drizzle)
+- Proper auth enforcement is applied
+
+---
+
+### 🧠 Agent Instructions
+
+#### 1. 🔍 Check if Endpoint Already Exists
+
+Before proceeding:
+- Confirm that `POST /api/ecommerce/payment` already exists in:
+  - `src/modules/ecommerce/ecommerce.controller.ts`
+  - Registered in `server.ts` or root router
+- Verify that it uses:
+  - `AuthGuard.protect("JwtAuthMode.REQUIRED")`
+  - `AuthGuard.roleGuard(["sales_team"])`
+  - `AuthGuard.companyGuard()`
+
+If already implemented, proceed to **step 2**.
+
+If missing, go back and complete **Step 116** first.
+
+---
+
+#### 2. 🧪 Run Test with `curl`
+
+Start the server:
+
+```bash
+npm start
+```
+
+Then test the payment endpoint using the official Stripe test card:
+
+```bash
+curl -X POST http://localhost:3000/api/ecommerce/payment \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -d '{
+    "companyId": "test-co",
+    "franchiseId": "test-franchise",
+    "amount": 50,
+    "paymentMethodId": "pm_card_visa"
+  }'
+```
+
+> ✅ `pm_card_visa` is a valid test payment method ID in the Stripe test environment.
+
+---
+
+#### 3. 📥 Validate Results
+
+- Confirm a successful response with:
+  ```json
+  {
+    "id": "...",
+    "company_id": "test-co",
+    "amount": 50,
+    "status": "requires_action" or "succeeded"
+  }
+  ```
+- Then inspect the database using:
+
+```bash
+npx drizzle-kit studio
+```
+
+Check the `transactions` table to confirm the new entry.
+
+---
+
+### ✅ Expected Outcome
+
+> The `/api/ecommerce/payment` endpoint correctly processes test payments via Stripe, stores the result using Drizzle in `transactions`, and enforces all required guards.
+
+Let me know if you'd like to:
+- Add Stripe webhooks for payment confirmation
+- Link the payment to an invoice or order
+- Auto-generate accounting journal entries post-transaction
+```

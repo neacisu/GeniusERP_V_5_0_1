@@ -1,0 +1,101 @@
+Here’s the **reformulated Step 111** designed for **Express + Drizzle** architecture, enforcing the proper `/api/` base path and applying centralized, modular authentication with `AuthGuard.protect(JwtAuthMode.REQUIRED)`, `AuthGuard.roleGuard()`, and `AuthGuard.companyGuard()` patterns. The agent is also instructed to **first audit for existing endpoints** and upgrade rather than duplicate.
+
+---
+
+```markdown
+### ⚙️ Step 111: Audit & Upgrade Settings Controller with Setup Endpoint (Express + Drizzle)
+
+📌 **Description**:  
+Extend the `SettingsController` by replacing the placeholder logic with a real `/api/settings/setup` POST endpoint. This endpoint will use `SetupService` to track onboarding progress, enforcing strict auth with multi-tenant and RBAC policies.
+
+---
+
+### 🧠 Agent Instructions
+
+#### 1. 🔍 Check First for Existing Implementation:
+
+- Inspect the file: `src/modules/settings/settings.controller.ts`
+- Check if there’s already a route that handles:
+  - Setup onboarding steps
+  - Any placeholder under `/setup` or `/onboarding`
+
+> ✅ If found: **upgrade the existing logic** with secure handling via `SetupService` and correct guards.
+
+> ❌ If not found: create/replace the controller content below.
+
+---
+
+### 2. 🧱 Controller Implementation (Express + Drizzle)
+
+📁 File: `src/modules/settings/settings.controller.ts`
+
+```ts
+import { Router } from "express";
+import { AuthGuard } from "../../common/guards/auth.guard";
+import { SetupService } from "./setup.service";
+
+const router = Router();
+
+// Protect the route with full AuthGuard chain
+router.post(
+  "/setup",
+  AuthGuard.protect("REQUIRED"),
+  AuthGuard.roleGuard(["hq_admin"]),
+  AuthGuard.companyGuard(),
+  async (req, res) => {
+    const { companyId, franchiseId, step, status } = req.body;
+
+    try {
+      const service = new SetupService(); // consider DI if using a service registry
+      const result = await service.updateSetupStep(companyId, franchiseId, step, status);
+      return res.json({ success: true, result });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+export default router;
+```
+
+---
+
+### 3. 🔗 Register Route to `/api` Path
+
+Ensure this is mounted in your Express app (likely in `server.ts` or `main.ts`):
+
+```ts
+import settingsRouter from "./modules/settings/settings.controller";
+app.use("/api/settings", settingsRouter);
+```
+
+---
+
+### 4. ✅ Final Checklist
+
+- [ ] The endpoint is accessible at: `POST /api/settings/setup`
+- [ ] Authenticated with: `JwtAuthMode.REQUIRED`
+- [ ] Role restricted to: `"hq_admin"`
+- [ ] Company guard validates multi-tenancy scope
+- [ ] Uses `SetupService` with Drizzle ORM
+
+---
+
+### 🧪 Test Command
+
+```bash
+curl -X POST http://localhost:3000/api/settings/setup \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"companyId":"co123","franchiseId":"fr456","step":"onboarding-wizard","status":"completed"}'
+```
+
+---
+
+### ✅ Result:
+A secure, role-restricted, multi-tenant-ready setup endpoint is now available under `/api/settings/setup`, backed by Drizzle and integrated with `SetupService`. Ready for UI onboarding integration.
+
+Let me know if you want to scaffold:
+- GET `/api/settings/setup` to fetch current step progress
+- Frontend onboarding progress bar
+```

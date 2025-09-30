@@ -1,0 +1,3 @@
+Clasa 1 -Conturi de capitaluri, provizioane, împrumuturi şi datorii asimilateClasa 2 -Conturi de imobilizăriClasa 3 -Conturi de stocuri şi producţie în curs de execuţieClasa 4 -Conturi de terţiClasa 5 -Conturi de trezorerieClasa 6 -Conturi de cheltuieliClasa 7 -Conturi de venituri
+Clasa 8 -conturi speciale
+Clasa 9 -conturi de gestiune

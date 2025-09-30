@@ -1,0 +1,75 @@
+```markdown
+### ✅ Step 81: Secure Invoices Endpoint with Role-Based Access Control
+
+**📘 Description:**  
+Enhance security of the `InvoicesController` by applying both `AuthGuard` and `RolesGuard`, and restricting access to the `createInvoice` endpoint to allowed roles only (e.g., `hq_admin`, `finance_team`). This aligns with the RBAC architecture defined in Section 4.1.5.4 of GeniusERP v.2.
+
+---
+
+**🔗 Dependencies:**  
+- Step 32: `InvoicesController` is implemented  
+- Step 79: `RolesGuard` is functional  
+- Step 80: `@Roles()` decorator is available  
+
+---
+
+**🔍 Prompt for Replit Agent:**
+
+> 📌 **First, audit the existing implementation:**
+>
+> 1. Check if the file `server/modules/invoices/invoices.controller.ts` exists.
+> 2. Confirm whether:
+>    - `@UseGuards(AuthGuard, RolesGuard)` is applied at class or method level
+>    - `@Roles()` is used correctly on sensitive methods (e.g., invoice creation)
+> 3. If already implemented, verify:
+>    - Correct roles are enforced (`hq_admin`, `finance_team`)
+>    - `RolesGuard` and `AuthGuard` are correctly imported and functioning
+
+---
+
+> 🚀 **If not implemented, proceed with the following refactor:**
+
+Edit file:  
+`server/modules/invoices/invoices.controller.ts`
+
+Replace controller code with:
+
+```ts
+import { Controller, Post, Body, UseGuards } from "@nestjs/common";
+import { CreateInvoiceService } from "./create-invoice.service";
+import { AuthGuard } from "../../common/guards/auth.guard";
+import { RolesGuard } from "../../common/guards/roles.guard";
+import { Roles } from "../../common/decorators/roles.decorator";
+
+@Controller("invoices")
+@UseGuards(AuthGuard, RolesGuard)
+export class InvoicesController {
+  constructor(private service: CreateInvoiceService) {}
+
+  @Post("create")
+  @Roles("hq_admin", "finance_team")
+  async createInvoice(@Body() body: {
+    companyId: string;
+    franchiseId: string;
+    amount: number;
+    currency: string;
+    convertTo?: string;
+  }) {
+    return this.service.createInvoice(
+      body.companyId,
+      body.franchiseId,
+      body.amount,
+      body.currency,
+      body.convertTo
+    );
+  }
+}
+```
+
+---
+
+> ✅ **Final Steps:**
+- Save the controller file
+- Run `npm run build` or `tsc` to ensure no syntax issues
+- Perform role-based access tests to validate that only authorized users can invoke `POST /invoices/create`
+```

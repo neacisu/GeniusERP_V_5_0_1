@@ -1,0 +1,105 @@
+Here is the fully **reformulated Step 110** tailored for **Express + Drizzle**, following clean architecture, modular structure, and strict adherence to the `/api/` base path and enforced authentication patterns (`AuthGuard.protect`, `roleGuard`, `companyGuard`). The instruction starts by verifying for **existing services**, then proposes an upgrade-first approach.
+
+---
+
+```markdown
+### ⚙️ Step 110: Audit & Implement SetupService in Settings Module (Express + Drizzle)
+
+**📌 Description:**  
+Introduce a `SetupService` in the `Settings` module to manage system onboarding and setup steps (e.g., company-specific initialization, first-time wizard). This logic supports the `SetupStep` table (multi-company aware) and is integrated securely using AuthGuard protections.
+
+---
+
+### 🧠 Agent Instructions
+
+#### 1. 🔍 First: Check for Existing Implementation
+
+Before scaffolding:
+
+- Search in `src/modules/settings/` for:
+  - `setup.service.ts`
+  - Any file exporting logic around setup, wizard, or step tracking
+
+➡️ **If found:**
+- ✅ Do **not duplicate** the service
+- 🛠️ Instead, **enhance or refactor** to support `upsert` logic for `SetupStep` using Drizzle
+
+➡️ **If not found:**  
+Proceed to create the service with the following spec.
+
+---
+
+### 2. 🧱 Create or Update Service
+
+📁 File: `src/modules/settings/setup.service.ts`
+
+```ts
+import { Injectable } from "express";
+import { db } from "../../common/db";
+import { setupSteps } from "../../db/schema/settings.schema"; // adjust path if needed
+import { eq, and } from "drizzle-orm";
+
+@Injectable()
+export class SetupService {
+  async updateSetupStep(companyId: string, franchiseId: string, step: string, status: string) {
+    const existing = await db.query.setupSteps.findFirst({
+      where: and(
+        eq(setupSteps.company_id, companyId),
+        eq(setupSteps.franchise_id, franchiseId),
+        eq(setupSteps.step, step)
+      ),
+    });
+
+    if (existing) {
+      return db
+        .update(setupSteps)
+        .set({ status })
+        .where(eq(setupSteps.id, existing.id));
+    }
+
+    return db.insert(setupSteps).values({
+      company_id: companyId,
+      franchise_id: franchiseId,
+      step,
+      status,
+    });
+  }
+}
+```
+
+---
+
+### 3. 🔗 Register in Settings Module
+
+Edit: `src/modules/settings/settings.module.ts`
+
+```ts
+import { SetupService } from "./setup.service";
+
+export const providers = [SetupService]; // or add to module.exports if using dynamic registry
+```
+
+---
+
+### 4. 🔐 Enforce Authentication Globally
+
+Ensure the `/api/settings/setup` or related endpoints that use this service are protected by:
+
+- ✅ `AuthGuard.protect(JwtAuthMode.REQUIRED)`
+- ✅ `AuthGuard.roleGuard()`
+- ✅ `AuthGuard.companyGuard()`
+
+> 🔒 This ensures multi-tenancy and RBAC are respected in setup workflows.
+
+---
+
+### ✅ Result:
+
+You now have a **secure and extensible onboarding logic** tied to each company/franchise with upsert tracking for setup steps — powered by **Drizzle ORM** and plugged into the `/api/settings` flow.
+
+Let me know if you’d like to scaffold:
+
+- `GET /api/settings/setup/status` endpoint
+- Frontend sync with progress bar
+- Conditional module loading based on step status
+```

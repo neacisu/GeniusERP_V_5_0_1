@@ -1,0 +1,94 @@
+Here is the fully reformulated **Step 103**, adapted for **Express + Drizzle**, using `/api/` base path, and enforcing secure access via `AuthGuard.protect(JwtAuthMode.REQUIRED)`, `AuthGuard.roleGuard()`, and `AuthGuard.companyGuard()`. The agent is also instructed to **first audit for existing functionality**, avoiding duplicates and redundant logic.
+
+---
+
+```markdown
+### 🤖 Step 103: Upgrade or Extend AI Controller to Generate Reports (Express + Drizzle)
+
+**📌 Description:**  
+Enhance the existing `AiController` to expose a secure `/api/ai/report` endpoint that invokes `AIService.generateReport()` using OpenAI. This replaces the placeholder endpoint created earlier and ensures role- and company-based access enforcement. The route generates and stores analytics reports contextualized for each company/franchise.
+
+---
+
+### 🧠 Agent Instructions
+
+#### 1. 🔍 Audit Before Modifying
+Check for existing AI controller logic:
+- Look in: `src/modules/ai/`
+- File to audit: `ai.controller.ts`
+
+➡️ **If exists:**
+- DO NOT create a duplicate controller.
+- Instead, extend the existing controller by replacing or enhancing the placeholder endpoint `/report-placeholder` with a secured `/report` route.
+
+➡️ **If not found:**  
+Create the controller file and ensure it’s registered properly.
+
+---
+
+#### 2. ✅ Secure Route Definition
+
+Edit or add to:  
+`src/modules/ai/ai.controller.ts`
+
+```ts
+import { Router } from "express";
+import { aiService } from "./ai.service";
+import { AuthGuard } from "../../common/middleware/auth.middleware";
+
+const router = Router();
+
+// Apply all guards: JWT, Role, and Company Access
+router.post(
+  "/report",
+  AuthGuard.protect("required"),          // Enforces JWT
+  AuthGuard.roleGuard(["hq_admin"]),      // Restricts to HQ Admin role
+  AuthGuard.companyGuard(),               // Enforces company context
+  async (req, res) => {
+    try {
+      const { companyId, franchiseId, type } = req.body;
+      const result = await aiService.generateReport(companyId, franchiseId, type);
+      res.json(result);
+    } catch (error) {
+      console.error("[/api/ai/report] Error:", error);
+      res.status(500).json({ error: "Report generation failed." });
+    }
+  }
+);
+
+export default router;
+```
+
+---
+
+#### 3. 🔗 Register Controller in App
+
+In your Express entry point (e.g., `server.ts`):
+
+```ts
+import aiRoutes from "./modules/ai/ai.controller";
+app.use("/api/ai", aiRoutes);
+```
+
+---
+
+#### 4. 🧪 Test API
+
+```bash
+curl -X POST http://localhost:3000/api/ai/report \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"companyId":"abc-co","franchiseId":"abc-fr","type":"financial"}'
+```
+
+---
+
+### ✅ Result
+
+> The `/api/ai/report` endpoint is now functional and secure, leveraging OpenAI to generate contextual reports and saving the output using Drizzle ORM.
+
+Let me know if you'd like to extend this with:
+- Report history viewer
+- Prompt templating
+- AI error monitoring
+```

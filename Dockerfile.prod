@@ -1,0 +1,57 @@
+FROM node:20-alpine as builder
+
+WORKDIR /app
+
+# Instalăm dependențele pentru build
+RUN apk add --no-cache python3 make g++ git postgresql-client redis
+
+# Copiem fișierele package*.json
+COPY package*.json ./
+
+# Instalăm dependențele
+RUN npm ci
+
+# Copiem tot codul sursă, inclusiv configurările și credențialele
+COPY . .
+
+# Construim aplicația pentru producție
+RUN npm run build
+
+# Imaginea finală pentru producție
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Instalăm utilitare pentru verificarea serviciilor și pachete esențiale
+RUN apk add --no-cache postgresql-client redis curl busybox-extras
+
+# Instalăm doar dependențele de producție
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copiem artefactele de build din etapa anterioară
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/client/dist ./client/dist
+
+# Copiem fișierele necesare pentru rulare
+COPY --from=builder /app/server ./server
+COPY --from=builder /app/shared ./shared
+
+# Copiem TOATE fișierele de configurare
+COPY --from=builder /app/.env* ./
+COPY --from=builder /app/docker-entrypoint.sh /usr/local/bin/
+
+# Asigurăm că scriptul de intrare este executabil
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Setăm variabilele de mediu pentru producție
+ENV NODE_ENV=production
+
+# Expunem portul aplicației
+EXPOSE 5000
+
+# Folosim entrypoint-ul pentru a aștepta serviciile dependente
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+# Comanda de start pentru producție
+CMD ["node", "dist/index.js"]

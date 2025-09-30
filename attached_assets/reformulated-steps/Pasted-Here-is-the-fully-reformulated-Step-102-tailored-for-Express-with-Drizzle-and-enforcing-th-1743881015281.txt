@@ -1,0 +1,107 @@
+Here is the fully reformulated **Step 102**, tailored for **Express with Drizzle**, and enforcing the `/api/` route structure along with proper authentication patterns using `AuthGuard.protect(JwtAuthMode.REQUIRED)`, `AuthGuard.roleGuard()`, and `AuthGuard.companyGuard()`:
+
+---
+
+```markdown
+### 🤖 Step 102: Audit & Create AIService (Express + Drizzle)
+
+**📌 Description:**  
+Develop a centralized `AIService` within the AI module to interact with the OpenAI API for generating intelligent reports, insights, or contextual assistance (📚 Ref: Section 4.1.4.13). This service will use the `openai` SDK to send prompts and persist responses into the `analytics_reports` table via Drizzle.
+
+---
+
+### 🧠 Agent Instructions
+
+#### 1. 🔍 Audit Before Implementing
+Check if an AI-related service already exists:
+- Look in `src/modules/ai/`
+- Check for files like `ai.service.ts` or `openai.service.ts`
+
+➡️ **If found:**
+- DO NOT create a duplicate file.
+- Instead, **extend or refactor** the existing service to include a new `generateReport()` method with OpenAI integration and Drizzle insert.
+
+---
+
+#### 2. 🛠️ If Not Found, Create AIService
+
+Create:  
+`src/modules/ai/ai.service.ts`
+
+```ts
+import { drizzle } from "../../../db"; // adjust path if needed
+import { analytics_reports } from "../../../db/schema";
+import OpenAI from "openai";
+import { sql } from "drizzle-orm";
+
+export class AIService {
+  private openai = new OpenAI({ apiKey: process.env.OPENAI_TOKEN! });
+
+  async generateReport(companyId: string, franchiseId: string, type: string) {
+    const prompt = `Generate a ${type} report for company ${companyId} and franchise ${franchiseId}.`;
+
+    const response = await this.openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const result = response.choices?.[0]?.message?.content || "No result";
+
+    await drizzle.insert(analytics_reports).values({
+      company_id: companyId,
+      franchise_id: franchiseId,
+      type,
+      data: { content: result },
+    });
+
+    return { message: "AI report created", result };
+  }
+}
+```
+
+---
+
+#### 3. 🔗 Register in AI Module
+
+Ensure `AIService` is registered in:
+```ts
+// src/modules/ai/index.ts or ai.module.ts
+export const aiModule = {
+  providers: [AIService],
+};
+```
+
+---
+
+#### 4. 🔐 Authentication Enforcement
+
+When wiring this into routes:
+- Use `AuthGuard.protect(JwtAuthMode.REQUIRED)`
+- Use `AuthGuard.roleGuard(["ai_access"])`
+- Use `AuthGuard.companyGuard()`
+
+Example for controller route (if exists):
+
+```ts
+router.post("/generate", 
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  AuthGuard.roleGuard(["ai_access"]),
+  AuthGuard.companyGuard(),
+  async (req, res) => {
+    const { companyId, franchiseId, type } = req.body;
+    const result = await aiService.generateReport(companyId, franchiseId, type);
+    return res.json(result);
+});
+```
+
+---
+
+### ✅ Outcome
+
+> The AIService is now ready to securely process prompts via OpenAI and store analytics results for your company/franchise structure. This enables future intelligent assistants, insights, and automation features under `/api/ai`.
+
+Let me know if you'd like to scaffold:
+- OpenAI prompt templates
+- AI usage logging model
+- Multi-language AI responses
+```

@@ -1,0 +1,24 @@
+# Fișiere și directoare excluse din container
+
+# Node.js - excludem doar directoarele cu dependințe instalate pentru a evita probleme de platformă
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Build output - vom construi în container
+dist
+build
+.vite
+
+# Git - nu este necesar în container
+.git
+.github
+
+# Fișiere temporare
+.tmp
+tmp
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
