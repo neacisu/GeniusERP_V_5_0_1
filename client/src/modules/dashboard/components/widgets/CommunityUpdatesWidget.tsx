@@ -70,38 +70,39 @@ export default function CommunityUpdatesWidget({ limit = 5 }: CommunityUpdatesWi
     return result;
   };
   
-  // Handle various response formats and ensure we always have an array
-  // Add debug logs to see the actual data structure
-  console.log('Community API response:', data);
-  
-  let threadsData: any[] = [];
-  
-  if (data) {
+  // Parse threads data ONLY when not loading and data exists
+  // This prevents console warnings during the loading state
+  const parseThreadsData = (): CommunityThread[] => {
+    // Return empty array if loading or no data
+    if (isLoading || !data) {
+      return [];
+    }
+    
+    // Handle various response formats and ensure we always have an array
+    let threadsData: any[] = [];
+    
     // Case 1: Response has threads property with array
     if (typeof data === 'object' && 'threads' in data && Array.isArray(data.threads)) {
       threadsData = data.threads;
-      console.log('Found threads array in response:', threadsData.length);
     } 
     // Case 2: Response has items property with array
     else if (typeof data === 'object' && 'items' in data && Array.isArray(data.items)) {
       threadsData = data.items;
-      console.log('Found items array in response:', threadsData.length);
     }
     // Case 3: Response is already an array
     else if (Array.isArray(data)) {
       threadsData = data;
-      console.log('Response is an array:', threadsData.length);
     }
-    // Case 4: Response is a different format
-    else {
-      console.warn('Community response does not contain threads array:', data);
+    // Case 4: Response is a different format - log only in development
+    else if (process.env.NODE_ENV === 'development') {
+      console.warn('Community response does not contain expected array format:', data);
     }
-  } else {
-    console.warn('Community API response is null or undefined');
-  }
+    
+    return threadsData as CommunityThread[];
+  };
   
-  // Always use the extracted threads data and cast to proper type
-  const threads: CommunityThread[] = threadsData as CommunityThread[];
+  // Get parsed threads - this will be empty array during loading
+  const threads: CommunityThread[] = parseThreadsData();
   
   // Format the thread creation time
   const formatThreadTime = (dateString: Date | string) => {
