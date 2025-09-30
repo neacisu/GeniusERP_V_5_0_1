@@ -546,6 +546,10 @@ export default function ChartOfAccountsPage() {
       case 'B': 
         return { label: 'Bifuncțional', className: 'bg-amber-100 text-amber-800' };
       
+      // Conturi Extrabilanțiere (în afara bilanțului)
+      case 'X': 
+        return { label: 'Extrabilanțier', className: 'bg-purple-100 text-purple-800' };
+      
       default: 
         // Pentru debugging, afișăm valoarea necunoscută în consolă
         console.log('Tip de cont necunoscut:', type);
