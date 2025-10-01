@@ -64,7 +64,7 @@ export function initAccountingModule(app: Express) {
   app.use("/api/accounting/bank-journal", bankJournalRoutes);
   
   const cashRegisterRoutes = setupCashRegisterRoutes();
-  app.use("/api/accounting/cash", cashRegisterRoutes); // Changed from cash-register to cash
+  app.use("/api/accounting", cashRegisterRoutes); // Direct sub /api/accounting pentru /cash-registers și /cash-transactions
   
   const salesJournalRoutes = setupSalesJournalRoutes();
   app.use("/api/accounting/sales", salesJournalRoutes); // Changed from sales-journal to sales
