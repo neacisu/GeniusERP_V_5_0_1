@@ -1,7 +1,8 @@
 import { companies, users, accounts, accountClasses, accountGroups, syntheticAccounts, analyticAccounts, 
   inventoryProducts, inventoryCategories, inventoryUnits, 
   roles, permissions, userRoles, rolePermissions, auditLogs,
-  invoices, invoiceLines, invoiceDetails, invoiceStatus } from "@shared/schema";
+  invoices, invoiceLines, invoiceDetails, invoiceStatus,
+  journalEntries, journalLines } from "@shared/schema";
 import type { User, InsertUser, Company, InsertCompany, 
   Account, InsertAccount, AccountClass, InsertAccountClass, 
   AccountGroup, InsertAccountGroup, SyntheticAccount, InsertSyntheticAccount,
@@ -641,25 +642,20 @@ export class DatabaseStorage implements IStorage {
   // Journal Entries
   async getJournalEntries(): Promise<JournalEntry[]> {
     return drizzleService.executeQuery(async (db) => {
-      return await db.query.journalEntries.findMany({
-        with: {
-          lines: true,
-          createdByUser: true,
-        },
-        orderBy: desc(sql`journal_entries.created_at`),
-      });
+      return await db
+        .select()
+        .from(journalEntries)
+        .orderBy(desc(journalEntries.createdAt));
     });
   }
 
   async getJournalEntry(id: string): Promise<JournalEntry | undefined> {
     return drizzleService.executeQuery(async (db) => {
-      return await db.query.journalEntries.findFirst({
-        where: eq(sql`journal_entries.id`, id),
-        with: {
-          lines: true,
-          createdByUser: true,
-        },
-      });
+      const [entry] = await db
+        .select()
+        .from(journalEntries)
+        .where(eq(journalEntries.id, id));
+      return entry || undefined;
     });
   }
 
@@ -667,7 +663,7 @@ export class DatabaseStorage implements IStorage {
     return drizzleService.executeQuery(async (db) => {
       // Create the journal entry
       const [journalEntry] = await db
-        .insert(sql`journal_entries`)
+        .insert(journalEntries)
         .values(entry)
         .returning();
       
@@ -678,7 +674,7 @@ export class DatabaseStorage implements IStorage {
       }));
       
       // Insert all lines
-      await db.insert(sql`journal_lines`).values(linesWithJournalId);
+      await db.insert(journalLines).values(linesWithJournalId);
       
       // Return the full journal entry with lines
       return await this.getJournalEntry(journalEntry.id) as JournalEntry;
