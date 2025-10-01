@@ -35,6 +35,14 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    // Proxy API requests to Express backend
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
     // Setări pentru watch (important pentru Docker)
     watch: {
       usePolling: true, // Necesar pentru Docker volumes
