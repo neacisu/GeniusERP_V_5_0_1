@@ -12,7 +12,7 @@ export class BaseController {
    * Handle API request with standardized error handling
    */
   protected async handleRequest(
-    req: Request, 
+    req: AuthenticatedRequest, 
     res: Response, 
     handler: () => Promise<any>
   ): Promise<void> {
@@ -77,7 +77,7 @@ export class BaseController {
   /**
    * Get pagination parameters with defaults
    */
-  protected getPaginationParams(req: Request): { page: number, limit: number } {
+  protected getPaginationParams(req: AuthenticatedRequest): { page: number, limit: number } {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     
