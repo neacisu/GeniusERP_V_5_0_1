@@ -259,6 +259,31 @@ export default class NoteContabilService {
   }
 
   /**
+   * Get all accounting notes for a company
+   * 
+   * @param companyId Company ID
+   * @returns Array of accounting notes
+   */
+  async getNotesByCompany(companyId: string): Promise<any[]> {
+    try {
+      // In a real implementation, we would fetch all notes from the database
+      // For now, we return an empty array since the database tables don't exist yet
+      
+      // This would be the actual implementation:
+      // return await this.drizzleService.executeQuery(async (db) => {
+      //   return await db.select().from(accountingNotes)
+      //     .where(eq(accountingNotes.companyId, companyId))
+      //     .orderBy(desc(accountingNotes.date));
+      // });
+      
+      return [];
+    } catch (error) {
+      console.error('Error getting accounting notes:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Validate and mark an accounting note (mark it as validated)
    * 
    * @param noteId Note ID

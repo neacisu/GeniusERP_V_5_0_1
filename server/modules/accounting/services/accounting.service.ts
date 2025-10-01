@@ -68,6 +68,11 @@ export class AccountingService {
     return this.storage.createAnalyticAccount(accountData);
   }
   
+  // All Accounts (legacy accounts table - for forms and dropdowns)
+  async getAllAccounts(): Promise<any[]> {
+    return this.storage.getAllAccounts();
+  }
+  
   // Journal Entries
   async getJournalEntries(): Promise<JournalEntry[]> {
     return this.storage.getJournalEntries();

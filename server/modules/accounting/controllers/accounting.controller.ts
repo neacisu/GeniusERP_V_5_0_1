@@ -145,6 +145,16 @@ export class AccountingController extends BaseController {
   }
   
   /**
+   * Get all accounts (from the legacy accounts table)
+   * Used for dropdowns and selects in forms
+   */
+  async getAllAccounts(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      return await this.accountingService.getAllAccounts();
+    });
+  }
+  
+  /**
    * Get all journal entries
    */
   async getJournalEntries(req: AuthenticatedRequest, res: Response): Promise<void> {

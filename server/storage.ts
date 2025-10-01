@@ -639,6 +639,19 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+  // All Accounts (from legacy accounts table - for forms/dropdowns)
+  async getAllAccounts(): Promise<any[]> {
+    return drizzleService.executeQuery(async (db) => {
+      return await db.select({
+        id: accounts.id,
+        code: accounts.code,
+        name: accounts.name,
+        type: accounts.type,
+        isActive: accounts.isActive,
+      }).from(accounts).where(eq(accounts.isActive, true)).orderBy(accounts.code);
+    });
+  }
+
   // Journal Entries
   async getJournalEntries(): Promise<JournalEntry[]> {
     return drizzleService.executeQuery(async (db) => {

@@ -1,4 +1,4 @@
-import { Express, Router } from "express";
+import { Express, Router, Response } from "express";
 import { setupAccountingRoutes } from "./routes/accounting.routes";
 import { setupLedgerRoutes } from "./routes/ledger.routes";
 import { setupNoteContabilRoutes } from "./routes/note-contabil.routes";
@@ -8,6 +8,9 @@ import { setupSalesJournalRoutes } from "./routes/sales-journal.routes";
 import { setupPurchaseJournalRoutes } from "./routes/purchase-journal.routes";
 import { AccountingService } from "./services/accounting.service";
 import { storage } from "../../storage";
+import { AuthGuard } from "../auth/guards/auth.guard";
+import { JwtAuthMode } from "../auth/constants/auth-mode.enum";
+import { AuthenticatedRequest } from "../../common/middleware/auth-types";
 import { Services } from "../../common/services";
 import {
   JournalService,
@@ -36,6 +39,14 @@ import { PurchaseJournalController } from "./controllers/purchase-journal.contro
  * @returns Router instance
  */
 export function initAccountingModule(app: Express) {
+  // Setup global /api/accounts route (for forms and dropdowns)
+  const globalAccountsRouter = Router();
+  globalAccountsRouter.use(AuthGuard.protect(JwtAuthMode.REQUIRED));
+  globalAccountsRouter.get("/", (req: AuthenticatedRequest, res: Response) => {
+    accountingController.getAllAccounts(req, res);
+  });
+  app.use("/api/accounts", globalAccountsRouter);
+  
   // Setup primary accounting routes
   const accountingRoutes = setupAccountingRoutes();
   app.use("/api/accounting", accountingRoutes);
@@ -46,7 +57,7 @@ export function initAccountingModule(app: Express) {
   
   // Setup note contabil routes
   const noteContabilRoutes = setupNoteContabilRoutes();
-  app.use("/api/accounting/notes", noteContabilRoutes);
+  app.use("/api/accounting/note-contabil", noteContabilRoutes);
   
   // Setup specialized journal routes
   const bankJournalRoutes = setupBankJournalRoutes();
