@@ -135,10 +135,10 @@ export default function CashRegisterPage() {
   const { toast } = useToast();
 
   // Fetch cash registers
-  const { data: cashRegisters, isLoading: isLoadingRegisters } = useQuery<CashRegister[]>({
+  const { data: cashRegistersResponse, isLoading: isLoadingRegisters } = useQuery<{ data: CashRegister[]; total: number }>({
     queryKey: ['/api/accounting/cash-registers'],
     // This is just for structure - we'll use actual API data in production
-    placeholderData: [
+    placeholderData: { data: [
       { 
         id: '1', 
         name: 'Casierie Centrală', 
@@ -179,14 +179,17 @@ export default function CashRegisterPage() {
         location: 'Sediu Central',
         isActive: true
       },
-    ]
+    ], total: 4 }
   });
 
+  // Extract cashRegisters array from response
+  const cashRegisters = cashRegistersResponse?.data || [];
+
   // Fetch cash transactions
-  const { data: transactions, isLoading: isLoadingTransactions } = useQuery<CashTransaction[]>({
+  const { data: transactionsResponse, isLoading: isLoadingTransactions } = useQuery<{ data: CashTransaction[]; total: number; page: number; limit: number }>({
     queryKey: ['/api/accounting/cash-transactions', selectedRegister, dateRange],
     // This is just for structure - we'll use actual API data in production
-    placeholderData: [
+    placeholderData: { data: [
       { 
         id: '1', 
         registerCode: 'CASA-01',
@@ -347,8 +350,11 @@ export default function CashRegisterPage() {
         createdBy: 'Alexandru Popescu',
         createdAt: '2025-04-06T10:15:00Z'
       },
-    ]
+    ], total: 10, page: 1, limit: 20 }
   });
+
+  // Extract transactions array from response
+  const transactions = transactionsResponse?.data || [];
 
   // Fetch transaction journal entry
   const { data: journalEntry, isLoading: isLoadingJournal } = useQuery<TransactionJournalEntry[]>({
