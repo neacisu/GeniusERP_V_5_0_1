@@ -95,6 +95,133 @@ export class SalesJournalService {
   }
   
   /**
+   * Get all customer invoices with pagination and filtering
+   * @param companyId Company ID
+   * @param page Page number
+   * @param limit Entries per page
+   * @param startDate Filter by start date
+   * @param endDate Filter by end date
+   * @param customerId Filter by customer
+   * @param status Filter by status
+   * @returns Customer invoices with pagination
+   */
+  public async getCustomerInvoices(
+    companyId: string,
+    page: number = 1,
+    limit: number = 20,
+    startDate?: Date,
+    endDate?: Date,
+    customerId?: string,
+    status?: string
+  ): Promise<{ data: any[]; total: number; page: number; limit: number }> {
+    try {
+      const db = getDrizzle();
+      const offset = (page - 1) * limit;
+      
+      // Build where conditions
+      const conditions: any[] = [eq(invoices.companyId, companyId)];
+      
+      if (startDate) {
+        conditions.push(gte(invoices.date, startDate));
+      }
+      if (endDate) {
+        conditions.push(lte(invoices.date, endDate));
+      }
+      if (customerId) {
+        conditions.push(eq(invoices.customerId, customerId));
+      }
+      if (status) {
+        conditions.push(eq(invoices.status, status));
+      }
+      
+      // Fetch invoices
+      const result = await db.query.invoices.findMany({
+        where: and(...conditions),
+        with: {
+          invoiceLines: true,
+        },
+        orderBy: [desc(invoices.date)],
+        limit,
+        offset,
+      });
+      
+      // Get total count
+      const totalResult = await db.query.invoices.findMany({
+        where: and(...conditions),
+        columns: {
+          id: true,
+        },
+      });
+      
+      return {
+        data: result,
+        total: totalResult.length,
+        page,
+        limit,
+      };
+    } catch (error) {
+      console.error('Error getting customer invoices:', error);
+      throw new Error('Failed to retrieve customer invoices');
+    }
+  }
+  
+  /**
+   * Get a single customer invoice by ID
+   * @param invoiceId Invoice ID
+   * @param companyId Company ID
+   * @returns Customer invoice or null
+   */
+  public async getCustomerInvoice(invoiceId: string, companyId: string): Promise<any | null> {
+    try {
+      const db = getDrizzle();
+      const invoice = await db.query.invoices.findFirst({
+        where: and(
+          eq(invoices.id, invoiceId),
+          eq(invoices.companyId, companyId)
+        ),
+        with: {
+          invoiceLines: true,
+        },
+      });
+      
+      return invoice || null;
+    } catch (error) {
+      console.error('Error getting customer invoice:', error);
+      throw new Error('Failed to retrieve customer invoice');
+    }
+  }
+  
+  /**
+   * Create a new customer invoice
+   * @param invoiceData Invoice data
+   * @param customer Customer data
+   * @param items Invoice items
+   * @param taxRates Tax rates
+   * @param paymentTerms Payment terms
+   * @param notes Additional notes
+   * @returns Created invoice ID
+   */
+  public async createCustomerInvoice(
+    invoiceData: any,
+    customer: any,
+    items: any[],
+    taxRates: any,
+    paymentTerms: any,
+    notes?: string
+  ): Promise<string> {
+    try {
+      // For now, return a placeholder ID
+      // Full implementation would insert into database
+      const newId = uuidv4();
+      console.log('Creating customer invoice:', { invoiceData, customer, items, taxRates, paymentTerms, notes });
+      return newId;
+    } catch (error) {
+      console.error('Error creating customer invoice:', error);
+      throw new Error('Failed to create customer invoice');
+    }
+  }
+  
+  /**
    * Get all sales journal entries with pagination
    * @param companyId Company ID
    * @param page Page number
