@@ -67,10 +67,10 @@ export function initAccountingModule(app: Express) {
   app.use("/api/accounting/cash-register", cashRegisterRoutes);
   
   const salesJournalRoutes = setupSalesJournalRoutes();
-  app.use("/api/accounting/sales-journal", salesJournalRoutes);
+  app.use("/api/accounting/sales", salesJournalRoutes); // Changed from sales-journal to sales
   
   const purchaseJournalRoutes = setupPurchaseJournalRoutes();
-  app.use("/api/accounting/purchase-journal", purchaseJournalRoutes);
+  app.use("/api/accounting/purchases", purchaseJournalRoutes); // Changed from purchase-journal to purchases
   
   // Register legacy accounting service in global registry
   // Note: Specialized journal services are registered in registry.init.ts
