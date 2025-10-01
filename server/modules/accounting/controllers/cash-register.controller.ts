@@ -211,19 +211,20 @@ export class CashRegisterController extends BaseController {
       
       try {
         // Add company and user information
-        receiptData.companyId = this.getCompanyId(req);
-        receiptData.userId = this.getUserId(req);
+        const data = {
+          ...receiptData,
+          companyId: this.getCompanyId(req),
+          userId: this.getUserId(req),
+          personName: payerInfo?.name || 'Unknown',
+          personIdNumber: payerInfo?.idNumber,
+          description: notes || receiptData.description || 'Cash receipt'
+        };
         
-        const transactionId = await this.cashRegisterService.recordCashReceipt(
-          receiptData,
-          payerInfo,
-          referenceDocuments,
-          notes
-        );
+        const transactionId = await this.cashRegisterService.recordCashReceipt(data);
         
         const transaction = await this.cashRegisterService.getCashTransaction(
           transactionId,
-          receiptData.companyId
+          data.companyId
         );
         
         return {
@@ -258,19 +259,20 @@ export class CashRegisterController extends BaseController {
       
       try {
         // Add company and user information
-        paymentData.companyId = this.getCompanyId(req);
-        paymentData.userId = this.getUserId(req);
+        const data = {
+          ...paymentData,
+          companyId: this.getCompanyId(req),
+          userId: this.getUserId(req),
+          personName: payeeInfo?.name || 'Unknown',
+          personIdNumber: payeeInfo?.idNumber,
+          description: notes || paymentData.description || 'Cash payment'
+        };
         
-        const transactionId = await this.cashRegisterService.recordCashPayment(
-          paymentData,
-          payeeInfo,
-          referenceDocuments,
-          notes
-        );
+        const transactionId = await this.cashRegisterService.recordCashPayment(data);
         
         const transaction = await this.cashRegisterService.getCashTransaction(
           transactionId,
-          paymentData.companyId
+          data.companyId
         );
         
         return {
@@ -309,24 +311,21 @@ export class CashRegisterController extends BaseController {
         const companyId = this.getCompanyId(req);
         const userId = this.getUserId(req);
         
-        const transactionId = await this.cashRegisterService.transferCash(
+        const data = {
           companyId,
-          sourceRegisterId,
-          targetRegisterId,
-          date,
-          amount,
-          description,
           userId,
-          notes
-        );
+          fromRegisterId: sourceRegisterId,
+          toRegisterId: targetRegisterId,
+          amount,
+          description: description || 'Cash transfer',
+          personName: 'Internal Transfer'
+        };
         
-        const transaction = await this.cashRegisterService.getCashTransaction(
-          transactionId,
-          companyId
-        );
+        const result = await this.cashRegisterService.transferCash(data);
         
         return {
-          ...transaction,
+          fromTransactionId: result.fromTransactionId,
+          toTransactionId: result.toTransactionId,
           message: "Cash transfer recorded successfully"
         };
       } catch (error: any) {
@@ -362,17 +361,16 @@ export class CashRegisterController extends BaseController {
         const companyId = this.getCompanyId(req);
         const userId = this.getUserId(req);
         
-        const depositId = await this.cashRegisterService.recordCashDepositToBank(
+        const data = {
           companyId,
-          registerId,
-          bankAccountId,
-          date,
-          amount,
-          description,
-          referenceNumber,
           userId,
-          notes
-        );
+          cashRegisterId: registerId,
+          amount,
+          description: description || 'Depunere numerar la bancă',
+          personName: referenceNumber || 'Bank Deposit'
+        };
+        
+        const depositId = await this.cashRegisterService.recordCashDepositToBank(data);
         
         const deposit = await this.cashRegisterService.getCashTransaction(
           depositId,
@@ -416,17 +414,16 @@ export class CashRegisterController extends BaseController {
         const companyId = this.getCompanyId(req);
         const userId = this.getUserId(req);
         
-        const withdrawalId = await this.cashRegisterService.recordCashWithdrawalFromBank(
+        const data = {
           companyId,
-          registerId,
-          bankAccountId,
-          date,
-          amount,
-          description,
-          referenceNumber,
           userId,
-          notes
-        );
+          cashRegisterId: registerId,
+          amount,
+          description: description || 'Ridicare numerar de la bancă',
+          personName: referenceNumber || 'Bank Withdrawal'
+        };
+        
+        const withdrawalId = await this.cashRegisterService.recordCashWithdrawalFromBank(data);
         
         const withdrawal = await this.cashRegisterService.getCashTransaction(
           withdrawalId,
@@ -468,19 +465,21 @@ export class CashRegisterController extends BaseController {
       } = req.body;
       
       try {
-        const result = await this.cashRegisterService.createReconciliation(
-          registerId,
+        const data = {
           companyId,
-          new Date(reconciliationDate),
-          physicalCount,
-          transactionIds,
           userId,
+          cashRegisterId: registerId,
+          physicalCount,
           notes
-        );
+        };
+        
+        const reconciliationId = await this.cashRegisterService.createReconciliation(data);
         
         return {
-          ...result,
-          message: "Cash register reconciliation completed successfully"
+          reconciliationId,
+          message: reconciliationId === 'no_adjustment_needed'
+            ? "No adjustment needed - balance matches"
+            : "Cash register reconciliation completed successfully"
         };
       } catch (error: any) {
         if (error.message && (error.message.includes("validation") || error.message.includes("not found"))) {
