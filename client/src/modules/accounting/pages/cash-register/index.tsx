@@ -84,20 +84,26 @@ type CashRegister = {
   name: string;
   code: string;
   currency: string;
-  balance: number;
-  responsible: string;
-  location: string;
+  balance?: number; // Legacy field name
+  currentBalance?: number; // DB field (from Drizzle mapping)
+  responsible?: string;
+  responsiblePersonName?: string; // DB field
+  location?: string;
   isActive: boolean;
 };
 
 type CashTransaction = {
   id: string;
-  registerCode: string;
-  date: string;
+  registerCode?: string;
+  cashRegisterId?: string; // DB field
+  date?: string; // Legacy
+  transactionDate?: string; // DB field (timestamp)
   documentNumber: string;
-  documentType: 'receipt' | 'payment';
+  transactionType?: string; // DB field: 'cash_receipt', 'cash_payment'
+  documentType?: 'receipt' | 'payment'; // Legacy
   description: string;
-  partnerName?: string;
+  partnerName?: string; // Legacy
+  personName?: string; // DB field
   reference?: string;
   amount: number;
   fiscalReceiptNumber?: string;
@@ -353,8 +359,13 @@ export default function CashRegisterPage() {
     ], total: 10, page: 1, limit: 20 }
   });
 
-  // Extract transactions array from response
-  const transactions = transactionsResponse?.data || [];
+  // Extract transactions array from response and map DB fields to UI fields
+  const transactions = (transactionsResponse?.data || []).map((txn: any) => ({
+    ...txn,
+    documentType: txn.transactionType === 'cash_receipt' ? 'receipt' : 'payment',
+    date: txn.transactionDate || txn.date,
+    partnerName: txn.personName || txn.partnerName
+  }));
 
   // Fetch transaction journal entry
   const { data: journalEntry, isLoading: isLoadingJournal } = useQuery<TransactionJournalEntry[]>({
@@ -573,7 +584,7 @@ export default function CashRegisterPage() {
                   <div>
                     <p className="text-sm font-medium text-gray-500">{register.name}</p>
                     <p className="text-xl font-bold mt-1 tabular-nums">
-                      {formatCurrency(register.balance, register.currency)}
+                      {formatCurrency(Number(register.currentBalance || register.balance || 0), register.currency)}
                     </p>
                     <p className="text-xs text-gray-500 truncate mt-1">{register.code}</p>
                   </div>
@@ -724,12 +735,12 @@ export default function CashRegisterPage() {
                       className="cursor-pointer hover:bg-gray-50"
                       onClick={() => handleViewTransaction(transaction)}
                     >
-                      <TableCell>{formatDate(transaction.date)}</TableCell>
+                      <TableCell>{formatDate(transaction.transactionDate || transaction.date)}</TableCell>
                       <TableCell className="font-medium">{transaction.documentNumber}</TableCell>
                       <TableCell className="max-w-md truncate">
                         {transaction.description}
                       </TableCell>
-                      <TableCell>{transaction.partnerName || "-"}</TableCell>
+                      <TableCell>{transaction.personName || transaction.partnerName || "-"}</TableCell>
                       <TableCell>{transaction.reference || "-"}</TableCell>
                       <TableCell>
                         {getTransactionTypeBadge(transaction.documentType)}
@@ -823,9 +834,9 @@ export default function CashRegisterPage() {
                       <h3 className="text-lg font-semibold">
                         {selectedTransaction.documentType === 'receipt' ? 'Dispoziție de Încasare' : 'Dispoziție de Plată'} {selectedTransaction.documentNumber}
                       </h3>
-                      {getTransactionTypeBadge(selectedTransaction.documentType)}
+                      {getTransactionTypeBadge(selectedTransaction.documentType || 'receipt')}
                     </div>
-                    <p className="text-sm text-gray-500 mt-2">Data: {formatDate(selectedTransaction.date)}</p>
+                    <p className="text-sm text-gray-500 mt-2">Data: {formatDate(selectedTransaction.date || selectedTransaction.transactionDate || '')}</p>
                   </div>
                   <div className={`text-xl font-bold tabular-nums ${
                     selectedTransaction.documentType === 'receipt' 
@@ -969,7 +980,7 @@ export default function CashRegisterPage() {
                       {selectedTransaction.documentType === 'receipt' ? 'Dispoziție de Încasare' : 'Dispoziție de Plată'} {selectedTransaction.documentNumber}
                     </h3>
                     <p className="text-sm text-blue-700">
-                      Data: {formatDate(selectedTransaction.date)} | Sumă: {formatCurrency(selectedTransaction.amount, 'RON')}
+                      Data: {formatDate(selectedTransaction.date || selectedTransaction.transactionDate || '')} | Sumă: {formatCurrency(selectedTransaction.amount, 'RON')}
                     </p>
                   </div>
                 </div>
@@ -1066,7 +1077,7 @@ export default function CashRegisterPage() {
                 <SelectContent>
                   {cashRegisters?.filter(reg => reg.isActive).map(register => (
                     <SelectItem key={register.id} value={register.id}>
-                      {register.name} ({register.code}) - {formatCurrency(register.balance, register.currency)}
+                      {register.name} ({register.code}) - {formatCurrency(Number(register.currentBalance || register.balance || 0), register.currency)}
                     </SelectItem>
                   ))}
                 </SelectContent>
