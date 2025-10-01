@@ -140,7 +140,7 @@ export class SalesJournalService {
         with: {
           lines: true, // Relation name in schema is 'lines', not 'invoiceLines'
         },
-        orderBy: [desc(invoices.date)],
+        orderBy: (invoices, { desc }) => [desc(invoices.date)],
         limit,
         offset,
       });
