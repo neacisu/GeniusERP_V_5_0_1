@@ -647,22 +647,61 @@ export const invoices = pgTable('invoices', {
   id: uuid('id').defaultRandom().primaryKey(),
   companyId: uuid('company_id').notNull().references(() => companies.id),
   franchiseId: uuid('franchise_id'),
+  
+  // Invoice numbering
+  invoiceNumber: text('invoice_number'), // Full invoice number (e.g., "FDI-2024-00001")
   series: varchar('series', { length: 8 }),
   number: integer('number'), // Allocated only when status = issued
-  status: invoiceStatus('status').default('draft').notNull(),
-  totalAmount: decimal('total_amount', { precision: 12, scale: 2 }).notNull(),
+  
+  // Customer information
+  customerId: uuid('customer_id'), // Reference to customer/partner
+  customerName: text('customer_name'),
+  
+  // Dates
+  date: timestamp('date').defaultNow().notNull(), // Invoice date
+  issueDate: timestamp('issue_date').defaultNow().notNull(), // Issue date (required for Romanian invoicing)
+  dueDate: timestamp('due_date'), // Payment due date
+  
+  // Amounts
+  amount: decimal('amount', { precision: 15, scale: 2 }).notNull(), // Gross amount (with VAT)
+  totalAmount: decimal('total_amount', { precision: 12, scale: 2 }).notNull(), // Same as amount (for backward compatibility)
+  netAmount: decimal('net_amount', { precision: 15, scale: 2 }), // Net amount (without VAT)
+  vatAmount: decimal('vat_amount', { precision: 15, scale: 2 }), // VAT amount
+  
+  // Currency
   currency: varchar('currency', { length: 5 }).default('RON').notNull(),
+  exchangeRate: decimal('exchange_rate', { precision: 10, scale: 4 }).default('1.0000').notNull(),
+  
+  // Status and type
+  status: invoiceStatus('status').default('draft').notNull(),
+  type: text('type'), // 'INVOICE', 'CREDIT_NOTE', 'PROFORMA', etc.
+  
+  // References
+  relatedInvoiceId: uuid('related_invoice_id'), // For credit notes - reference to original invoice
+  
+  // Additional information
+  description: text('description'),
+  notes: text('notes'),
+  
+  // Version control
   version: integer('version').default(1).notNull(),
+  
   // Accounting validation fields for Note Contabil generation
   isValidated: boolean('is_validated').default(false).notNull(),
   validatedAt: timestamp('validated_at'),
   ledgerEntryId: uuid('ledger_entry_id'), // Reference to the accounting ledger entry (Note Contabil)
-  // Standard audit fields
+  
+  // Audit fields
+  createdBy: uuid('created_by'),
+  updatedBy: uuid('updated_by'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   deletedAt: timestamp('deleted_at'), // Soft delete for audit purposes
 }, (table) => ({
   companyIndex: index('invoice_company_idx').on(table.companyId, table.franchiseId, table.createdAt),
+  customerIndex: index('invoice_customer_idx').on(table.customerId),
+  dateIndex: index('invoice_date_idx').on(table.date),
+  statusIndex: index('invoice_status_idx').on(table.status),
   uniqueSeriesNumber: unique('invoice_series_number_unique').on(table.series, table.number),
   validationIndex: index('invoice_validation_idx').on(table.isValidated, table.validatedAt),
 }));
@@ -671,12 +710,27 @@ export const invoices = pgTable('invoices', {
 export const invoiceLines = pgTable('invoice_lines', {
   id: uuid('id').defaultRandom().primaryKey(),
   invoiceId: uuid('invoice_id').notNull().references(() => invoices.id),
+  
+  // Product information
   productId: uuid('product_id').references(() => inventoryProducts.id),
-  description: text('description').notNull(),
+  productName: text('product_name'), // Snapshot of product name at time of invoice
+  description: text('description'),
+  
+  // Quantities and prices
   quantity: decimal('quantity', { precision: 10, scale: 3 }).notNull(),
   unitPrice: decimal('unit_price', { precision: 12, scale: 2 }).notNull(),
+  
+  // Amounts (calculated)
+  netAmount: decimal('net_amount', { precision: 15, scale: 2 }).notNull(), // Quantity * Unit Price
   vatRate: integer('vat_rate').default(19).notNull(),
-  totalAmount: decimal('total_amount', { precision: 12, scale: 2 }).notNull(),
+  vatAmount: decimal('vat_amount', { precision: 15, scale: 2 }).notNull(), // Net Amount * VAT Rate
+  grossAmount: decimal('gross_amount', { precision: 15, scale: 2 }).notNull(), // Net Amount + VAT Amount
+  totalAmount: decimal('total_amount', { precision: 12, scale: 2 }).notNull(), // Same as grossAmount (backward compatibility)
+  
+  // Reference to original item (for credit notes)
+  originalItemId: uuid('original_item_id'), // Reference to the original invoice line item
+  
+  // Audit fields
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

@@ -45,6 +45,22 @@ export class CustomerService extends BaseDrizzleService {
     });
   }
 
+  /**
+   * Get customer by ID for a specific company (used by controller)
+   */
+  async getById(id: string, companyId: string): Promise<Customer | undefined> {
+    return this.db.query(async (db: PostgresJsDatabase) => {
+      const result = await db.select()
+        .from(customers)
+        .where(and(
+          eq(customers.id, id),
+          eq(customers.companyId, companyId),
+          eq(customers.isActive, true)
+        ));
+      return result[0];
+    });
+  }
+
   async updateCustomer(id: string, data: Partial<InsertCustomer>): Promise<Customer | undefined> {
     return this.db.query(async (db: PostgresJsDatabase) => {
       await db.update(customers)
@@ -89,6 +105,20 @@ export class CustomerService extends BaseDrizzleService {
       const whereConditions = [
         eq(customers.isActive, true)
       ];
+
+      // Add filters
+      if (filters?.companyId) {
+        whereConditions.push(eq(customers.companyId, filters.companyId));
+      }
+      if (filters?.industry) {
+        whereConditions.push(eq(customers.industry, filters.industry));
+      }
+      if (filters?.type) {
+        whereConditions.push(eq(customers.type, filters.type));
+      }
+      if (filters?.leadStatus) {
+        whereConditions.push(eq(customers.leadStatus, filters.leadStatus));
+      }
 
       if (search) {
         whereConditions.push(sql`${customers.name} ILIKE ${`%${search}%`}`);
@@ -162,6 +192,40 @@ export class CustomerService extends BaseDrizzleService {
         totalPages: Math.ceil(Number(totalResult[0].count) / limit)
       };
     });
+  }
+
+  /**
+   * List customers for a company (alias for compatibility)
+   * Used by customer controller
+   */
+  async list(companyId: string, options: {
+    page: number;
+    limit: number;
+    searchTerm?: string;
+    industry?: string;
+    type?: string;
+    status?: string;
+    sortBy?: string;
+    sortDirection?: 'asc' | 'desc';
+  }): Promise<{ data: Customer[]; total: number }> {
+    const result = await this.getCustomers({
+      page: options.page,
+      limit: options.limit,
+      search: options.searchTerm,
+      sortBy: options.sortBy,
+      sortOrder: options.sortDirection || 'asc',
+      filters: {
+        companyId,
+        industry: options.industry,
+        type: options.type,
+        ...(options.status && { leadStatus: options.status })
+      }
+    });
+
+    return {
+      data: result.customers,
+      total: result.total
+    };
   }
 
   async getCustomerStats(companyId: string): Promise<{

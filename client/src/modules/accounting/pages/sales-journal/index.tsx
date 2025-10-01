@@ -87,14 +87,19 @@ type SalesInvoice = {
   series: string;
   date: string;
   dueDate: string;
-  clientId: string;
-  clientName: string;
+  customerId: string; // DB field is customer_id
+  customerName: string; // DB field is customer_name
+  // Legacy field names for backward compatibility
+  clientId?: string;
+  clientName?: string;
   amount: number;
+  netAmount?: number;
   vatAmount: number;
   totalAmount: number;
   status: 'draft' | 'issued' | 'paid' | 'canceled' | 'overdue';
   posted: boolean;
-  createdBy: string;
+  createdBy: string; // UUID of user
+  createdByName?: string; // Full name of user (from API)
   createdAt: string;
 };
 
@@ -148,18 +153,18 @@ export default function SalesJournalPage() {
   const { toast } = useToast();
 
   // Fetch sales invoices
-  const { data: invoices, isLoading: isLoadingInvoices } = useQuery<SalesInvoice[]>({
+  const { data: invoicesResponse, isLoading: isLoadingInvoices } = useQuery<{ data: SalesInvoice[]; total: number; page: number; limit: number }>({
     queryKey: ['/api/accounting/sales/invoices', dateRange],
     // This is just for structure - we'll use actual API data in production
-    placeholderData: [
+    placeholderData: { data: [
       { 
         id: '1', 
         number: '0001', 
         series: 'FACT', 
         date: '2025-04-10', 
         dueDate: '2025-05-10',
-        clientId: '1',
-        clientName: 'SC ABC SRL',
+        customerId: '1',
+        customerName: 'SC ABC SRL',
         amount: 4500.00,
         vatAmount: 855.00,
         totalAmount: 5355.00,
@@ -174,8 +179,8 @@ export default function SalesJournalPage() {
         series: 'FACT', 
         date: '2025-04-09', 
         dueDate: '2025-05-09',
-        clientId: '2',
-        clientName: 'SC Metaltec Industries SRL',
+        customerId: '2',
+        customerName: 'SC Metaltec Industries SRL',
         amount: 12450.00,
         vatAmount: 2365.50,
         totalAmount: 14815.50,
@@ -190,8 +195,8 @@ export default function SalesJournalPage() {
         series: 'FACT', 
         date: '2025-04-09', 
         dueDate: '2025-05-09',
-        clientId: '3',
-        clientName: 'SC IT Solutions SA',
+        customerId: '3',
+        customerName: 'SC IT Solutions SA',
         amount: 3240.00,
         vatAmount: 615.60,
         totalAmount: 3855.60,
@@ -206,8 +211,8 @@ export default function SalesJournalPage() {
         series: 'FACT', 
         date: '2025-04-08', 
         dueDate: '2025-05-08',
-        clientId: '4',
-        clientName: 'SC Construct Group SRL',
+        customerId: '4',
+        customerName: 'SC Construct Group SRL',
         amount: 8750.00,
         vatAmount: 1662.50,
         totalAmount: 10412.50,
@@ -222,8 +227,8 @@ export default function SalesJournalPage() {
         series: 'FACT', 
         date: '2025-04-08', 
         dueDate: '2025-05-08',
-        clientId: '5',
-        clientName: 'SC Food Delivery SRL',
+        customerId: '5',
+        customerName: 'SC Food Delivery SRL',
         amount: 5240.00,
         vatAmount: 995.60,
         totalAmount: 6235.60,
@@ -238,8 +243,8 @@ export default function SalesJournalPage() {
         series: 'FACT', 
         date: '2025-04-07', 
         dueDate: '2025-05-07',
-        clientId: '1',
-        clientName: 'SC ABC SRL',
+        customerId: '1',
+        customerName: 'SC ABC SRL',
         amount: 1850.00,
         vatAmount: 351.50,
         totalAmount: 2201.50,
@@ -254,8 +259,8 @@ export default function SalesJournalPage() {
         series: 'FACT', 
         date: '2025-04-07', 
         dueDate: '2025-05-07',
-        clientId: '2',
-        clientName: 'SC Metaltec Industries SRL',
+        customerId: '2',
+        customerName: 'SC Metaltec Industries SRL',
         amount: 7320.00,
         vatAmount: 1390.80,
         totalAmount: 8710.80,
@@ -270,8 +275,8 @@ export default function SalesJournalPage() {
         series: 'FACT', 
         date: '2025-04-06', 
         dueDate: '2025-05-06',
-        clientId: '6',
-        clientName: 'SC Pharma Distribution SRL',
+        customerId: '6',
+        customerName: 'SC Pharma Distribution SRL',
         amount: 6540.00,
         vatAmount: 1242.60,
         totalAmount: 7782.60,
@@ -286,8 +291,8 @@ export default function SalesJournalPage() {
         series: 'FACT', 
         date: '2025-04-05', 
         dueDate: '2025-05-05',
-        clientId: '3',
-        clientName: 'SC IT Solutions SA',
+        customerId: '3',
+        customerName: 'SC IT Solutions SA',
         amount: 4850.00,
         vatAmount: 921.50,
         totalAmount: 5771.50,
@@ -302,8 +307,8 @@ export default function SalesJournalPage() {
         series: 'FACT', 
         date: '2025-04-05', 
         dueDate: '2025-05-05',
-        clientId: '4',
-        clientName: 'SC Construct Group SRL',
+        customerId: '4',
+        customerName: 'SC Construct Group SRL',
         amount: 9650.00,
         vatAmount: 1833.50,
         totalAmount: 11483.50,
@@ -312,13 +317,20 @@ export default function SalesJournalPage() {
         createdBy: 'Maria Ionescu',
         createdAt: '2025-04-05T11:10:00Z'
       },
-    ]
+    ], total: 10, page: 1, limit: 10 }
   });
 
-  // Fetch invoice details when viewing an invoice
-  const { data: invoiceItems, isLoading: isLoadingItems } = useQuery<InvoiceItem[]>({
+  // Extract invoices array from response
+  const invoices = invoicesResponse?.data || [];
+
+  // Extract invoice items from selected invoice (already loaded in the invoice data)
+  const invoiceItems: any[] = (selectedInvoice as any)?.lines || [];
+  const isLoadingItems = false;
+  
+  // Legacy query kept for reference - not used anymore since lines come with invoice
+  const { data: _legacyInvoiceItems } = useQuery<InvoiceItem[]>({
     queryKey: ['/api/accounting/sales/invoices', selectedInvoice?.id, 'items'],
-    enabled: !!selectedInvoice && isViewDialogOpen,
+    enabled: false, // Disabled - we use invoice.lines instead
     // This is just for structure - we'll use actual API data in production
     placeholderData: [
       { 
@@ -387,9 +399,10 @@ export default function SalesJournalPage() {
   });
 
   // Fetch client details when viewing an invoice
+  const customerId = selectedInvoice?.customerId || selectedInvoice?.clientId;
   const { data: client, isLoading: isLoadingClient } = useQuery<Client>({
-    queryKey: ['/api/accounting/clients', selectedInvoice?.clientId],
-    enabled: !!selectedInvoice && isViewDialogOpen,
+    queryKey: [`/api/crm/customers/${customerId}`],
+    enabled: !!selectedInvoice && isViewDialogOpen && !!customerId,
     // This is just for structure - we'll use actual API data in production
     placeholderData: { 
       id: '1',
@@ -408,7 +421,7 @@ export default function SalesJournalPage() {
     // Filter by search term
     const matchesSearch = 
       `${invoice.series}${invoice.number}`.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      invoice.clientName.toLowerCase().includes(searchTerm.toLowerCase());
+      (invoice.customerName || invoice.clientName || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     // Filter by tab (status)
     const matchesTab = 
@@ -681,7 +694,7 @@ export default function SalesJournalPage() {
                       <TableCell>{formatDate(invoice.date)}</TableCell>
                       <TableCell>{formatDate(invoice.dueDate)}</TableCell>
                       <TableCell className="max-w-md truncate">
-                        {invoice.clientName}
+                        {invoice.customerName || invoice.clientName || '-'}
                       </TableCell>
                       <TableCell>
                         {getStatusBadge(invoice.status)}
@@ -758,8 +771,8 @@ export default function SalesJournalPage() {
 
       {/* View Invoice Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="sm:max-w-[900px]">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>Detalii Factură</DialogTitle>
             <DialogDescription>
               Vizualizați informațiile și articolele facturii
@@ -767,7 +780,7 @@ export default function SalesJournalPage() {
           </DialogHeader>
           
           {selectedInvoice && (
-            <div className="py-4">
+            <div className="py-4 overflow-y-auto flex-1 pr-2">
               {/* Invoice header */}
               <div className="bg-gray-50 p-4 rounded-md mb-6">
                 <div className="flex justify-between items-start">
@@ -796,28 +809,34 @@ export default function SalesJournalPage() {
                       <span>Informații Client</span>
                     </div>
                     
-                    {isLoadingClient ? (
-                      <div className="space-y-2">
-                        <div className="h-5 w-48 bg-gray-200 animate-pulse rounded"></div>
-                        <div className="h-4 w-32 bg-gray-200 animate-pulse rounded"></div>
-                        <div className="h-4 w-52 bg-gray-200 animate-pulse rounded"></div>
-                      </div>
-                    ) : client ? (
-                      <div className="space-y-1">
-                        <p className="font-medium">{client.name}</p>
-                        <p className="text-sm">CUI: {client.fiscalCode}</p>
-                        <p className="text-sm">Reg. Com.: {client.registrationNumber}</p>
-                        <p className="text-sm">{client.address}</p>
-                        {client.contactName && (
-                          <div className="flex items-center mt-2 text-sm">
-                            <UserCircle className="h-3.5 w-3.5 mr-1.5 text-gray-500" />
-                            <span>{client.contactName}</span>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-500">Client: {selectedInvoice.clientName}</p>
-                    )}
+                    <div className="space-y-1">
+                      {/* Always show customer name from invoice */}
+                      <p className="font-medium">{selectedInvoice.customerName || selectedInvoice.clientName || 'Client necunoscut'}</p>
+                      
+                      {/* Show additional details if available from CRM */}
+                      {isLoadingClient ? (
+                        <div className="space-y-1">
+                          <div className="h-4 w-32 bg-gray-200 animate-pulse rounded"></div>
+                          <div className="h-4 w-40 bg-gray-200 animate-pulse rounded"></div>
+                        </div>
+                      ) : client ? (
+                        <div className="space-y-1">
+                          <p className="text-sm">CUI: {client.fiscalCode || '-'}</p>
+                          <p className="text-sm">Reg. Com.: {client.registrationNumber || '-'}</p>
+                          {client.address && <p className="text-sm">{client.address}</p>}
+                          {client.contactName && (
+                            <div className="flex items-center mt-2 text-sm">
+                              <UserCircle className="h-3.5 w-3.5 mr-1.5 text-gray-500" />
+                              <span>{client.contactName}</span>
+                            </div>
+                          )}
+                        </div>
+                      ) : selectedInvoice.customerId ? (
+                        <p className="text-sm text-gray-400">Detalii client indisponibile</p>
+                      ) : (
+                        <p className="text-sm text-gray-400">Fără informații CRM</p>
+                      )}
+                    </div>
                   </div>
                   
                   {/* Invoice summary */}
@@ -844,7 +863,7 @@ export default function SalesJournalPage() {
                     </div>
                     
                     <div className="mt-4 space-y-1 text-sm text-gray-500">
-                      <p>Emisă de: {selectedInvoice.createdBy}</p>
+                      <p>Emisă de: {selectedInvoice.createdByName || selectedInvoice.createdBy || 'Necunoscut'}</p>
                       <p>Data emiterii: {new Date(selectedInvoice.createdAt).toLocaleString('ro-RO')}</p>
                     </div>
                   </div>
@@ -875,7 +894,7 @@ export default function SalesJournalPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {invoiceItems.map((item) => (
+                      {invoiceItems.map((item: any) => (
                         <TableRow key={item.id}>
                           <TableCell className="font-medium">{item.productCode}</TableCell>
                           <TableCell>
@@ -911,14 +930,14 @@ export default function SalesJournalPage() {
                           Total:
                         </td>
                         <td className="px-4 py-2 text-right tabular-nums">
-                          {formatCurrency(invoiceItems.reduce((sum, item) => sum + item.amount, 0))} RON
+                          {formatCurrency(invoiceItems.reduce((sum: number, item: any) => sum + (Number(item.netAmount) || Number(item.amount) || 0), 0))} RON
                         </td>
                         <td className="px-4 py-2"></td>
                         <td className="px-4 py-2 text-right tabular-nums">
-                          {formatCurrency(invoiceItems.reduce((sum, item) => sum + item.vatAmount, 0))} RON
+                          {formatCurrency(invoiceItems.reduce((sum: number, item: any) => sum + (Number(item.vatAmount) || 0), 0))} RON
                         </td>
                         <td className="px-4 py-2 text-right tabular-nums">
-                          {formatCurrency(invoiceItems.reduce((sum, item) => sum + item.totalAmount, 0))} RON
+                          {formatCurrency(invoiceItems.reduce((sum: number, item: any) => sum + (Number(item.grossAmount) || Number(item.totalAmount) || 0), 0))} RON
                         </td>
                       </tr>
                     </tfoot>
@@ -932,7 +951,7 @@ export default function SalesJournalPage() {
             </div>
           )}
           
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
             <div className="flex justify-between w-full">
               <div>
                 {selectedInvoice?.posted && (
@@ -971,8 +990,8 @@ export default function SalesJournalPage() {
 
       {/* Journal Entry Dialog */}
       <Dialog open={isJournalDialogOpen} onOpenChange={setIsJournalDialogOpen}>
-        <DialogContent className="sm:max-w-[800px]">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>Notă Contabilă Factură</DialogTitle>
             <DialogDescription>
               {selectedInvoice && (
@@ -980,9 +999,9 @@ export default function SalesJournalPage() {
               )}
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedInvoice && (
-            <div className="py-4">
+            <div className="py-4 overflow-y-auto flex-1 pr-2">
               {/* Invoice reference */}
               <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
                 <div className="flex items-center gap-3">
@@ -994,7 +1013,7 @@ export default function SalesJournalPage() {
                       Factură {selectedInvoice.series} {selectedInvoice.number}
                     </h3>
                     <p className="text-sm text-blue-700">
-                      Client: {selectedInvoice.clientName} | Data: {formatDate(selectedInvoice.date)}
+                      Client: {selectedInvoice.customerName || selectedInvoice.clientName || 'N/A'} | Data: {formatDate(selectedInvoice.date)}
                     </p>
                   </div>
                 </div>
@@ -1061,7 +1080,7 @@ export default function SalesJournalPage() {
             </div>
           )}
           
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => setIsJournalDialogOpen(false)}>
               Închide
             </Button>

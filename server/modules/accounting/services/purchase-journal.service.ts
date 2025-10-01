@@ -6,6 +6,10 @@
  */
 
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
+import { getDrizzle } from '../../../common/drizzle';
+import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { invoices, invoiceLines } from '../../../../shared/schema';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Purchase invoice data interface for entry creation
@@ -82,6 +86,199 @@ export class PurchaseJournalService {
    */
   constructor() {
     this.journalService = new JournalService();
+  }
+  
+  /**
+   * Get all supplier invoices with pagination and filtering
+   * @param companyId Company ID
+   * @param page Page number
+   * @param limit Entries per page
+   * @param startDate Filter by start date
+   * @param endDate Filter by end date
+   * @param supplierId Filter by supplier
+   * @param status Filter by status
+   * @returns Supplier invoices with pagination
+   */
+  public async getSupplierInvoices(
+    companyId: string,
+    page: number = 1,
+    limit: number = 20,
+    startDate?: Date,
+    endDate?: Date,
+    supplierId?: string,
+    status?: string
+  ): Promise<{ data: any[]; total: number; page: number; limit: number }> {
+    try {
+      const db = getDrizzle();
+      const offset = (page - 1) * limit;
+      
+      // Build where conditions
+      const conditions: any[] = [
+        eq(invoices.companyId, companyId),
+        eq(invoices.type, 'PURCHASE') // Filter for purchase invoices
+      ];
+      
+      if (startDate) {
+        conditions.push(gte(invoices.date, startDate));
+      }
+      if (endDate) {
+        conditions.push(lte(invoices.date, endDate));
+      }
+      if (supplierId) {
+        conditions.push(eq(invoices.customerId, supplierId)); // Using customerId for supplier
+      }
+      if (status) {
+        // Status must be one of the enum values
+        conditions.push(eq(invoices.status, status as 'draft' | 'issued' | 'sent' | 'canceled'));
+      }
+      
+      // Fetch invoices with lines
+      const result = await db
+        .select()
+        .from(invoices)
+        .where(and(...conditions))
+        .orderBy(desc(invoices.date))
+        .limit(limit)
+        .offset(offset);
+      
+      // Fetch invoice lines for each invoice
+      const invoicesWithLines = await Promise.all(
+        result.map(async (invoice) => {
+          const lines = await db
+            .select()
+            .from(invoiceLines)
+            .where(eq(invoiceLines.invoiceId, invoice.id));
+          return { ...invoice, lines };
+        })
+      );
+      
+      // Get total count
+      const totalResult = await db
+        .select()
+        .from(invoices)
+        .where(and(...conditions));
+      
+      return {
+        data: invoicesWithLines,
+        total: totalResult.length,
+        page,
+        limit,
+      };
+    } catch (error) {
+      console.error('Error getting supplier invoices:', error);
+      throw new Error('Failed to retrieve supplier invoices');
+    }
+  }
+  
+  /**
+   * Get a single supplier invoice by ID
+   * @param invoiceId Invoice ID
+   * @param companyId Company ID
+   * @returns Supplier invoice or null
+   */
+  public async getSupplierInvoice(invoiceId: string, companyId: string): Promise<any | null> {
+    try {
+      const db = getDrizzle();
+      const invoiceResult = await db
+        .select()
+        .from(invoices)
+        .where(and(
+          eq(invoices.id, invoiceId),
+          eq(invoices.companyId, companyId)
+        ))
+        .limit(1);
+      
+      if (!invoiceResult || invoiceResult.length === 0) {
+        return null;
+      }
+      
+      const invoice = invoiceResult[0];
+      const lines = await db
+        .select()
+        .from(invoiceLines)
+        .where(eq(invoiceLines.invoiceId, invoice.id));
+      
+      return { ...invoice, lines };
+    } catch (error) {
+      console.error('Error getting supplier invoice:', error);
+      throw new Error('Failed to retrieve supplier invoice');
+    }
+  }
+  
+  /**
+   * Record a supplier invoice
+   * @param invoiceData Invoice data
+   * @param supplier Supplier data
+   * @param items Invoice items
+   * @param taxRates Tax rates
+   * @param paymentTerms Payment terms
+   * @param notes Additional notes
+   * @returns Created invoice ID
+   */
+  public async recordSupplierInvoice(
+    invoiceData: any,
+    supplier: any,
+    items: any[],
+    taxRates: any,
+    paymentTerms: any,
+    notes?: string
+  ): Promise<string> {
+    try {
+      const db = getDrizzle();
+      const invoiceId = invoiceData.id || uuidv4();
+      
+      // Calculate totals
+      const netAmount = items.reduce((sum, item) => sum + Number(item.netAmount), 0);
+      const vatAmount = items.reduce((sum, item) => sum + Number(item.vatAmount), 0);
+      const grossAmount = netAmount + vatAmount;
+      
+      // Insert invoice
+      await db.insert(invoices).values({
+        id: invoiceId,
+        companyId: invoiceData.companyId,
+        franchiseId: invoiceData.franchiseId,
+        invoiceNumber: invoiceData.invoiceNumber,
+        customerId: supplier.id, // Using customerId for supplierId
+        customerName: supplier.name, // Using customerName for supplierName
+        amount: grossAmount,
+        totalAmount: grossAmount,
+        netAmount: netAmount,
+        vatAmount: vatAmount,
+        currency: invoiceData.currency || 'RON',
+        exchangeRate: invoiceData.exchangeRate || 1,
+        date: new Date(invoiceData.issueDate),
+        issueDate: new Date(invoiceData.issueDate),
+        dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : null,
+        status: 'issued',
+        type: 'PURCHASE',
+        description: notes || `Purchase invoice ${invoiceData.invoiceNumber} from ${supplier.name}`,
+        createdBy: invoiceData.userId || 'system',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      
+      // Insert invoice items
+      for (const item of items) {
+        await db.insert(invoiceLines).values({
+          invoiceId: invoiceId,
+          productId: item.productId || null,
+          productName: item.productName || null,
+          description: item.description || null,
+          quantity: Number(item.quantity).toString(),
+          unitPrice: Number(item.unitPrice).toString(),
+          netAmount: Number(item.netAmount).toString(),
+          vatRate: Number(item.vatRate),
+          vatAmount: Number(item.vatAmount).toString(),
+          grossAmount: Number(item.grossAmount).toString(),
+          totalAmount: Number(item.grossAmount).toString(),
+        } as any); // Type assertion needed due to schema type inference issue
+      }
+      
+      return invoiceId;
+    } catch (error) {
+      console.error('Error recording supplier invoice:', error);
+      throw new Error(`Failed to record supplier invoice: ${(error as Error).message}`);
+    }
   }
   
   /**

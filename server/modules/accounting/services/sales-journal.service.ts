@@ -9,7 +9,7 @@ import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.serv
 import { v4 as uuidv4 } from 'uuid';
 import { getDrizzle } from '../../../common/drizzle';
 import { and, desc, eq, gte, lte } from 'drizzle-orm';
-import { invoices, invoiceLines } from '../../../../shared/schema';
+import { invoices, invoiceLines, users } from '../../../../shared/schema';
 
 /**
  * Sales journal entry interface
@@ -153,8 +153,32 @@ export class SalesJournalService {
         },
       });
       
+      // Enrich invoices with user names
+      const enrichedData = await Promise.all(
+        result.map(async (invoice) => {
+          let createdByName = null;
+          if (invoice.createdBy) {
+            const user = await db.query.users.findFirst({
+              where: eq(users.id, invoice.createdBy),
+              columns: {
+                firstName: true,
+                lastName: true,
+                username: true,
+              },
+            });
+            if (user) {
+              createdByName = `${user.firstName} ${user.lastName}`.trim() || user.username;
+            }
+          }
+          return {
+            ...invoice,
+            createdByName,
+          };
+        })
+      );
+      
       return {
-        data: result,
+        data: enrichedData,
         total: totalResult.length,
         page,
         limit,

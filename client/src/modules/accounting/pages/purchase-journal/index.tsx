@@ -149,10 +149,10 @@ export default function PurchaseJournalPage() {
   const { toast } = useToast();
 
   // Fetch purchase invoices
-  const { data: invoices, isLoading: isLoadingInvoices } = useQuery<PurchaseInvoice[]>({
+  const { data: invoicesResponse, isLoading: isLoadingInvoices } = useQuery<{ data: PurchaseInvoice[]; total: number; page: number; limit: number }>({
     queryKey: ['/api/accounting/purchases/invoices', dateRange],
     // This is just for structure - we'll use actual API data in production
-    placeholderData: [
+    placeholderData: { data: [
       { 
         id: '1', 
         number: 'ACH-2025-0001', 
@@ -313,8 +313,11 @@ export default function PurchaseJournalPage() {
         createdBy: 'Alexandru Popescu',
         createdAt: '2025-04-05T11:10:00Z'
       },
-    ]
+    ], total: 10, page: 1, limit: 10 }
   });
+
+  // Extract invoices array from response
+  const invoices = invoicesResponse?.data || [];
 
   // Fetch invoice details when viewing an invoice
   const { data: invoiceItems, isLoading: isLoadingItems } = useQuery<InvoiceItem[]>({
@@ -749,8 +752,8 @@ export default function PurchaseJournalPage() {
 
       {/* View Invoice Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="sm:max-w-[900px]">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>Detalii Factură Achiziție</DialogTitle>
             <DialogDescription>
               Vizualizați informațiile și articolele facturii
@@ -758,7 +761,7 @@ export default function PurchaseJournalPage() {
           </DialogHeader>
           
           {selectedInvoice && (
-            <div className="py-4">
+            <div className="py-4 overflow-y-auto flex-1 pr-2">
               {/* Invoice header */}
               <div className="bg-gray-50 p-4 rounded-md mb-6">
                 <div className="flex justify-between items-start">
@@ -924,7 +927,7 @@ export default function PurchaseJournalPage() {
             </div>
           )}
           
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
             <div className="flex justify-between w-full">
               <div>
                 {selectedInvoice?.posted && (
@@ -958,8 +961,8 @@ export default function PurchaseJournalPage() {
 
       {/* Journal Entry Dialog */}
       <Dialog open={isJournalDialogOpen} onOpenChange={setIsJournalDialogOpen}>
-        <DialogContent className="sm:max-w-[800px]">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>Notă Contabilă Factură</DialogTitle>
             <DialogDescription>
               {selectedInvoice && (
@@ -967,9 +970,9 @@ export default function PurchaseJournalPage() {
               )}
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedInvoice && (
-            <div className="py-4">
+            <div className="py-4 overflow-y-auto flex-1 pr-2">
               {/* Invoice reference */}
               <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
                 <div className="flex items-center gap-3">
@@ -1048,7 +1051,7 @@ export default function PurchaseJournalPage() {
             </div>
           )}
           
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => setIsJournalDialogOpen(false)}>
               Închide
             </Button>
