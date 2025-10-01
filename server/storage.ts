@@ -684,7 +684,7 @@ export class DatabaseStorage implements IStorage {
   // Inventory
   async getProducts(): Promise<InventoryProduct[]> {
     return drizzleService.executeQuery(async (db) => {
-      return await db.select().from(inventoryProducts).orderBy(inventoryProducts.code);
+      return await db.select().from(inventoryProducts).orderBy(inventoryProducts.sku);
     });
   }
 
@@ -802,7 +802,7 @@ export class DatabaseStorage implements IStorage {
   async createInvoice(invoice: InsertInvoice, details: InsertInvoiceDetail, lines: InsertInvoiceLine[]): Promise<Invoice> {
     return drizzleService.executeQuery(async (db) => {
       // Start a transaction to ensure all-or-nothing insertion
-      return await db.transaction(async (tx) => {
+      return await db.transaction(async (tx: any) => {
         // 1. Insert the invoice first
         const [newInvoice] = await tx.insert(invoices).values(invoice).returning();
         
