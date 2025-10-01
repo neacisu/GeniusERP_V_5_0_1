@@ -138,7 +138,7 @@ export class SalesJournalService {
       const result = await db.query.invoices.findMany({
         where: and(...conditions),
         with: {
-          invoiceLines: true,
+          lines: true, // Relation name in schema is 'lines', not 'invoiceLines'
         },
         orderBy: [desc(invoices.date)],
         limit,
@@ -180,7 +180,7 @@ export class SalesJournalService {
           eq(invoices.companyId, companyId)
         ),
         with: {
-          invoiceLines: true,
+          lines: true, // Relation name in schema is 'lines', not 'invoiceLines'
         },
       });
       
