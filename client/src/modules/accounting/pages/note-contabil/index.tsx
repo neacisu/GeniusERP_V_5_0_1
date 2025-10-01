@@ -132,6 +132,7 @@ export default function NoteContabilPage() {
   // Fetch accounting notes
   const { data: notes, isLoading: isLoadingNotes } = useQuery<AccountingNote[]>({
     queryKey: ['/api/accounting/note-contabil'],
+    select: (response: any) => response?.data || [],
     // This is just for structure - we'll use actual API data in production
     placeholderData: [
       { 
@@ -255,6 +256,7 @@ export default function NoteContabilPage() {
   // Fetch accounts for the note creation form
   const { data: accounts, isLoading: isLoadingAccounts } = useQuery<Account[]>({
     queryKey: ['/api/accounts'],
+    select: (response: any) => Array.isArray(response) ? response : (response?.data || []),
     // This is just for structure - we'll use actual API data in production
     placeholderData: [
       { id: '1', code: '101', name: 'Capital social', type: 'P' },
