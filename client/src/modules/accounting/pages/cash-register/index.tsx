@@ -384,7 +384,7 @@ export default function CashRegisterPage() {
   });
 
   // Filter transactions based on search term, register and type
-  const filteredTransactions = transactions?.filter(transaction => {
+  const filteredTransactions = transactions?.filter((transaction: any) => {
     // Filter by search term
     const matchesSearch = 
       transaction.documentNumber.toLowerCase().includes(searchTerm.toLowerCase()) || 
