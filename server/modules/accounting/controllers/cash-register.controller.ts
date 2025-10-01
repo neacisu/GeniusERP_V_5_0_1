@@ -120,13 +120,39 @@ export class CashRegisterController extends BaseController {
   }
   
   /**
-   * Get cash transactions with pagination and filtering
-   * GET /api/accounting/cash-register/transactions
+   * Get all cash transactions (for all registers)
+   * GET /api/accounting/cash/cash-transactions
+   */
+  async getAllCashTransactions(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      
+      // Optional filters
+      const registerId = req.query.registerId as string;
+      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+      
+      return await this.cashRegisterService.getCashTransactions(
+        companyId,
+        registerId,
+        page,
+        limit,
+        startDate,
+        endDate
+      );
+    });
+  }
+  
+  /**
+   * Get cash transactions for a specific register
+   * GET /api/accounting/cash/cash-registers/:id/transactions
    */
   async getCashTransactions(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const registerId = req.query.registerId as string;
+      const registerId = req.params.id; // From URL params
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 20;
       

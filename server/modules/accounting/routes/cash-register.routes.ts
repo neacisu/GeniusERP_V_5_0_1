@@ -23,14 +23,14 @@ export function setupCashRegisterRoutes() {
   /**
    * Get all cash registers
    */
-  router.get("/registers", (req: AuthenticatedRequest, res: Response) => {
+  router.get("/cash-registers", (req: AuthenticatedRequest, res: Response) => {
     cashRegisterController.getCashRegisters(req, res);
   });
   
   /**
    * Get cash register by ID
    */
-  router.get("/registers/:id", (req: AuthenticatedRequest, res: Response) => {
+  router.get("/cash-registers/:id", (req: AuthenticatedRequest, res: Response) => {
     cashRegisterController.getCashRegister(req, res);
   });
   
@@ -39,7 +39,7 @@ export function setupCashRegisterRoutes() {
    * Requires accountant or admin role
    */
   router.post(
-    "/registers", 
+    "/cash-registers", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req: AuthenticatedRequest, res: Response) => {
       cashRegisterController.createCashRegister(req, res);
@@ -51,7 +51,7 @@ export function setupCashRegisterRoutes() {
    * Requires accountant or admin role
    */
   router.put(
-    "/registers/:id", 
+    "/cash-registers/:id", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req: AuthenticatedRequest, res: Response) => {
       cashRegisterController.updateCashRegister(req, res);
@@ -95,16 +95,23 @@ export function setupCashRegisterRoutes() {
   );
   
   /**
-   * Get all cash transactions for a register
+   * Get all cash transactions (for all registers or filtered)
    */
-  router.get("/registers/:id/transactions", (req: AuthenticatedRequest, res: Response) => {
+  router.get("/cash-transactions", (req: AuthenticatedRequest, res: Response) => {
+    cashRegisterController.getAllCashTransactions(req, res);
+  });
+  
+  /**
+   * Get all cash transactions for a specific register
+   */
+  router.get("/cash-registers/:id/transactions", (req: AuthenticatedRequest, res: Response) => {
     cashRegisterController.getCashTransactions(req, res);
   });
   
   /**
    * Get cash register balance as of specific date
    */
-  router.get("/registers/:id/balance", (req: AuthenticatedRequest, res: Response) => {
+  router.get("/cash-registers/:id/balance", (req: AuthenticatedRequest, res: Response) => {
     cashRegisterController.getCashRegisterBalance(req, res);
   });
   
@@ -113,7 +120,7 @@ export function setupCashRegisterRoutes() {
    * Requires accountant or admin role
    */
   router.post(
-    "/registers/:id/bank-deposits", 
+    "/cash-registers/:id/bank-deposits", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req: AuthenticatedRequest, res: Response) => {
       cashRegisterController.recordCashDepositToBank(req, res);
@@ -125,7 +132,7 @@ export function setupCashRegisterRoutes() {
    * Requires accountant or admin role
    */
   router.post(
-    "/registers/:id/bank-withdrawals", 
+    "/cash-registers/:id/bank-withdrawals", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req: AuthenticatedRequest, res: Response) => {
       cashRegisterController.recordCashWithdrawalFromBank(req, res);

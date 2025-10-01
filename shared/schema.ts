@@ -30,6 +30,9 @@ export * from "./schema/invoice-numbering.schema";
 // Export Warehouse models for shared usage across the application
 export * from "./schema/warehouse";
 
+// Export Cash Register models for shared usage across the application
+export * from "./schema/cash-register.schema";
+
 // User Management
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),

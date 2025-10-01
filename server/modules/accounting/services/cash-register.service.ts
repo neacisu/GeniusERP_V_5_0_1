@@ -6,6 +6,10 @@
  */
 
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
+import { getDrizzle } from '../../../common/drizzle';
+import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
+import { cashRegisters, cashTransactions, CashRegister, CashTransaction } from '../../../../shared/schema/cash-register.schema';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Cash transaction type enum
@@ -128,6 +132,579 @@ export class CashRegisterService {
    */
   constructor() {
     this.journalService = new JournalService();
+  }
+  
+  /**
+   * CRUD OPERATIONS FOR CASH REGISTERS
+   */
+  
+  /**
+   * Get all cash registers for a company
+   */
+  public async getCashRegisters(companyId: string): Promise<{ data: CashRegister[]; total: number }> {
+    try {
+      const db = getDrizzle();
+      
+      const result = await db
+        .select()
+        .from(cashRegisters)
+        .where(and(
+          eq(cashRegisters.companyId, companyId),
+          eq(cashRegisters.isActive, true)
+        ))
+        .orderBy(desc(cashRegisters.createdAt));
+      
+      return {
+        data: result,
+        total: result.length
+      };
+    } catch (error) {
+      console.error('Error getting cash registers:', error);
+      throw new Error('Failed to retrieve cash registers');
+    }
+  }
+  
+  /**
+   * Get a single cash register by ID
+   */
+  public async getCashRegister(id: string, companyId: string): Promise<CashRegister | null> {
+    try {
+      const db = getDrizzle();
+      
+      const result = await db
+        .select()
+        .from(cashRegisters)
+        .where(and(
+          eq(cashRegisters.id, id),
+          eq(cashRegisters.companyId, companyId)
+        ))
+        .limit(1);
+      
+      return result[0] || null;
+    } catch (error) {
+      console.error('Error getting cash register:', error);
+      throw new Error('Failed to retrieve cash register');
+    }
+  }
+  
+  /**
+   * Create a new cash register
+   */
+  public async createCashRegister(data: any): Promise<string> {
+    try {
+      const db = getDrizzle();
+      const id = uuidv4();
+      
+      await db.insert(cashRegisters).values({
+        id,
+        companyId: data.companyId,
+        franchiseId: data.franchiseId || null,
+        name: data.name,
+        code: data.code,
+        type: data.type || 'main',
+        location: data.location || null,
+        currency: data.currency || 'RON',
+        responsiblePersonId: data.responsiblePersonId || null,
+        responsiblePersonName: data.responsiblePersonName || null,
+        dailyLimit: data.dailyLimit ? data.dailyLimit.toString() : null,
+        maxTransactionAmount: data.maxTransactionAmount ? data.maxTransactionAmount.toString() : null,
+        currentBalance: '0',
+        status: 'active',
+        isActive: true,
+        createdBy: data.userId,
+      } as any);
+      
+      return id;
+    } catch (error) {
+      console.error('Error creating cash register:', error);
+      throw new Error(`Failed to create cash register: ${(error as Error).message}`);
+    }
+  }
+  
+  /**
+   * Update cash register
+   */
+  public async updateCashRegister(id: string, data: any, userId: string): Promise<void> {
+    try {
+      const db = getDrizzle();
+      
+      await db.update(cashRegisters)
+        .set({
+          name: data.name,
+          location: data.location,
+          responsiblePersonId: data.responsiblePersonId,
+          responsiblePersonName: data.responsiblePersonName,
+          dailyLimit: data.dailyLimit ? data.dailyLimit.toString() : undefined,
+          maxTransactionAmount: data.maxTransactionAmount ? data.maxTransactionAmount.toString() : undefined,
+          status: data.status,
+          isActive: data.isActive,
+          updatedBy: userId,
+          updatedAt: new Date(),
+        } as any)
+        .where(and(
+          eq(cashRegisters.id, id),
+          eq(cashRegisters.companyId, data.companyId)
+        ));
+    } catch (error) {
+      console.error('Error updating cash register:', error);
+      throw new Error(`Failed to update cash register: ${(error as Error).message}`);
+    }
+  }
+  
+  /**
+   * TRANSACTION OPERATIONS
+   */
+  
+  /**
+   * Get all cash transactions (for all registers or filtered)
+   */
+  public async getCashTransactions(
+    companyId: string,
+    registerId?: string,
+    page: number = 1,
+    limit: number = 20,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<{ data: CashTransaction[]; total: number; page: number; limit: number }> {
+    try {
+      const db = getDrizzle();
+      const offset = (page - 1) * limit;
+      
+      // Build conditions
+      const conditions: any[] = [eq(cashTransactions.companyId, companyId)];
+      
+      if (registerId) {
+        conditions.push(eq(cashTransactions.cashRegisterId, registerId));
+      }
+      if (startDate) {
+        conditions.push(gte(cashTransactions.transactionDate, startDate));
+      }
+      if (endDate) {
+        conditions.push(lte(cashTransactions.transactionDate, endDate));
+      }
+      
+      const result = await db
+        .select()
+        .from(cashTransactions)
+        .where(and(...conditions))
+        .orderBy(desc(cashTransactions.transactionDate))
+        .limit(limit)
+        .offset(offset);
+      
+      const totalResult = await db
+        .select()
+        .from(cashTransactions)
+        .where(and(...conditions));
+      
+      return {
+        data: result,
+        total: totalResult.length,
+        page,
+        limit
+      };
+    } catch (error) {
+      console.error('Error getting cash transactions:', error);
+      throw new Error('Failed to retrieve cash transactions');
+    }
+  }
+  
+  /**
+   * Get cash transaction by ID
+   */
+  public async getCashTransaction(id: string, companyId: string): Promise<CashTransaction | null> {
+    try {
+      const db = getDrizzle();
+      
+      const result = await db
+        .select()
+        .from(cashTransactions)
+        .where(and(
+          eq(cashTransactions.id, id),
+          eq(cashTransactions.companyId, companyId)
+        ))
+        .limit(1);
+      
+      return result[0] || null;
+    } catch (error) {
+      console.error('Error getting cash transaction:', error);
+      throw new Error('Failed to retrieve cash transaction');
+    }
+  }
+  
+  /**
+   * Record cash receipt (Chitanță)
+   */
+  public async recordCashReceipt(data: any): Promise<string> {
+    try {
+      const db = getDrizzle();
+      const transactionId = uuidv4();
+      
+      // Get current balance
+      const register = await this.getCashRegister(data.cashRegisterId, data.companyId);
+      if (!register) {
+        throw new Error('Cash register not found');
+      }
+      
+      const balanceBefore = Number(register.currentBalance);
+      const balanceAfter = balanceBefore + Number(data.amount);
+      
+      // Generate document number
+      const documentNumber = await this.generateReceiptNumber(data.companyId, data.cashRegisterId, false);
+      
+      // Insert transaction
+      await db.insert(cashTransactions).values({
+        id: transactionId,
+        companyId: data.companyId,
+        franchiseId: data.franchiseId || null,
+        cashRegisterId: data.cashRegisterId,
+        documentNumber,
+        series: 'CH',
+        number: documentNumber.split('-')[2],
+        transactionType: 'cash_receipt',
+        transactionPurpose: data.purpose || 'customer_payment',
+        transactionDate: new Date(),
+        amount: data.amount.toString(),
+        vatAmount: (data.vatAmount || 0).toString(),
+        vatRate: data.vatRate?.toString() || '19',
+        netAmount: (data.netAmount || data.amount).toString(),
+        currency: data.currency || 'RON',
+        exchangeRate: (data.exchangeRate || 1).toString(),
+        personName: data.personName,
+        personIdNumber: data.personIdNumber || null,
+        description: data.description,
+        balanceBefore: balanceBefore.toString(),
+        balanceAfter: balanceAfter.toString(),
+        isPosted: false,
+        isCanceled: false,
+        createdBy: data.userId,
+      } as any);
+      
+      // Update register balance
+      await db.update(cashRegisters)
+        .set({
+          currentBalance: balanceAfter.toString(),
+          updatedAt: new Date(),
+        } as any)
+        .where(eq(cashRegisters.id, data.cashRegisterId));
+      
+      return transactionId;
+    } catch (error) {
+      console.error('Error recording cash receipt:', error);
+      throw new Error(`Failed to record cash receipt: ${(error as Error).message}`);
+    }
+  }
+  
+  /**
+   * Record cash payment (Dispoziție de Plată)
+   */
+  public async recordCashPayment(data: any): Promise<string> {
+    try {
+      const db = getDrizzle();
+      const transactionId = uuidv4();
+      
+      // Get current balance
+      const register = await this.getCashRegister(data.cashRegisterId, data.companyId);
+      if (!register) {
+        throw new Error('Cash register not found');
+      }
+      
+      const balanceBefore = Number(register.currentBalance);
+      const balanceAfter = balanceBefore - Number(data.amount);
+      
+      if (balanceAfter < 0) {
+        throw new Error('Insufficient cash balance');
+      }
+      
+      // Generate document number
+      const documentNumber = await this.generateReceiptNumber(data.companyId, data.cashRegisterId, true);
+      
+      // Insert transaction
+      await db.insert(cashTransactions).values({
+        id: transactionId,
+        companyId: data.companyId,
+        franchiseId: data.franchiseId || null,
+        cashRegisterId: data.cashRegisterId,
+        documentNumber,
+        series: 'DP',
+        number: documentNumber.split('-')[2],
+        transactionType: 'cash_payment',
+        transactionPurpose: data.purpose || 'expense_payment',
+        transactionDate: new Date(),
+        amount: data.amount.toString(),
+        vatAmount: (data.vatAmount || 0).toString(),
+        vatRate: data.vatRate?.toString() || '0',
+        netAmount: (data.netAmount || data.amount).toString(),
+        currency: data.currency || 'RON',
+        exchangeRate: (data.exchangeRate || 1).toString(),
+        personName: data.personName,
+        personIdNumber: data.personIdNumber || null,
+        description: data.description,
+        balanceBefore: balanceBefore.toString(),
+        balanceAfter: balanceAfter.toString(),
+        isPosted: false,
+        isCanceled: false,
+        createdBy: data.userId,
+      } as any);
+      
+      // Update register balance
+      await db.update(cashRegisters)
+        .set({
+          currentBalance: balanceAfter.toString(),
+          updatedAt: new Date(),
+        } as any)
+        .where(eq(cashRegisters.id, data.cashRegisterId));
+      
+      return transactionId;
+    } catch (error) {
+      console.error('Error recording cash payment:', error);
+      throw new Error(`Failed to record cash payment: ${(error as Error).message}`);
+    }
+  }
+  
+  /**
+   * Transfer cash between registers
+   */
+  public async transferCash(data: any): Promise<{ fromTransactionId: string; toTransactionId: string }> {
+    try {
+      // Record payment from source register
+      const fromTransactionId = await this.recordCashPayment({
+        ...data,
+        cashRegisterId: data.fromRegisterId,
+        purpose: 'cash_withdrawal',
+        description: `Transfer către ${data.toRegisterName || 'altă casă'}`,
+      });
+      
+      // Record receipt to destination register
+      const toTransactionId = await this.recordCashReceipt({
+        ...data,
+        cashRegisterId: data.toRegisterId,
+        purpose: 'cash_withdrawal',
+        description: `Transfer de la ${data.fromRegisterName || 'altă casă'}`,
+      });
+      
+      return { fromTransactionId, toTransactionId };
+    } catch (error) {
+      console.error('Error transferring cash:', error);
+      throw new Error(`Failed to transfer cash: ${(error as Error).message}`);
+    }
+  }
+  
+  /**
+   * Record cash deposit to bank
+   */
+  public async recordCashDepositToBank(data: any): Promise<string> {
+    try {
+      return await this.recordCashPayment({
+        ...data,
+        purpose: 'bank_deposit',
+        description: data.description || `Depunere numerar la bancă`,
+      });
+    } catch (error) {
+      console.error('Error recording cash deposit:', error);
+      throw new Error(`Failed to record cash deposit: ${(error as Error).message}`);
+    }
+  }
+  
+  /**
+   * Record cash withdrawal from bank
+   */
+  public async recordCashWithdrawalFromBank(data: any): Promise<string> {
+    try {
+      return await this.recordCashReceipt({
+        ...data,
+        purpose: 'cash_withdrawal',
+        description: data.description || `Ridicare numerar de la bancă`,
+      });
+    } catch (error) {
+      console.error('Error recording cash withdrawal:', error);
+      throw new Error(`Failed to record cash withdrawal: ${(error as Error).message}`);
+    }
+  }
+  
+  /**
+   * Get cash register balance as of date
+   */
+  public async getCashRegisterBalanceAsOf(cashRegisterId: string, companyId: string, asOfDate: Date): Promise<{ balance: number; currency: string }> {
+    try {
+      const db = getDrizzle();
+      
+      // Get register
+      const register = await this.getCashRegister(cashRegisterId, companyId);
+      if (!register) {
+        throw new Error('Cash register not found');
+      }
+      
+      // If asOfDate is today or future, return current balance
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      
+      if (asOfDate >= today) {
+        return {
+          balance: Number(register.currentBalance),
+          currency: register.currency
+        };
+      }
+      
+      // Calculate balance as of date by summing all transactions up to that date
+      const transactions = await db
+        .select()
+        .from(cashTransactions)
+        .where(and(
+          eq(cashTransactions.cashRegisterId, cashRegisterId),
+          lte(cashTransactions.transactionDate, asOfDate),
+          eq(cashTransactions.isCanceled, false)
+        ));
+      
+      let balance = 0;
+      for (const txn of transactions) {
+        if (txn.transactionType === 'cash_receipt' || txn.transactionType === 'bank_withdrawal') {
+          balance += Number(txn.amount);
+        } else if (txn.transactionType === 'cash_payment' || txn.transactionType === 'bank_deposit') {
+          balance -= Number(txn.amount);
+        }
+      }
+      
+      return {
+        balance,
+        currency: register.currency
+      };
+    } catch (error) {
+      console.error('Error getting cash register balance:', error);
+      throw new Error('Failed to get cash register balance');
+    }
+  }
+  
+  /**
+   * Create cash register reconciliation (Închidere Casă Zilnică)
+   */
+  public async createReconciliation(data: any): Promise<string> {
+    try {
+      const db = getDrizzle();
+      
+      // Get register and current balance
+      const register = await this.getCashRegister(data.cashRegisterId, data.companyId);
+      if (!register) {
+        throw new Error('Cash register not found');
+      }
+      
+      const systemBalance = Number(register.currentBalance);
+      const physicalCount = Number(data.physicalCount);
+      const difference = physicalCount - systemBalance;
+      
+      // If there's a difference, create adjustment transaction
+      if (Math.abs(difference) > 0.01) {
+        const adjustmentId = uuidv4();
+        
+        await db.insert(cashTransactions).values({
+          id: adjustmentId,
+          companyId: data.companyId,
+          cashRegisterId: data.cashRegisterId,
+          documentNumber: `ADJ-${Date.now()}`,
+          series: 'ADJ',
+          number: Date.now().toString(),
+          transactionType: 'cash_count_adjustment',
+          transactionPurpose: 'other',
+          transactionDate: new Date(),
+          amount: Math.abs(difference).toString(),
+          currency: register.currency,
+          personName: data.userId,
+          description: difference > 0 
+            ? `Plus de casă: ${difference} ${register.currency}`
+            : `Lipsă de casă: ${Math.abs(difference)} ${register.currency}`,
+          balanceBefore: systemBalance.toString(),
+          balanceAfter: physicalCount.toString(),
+          notes: data.notes || null,
+          createdBy: data.userId,
+        } as any);
+        
+        // Update register balance to match physical count
+        await db.update(cashRegisters)
+          .set({
+            currentBalance: physicalCount.toString(),
+            updatedAt: new Date(),
+          } as any)
+          .where(eq(cashRegisters.id, data.cashRegisterId));
+        
+        return adjustmentId;
+      }
+      
+      return 'no_adjustment_needed';
+    } catch (error) {
+      console.error('Error creating reconciliation:', error);
+      throw new Error(`Failed to create reconciliation: ${(error as Error).message}`);
+    }
+  }
+  
+  /**
+   * Generate cash register report for a period
+   */
+  public async generateCashRegisterReport(
+    companyId: string,
+    cashRegisterId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<any> {
+    try {
+      const db = getDrizzle();
+      
+      const transactions = await db
+        .select()
+        .from(cashTransactions)
+        .where(and(
+          eq(cashTransactions.companyId, companyId),
+          eq(cashTransactions.cashRegisterId, cashRegisterId),
+          gte(cashTransactions.transactionDate, startDate),
+          lte(cashTransactions.transactionDate, endDate),
+          eq(cashTransactions.isCanceled, false)
+        ))
+        .orderBy(cashTransactions.transactionDate);
+      
+      let totalReceipts = 0;
+      let totalPayments = 0;
+      
+      for (const txn of transactions) {
+        if (txn.transactionType === 'cash_receipt' || txn.transactionType === 'bank_withdrawal') {
+          totalReceipts += Number(txn.amount);
+        } else if (txn.transactionType === 'cash_payment' || txn.transactionType === 'bank_deposit') {
+          totalPayments += Number(txn.amount);
+        }
+      }
+      
+      return {
+        cashRegisterId,
+        period: { startDate, endDate },
+        totalReceipts,
+        totalPayments,
+        netChange: totalReceipts - totalPayments,
+        transactionCount: transactions.length,
+        transactions
+      };
+    } catch (error) {
+      console.error('Error generating cash register report:', error);
+      throw new Error('Failed to generate cash register report');
+    }
+  }
+  
+  /**
+   * Generate daily closing report (Raport de Închidere Zilnică)
+   */
+  public async getDailyClosingReport(
+    companyId: string,
+    cashRegisterId: string,
+    date: Date
+  ): Promise<any> {
+    try {
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+      
+      return await this.generateCashRegisterReport(companyId, cashRegisterId, startOfDay, endOfDay);
+    } catch (error) {
+      console.error('Error generating daily closing report:', error);
+      throw new Error('Failed to generate daily closing report');
+    }
   }
   
   /**
