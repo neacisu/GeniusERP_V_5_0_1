@@ -42,8 +42,8 @@ export function initAccountingModule(app: Express) {
   // Setup global /api/accounts route (for forms and dropdowns)
   const globalAccountsRouter = Router();
   globalAccountsRouter.use(AuthGuard.protect(JwtAuthMode.REQUIRED));
-  globalAccountsRouter.get("/", (req: AuthenticatedRequest, res: Response) => {
-    accountingController.getAllAccounts(req, res);
+  globalAccountsRouter.get("/", async (req, res) => {
+    await accountingController.getAllAccounts(req as AuthenticatedRequest, res as Response);
   });
   app.use("/api/accounts", globalAccountsRouter);
   

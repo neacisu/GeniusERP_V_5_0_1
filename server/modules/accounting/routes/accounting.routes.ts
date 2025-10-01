@@ -24,70 +24,62 @@ export function setupAccountingRoutes() {
   // Apply authentication middleware to all accounting routes
   router.use(AuthGuard.protect(JwtAuthMode.REQUIRED));
   
-  // Mount specialized journal routes
-  router.use("/sales-journal", setupSalesJournalRoutes());
-  router.use("/purchase-journal", setupPurchaseJournalRoutes());
-  router.use("/bank-journal", setupBankJournalRoutes());
-  router.use("/cash-register", setupCashRegisterRoutes());
-  router.use("/ledger", setupLedgerRoutes());
-  router.use("/note-contabil", setupNoteContabilRoutes());
-  
   // Chart of Accounts - Account Classes
-  router.get("/account-classes", (req: AuthenticatedRequest, res: Response) => {
-    accountingController.getAccountClasses(req, res);
+  router.get("/account-classes", async (req, res) => {
+    await accountingController.getAccountClasses(req as AuthenticatedRequest, res as Response);
   });
   
   // Chart of Accounts - Account Groups
-  router.get("/account-groups", (req: AuthenticatedRequest, res: Response) => {
-    accountingController.getAccountGroups(req, res);
+  router.get("/account-groups", async (req, res) => {
+    await accountingController.getAccountGroups(req as AuthenticatedRequest, res as Response);
   });
   
-  router.get("/account-groups/by-class/:classId", (req: AuthenticatedRequest, res: Response) => {
-    accountingController.getAccountGroupsByClass(req, res);
+  router.get("/account-groups/by-class/:classId", async (req, res) => {
+    await accountingController.getAccountGroupsByClass(req as AuthenticatedRequest, res as Response);
   });
   
   // Chart of Accounts - Synthetic Accounts
-  router.get("/synthetic-accounts", (req: AuthenticatedRequest, res: Response) => {
-    accountingController.getSyntheticAccounts(req, res);
+  router.get("/synthetic-accounts", async (req, res) => {
+    await accountingController.getSyntheticAccounts(req as AuthenticatedRequest, res as Response);
   });
   
-  router.get("/synthetic-accounts/by-group/:groupId", (req: AuthenticatedRequest, res: Response) => {
-    accountingController.getSyntheticAccountsByGroup(req, res);
+  router.get("/synthetic-accounts/by-group/:groupId", async (req, res) => {
+    await accountingController.getSyntheticAccountsByGroup(req as AuthenticatedRequest, res as Response);
   });
   
-  router.get("/synthetic-accounts/by-grade/:grade", (req: AuthenticatedRequest, res: Response) => {
-    accountingController.getSyntheticAccountsByGrade(req, res);
+  router.get("/synthetic-accounts/by-grade/:grade", async (req, res) => {
+    await accountingController.getSyntheticAccountsByGrade(req as AuthenticatedRequest, res as Response);
   });
   
   // Chart of Accounts - Analytic Accounts
-  router.get("/analytic-accounts", (req: AuthenticatedRequest, res: Response) => {
-    accountingController.getAnalyticAccounts(req, res);
+  router.get("/analytic-accounts", async (req, res) => {
+    await accountingController.getAnalyticAccounts(req as AuthenticatedRequest, res as Response);
   });
   
-  router.get("/analytic-accounts/by-synthetic/:syntheticId", (req: AuthenticatedRequest, res: Response) => {
-    accountingController.getAnalyticAccountsBySynthetic(req, res);
+  router.get("/analytic-accounts/by-synthetic/:syntheticId", async (req, res) => {
+    await accountingController.getAnalyticAccountsBySynthetic(req as AuthenticatedRequest, res as Response);
   });
   
   // Create Analytic Account
-  router.post("/analytic-accounts", (req: AuthenticatedRequest, res: Response) => {
-    accountingController.createAnalyticAccount(req, res);
+  router.post("/analytic-accounts", async (req, res) => {
+    await accountingController.createAnalyticAccount(req as AuthenticatedRequest, res as Response);
   });
   
   // General Journal Entries
-  router.get("/journal-entries", (req: AuthenticatedRequest, res: Response) => {
-    accountingController.getJournalEntries(req, res);
+  router.get("/journal-entries", async (req, res) => {
+    await accountingController.getJournalEntries(req as AuthenticatedRequest, res as Response);
   });
   
-  router.get("/journal-entries/:id", (req: AuthenticatedRequest, res: Response) => {
-    accountingController.getJournalEntry(req, res);
+  router.get("/journal-entries/:id", async (req, res) => {
+    await accountingController.getJournalEntry(req as AuthenticatedRequest, res as Response);
   });
   
   // Create General Journal Entry - requires accountant role or admin
   router.post(
     "/journal-entries", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      accountingController.createJournalEntry(req, res);
+    async (req, res) => {
+      await accountingController.createJournalEntry(req as AuthenticatedRequest, res as Response);
     }
   );
   
@@ -96,24 +88,24 @@ export function setupAccountingRoutes() {
     "/trial-balance", 
     AuthGuard.roleGuard(["accountant", "admin", "manager"]),
     AuthGuard.companyGuard('companyId'),
-    (req: AuthenticatedRequest, res: Response) => {
-      accountingController.getTrialBalance(req, res);
+    async (req, res) => {
+      await accountingController.getTrialBalance(req as AuthenticatedRequest, res as Response);
     }
   );
   
   router.get(
     "/balance-sheet", 
     AuthGuard.roleGuard(["accountant", "admin", "manager"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      accountingController.getBalanceSheet(req, res);
+    async (req, res) => {
+      await accountingController.getBalanceSheet(req as AuthenticatedRequest, res as Response);
     }
   );
   
   router.get(
     "/income-statement", 
     AuthGuard.roleGuard(["accountant", "admin", "manager"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      accountingController.getIncomeStatement(req, res);
+    async (req, res) => {
+      await accountingController.getIncomeStatement(req as AuthenticatedRequest, res as Response);
     }
   );
   

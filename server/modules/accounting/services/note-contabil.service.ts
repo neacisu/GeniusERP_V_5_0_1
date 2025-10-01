@@ -44,10 +44,13 @@ interface ValidationResult {
 
 @Service()
 export default class NoteContabilService {
-  constructor(
-    private drizzleService: DrizzleService,
-    private auditService: AuditService
-  ) {}
+  private drizzleService?: DrizzleService;
+  private auditService?: AuditService;
+  
+  constructor(drizzleService?: DrizzleService, auditService?: AuditService) {
+    this.drizzleService = drizzleService;
+    this.auditService = auditService;
+  }
 
   /**
    * Create a new accounting note (Notă Contabilă)
