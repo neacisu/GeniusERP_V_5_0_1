@@ -345,16 +345,41 @@ export const accountBalanceRelations = relations(accountBalances, ({ one }) => (
   }),
 }));
 
-// Journal Entries and Transactions
+// Journal Entries and Transactions (Note Contabile)
+// Adapted for Romanian Accounting Standards (OMFP 1802/2014)
 export const journalEntries = pgTable("journal_entries", {
   id: uuid("id").defaultRandom().primaryKey(),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   date: timestamp("date").notNull(),
-  number: text("number"),
-  reference: text("reference"),
+  number: text("number"), // Număr notă contabilă (ex: NC-202510-001)
+  reference: text("reference"), // Referință document sursă
   description: text("description"),
   totalDebit: decimal("total_debit", { precision: 15, scale: 2 }).default("0").notNull(),
   totalCredit: decimal("total_credit", { precision: 15, scale: 2 }).default("0").notNull(),
+  
+  // Romanian Accounting Standards fields
+  status: varchar("status", { length: 20 }).default("draft").notNull(), // draft, approved, posted, cancelled
+  documentType: varchar("document_type", { length: 50 }), // invoice, receipt, payment, etc.
+  documentId: uuid("document_id"),
+  
+  // Validation fields (required by Romanian law)
+  validated: boolean("validated").default(false).notNull(),
+  validatedAt: timestamp("validated_at"),
+  validatedBy: uuid("validated_by").references(() => users.id),
+  
+  // Currency fields (for foreign currency transactions)
+  currencyCode: varchar("currency_code", { length: 3 }).default("RON").notNull(),
+  exchangeRate: decimal("exchange_rate", { precision: 10, scale: 4 }).default("1.0000").notNull(),
+  
+  // Posting date (data înregistrării în contabilitate)
+  postedAt: timestamp("posted_at"),
+  
+  // Cancellation fields
+  cancelledAt: timestamp("cancelled_at"),
+  cancelledBy: uuid("cancelled_by").references(() => users.id),
+  cancellationReason: text("cancellation_reason"),
+  
+  // Audit fields
   createdBy: uuid("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

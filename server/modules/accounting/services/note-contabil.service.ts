@@ -263,23 +263,39 @@ export default class NoteContabilService {
 
   /**
    * Get all accounting notes for a company
+   * Uses journal_entries table adapted for Romanian Accounting Standards
    * 
    * @param companyId Company ID
-   * @returns Array of accounting notes
+   * @returns Array of accounting notes (journal entries)
    */
   async getNotesByCompany(companyId: string): Promise<any[]> {
     try {
-      // In a real implementation, we would fetch all notes from the database
-      // For now, we return an empty array since the database tables don't exist yet
+      const { storage } = await import('../../../storage');
       
-      // This would be the actual implementation:
-      // return await this.drizzleService.executeQuery(async (db) => {
-      //   return await db.select().from(accountingNotes)
-      //     .where(eq(accountingNotes.companyId, companyId))
-      //     .orderBy(desc(accountingNotes.date));
-      // });
+      // Get all journal entries for the company
+      const entries = await storage.getJournalEntries();
       
-      return [];
+      // Filter by company and transform to Note Contabilă format
+      return entries
+        .filter((entry: any) => entry.companyId === companyId)
+        .map((entry: any) => ({
+          id: entry.id,
+          number: entry.number,
+          date: entry.date,
+          description: entry.description,
+          totalAmount: Number(entry.totalDebit) || 0, // Use debit as total amount
+          status: entry.status || 'draft',
+          createdBy: entry.createdBy,
+          createdAt: entry.createdAt,
+          approvedBy: entry.validatedBy,
+          approvedAt: entry.validatedAt,
+          source: entry.documentType,
+          documentType: entry.documentType,
+          documentId: entry.documentId,
+          validated: entry.validated || false,
+          currencyCode: entry.currencyCode || 'RON',
+          exchangeRate: entry.exchangeRate ? Number(entry.exchangeRate) : 1.0,
+        }));
     } catch (error) {
       console.error('Error getting accounting notes:', error);
       throw error;
