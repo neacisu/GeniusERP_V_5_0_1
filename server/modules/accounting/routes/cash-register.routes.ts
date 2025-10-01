@@ -23,15 +23,15 @@ export function setupCashRegisterRoutes() {
   /**
    * Get all cash registers
    */
-  router.get("/cash-registers", (req: AuthenticatedRequest, res: Response) => {
-    cashRegisterController.getCashRegisters(req, res);
+  router.get("/cash-registers", (req, res) => {
+    cashRegisterController.getCashRegisters(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get cash register by ID
    */
-  router.get("/cash-registers/:id", (req: AuthenticatedRequest, res: Response) => {
-    cashRegisterController.getCashRegister(req, res);
+  router.get("/cash-registers/:id", (req, res) => {
+    cashRegisterController.getCashRegister(req as AuthenticatedRequest, res);
   });
   
   /**
@@ -41,8 +41,8 @@ export function setupCashRegisterRoutes() {
   router.post(
     "/cash-registers", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      cashRegisterController.createCashRegister(req, res);
+    (req, res) => {
+      cashRegisterController.createCashRegister(req as AuthenticatedRequest, res);
     }
   );
   
@@ -53,8 +53,8 @@ export function setupCashRegisterRoutes() {
   router.put(
     "/cash-registers/:id", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      cashRegisterController.updateCashRegister(req, res);
+    (req, res) => {
+      cashRegisterController.updateCashRegister(req as AuthenticatedRequest, res);
     }
   );
   
@@ -65,8 +65,8 @@ export function setupCashRegisterRoutes() {
   router.post(
     "/receipts", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      cashRegisterController.recordCashReceipt(req, res);
+    (req, res) => {
+      cashRegisterController.recordCashReceipt(req as AuthenticatedRequest, res);
     }
   );
   
@@ -77,8 +77,8 @@ export function setupCashRegisterRoutes() {
   router.post(
     "/payments", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      cashRegisterController.recordCashPayment(req, res);
+    (req, res) => {
+      cashRegisterController.recordCashPayment(req as AuthenticatedRequest, res);
     }
   );
   
@@ -89,30 +89,30 @@ export function setupCashRegisterRoutes() {
   router.post(
     "/transfers", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      cashRegisterController.transferCash(req, res);
+    (req, res) => {
+      cashRegisterController.transferCash(req as AuthenticatedRequest, res);
     }
   );
   
   /**
    * Get all cash transactions (for all registers or filtered)
    */
-  router.get("/cash-transactions", (req: AuthenticatedRequest, res: Response) => {
-    cashRegisterController.getAllCashTransactions(req, res);
+  router.get("/cash-transactions", (req, res) => {
+    cashRegisterController.getAllCashTransactions(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get all cash transactions for a specific register
    */
-  router.get("/cash-registers/:id/transactions", (req: AuthenticatedRequest, res: Response) => {
-    cashRegisterController.getCashTransactions(req, res);
+  router.get("/cash-registers/:id/transactions", (req, res) => {
+    cashRegisterController.getCashTransactions(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get cash register balance as of specific date
    */
-  router.get("/cash-registers/:id/balance", (req: AuthenticatedRequest, res: Response) => {
-    cashRegisterController.getCashRegisterBalance(req, res);
+  router.get("/cash-registers/:id/balance", (req, res) => {
+    cashRegisterController.getCashRegisterBalance(req as AuthenticatedRequest, res);
   });
   
   /**
@@ -122,8 +122,8 @@ export function setupCashRegisterRoutes() {
   router.post(
     "/cash-registers/:id/bank-deposits", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      cashRegisterController.recordCashDepositToBank(req, res);
+    (req, res) => {
+      cashRegisterController.recordCashDepositToBank(req as AuthenticatedRequest, res);
     }
   );
   
@@ -134,8 +134,8 @@ export function setupCashRegisterRoutes() {
   router.post(
     "/cash-registers/:id/bank-withdrawals", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      cashRegisterController.recordCashWithdrawalFromBank(req, res);
+    (req, res) => {
+      cashRegisterController.recordCashWithdrawalFromBank(req as AuthenticatedRequest, res);
     }
   );
   
@@ -146,23 +146,23 @@ export function setupCashRegisterRoutes() {
   router.post(
     "/reconciliations/:registerId", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      cashRegisterController.createReconciliation(req, res);
+    (req, res) => {
+      cashRegisterController.createReconciliation(req as AuthenticatedRequest, res);
     }
   );
   
   /**
    * Get cash register report
    */
-  router.get("/reports/:registerId", (req: AuthenticatedRequest, res: Response) => {
-    cashRegisterController.generateCashRegisterReport(req, res);
+  router.get("/reports/:registerId", (req, res) => {
+    cashRegisterController.generateCashRegisterReport(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get daily closing report for a cash register
    */
-  router.get("/registers/:id/daily-closing", (req: AuthenticatedRequest, res: Response) => {
-    cashRegisterController.getDailyClosingReport(req, res);
+  router.get("/registers/:id/daily-closing", (req, res) => {
+    cashRegisterController.getDailyClosingReport(req as AuthenticatedRequest, res);
   });
   
   return router;
