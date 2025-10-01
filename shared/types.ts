@@ -43,14 +43,5 @@ export interface AuthUser extends DbUser {
  * Type declaration to extend the Express Request user property
  * This allows TypeScript to recognize user.role and user.roles in requests
  */
-declare global {
-  namespace Express {
-    interface User {
-      id: string;
-      username: string;
-      role: string;
-      roles: string[];
-      companyId: string | null;
-    }
-  }
-}
+// Removed global Express.User declaration to avoid type conflicts
+// Using JwtUserData from auth module instead
