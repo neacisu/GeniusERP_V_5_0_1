@@ -70,7 +70,12 @@ import {
   ChevronDown,
   ArrowDownUp,
   ArrowUpDown,
-  FileText
+  FileText,
+  Receipt,
+  ShoppingCart,
+  ArrowDown,
+  ArrowUp,
+  Building
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -346,19 +351,77 @@ export default function JournalEntriesPage() {
     setIsViewDialogOpen(true);
   };
 
-  // Get source badge color
-  const getSourceBadgeColor = (source: string) => {
+  // Traduce și formatează sursa (DB → UI)
+  const getSourceLabel = (source: string) => {
+    const sourceMap: Record<string, string> = {
+      'SALES': 'Vânzări',
+      'PURCHASE': 'Cumpărări',
+      'CASH_RECEIPT': 'Încasare Casă',
+      'CASH_PAYMENT': 'Plată Casă',
+      'BANK_RECEIPT': 'Încasare Bancă',
+      'BANK_PAYMENT': 'Plată Bancă',
+      'GENERAL': 'Înregistrare Generală',
+      'standard': 'Standard',
+      'ADJUSTMENT': 'Regularizare',
+      'REVERSAL': 'Stornare'
+    };
+    return sourceMap[source] || source;
+  };
+
+  // Get source badge cu icon și culori îmbunătățite
+  const getSourceBadge = (source: string) => {
+    const label = getSourceLabel(source);
+    
     switch (source) {
-      case 'Manual': return 'bg-gray-100 text-gray-800';
-      case 'Note Contabile': return 'bg-blue-100 text-blue-800';
-      case 'Vânzări': return 'bg-green-100 text-green-800';
-      case 'Cumpărări': return 'bg-purple-100 text-purple-800';
-      case 'Bancă': return 'bg-indigo-100 text-indigo-800';
-      case 'Casă': return 'bg-amber-100 text-amber-800';
-      case 'Salarizare': return 'bg-pink-100 text-pink-800';
-      case 'Plăți': return 'bg-red-100 text-red-800';
-      case 'Decontări': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'SALES':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+            <Receipt className="h-3 w-3" />
+            {label}
+          </span>
+        );
+      case 'PURCHASE':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
+            <ShoppingCart className="h-3 w-3" />
+            {label}
+          </span>
+        );
+      case 'CASH_RECEIPT':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <ArrowDown className="h-3 w-3" />
+            {label}
+          </span>
+        );
+      case 'CASH_PAYMENT':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+            <ArrowUp className="h-3 w-3" />
+            {label}
+          </span>
+        );
+      case 'BANK_RECEIPT':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+            <Building className="h-3 w-3" />
+            {label}
+          </span>
+        );
+      case 'BANK_PAYMENT':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+            <Building className="h-3 w-3" />
+            {label}
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-300">
+            <FileText className="h-3 w-3" />
+            {label}
+          </span>
+        );
     }
   };
 
@@ -534,9 +597,7 @@ export default function JournalEntriesPage() {
                         {entry.description}
                       </TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSourceBadgeColor(entry.source)}`}>
-                          {entry.source}
-                        </span>
+                        {getSourceBadge(entry.source)}
                       </TableCell>
                       <TableCell>
                         {entry.referenceNumber ? (
@@ -623,11 +684,9 @@ export default function JournalEntriesPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Sursă</p>
-                    <p>
-                      <span className={`inline-block px-2 py-1 mt-1 rounded-full text-xs font-medium ${getSourceBadgeColor(selectedEntry.source)}`}>
-                        {selectedEntry.source}
-                      </span>
-                    </p>
+                    <div className="mt-1">
+                      {getSourceBadge(selectedEntry.source)}
+                    </div>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Total</p>
