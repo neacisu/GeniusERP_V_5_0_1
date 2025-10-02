@@ -149,10 +149,11 @@ export class JournalController extends BaseController {
           data: transaction
         };
       } catch (error) {
-        console.error(`[ERROR] Failed to fetch transaction details: ${error.message || error}`);
+        const err = error as any;
+        console.error(`[ERROR] Failed to fetch transaction details: ${err.message || error}`);
         throw {
-          statusCode: error.statusCode || 500,
-          message: error.message || "Failed to fetch transaction details"
+          statusCode: err.statusCode || 500,
+          message: err.message || "Failed to fetch transaction details"
         };
       }
     });
@@ -180,7 +181,7 @@ export class JournalController extends BaseController {
       const franchiseId = this.getFranchiseId(req);
       
       // Map account numbers to account IDs if provided that way
-      const mappedLines = lines.map(line => {
+      const mappedLines = lines.map((line: any) => {
         // If the line already has accountId, use it
         if (line.accountId) {
           return line;
@@ -200,7 +201,7 @@ export class JournalController extends BaseController {
       console.log('[DEBUG] Using JournalServiceV2 for direct SQL operations');
       const entry = await this.journalServiceV2.createLedgerEntry({
         companyId,
-        franchiseId,
+        franchiseId: franchiseId || undefined,
         // Use the type from the request, or map from documentType if not provided
         type: type || (documentType as LedgerEntryType),
         // Use referenceNumber if provided, otherwise use documentNumber
