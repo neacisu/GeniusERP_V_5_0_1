@@ -607,6 +607,63 @@ export default function CashRegisterPage() {
         )}
       </div>
       
+      {/* Sumar Casa - Sold inițial + Mișcări + Sold final */}
+      {selectedRegister && transactions.length > 0 && (
+        <Card className="mb-6 bg-blue-50 border-blue-200">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Situație Casă - Perioada Selectată</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div>
+                <p className="text-xs text-gray-600 mb-1">Sold Inițial Perioadă</p>
+                <p className="text-lg font-bold tabular-nums">
+                  {formatCurrency(
+                    transactions.length > 0 
+                      ? Math.min(...transactions.map((t: any) => Number(t.balanceBefore || 0)))
+                      : 0,
+                    'RON'
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-600 mb-1">Total Încasări</p>
+                <p className="text-lg font-bold text-green-600 tabular-nums">
+                  +{formatCurrency(
+                    transactions
+                      .filter((t: any) => t.documentType === 'receipt')
+                      .reduce((sum: number, t: any) => sum + Number(t.amount), 0),
+                    'RON'
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-600 mb-1">Total Plăți</p>
+                <p className="text-lg font-bold text-red-600 tabular-nums">
+                  -{formatCurrency(
+                    transactions
+                      .filter((t: any) => t.documentType === 'payment')
+                      .reduce((sum: number, t: any) => sum + Number(t.amount), 0),
+                    'RON'
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-600 mb-1">Sold Final Perioadă</p>
+                <p className="text-lg font-bold text-blue-700 tabular-nums">
+                  {formatCurrency(
+                    transactions.length > 0
+                      ? Math.max(...transactions.map((t: any) => Number(t.balanceAfter || 0)))
+                      : 0,
+                    'RON'
+                  )}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-col space-y-4">
