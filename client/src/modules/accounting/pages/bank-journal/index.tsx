@@ -82,25 +82,34 @@ import { Link } from "wouter";
 // Type definitions
 type BankAccount = {
   id: string;
-  number: string;
-  name: string;
+  number?: string; // Legacy
+  accountNumber?: string; // DB field
+  name?: string; // Legacy
+  accountName?: string; // DB field
   bankName: string;
   currency: string;
-  balance: number;
+  balance?: number; // Legacy
+  currentBalance?: number; // DB field
   isActive: boolean;
 };
 
 type BankTransaction = {
   id: string;
-  date: string;
-  documentNumber: string;
+  date?: string; // Legacy
+  transactionDate?: string; // DB field (timestamp)
+  documentNumber?: string; // Legacy
+  referenceNumber?: string; // DB field
   description: string;
-  partnerName?: string;
+  partnerName?: string; // Legacy
+  payerName?: string; // DB field (for incoming)
+  payeeName?: string; // DB field (for outgoing)
   reference?: string;
-  type: 'incoming' | 'outgoing' | 'transfer' | 'fee';
+  type?: 'incoming' | 'outgoing' | 'transfer' | 'fee'; // Legacy
+  transactionType?: string; // DB field
   amount: number;
   bankAccountId: string;
-  posted: boolean;
+  posted?: boolean;
+  isPosted?: boolean; // DB field
   createdBy: string;
   createdAt: string;
 };
@@ -184,7 +193,13 @@ export default function BankJournalPage() {
     ], total: 5 }
   });
 
-  const bankAccounts = bankAccountsResponse?.data || [];
+  // Map DB fields to UI fields for bank accounts
+  const bankAccounts = (bankAccountsResponse?.data || []).map((acc: any) => ({
+    ...acc,
+    name: acc.accountName || acc.name,
+    number: acc.accountNumber || acc.number,
+    balance: Number(acc.currentBalance || acc.balance || 0)
+  }));
 
   // Fetch bank transactions
   const { data: transactionsResponse, isLoading: isLoadingTransactions } = useQuery<{ data: BankTransaction[]; total: number; page: number; limit: number }>({
@@ -330,7 +345,18 @@ export default function BankJournalPage() {
     ], total: 10, page: 1, limit: 20 }
   });
 
-  const transactions = transactionsResponse?.data || [];
+  // Map DB fields to UI fields for transactions
+  const transactions = (transactionsResponse?.data || []).map((txn: any) => ({
+    ...txn,
+    date: txn.transactionDate || txn.date,
+    documentNumber: txn.referenceNumber || txn.documentNumber,
+    partnerName: txn.payerName || txn.payeeName || txn.partnerName,
+    type: txn.transactionType === 'incoming_payment' ? 'incoming' :
+          txn.transactionType === 'outgoing_payment' ? 'outgoing' :
+          txn.transactionType === 'bank_fee' ? 'fee' :
+          txn.transactionType === 'transfer_between_accounts' ? 'transfer' : 'incoming',
+    posted: txn.isPosted || txn.posted || false
+  }));
 
   // Fetch transaction journal entry
   const { data: journalEntry, isLoading: isLoadingJournal } = useQuery<TransactionJournalEntry[]>({
