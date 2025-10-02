@@ -360,13 +360,13 @@ export default function BankJournalPage() {
   });
 
   // Filter transactions based on search term, account and type
-  const filteredTransactions = transactions?.filter(transaction => {
+  const filteredTransactions = transactions?.filter((transaction: any) => {
     // Filter by search term
     const matchesSearch = 
-      transaction.documentNumber.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (transaction.partnerName && transaction.partnerName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (transaction.reference && transaction.reference.toLowerCase().includes(searchTerm.toLowerCase()));
+      (transaction.documentNumber || transaction.referenceNumber || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (transaction.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (transaction.partnerName || transaction.payerName || transaction.payeeName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (transaction.reference || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     // Filter by account
     const matchesAccount = 
