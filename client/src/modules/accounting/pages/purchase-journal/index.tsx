@@ -395,12 +395,12 @@ export default function PurchaseJournalPage() {
   });
 
   // Filter invoices based on search term and active tab
-  const filteredInvoices = invoices?.filter(invoice => {
+  const filteredInvoices = invoices?.filter((invoice: any) => {
     // Filter by search term
     const matchesSearch = 
-      invoice.number.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      invoice.supplierNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      invoice.supplierName.toLowerCase().includes(searchTerm.toLowerCase());
+      String(invoice.number || invoice.series || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (invoice.supplierNumber || invoice.invoiceNumber || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (invoice.supplierName || invoice.customerName || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     // Filter by tab (status)
     const matchesTab = 
