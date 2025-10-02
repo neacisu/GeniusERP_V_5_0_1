@@ -829,9 +829,9 @@ export default function BankJournalPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-semibold">Tranzacție {selectedTransaction.documentNumber}</h3>
-                      {getTransactionTypeBadge(selectedTransaction.type)}
+                      {getTransactionTypeBadge(selectedTransaction.type || 'incoming')}
                     </div>
-                    <p className="text-sm text-gray-500 mt-2">Data: {formatDate(selectedTransaction.date)}</p>
+                    <p className="text-sm text-gray-500 mt-2">Data: {formatDate(selectedTransaction.date || '')}</p>
                   </div>
                   <div className={`text-xl font-bold tabular-nums ${
                     selectedTransaction.type === 'incoming' 
@@ -962,7 +962,7 @@ export default function BankJournalPage() {
                        selectedTransaction.type === 'transfer' ? 'Transfer' : 'Comision'} {selectedTransaction.documentNumber}
                     </h3>
                     <p className="text-sm text-blue-700">
-                      Data: {formatDate(selectedTransaction.date)} | Sumă: {formatCurrency(selectedTransaction.amount, 'RON')}
+                      Data: {formatDate(selectedTransaction.date || '')} | Sumă: {formatCurrency(selectedTransaction.amount, 'RON')}
                     </p>
                   </div>
                 </div>
