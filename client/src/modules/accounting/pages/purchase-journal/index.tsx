@@ -450,24 +450,34 @@ export default function PurchaseJournalPage() {
     setIsJournalDialogOpen(true);
   };
 
-  // Get status badge
+  // Get status badge with improved colors and icons
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':
         return (
           <div className="flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 text-blue-500" />
-            <span className="text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
+            <Clock className="h-3.5 w-3.5 text-amber-500" />
+            <span className="text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
               Ciornă
             </span>
           </div>
         );
+      case 'issued':
       case 'registered':
         return (
           <div className="flex items-center gap-1.5">
-            <ShoppingCart className="h-3.5 w-3.5 text-indigo-500" />
-            <span className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full">
+            <CheckCircle2 className="h-3.5 w-3.5 text-blue-500" />
+            <span className="text-xs font-medium text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
               Înregistrată
+            </span>
+          </div>
+        );
+      case 'sent':
+        return (
+          <div className="flex items-center gap-1.5">
+            <Send className="h-3.5 w-3.5 text-indigo-500" />
+            <span className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
+              Trimisă
             </span>
           </div>
         );
