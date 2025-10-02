@@ -114,7 +114,7 @@ export default function JournalEntriesPage() {
 
   // Fetch journal entries
   const { data: journalEntries, isLoading: isLoadingEntries } = useQuery<JournalEntry[]>({
-    queryKey: ['/api/accounting/journal-entries', dateRange],
+    queryKey: ['/api/accounting/ledger/entries', dateRange],
     // This is just for structure - we'll use actual API data in production
     placeholderData: [
       { 
