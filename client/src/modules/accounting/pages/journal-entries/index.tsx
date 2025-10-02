@@ -245,7 +245,7 @@ export default function JournalEntriesPage() {
   const journalEntries = (journalEntriesData || []).map((entry: any) => ({
     ...entry,
     totalAmount: Number(entry.amount || entry.totalAmount || 0),
-    referenceNumber: entry.number || entry.referenceNumber
+    referenceNumber: entry.referenceDocument || entry.number || entry.referenceNumber
   }));
 
   // Fetch journal entry details when viewing an entry

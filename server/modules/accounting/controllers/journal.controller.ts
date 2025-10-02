@@ -54,7 +54,8 @@ export class JournalController extends BaseController {
         date: e.created_at,
         description: e.description,
         source: e.type,
-        referenceDocument: e.reference_number,
+        referenceDocument: e.reference_number, // Numărul facturii/documentului sursă
+        referenceNumber: e.reference_number,
         amount: Number(e.amount),
         lines: e.lines || []
       }));
