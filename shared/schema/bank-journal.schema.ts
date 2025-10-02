@@ -90,6 +90,11 @@ export const bankTransactions = pgTable('bank_transactions', {
   payerName: text('payer_name'),
   payeeName: text('payee_name'),
   
+  // Referințe la documente sursă
+  invoiceNumber: text('invoice_number'),
+  invoiceId: uuid('invoice_id'),
+  contractNumber: text('contract_number'),
+  
   balanceBefore: numeric('balance_before', { precision: 15, scale: 2 }).notNull(),
   balanceAfter: numeric('balance_after', { precision: 15, scale: 2 }).notNull(),
   

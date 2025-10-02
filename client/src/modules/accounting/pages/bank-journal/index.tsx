@@ -351,6 +351,7 @@ export default function BankJournalPage() {
     date: txn.transactionDate || txn.date,
     documentNumber: txn.referenceNumber || txn.documentNumber,
     partnerName: txn.payerName || txn.payeeName || txn.partnerName,
+    reference: txn.invoiceNumber || txn.contractNumber || txn.reference, // Referință la factură/contract
     type: txn.transactionType === 'incoming_payment' ? 'incoming' :
           txn.transactionType === 'outgoing_payment' ? 'outgoing' :
           txn.transactionType === 'bank_fee' ? 'fee' :
