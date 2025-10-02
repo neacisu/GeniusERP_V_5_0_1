@@ -539,9 +539,9 @@ export default function JournalEntriesPage() {
                         </span>
                       </TableCell>
                       <TableCell>
-                        {entry.documentType && entry.documentId ? (
-                          <span className="text-sm">
-                            {entry.documentId}
+                        {entry.referenceNumber ? (
+                          <span className="text-sm font-medium text-blue-600">
+                            {entry.referenceNumber}
                           </span>
                         ) : (
                           <span className="text-sm text-gray-400">-</span>
