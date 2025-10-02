@@ -228,8 +228,8 @@ export default function FinancialReportsPage() {
     ]
   });
 
-  // Fetch financial indicators
-  const { data: indicators, isLoading: isLoadingIndicators } = useQuery<FinancialIndicator[]>({
+  // Fetch financial indicators (returns object, not array)
+  const { data: indicatorsData, isLoading: isLoadingIndicators } = useQuery<any>({
     queryKey: ['/api/accounting/financial-indicators'],
     // This is just for structure - we'll use actual API data in production
     placeholderData: [
