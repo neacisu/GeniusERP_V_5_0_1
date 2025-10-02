@@ -8,7 +8,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { DrizzleService } from '../../../common/drizzle';
+import { DrizzleService, getDrizzle } from '../../../common/drizzle';
 import { AuditService } from '../../audit/services/audit.service';
 import { Service } from '../../../../shared/types';
 
@@ -271,12 +271,14 @@ export default class NoteContabilService {
   async getNotesByCompany(companyId: string): Promise<any[]> {
     try {
       // Query direct din PostgreSQL ledger_entries
-      const sql = getClient();
-      const entries = await sql`
+      const db = getDrizzle();
+      
+      // Query folosind $client pentru SQL raw
+      const entries = await db.$client`
         SELECT 
           le.*,
-          (SELECT COALESCE(SUM(debit_amount), 0) FROM ledger_lines WHERE ledger_entry_id = le.id) as total_debit,
-          (SELECT COALESCE(SUM(credit_amount), 0) FROM ledger_lines WHERE ledger_entry_id = le.id) as total_credit
+          COALESCE((SELECT SUM(debit_amount) FROM ledger_lines WHERE ledger_entry_id = le.id), 0) as total_debit,
+          COALESCE((SELECT SUM(credit_amount) FROM ledger_lines WHERE ledger_entry_id = le.id), 0) as total_credit
         FROM ledger_entries le
         WHERE le.company_id = ${companyId}
         ORDER BY le.created_at DESC
