@@ -113,7 +113,7 @@ export default function JournalEntriesPage() {
   const { toast } = useToast();
 
   // Fetch journal entries
-  const { data: journalEntries, isLoading: isLoadingEntries } = useQuery<JournalEntry[]>({
+  const { data: journalEntriesData, isLoading: isLoadingEntries } = useQuery<JournalEntry[]>({
     queryKey: ['/api/accounting/ledger/entries', dateRange],
     // This is just for structure - we'll use actual API data in production
     placeholderData: [
@@ -240,6 +240,13 @@ export default function JournalEntriesPage() {
       },
     ]
   });
+
+  // Map DB fields to UI fields
+  const journalEntries = (journalEntriesData || []).map((entry: any) => ({
+    ...entry,
+    totalAmount: Number(entry.amount || entry.totalAmount || 0),
+    referenceNumber: entry.number || entry.referenceNumber
+  }));
 
   // Fetch journal entry details when viewing an entry
   const { data: entryDetails, isLoading: isLoadingEntryDetails } = useQuery<JournalEntryLine[]>({
