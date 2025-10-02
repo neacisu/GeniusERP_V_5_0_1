@@ -316,8 +316,13 @@ export default function PurchaseJournalPage() {
     ], total: 10, page: 1, limit: 10 }
   });
 
-  // Extract invoices array from response
-  const invoices = invoicesResponse?.data || [];
+  // Extract invoices array from response and map DB fields to UI
+  const invoices = (invoicesResponse?.data || []).map((inv: any) => ({
+    ...inv,
+    supplierName: inv.customerName || inv.supplierName, // DB folosește customer_name pentru purchase
+    supplierNumber: inv.invoiceNumber || inv.supplierNumber, // DB folosește invoice_number
+    number: String(inv.number || inv.series || ''), // Conversie safe la string
+  }));
 
   // Fetch invoice details when viewing an invoice
   const { data: invoiceItems, isLoading: isLoadingItems } = useQuery<InvoiceItem[]>({
