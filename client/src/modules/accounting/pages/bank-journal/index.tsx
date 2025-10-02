@@ -132,10 +132,10 @@ export default function BankJournalPage() {
   const { toast } = useToast();
 
   // Fetch bank accounts
-  const { data: bankAccounts, isLoading: isLoadingAccounts } = useQuery<BankAccount[]>({
+  const { data: bankAccountsResponse, isLoading: isLoadingAccounts } = useQuery<{ data: BankAccount[]; total: number }>({
     queryKey: ['/api/accounting/bank-accounts'],
     // This is just for structure - we'll use actual API data in production
-    placeholderData: [
+    placeholderData: { data: [
       { 
         id: '1', 
         number: 'RO82BTRL123456789012345', 
@@ -181,14 +181,16 @@ export default function BankJournalPage() {
         balance: 3250.80,
         isActive: true
       },
-    ]
+    ], total: 5 }
   });
 
+  const bankAccounts = bankAccountsResponse?.data || [];
+
   // Fetch bank transactions
-  const { data: transactions, isLoading: isLoadingTransactions } = useQuery<BankTransaction[]>({
+  const { data: transactionsResponse, isLoading: isLoadingTransactions } = useQuery<{ data: BankTransaction[]; total: number; page: number; limit: number }>({
     queryKey: ['/api/accounting/bank-transactions', selectedAccount, dateRange],
     // This is just for structure - we'll use actual API data in production
-    placeholderData: [
+    placeholderData: { data: [
       { 
         id: '1', 
         date: '2025-04-10', 
@@ -325,8 +327,10 @@ export default function BankJournalPage() {
         createdBy: 'Alexandru Popescu',
         createdAt: '2025-04-06T10:15:00Z'
       },
-    ]
+    ], total: 10, page: 1, limit: 20 }
   });
+
+  const transactions = transactionsResponse?.data || [];
 
   // Fetch transaction journal entry
   const { data: journalEntry, isLoading: isLoadingJournal } = useQuery<TransactionJournalEntry[]>({
