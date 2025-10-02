@@ -620,7 +620,7 @@ export default function CashRegisterPage() {
                 <p className="text-lg font-bold tabular-nums">
                   {formatCurrency(
                     transactions.length > 0 
-                      ? Math.min(...transactions.map((t: any) => Number(t.balanceBefore || 0)))
+                      ? Number(transactions[transactions.length - 1]?.balanceBefore || 0)
                       : 0,
                     'RON'
                   )}
@@ -653,7 +653,7 @@ export default function CashRegisterPage() {
                 <p className="text-lg font-bold text-blue-700 tabular-nums">
                   {formatCurrency(
                     transactions.length > 0
-                      ? Math.max(...transactions.map((t: any) => Number(t.balanceAfter || 0)))
+                      ? Number(transactions[0]?.balanceAfter || 0)
                       : 0,
                     'RON'
                   )}
