@@ -29,9 +29,9 @@ export const bankTransactionTypeValues = [
 export const bankTransactionTypeEnum = pgEnum('bank_transaction_type', bankTransactionTypeValues);
 
 /**
- * Payment Method Enum
+ * Bank Payment Method Enum
  */
-export const paymentMethodValues = [
+export const bankPaymentMethodValues = [
   'bank_transfer',
   'direct_debit',
   'card_payment',
@@ -40,7 +40,7 @@ export const paymentMethodValues = [
   'mobile_banking',
   'other'
 ] as const;
-export const paymentMethodEnum = pgEnum('payment_method', paymentMethodValues);
+export const bankPaymentMethodEnum = pgEnum('bank_payment_method', bankPaymentMethodValues);
 
 /**
  * Bank Accounts Table
@@ -77,7 +77,7 @@ export const bankTransactions = pgTable('bank_transactions', {
   
   referenceNumber: text('reference_number').notNull(),
   transactionType: bankTransactionTypeEnum('transaction_type').notNull(),
-  paymentMethod: paymentMethodEnum('payment_method'),
+  paymentMethod: bankPaymentMethodEnum('payment_method'),
   
   transactionDate: timestamp('transaction_date').notNull(),
   valueDate: timestamp('value_date'),
