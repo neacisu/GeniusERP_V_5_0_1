@@ -290,6 +290,15 @@ export default function FinancialReportsPage() {
     ]
   });
 
+  // Transform indicators object to array
+  const indicators = indicatorsData ? [
+    { id: '1', name: 'Total Venituri', value: indicatorsData.totalRevenue || 0, status: 'positive' },
+    { id: '2', name: 'Total Cheltuieli', value: indicatorsData.totalExpenses || 0, status: 'negative' },
+    { id: '3', name: 'Profit', value: indicatorsData.profit || 0, status: indicatorsData.profit > 0 ? 'positive' : 'negative' },
+    { id: '4', name: 'Sold Casă', value: indicatorsData.cashBalance || 0, status: 'neutral' },
+    { id: '5', name: 'Sold Bancă', value: indicatorsData.bankBalance || 0, status: 'neutral' }
+  ] : [];
+
   // Report type information
   const reportTypes: Record<ReportType, ReportTypeInfo> = {
     'trial-balance': {
