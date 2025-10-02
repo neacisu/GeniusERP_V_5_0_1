@@ -378,14 +378,14 @@ export default function NoteContabilPage() {
     setFormLines([{ accountId: "", description: "", debit: "0", credit: "0" }]);
   };
 
-  // Get status badge component
+  // Get status badge component - îmbunătățit cu colori și border
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':
         return (
           <div className="flex items-center gap-1.5">
-            <ClockIcon className="h-3.5 w-3.5 text-yellow-500" />
-            <span className="text-xs font-medium text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded-full">
+            <ClockIcon className="h-3.5 w-3.5 text-amber-500" />
+            <span className="text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
               Ciornă
             </span>
           </div>
@@ -393,8 +393,8 @@ export default function NoteContabilPage() {
       case 'approved':
         return (
           <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="h-3.5 w-3.5 text-blue-500" />
-            <span className="text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+            <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
               Aprobată
             </span>
           </div>
@@ -403,7 +403,7 @@ export default function NoteContabilPage() {
         return (
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-            <span className="text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-medium text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
               Contabilizată
             </span>
           </div>
@@ -412,7 +412,7 @@ export default function NoteContabilPage() {
         return (
           <div className="flex items-center gap-1.5">
             <AlertCircle className="h-3.5 w-3.5 text-gray-500" />
-            <span className="text-xs font-medium text-gray-700 bg-gray-50 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-medium text-gray-700 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-300">
               {status}
             </span>
           </div>
