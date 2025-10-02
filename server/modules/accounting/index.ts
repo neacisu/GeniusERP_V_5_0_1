@@ -61,7 +61,7 @@ export function initAccountingModule(app: Express) {
   
   // Setup specialized journal routes
   const bankJournalRoutes = setupBankJournalRoutes();
-  app.use("/api/accounting/bank-journal", bankJournalRoutes);
+  app.use("/api/accounting", bankJournalRoutes); // Direct sub /api/accounting pentru /bank-accounts și /bank-transactions
   
   const cashRegisterRoutes = setupCashRegisterRoutes();
   app.use("/api/accounting", cashRegisterRoutes); // Direct sub /api/accounting pentru /cash-registers și /cash-transactions

@@ -23,15 +23,15 @@ export function setupBankJournalRoutes() {
   /**
    * Get all bank accounts
    */
-  router.get("/accounts", (req: AuthenticatedRequest, res: Response) => {
-    bankJournalController.getBankAccounts(req, res);
+  router.get("/bank-accounts", (req, res) => {
+    bankJournalController.getBankAccounts(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get bank account by ID
    */
-  router.get("/accounts/:id", (req: AuthenticatedRequest, res: Response) => {
-    bankJournalController.getBankAccount(req, res);
+  router.get("/bank-accounts/:id", (req, res) => {
+    bankJournalController.getBankAccount(req as AuthenticatedRequest, res);
   });
   
   /**
@@ -39,10 +39,10 @@ export function setupBankJournalRoutes() {
    * Requires accountant or admin role
    */
   router.post(
-    "/accounts", 
+    "/bank-accounts", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      bankJournalController.createBankAccount(req, res);
+    (req, res) => {
+      bankJournalController.createBankAccount(req as AuthenticatedRequest, res);
     }
   );
   
@@ -51,25 +51,25 @@ export function setupBankJournalRoutes() {
    * Requires accountant or admin role
    */
   router.put(
-    "/accounts/:id", 
+    "/bank-accounts/:id", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      bankJournalController.updateBankAccount(req, res);
+    (req, res) => {
+      bankJournalController.updateBankAccount(req as AuthenticatedRequest, res);
     }
   );
   
   /**
    * Get bank transactions with pagination and filtering
    */
-  router.get("/transactions", (req: AuthenticatedRequest, res: Response) => {
-    bankJournalController.getBankTransactions(req, res);
+  router.get("/bank-transactions", (req, res) => {
+    bankJournalController.getBankTransactions(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get bank transaction by ID
    */
-  router.get("/transactions/:id", (req: AuthenticatedRequest, res: Response) => {
-    bankJournalController.getBankTransaction(req, res);
+  router.get("/bank-transactions/:id", (req, res) => {
+    bankJournalController.getBankTransaction(req as AuthenticatedRequest, res);
   });
   
   /**
@@ -77,10 +77,10 @@ export function setupBankJournalRoutes() {
    * Requires accountant or admin role
    */
   router.post(
-    "/transactions/deposits", 
+    "/bank-transactions/deposits", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      bankJournalController.createDeposit(req, res);
+    (req, res) => {
+      bankJournalController.createDeposit(req as AuthenticatedRequest, res);
     }
   );
   
@@ -89,10 +89,10 @@ export function setupBankJournalRoutes() {
    * Requires accountant or admin role
    */
   router.post(
-    "/transactions/payments", 
+    "/bank-transactions/payments", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      bankJournalController.createPayment(req, res);
+    (req, res) => {
+      bankJournalController.createPayment(req as AuthenticatedRequest, res);
     }
   );
   
@@ -101,10 +101,10 @@ export function setupBankJournalRoutes() {
    * Requires accountant or admin role
    */
   router.post(
-    "/transactions/transfers", 
+    "/bank-transactions/transfers", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      bankJournalController.createBankTransfer(req, res);
+    (req, res) => {
+      bankJournalController.createBankTransfer(req as AuthenticatedRequest, res);
     }
   );
   
@@ -113,10 +113,10 @@ export function setupBankJournalRoutes() {
    * Requires accountant or admin role
    */
   router.post(
-    "/statements/import/:bankAccountId", 
+    "/bank-statements/import/:bankAccountId", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      bankJournalController.importBankStatement(req, res);
+    (req, res) => {
+      bankJournalController.importBankStatement(req as AuthenticatedRequest, res);
     }
   );
   
@@ -125,38 +125,39 @@ export function setupBankJournalRoutes() {
    * Requires accountant or admin role
    */
   router.post(
-    "/reconciliations/:bankAccountId", 
+    "/bank-reconciliations/:bankAccountId", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      bankJournalController.createReconciliation(req, res);
+    (req, res) => {
+      bankJournalController.createReconciliation(req as AuthenticatedRequest, res);
     }
   );
   
   /**
    * Get bank account balance as of specific date
    */
-  router.get("/accounts/:id/balance", (req: AuthenticatedRequest, res: Response) => {
-    bankJournalController.getBankAccountBalance(req, res);
+  router.get("/bank-accounts/:id/balance", (req, res) => {
+    bankJournalController.getBankAccountBalance(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get bank account statement for a period
    */
-  router.get("/accounts/:id/statement", (req: AuthenticatedRequest, res: Response) => {
-    bankJournalController.generateBankStatement(req, res);
+  router.get("/bank-accounts/:id/statement", (req, res) => {
+    bankJournalController.generateBankStatement(req as AuthenticatedRequest, res);
   });
   
   /**
    * Create a bank transaction entry (ledger entry)
    * Requires accountant or admin role
+   * TODO: Implement createBankTransactionEntry in BankJournalController
    */
-  router.post(
-    "/transactions/entry", 
-    AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      bankJournalController.createBankTransactionEntry(req, res);
-    }
-  );
+  // router.post(
+  //   "/bank-transactions/entry", 
+  //   AuthGuard.roleGuard(["accountant", "admin"]), 
+  //   (req, res) => {
+  //     bankJournalController.createBankTransactionEntry(req as AuthenticatedRequest, res);
+  //   }
+  // );
   
   return router;
 }
