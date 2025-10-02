@@ -21,6 +21,47 @@ export class JournalController extends BaseController {
   }
   
   /**
+   * Get all ledger entries (Registrul Jurnal)
+   * GET /api/accounting/ledger/entries
+   */
+  async getLedgerEntries(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      
+      const db = getDrizzle();
+      const entries = await db.$client`
+        SELECT 
+          le.*,
+          json_agg(
+            json_build_object(
+              'id', ll.id,
+              'accountId', ll.account_id,
+              'debitAmount', ll.debit_amount,
+              'creditAmount', ll.credit_amount,
+              'description', ll.description
+            ) ORDER BY ll.id
+          ) as lines
+        FROM ledger_entries le
+        LEFT JOIN ledger_lines ll ON le.id = ll.ledger_entry_id
+        WHERE le.company_id = ${companyId}
+        GROUP BY le.id
+        ORDER BY le.created_at DESC
+      `;
+      
+      return entries.map((e: any) => ({
+        id: e.id,
+        number: e.reference_number,
+        date: e.created_at,
+        description: e.description,
+        source: e.type,
+        referenceDocument: e.reference_number,
+        amount: Number(e.amount),
+        lines: e.lines || []
+      }));
+    });
+  }
+  
+  /**
    * Record a new transaction
    * POST /api/accounting/ledger/transactions
    */

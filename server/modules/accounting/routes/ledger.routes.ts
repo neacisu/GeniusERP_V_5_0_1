@@ -21,49 +21,48 @@ export function setupLedgerRoutes() {
    * Record a new transaction
    * POST /api/accounting/ledger/transactions
    */
-  router.post("/transactions", (req: AuthenticatedRequest, res: Response) => {
-    journalController.recordTransaction(req, res);
+  router.post("/transactions", (req, res) => {
+    journalController.recordTransaction(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get transaction details
    * GET /api/accounting/ledger/transactions/:id
    */
-  router.get("/transactions/:id", (req: AuthenticatedRequest, res: Response) => {
-    journalController.getTransaction(req, res);
+  router.get("/transactions/:id", (req, res) => {
+    journalController.getTransaction(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get all ledger entries (with optional filtering)
    * GET /api/accounting/ledger/entries
    */
-  router.get("/entries", (req: AuthenticatedRequest, res: Response) => {
-    // Simple response for now - will be implemented fully later
-    res.json([]);
+  router.get("/entries", (req, res) => {
+    journalController.getLedgerEntries(req as AuthenticatedRequest, res);
   });
   
   /**
    * Create a ledger entry
    * POST /api/accounting/ledger/entry
    */
-  router.post("/entry", (req: AuthenticatedRequest, res: Response) => {
-    journalController.createLedgerEntry(req, res);
+  router.post("/entry", (req, res) => {
+    journalController.createLedgerEntry(req as AuthenticatedRequest, res);
   });
   
   /**
    * Alias for creating ledger entry (to maintain backward compatibility)
    * POST /api/accounting/ledger/entries
    */
-  router.post("/entries", (req: AuthenticatedRequest, res: Response) => {
-    journalController.createLedgerEntry(req, res);
+  router.post("/entries", (req, res) => {
+    journalController.createLedgerEntry(req as AuthenticatedRequest, res);
   });
   
   /**
    * Reverse a ledger entry
    * POST /api/accounting/ledger/entries/:id/reverse
    */
-  router.post("/entries/:id/reverse", (req: AuthenticatedRequest, res: Response) => {
-    journalController.reverseLedgerEntry(req, res);
+  router.post("/entries/:id/reverse", (req, res) => {
+    journalController.reverseLedgerEntry(req as AuthenticatedRequest, res);
   });
   
   return router;
