@@ -292,11 +292,11 @@ export default function FinancialReportsPage() {
 
   // Transform indicators object to array
   const indicators = indicatorsData ? [
-    { id: '1', name: 'Total Venituri', value: indicatorsData.totalRevenue || 0, status: 'positive' },
-    { id: '2', name: 'Total Cheltuieli', value: indicatorsData.totalExpenses || 0, status: 'negative' },
-    { id: '3', name: 'Profit', value: indicatorsData.profit || 0, status: indicatorsData.profit > 0 ? 'positive' : 'negative' },
-    { id: '4', name: 'Sold Casă', value: indicatorsData.cashBalance || 0, status: 'neutral' },
-    { id: '5', name: 'Sold Bancă', value: indicatorsData.bankBalance || 0, status: 'neutral' }
+    { id: '1', name: 'Total Venituri', value: indicatorsData.totalRevenue || 0, previousValue: 0, changePercent: 0, status: 'positive', description: 'Venituri totale din vânzări' },
+    { id: '2', name: 'Total Cheltuieli', value: indicatorsData.totalExpenses || 0, previousValue: 0, changePercent: 0, status: 'negative', description: 'Cheltuieli totale achiziții' },
+    { id: '3', name: 'Profit', value: indicatorsData.profit || 0, previousValue: 0, changePercent: 0, status: indicatorsData.profit > 0 ? 'positive' : 'negative', description: 'Profit = Venituri - Cheltuieli' },
+    { id: '4', name: 'Sold Casă', value: indicatorsData.cashBalance || 0, previousValue: 0, changePercent: 0, status: 'neutral', description: 'Sold curent casa în lei' },
+    { id: '5', name: 'Sold Bancă', value: indicatorsData.bankBalance || 0, previousValue: 0, changePercent: 0, status: 'neutral', description: 'Sold curent conturi bancare' }
   ] : [];
 
   // Report type information
