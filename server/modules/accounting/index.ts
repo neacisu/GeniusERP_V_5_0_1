@@ -6,6 +6,7 @@ import { setupBankJournalRoutes } from "./routes/bank-journal.routes";
 import { setupCashRegisterRoutes } from "./routes/cash-register.routes";
 import { setupSalesJournalRoutes } from "./routes/sales-journal.routes";
 import { setupPurchaseJournalRoutes } from "./routes/purchase-journal.routes";
+import { setupFinancialReportsRoutes } from "./routes/financial-reports.routes";
 import { AccountingService } from "./services/accounting.service";
 import { storage } from "../../storage";
 import { AuthGuard } from "../auth/guards/auth.guard";
@@ -71,6 +72,9 @@ export function initAccountingModule(app: Express) {
   
   const purchaseJournalRoutes = setupPurchaseJournalRoutes();
   app.use("/api/accounting/purchases", purchaseJournalRoutes); // Changed from purchase-journal to purchases
+  
+  const financialReportsRoutes = setupFinancialReportsRoutes();
+  app.use("/api/accounting", financialReportsRoutes); // Financial reports și indicators
   
   // Register legacy accounting service in global registry
   // Note: Specialized journal services are registered in registry.init.ts
