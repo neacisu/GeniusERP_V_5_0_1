@@ -270,32 +270,37 @@ export default class NoteContabilService {
    */
   async getNotesByCompany(companyId: string): Promise<any[]> {
     try {
-      const { storage } = await import('../../../storage');
+      // Query direct din PostgreSQL ledger_entries
+      const sql = getClient();
+      const entries = await sql`
+        SELECT 
+          le.*,
+          (SELECT COALESCE(SUM(debit_amount), 0) FROM ledger_lines WHERE ledger_entry_id = le.id) as total_debit,
+          (SELECT COALESCE(SUM(credit_amount), 0) FROM ledger_lines WHERE ledger_entry_id = le.id) as total_credit
+        FROM ledger_entries le
+        WHERE le.company_id = ${companyId}
+        ORDER BY le.created_at DESC
+      `;
       
-      // Get all journal entries for the company
-      const entries = await storage.getJournalEntries();
-      
-      // Filter by company and transform to Note Contabilă format
-      return entries
-        .filter((entry: any) => entry.companyId === companyId)
-        .map((entry: any) => ({
-          id: entry.id,
-          number: entry.number,
-          date: entry.date,
-          description: entry.description,
-          totalAmount: Number(entry.totalDebit) || 0, // Use debit as total amount
-          status: entry.status || 'draft',
-          createdBy: entry.createdBy,
-          createdAt: entry.createdAt,
-          approvedBy: entry.validatedBy,
-          approvedAt: entry.validatedAt,
-          source: entry.documentType,
-          documentType: entry.documentType,
-          documentId: entry.documentId,
-          validated: entry.validated || false,
-          currencyCode: entry.currencyCode || 'RON',
-          exchangeRate: entry.exchangeRate ? Number(entry.exchangeRate) : 1.0,
-        }));
+      // Transform to Note Contabilă format
+      return entries.map((entry: any) => ({
+        id: entry.id,
+        number: entry.reference_number || 'N/A',
+        date: entry.created_at,
+        description: entry.description,
+        totalAmount: Number(entry.amount) || Number(entry.total_debit) || 0,
+        status: 'approved', // Ledger entries sunt automat aprobate
+        createdBy: entry.created_by,
+        createdAt: entry.created_at,
+        approvedBy: entry.created_by,
+        approvedAt: entry.created_at,
+        source: entry.type,
+        documentType: entry.type,
+        documentId: entry.id,
+        validated: true,
+        currencyCode: 'RON',
+        exchangeRate: 1.0,
+      }));
     } catch (error) {
       console.error('Error getting accounting notes:', error);
       throw error;
