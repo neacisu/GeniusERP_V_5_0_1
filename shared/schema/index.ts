@@ -11,3 +11,4 @@ export * from './bpm.schema';
 export * from './collaboration.schema';
 export * from './inventory-assessment';
 export * from './cash-register.schema';
+export * from './bank-journal.schema';

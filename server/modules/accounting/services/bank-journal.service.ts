@@ -6,6 +6,10 @@
  */
 
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
+import { getDrizzle } from '../../../common/drizzle';
+import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { bankAccounts, bankTransactions, BankAccount, BankTransaction } from '../../../../shared/schema';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Bank transaction type enum
@@ -110,6 +114,38 @@ export class BankJournalService {
    */
   constructor() {
     this.journalService = new JournalService();
+  }
+  
+  // CRUD for Bank Accounts
+  public async getBankAccounts(companyId: string): Promise<{ data: BankAccount[]; total: number }> {
+    const db = getDrizzle();
+    const result = await db.select().from(bankAccounts).where(eq(bankAccounts.companyId, companyId));
+    return { data: result, total: result.length };
+  }
+  
+  public async getBankAccount(id: string, companyId: string): Promise<BankAccount | null> {
+    const db = getDrizzle();
+    const result = await db.select().from(bankAccounts).where(and(eq(bankAccounts.id, id), eq(bankAccounts.companyId, companyId))).limit(1);
+    return result[0] || null;
+  }
+  
+  // CRUD for Bank Transactions  
+  public async getBankTransactions(companyId: string, page = 1, limit = 20, startDate?: Date, endDate?: Date): Promise<{ data: BankTransaction[]; total: number; page: number; limit: number }> {
+    const db = getDrizzle();
+    const offset = (page - 1) * limit;
+    const conditions: any[] = [eq(bankTransactions.companyId, companyId)];
+    if (startDate) conditions.push(gte(bankTransactions.transactionDate, startDate));
+    if (endDate) conditions.push(lte(bankTransactions.transactionDate, endDate));
+    
+    const result = await db.select().from(bankTransactions).where(and(...conditions)).orderBy(desc(bankTransactions.transactionDate)).limit(limit).offset(offset);
+    const total = await db.select().from(bankTransactions).where(and(...conditions));
+    return { data: result, total: total.length, page, limit };
+  }
+  
+  public async getBankTransaction(id: string, companyId: string): Promise<BankTransaction | null> {
+    const db = getDrizzle();
+    const result = await db.select().from(bankTransactions).where(and(eq(bankTransactions.id, id), eq(bankTransactions.companyId, companyId))).limit(1);
+    return result[0] || null;
   }
   
   /**

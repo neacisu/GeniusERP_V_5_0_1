@@ -33,6 +33,9 @@ export * from "./schema/warehouse";
 // Export Cash Register models for shared usage across the application
 export * from "./schema/cash-register.schema";
 
+// Export Bank Journal models for shared usage across the application
+export * from "./schema/bank-journal.schema";
+
 // User Management
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
