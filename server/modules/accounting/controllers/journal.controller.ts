@@ -50,12 +50,12 @@ export class JournalController extends BaseController {
       
       return entries.map((e: any) => ({
         id: e.id,
-        number: e.reference_number,
+        number: e.note_number || `NC-${e.id.substring(0, 8)}`, // Numărul NOTEI contabile
         date: e.created_at,
         description: e.description,
         source: e.type,
-        referenceDocument: e.reference_number, // Numărul facturii/documentului sursă
-        referenceNumber: e.reference_number,
+        referenceDocument: e.reference_number, // Numărul DOCUMENTULUI sursă (TEST-0001, etc.)
+        referenceNumber: e.reference_number, // Pentru afișare în coloană
         amount: Number(e.amount),
         lines: e.lines || []
       }));
