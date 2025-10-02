@@ -364,7 +364,8 @@ export default function CashRegisterPage() {
     ...txn,
     documentType: txn.transactionType === 'cash_receipt' ? 'receipt' : 'payment',
     date: txn.transactionDate || txn.date,
-    partnerName: txn.personName || txn.partnerName
+    partnerName: txn.personName || txn.partnerName,
+    reference: txn.invoiceNumber || txn.contractNumber || txn.reference // Referință la factură/contract
   }));
 
   // Fetch transaction journal entry

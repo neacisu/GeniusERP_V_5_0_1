@@ -161,9 +161,9 @@ export const cashTransactions = pgTable('cash_transactions', {
   personIdNumber: text('person_id_number'), // CNP sau Serie/Nr. CI (obligatoriu pentru plăți >5000 RON sau salarii)
   personAddress: text('person_address'), // Adresă (opțional, dar recomandat)
   
-  // Baza operațiunii (Factură, Contract, etc.)
+  // Baza operațiunii (Factură, Contract, etc.) - pentru urmărire și reconciliere
   invoiceId: uuid('invoice_id'), // Link către invoices
-  invoiceNumber: text('invoice_number'), // Număr factură
+  invoiceNumber: text('invoice_number'), // Număr factură (afișat în coloana Referință)
   contractNumber: text('contract_number'), // Număr contract
   description: text('description').notNull(), // Descriere operațiune (obligatoriu)
   
