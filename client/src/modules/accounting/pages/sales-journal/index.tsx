@@ -76,7 +76,8 @@ import {
   Clock,
   Receipt,
   UserCircle,
-  Building
+  Building,
+  AlertCircle
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -472,8 +473,8 @@ export default function SalesJournalPage() {
       case 'draft':
         return (
           <div className="flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 text-blue-500" />
-            <span className="text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
+            <Clock className="h-3.5 w-3.5 text-amber-500" />
+            <span className="text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
               Ciornă
             </span>
           </div>
@@ -481,9 +482,18 @@ export default function SalesJournalPage() {
       case 'issued':
         return (
           <div className="flex items-center gap-1.5">
-            <Receipt className="h-3.5 w-3.5 text-indigo-500" />
-            <span className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+            <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
               Emisă
+            </span>
+          </div>
+        );
+      case 'sent':
+        return (
+          <div className="flex items-center gap-1.5">
+            <Receipt className="h-3.5 w-3.5 text-indigo-500" />
+            <span className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
+              Trimisă
             </span>
           </div>
         );
@@ -491,7 +501,7 @@ export default function SalesJournalPage() {
         return (
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-            <span className="text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-medium text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
               Încasată
             </span>
           </div>
@@ -499,8 +509,8 @@ export default function SalesJournalPage() {
       case 'overdue':
         return (
           <div className="flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 text-red-500" />
-            <span className="text-xs font-medium text-red-700 bg-red-50 px-2 py-0.5 rounded-full">
+            <AlertCircle className="h-3.5 w-3.5 text-red-500" />
+            <span className="text-xs font-medium text-red-700 bg-red-50 px-2.5 py-1 rounded-full border border-red-200">
               Restantă
             </span>
           </div>
@@ -509,7 +519,7 @@ export default function SalesJournalPage() {
         return (
           <div className="flex items-center gap-1.5">
             <XCircle className="h-3.5 w-3.5 text-gray-500" />
-            <span className="text-xs font-medium text-gray-700 bg-gray-50 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-medium text-gray-700 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-300">
               Anulată
             </span>
           </div>
@@ -517,7 +527,7 @@ export default function SalesJournalPage() {
       default:
         return (
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-medium text-gray-700 bg-gray-50 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-medium text-gray-700 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-300">
               {status}
             </span>
           </div>
