@@ -42,6 +42,15 @@ import {
   TabsTrigger
 } from "@/components/ui/tabs";
 import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format, startOfMonth, endOfMonth } from "date-fns";
+import { ro } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -61,6 +70,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   PlusCircle,
   FileText,
@@ -77,9 +87,12 @@ import {
   Receipt,
   UserCircle,
   Building,
-  AlertCircle
+  AlertCircle,
+  Loader2,
+  FileSpreadsheet
 } from "lucide-react";
 import { Link } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
 
 // Type definitions
 type SalesInvoice = {
@@ -140,6 +153,12 @@ type Client = {
 };
 
 export default function SalesJournalPage() {
+  const { toast } = useToast();
+  
+  // Main section selector
+  const [mainSection, setMainSection] = useState<'invoices' | 'journal-report'>('invoices');
+  
+  // Invoices section states
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | null>(null);
@@ -151,7 +170,28 @@ export default function SalesJournalPage() {
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0], 
     to: new Date().toISOString().split('T')[0] 
   });
-  const { toast } = useToast();
+  
+  // Journal Report section states
+  const [reportPeriodStart, setReportPeriodStart] = useState<Date>(startOfMonth(new Date()));
+  const [reportPeriodEnd, setReportPeriodEnd] = useState<Date>(endOfMonth(new Date()));
+  const [reportType, setReportType] = useState<'DETAILED' | 'SUMMARY'>('DETAILED');
+  
+  // Fetch Sales Journal Report (OMFP 2634/2015)
+  const { data: journalReport, isLoading: isLoadingReport, refetch: refetchReport } = useQuery({
+    queryKey: ['sales-journal-report', reportPeriodStart, reportPeriodEnd, reportType],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        periodStart: format(reportPeriodStart, 'yyyy-MM-dd'),
+        periodEnd: format(reportPeriodEnd, 'yyyy-MM-dd'),
+        reportType
+      });
+      
+      // Folosim apiRequest pentru a include automat token-ul de autentificare
+      const response = await apiRequest(`/api/accounting/sales/journal?${params}`);
+      return response.data || response;
+    },
+    enabled: mainSection === 'journal-report' && !!reportPeriodStart && !!reportPeriodEnd
+  });
 
   // Fetch sales invoices
   const { data: invoicesResponse, isLoading: isLoadingInvoices } = useQuery<{ data: SalesInvoice[]; total: number; page: number; limit: number }>({
@@ -556,40 +596,28 @@ export default function SalesJournalPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Jurnal Vânzări</h1>
-          <p className="text-sm text-gray-500">Gestionați facturile de vânzare și urmăriți încasările</p>
+          <p className="text-sm text-gray-500">Gestionați facturile și generați raportul conform OMFP 2634/2015</p>
         </div>
         
         <div className="flex space-x-2 mt-4 md:mt-0">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center">
-                <Download className="h-4 w-4 mr-2" />
-                <span>Export</span>
-                <ChevronDown className="h-4 w-4 ml-2" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Export Jurnal Vânzări</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <span>Export PDF</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <span>Export Excel</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <span>Export CSV</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          <Button>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            <span>Factură Nouă</span>
-          </Button>
+          {mainSection === 'invoices' && (
+            <Button>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              <span>Factură Nouă</span>
+            </Button>
+          )}
         </div>
       </div>
       
+      {/* Main Tabs - Facturi vs Raport Jurnal */}
+      <Tabs value={mainSection} onValueChange={(val: any) => setMainSection(val)} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="invoices">📄 Facturi de Vânzare</TabsTrigger>
+          <TabsTrigger value="journal-report">📊 Raport Jurnal de Vânzări</TabsTrigger>
+        </TabsList>
+        
+        {/* TAB 1: Facturi de Vânzare (conținut existent) */}
+        <TabsContent value="invoices">
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-col space-y-4">
@@ -1097,6 +1125,255 @@ export default function SalesJournalPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </TabsContent>
+      
+      {/* TAB 2: Raport Jurnal de Vânzări (conform OMFP 2634/2015) */}
+      <TabsContent value="journal-report" className="space-y-6">
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Raport conform OMFP 2634/2015:</strong> Acest raport include toate categoriile fiscale de TVA și tratează corect TVA la încasare.
+          </AlertDescription>
+        </Alert>
+        
+        {/* Filtre pentru raport */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Selecție Perioadă</CardTitle>
+            <CardDescription>Alegeți perioada pentru generarea jurnalului de vânzări</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Period Start */}
+              <div className="space-y-2">
+                <Label>Început Perioadă</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn("w-full justify-start text-left", !reportPeriodStart && "text-muted-foreground")}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {reportPeriodStart ? format(reportPeriodStart, 'dd MMM yyyy', { locale: ro }) : 'Selectează'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={reportPeriodStart}
+                      onSelect={(date) => date && setReportPeriodStart(date)}
+                      locale={ro}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Period End */}
+              <div className="space-y-2">
+                <Label>Sfârșit Perioadă</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn("w-full justify-start text-left", !reportPeriodEnd && "text-muted-foreground")}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {reportPeriodEnd ? format(reportPeriodEnd, 'dd MMM yyyy', { locale: ro }) : 'Selectează'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={reportPeriodEnd}
+                      onSelect={(date) => date && setReportPeriodEnd(date)}
+                      locale={ro}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Report Type */}
+              <div className="space-y-2">
+                <Label>Tip Raport</Label>
+                <Select value={reportType} onValueChange={(val: any) => setReportType(val)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="DETAILED">Detaliat</SelectItem>
+                    <SelectItem value="SUMMARY">Centralizat</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            {/* Quick period buttons */}
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => {
+                const now = new Date();
+                setReportPeriodStart(startOfMonth(now));
+                setReportPeriodEnd(endOfMonth(now));
+              }}>
+                Luna curentă
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => {
+                const lastMonth = new Date();
+                lastMonth.setMonth(lastMonth.getMonth() - 1);
+                setReportPeriodStart(startOfMonth(lastMonth));
+                setReportPeriodEnd(endOfMonth(lastMonth));
+              }}>
+                Luna trecută
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => refetchReport()}>
+                🔄 Actualizează
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Journal Report Results */}
+        {isLoadingReport ? (
+          <Card>
+            <CardContent className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
+              <span>Se generează jurnalul...</span>
+            </CardContent>
+          </Card>
+        ) : journalReport ? (
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle>Jurnal de Vânzări - {journalReport.periodLabel}</CardTitle>
+                  <CardDescription>
+                    {journalReport.companyName} (CUI: {journalReport.companyFiscalCode})
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      const params = new URLSearchParams({
+                        periodStart: format(reportPeriodStart, 'yyyy-MM-dd'),
+                        periodEnd: format(reportPeriodEnd, 'yyyy-MM-dd')
+                      });
+                      window.open(`/api/accounting/sales/journal/export/excel?${params}`, '_blank');
+                    }}
+                  >
+                    <FileSpreadsheet className="h-4 w-4 mr-2" />
+                    Excel
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      const params = new URLSearchParams({
+                        periodStart: format(reportPeriodStart, 'yyyy-MM-dd'),
+                        periodEnd: format(reportPeriodEnd, 'yyyy-MM-dd')
+                      });
+                      window.open(`/api/accounting/sales/journal/export/pdf?${params}`, '_blank');
+                    }}
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    PDF
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {journalReport.rows && journalReport.rows.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-100">
+                        <TableHead className="sticky left-0 bg-gray-100">Nr.</TableHead>
+                        <TableHead>Data</TableHead>
+                        <TableHead>Document</TableHead>
+                        <TableHead>Client</TableHead>
+                        <TableHead>CUI</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                        <TableHead className="text-right bg-blue-50">Bază 19%</TableHead>
+                        <TableHead className="text-right bg-blue-50">TVA 19%</TableHead>
+                        <TableHead className="text-right bg-green-50">Bază 9%</TableHead>
+                        <TableHead className="text-right bg-green-50">TVA 9%</TableHead>
+                        <TableHead className="text-right">IC</TableHead>
+                        <TableHead className="text-right">Export</TableHead>
+                        <TableHead className="text-right bg-orange-50">TVA Neexig.</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {journalReport.rows.map((row: any) => (
+                        <TableRow key={row.rowNumber} className={row.documentType === 'CREDIT_NOTE' ? 'bg-red-50' : ''}>
+                          <TableCell className="sticky left-0 bg-white">{row.rowNumber}</TableCell>
+                          <TableCell>{formatDate(row.date)}</TableCell>
+                          <TableCell>
+                            {row.documentNumber}
+                            {row.documentType === 'CREDIT_NOTE' && (
+                              <Badge variant="destructive" className="ml-2 text-xs">Storno</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="max-w-xs truncate">{row.clientName}</TableCell>
+                          <TableCell>{row.clientFiscalCode}</TableCell>
+                          <TableCell className={cn("text-right tabular-nums", row.totalAmount < 0 && "text-red-600")}>
+                            {formatCurrency(row.totalAmount)}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums bg-blue-50">{row.base19 !== 0 && formatCurrency(row.base19)}</TableCell>
+                          <TableCell className="text-right tabular-nums bg-blue-50">{row.vat19 !== 0 && formatCurrency(row.vat19)}</TableCell>
+                          <TableCell className="text-right tabular-nums bg-green-50">{row.base9 !== 0 && formatCurrency(row.base9)}</TableCell>
+                          <TableCell className="text-right tabular-nums bg-green-50">{row.vat9 !== 0 && formatCurrency(row.vat9)}</TableCell>
+                          <TableCell className="text-right tabular-nums">{row.intraCommunity !== 0 && formatCurrency(row.intraCommunity)}</TableCell>
+                          <TableCell className="text-right tabular-nums">{row.export !== 0 && formatCurrency(row.export)}</TableCell>
+                          <TableCell className="text-right tabular-nums bg-orange-50">{row.vatDeferred !== 0 && formatCurrency(row.vatDeferred)}</TableCell>
+                        </TableRow>
+                      ))}
+                      
+                      {/* Total Row */}
+                      <TableRow className="font-bold bg-gray-200 border-t-2">
+                        <TableCell colSpan={5} className="sticky left-0 bg-gray-200">TOTAL:</TableCell>
+                        <TableCell className="text-right">{formatCurrency(journalReport.totals.totalAmount)}</TableCell>
+                        <TableCell className="text-right bg-blue-100">{formatCurrency(journalReport.totals.totalBase19)}</TableCell>
+                        <TableCell className="text-right bg-blue-100">{formatCurrency(journalReport.totals.totalVAT19)}</TableCell>
+                        <TableCell className="text-right bg-green-100">{formatCurrency(journalReport.totals.totalBase9)}</TableCell>
+                        <TableCell className="text-right bg-green-100">{formatCurrency(journalReport.totals.totalVAT9)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(journalReport.totals.totalIntraCommunity)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(journalReport.totals.totalExport)}</TableCell>
+                        <TableCell className="text-right bg-orange-100">{formatCurrency(journalReport.totals.totalVATDeferred)}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-500">Nu există facturi în perioada selectată</p>
+                </div>
+              )}
+              
+              {/* Summary Info */}
+              {journalReport.totals && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <h4 className="font-semibold mb-3">Verificări Contabile:</h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="font-medium">Total baze impozabile:</span>{' '}
+                      {formatCurrency(journalReport.totals.totalNetAmount)} RON
+                    </div>
+                    <div>
+                      <span className="font-medium">Total TVA:</span>{' '}
+                      {formatCurrency(journalReport.totals.totalVATAmount)} RON
+                    </div>
+                    <div className="col-span-2 text-xs text-muted-foreground mt-2">
+                      ✅ Verificați că totalurile corespund cu decontul de TVA (D300) și balanța contabilă.
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ) : null}
+      </TabsContent>
+      </Tabs>
     </AppLayout>
   );
 }

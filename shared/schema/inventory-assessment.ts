@@ -197,7 +197,8 @@ export const assessmentItemRelations = relations(inventoryAssessmentItems, ({ on
 }));
 
 // Create Zod validation schemas
-export const insertWarehouseSchema = createInsertSchema(inventoryWarehouses, {
+// Notă: Schema warehouse este exportată din warehouse.ts pentru a evita duplicarea
+const insertWarehouseSchemaLocal = createInsertSchema(inventoryWarehouses, {
   type: z.enum([
     warehouseTypeEnum.DEPOZIT, 
     warehouseTypeEnum.MAGAZIN, 
@@ -251,8 +252,10 @@ export const insertBatchSchema = createInsertSchema(inventoryBatches)
   .omit({ id: true, createdAt: true, updatedAt: true });
 
 // Create types
-export type Warehouse = typeof inventoryWarehouses.$inferSelect;
-export type InsertWarehouse = z.infer<typeof insertWarehouseSchema>;
+// Notă: Tipurile Warehouse și InsertWarehouse sunt exportate din warehouse.ts
+// pentru a evita conflicte de export. Folosim tipuri locale aici dacă e necesar.
+type WarehouseLocal = typeof inventoryWarehouses.$inferSelect;
+type InsertWarehouseLocal = z.infer<typeof insertWarehouseSchemaLocal>;
 
 export type InventoryAssessment = typeof inventoryAssessments.$inferSelect;
 export type InsertInventoryAssessment = z.infer<typeof insertAssessmentSchema>;

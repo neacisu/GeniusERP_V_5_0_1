@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { SalesJournalService } from '../services/sales-journal.service';
+import { SalesJournalExportService } from '../services/sales-journal-export.service';
 import { BaseController } from './base.controller';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
 
@@ -10,11 +11,14 @@ import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
  * receipts, payments, and reporting for the romanian accounting system
  */
 export class SalesJournalController extends BaseController {
+  private exportService: SalesJournalExportService;
+  
   /**
    * Constructor
    */
   constructor(private salesJournalService: SalesJournalService) {
     super();
+    this.exportService = new SalesJournalExportService();
   }
   
   /**
@@ -453,11 +457,133 @@ export class SalesJournalController extends BaseController {
       const startDate = this.parseDate(req.query.startDate as string);
       const endDate = this.parseDate(req.query.endDate as string) || new Date();
       
-      return await this.salesJournalService.generateSalesByCustomerReport(
+      return await this.salesJournalService.generateCustomerSalesReport(
         companyId,
-        startDate,
-        endDate
+        req.params.id, // customerId
+        startDate?.getFullYear() || new Date().getFullYear()
       );
     });
+  }
+  
+  /**
+   * =========================================================================
+   * JURNAL DE VÂNZĂRI - CONFORM OMFP 2634/2015
+   * =========================================================================
+   */
+  
+  /**
+   * Generare Jurnal de Vânzări pentru o perioadă
+   * Endpoint: GET /api/accounting/sales/journal
+   */
+  async generateSalesJournal(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      
+      // Parse parametri
+      const periodStart = this.parseDate(req.query.periodStart as string);
+      const periodEnd = this.parseDate(req.query.periodEnd as string);
+      
+      if (!periodStart || !periodEnd) {
+        throw { 
+          statusCode: 400, 
+          message: 'periodStart and periodEnd are required' 
+        };
+      }
+      
+      const reportType = (req.query.reportType as string) === 'SUMMARY' ? 'SUMMARY' : 'DETAILED';
+      const includeZeroVAT = req.query.includeZeroVAT !== 'false';
+      const includeCanceled = req.query.includeCanceled === 'true';
+      const customerFilter = req.query.customerId as string | undefined;
+      const categoryFilter = req.query.category as any;
+      
+      return await this.salesJournalService.generateSalesJournal({
+        companyId,
+        periodStart,
+        periodEnd,
+        reportType,
+        includeZeroVAT,
+        includeCanceled,
+        customerFilter,
+        categoryFilter
+      });
+    });
+  }
+  
+  /**
+   * Export Jurnal de Vânzări în format Excel
+   * Endpoint: GET /api/accounting/sales/journal/export/excel
+   */
+  async exportSalesJournalExcel(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const companyId = this.getCompanyId(req);
+      
+      // Parse parametri (same as generateSalesJournal)
+      const periodStart = this.parseDate(req.query.periodStart as string);
+      const periodEnd = this.parseDate(req.query.periodEnd as string);
+      
+      if (!periodStart || !periodEnd) {
+        res.status(400).json({ error: 'periodStart and periodEnd are required' });
+        return;
+      }
+      
+      // Generează raportul
+      const report = await this.salesJournalService.generateSalesJournal({
+        companyId,
+        periodStart,
+        periodEnd,
+        reportType: 'DETAILED'
+      });
+      
+      // Export la Excel
+      const excelBuffer = await this.exportService.exportToExcel(report);
+      
+      // Setează headers pentru download
+      const filename = `Jurnal_Vanzari_${report.periodLabel.replace(/\s/g, '_')}.csv`;
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(excelBuffer);
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      res.status(500).json({ error: 'Failed to export to Excel' });
+    }
+  }
+  
+  /**
+   * Export Jurnal de Vânzări în format PDF
+   * Endpoint: GET /api/accounting/sales/journal/export/pdf
+   */
+  async exportSalesJournalPDF(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const companyId = this.getCompanyId(req);
+      
+      // Parse parametri
+      const periodStart = this.parseDate(req.query.periodStart as string);
+      const periodEnd = this.parseDate(req.query.periodEnd as string);
+      
+      if (!periodStart || !periodEnd) {
+        res.status(400).json({ error: 'periodStart and periodEnd are required' });
+        return;
+      }
+      
+      // Generează raportul
+      const report = await this.salesJournalService.generateSalesJournal({
+        companyId,
+        periodStart,
+        periodEnd,
+        reportType: 'DETAILED'
+      });
+      
+      // Export la PDF
+      const pdfBuffer = await this.exportService.exportToPDF(report);
+      
+      // Setează headers pentru download
+      const filename = `Jurnal_Vanzari_${report.periodLabel.replace(/\s/g, '_')}.html`;
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error('Error exporting to PDF:', error);
+      res.status(500).json({ error: 'Failed to export to PDF' });
+    }
   }
 }

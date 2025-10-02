@@ -4,6 +4,7 @@ import { z } from "zod";
 import { relations } from "drizzle-orm";
 
 // Export CRM models for shared usage across the application
+// Notă: CRM Activity este exportat ca Activity principal
 export * from "../server/modules/crm/schema/crm.schema";
 
 // Export HR models for shared usage across the application
@@ -22,13 +23,15 @@ export * from "../server/modules/integrations/schema/integrations.schema";
 export * from "../server/modules/ecommerce/schema";
 
 // Export Collaboration models for shared usage across the application
+// Notă: Activity din Collaboration e redenumit în CollaborationActivity pentru a evita conflicte cu CRM
 export * from "./schema/collaboration.schema";
 
 // Export Invoicing Numbering models for shared usage across the application
 export * from "./schema/invoice-numbering.schema";
 
 // Export Warehouse models for shared usage across the application
-export * from "./schema/warehouse";
+// Notă: Se exportă explicit pentru a evita conflicte cu inventory-assessment.ts
+export { warehouses, insertWarehouseSchema, type Warehouse, type InsertWarehouse } from "./schema/warehouse";
 
 // Export Cash Register models for shared usage across the application
 export * from "./schema/cash-register.schema";
@@ -181,6 +184,8 @@ export const companies = pgTable("companies", {
   bankName: text("bank_name"),
   vatPayer: boolean("vat_payer").default(true),
   vatRate: integer("vat_rate").default(19),
+  // TVA la încasare (Cash VAT) - applicable pentru firme înscrise în registrul special
+  useCashVAT: boolean("use_cash_vat").default(false),
   logoUrl: text("logo_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -231,6 +236,7 @@ export const accountGroupRelations = relations(accountGroups, ({ one, many }) =>
 }));
 
 // 3. Synthetic Accounts (Grade 1: 3 digits, Grade 2: 4 digits)
+// @ts-ignore - Referință circulară validă în Drizzle ORM (parentId referențiază syntheticAccounts.id)
 export const syntheticAccounts = pgTable("synthetic_accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
   code: varchar("code", { length: 4 }).notNull().unique(), // 3-4 digits (e.g., 101, 1011)
@@ -243,6 +249,7 @@ export const syntheticAccounts = pgTable("synthetic_accounts", {
   accountFunction: text("account_function").notNull(),
   grade: integer("grade").notNull(), // 1 (3 digits) or 2 (4 digits)
   groupId: uuid("group_id").notNull().references(() => accountGroups.id),
+  // @ts-expect-error - Referință circulară validă în Drizzle ORM
   parentId: uuid("parent_id").references(() => syntheticAccounts.id), // For Grade 2 accounts
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -288,6 +295,7 @@ export const analyticAccountRelations = relations(analyticAccounts, ({ one, many
 }));
 
 // Legacy accounts table maintained for backward compatibility
+// @ts-ignore - Referință circulară validă în Drizzle ORM (parentId referențiază accounts.id)
 export const accounts = pgTable("accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
   code: varchar("code", { length: 20 }).notNull().unique(),
@@ -295,6 +303,7 @@ export const accounts = pgTable("accounts", {
   description: text("description"),
   type: text("type").notNull(), // A (Active), P (Passive), B (Bifunctional)
   classId: uuid("class_id").notNull().references(() => accountClasses.id),
+  // @ts-expect-error - Referință circulară validă în Drizzle ORM
   parentId: uuid("parent_id").references(() => accounts.id),
   isActive: boolean("is_active").default(true),
   syntheticId: uuid("synthetic_id").references(() => syntheticAccounts.id),
@@ -426,10 +435,12 @@ export const journalLineRelations = relations(journalLines, ({ one }) => ({
 }));
 
 // Inventory Management
+// @ts-ignore - Referință circulară validă în Drizzle ORM (parentId referențiază inventoryCategories.id)
 export const inventoryCategories = pgTable("inventory_categories", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull().unique(), // Adăugare constrângere de unicitate
   description: text("description"),
+  // @ts-expect-error - Referință circulară validă în Drizzle ORM
   parentId: uuid("parent_id").references(() => inventoryCategories.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -648,6 +659,19 @@ export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
 // Invoicing status enum: Draft -> Issued -> Sent -> Canceled
 export const invoiceStatus = pgEnum('invoice_status', ['draft', 'issued', 'sent', 'canceled']);
 
+// VAT Category enum - Categorii fiscale conform legislației române
+// Used pentru jurnalul de vânzări și raportare fiscală
+export const vatCategory = pgEnum('vat_category', [
+  'STANDARD_19',        // Livrări taxabile cota standard 19%
+  'REDUCED_9',          // Livrări taxabile cota redusă 9%
+  'REDUCED_5',          // Livrări taxabile cota redusă 5%
+  'EXEMPT_WITH_CREDIT', // Scutit cu drept de deducere (ex: export, livrări intracomunitare)
+  'EXEMPT_NO_CREDIT',   // Scutit fără drept de deducere (ex: operațiuni art.292)
+  'REVERSE_CHARGE',     // Taxare inversă
+  'NOT_SUBJECT',        // Neimpozabil
+  'ZERO_RATE'           // Cota zero (cazuri speciale)
+]);
+
 // Invoices table with Romanian compliance requirements
 export const invoices = pgTable('invoices', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -681,6 +705,10 @@ export const invoices = pgTable('invoices', {
   // Status and type
   status: invoiceStatus('status').default('draft').notNull(),
   type: text('type'), // 'INVOICE', 'CREDIT_NOTE', 'PROFORMA', etc.
+  
+  // TVA la încasare (Cash VAT) - pentru facturi individuale
+  // Dacă true, TVA devine exigibilă doar la momentul încasării
+  isCashVAT: boolean('is_cash_vat').default(false),
   
   // References
   relatedInvoiceId: uuid('related_invoice_id'), // For credit notes - reference to original invoice
@@ -732,6 +760,10 @@ export const invoiceLines = pgTable('invoice_lines', {
   vatAmount: decimal('vat_amount', { precision: 15, scale: 2 }).notNull(), // Net Amount * VAT Rate
   grossAmount: decimal('gross_amount', { precision: 15, scale: 2 }).notNull(), // Net Amount + VAT Amount
   totalAmount: decimal('total_amount', { precision: 12, scale: 2 }).notNull(), // Same as grossAmount (backward compatibility)
+  
+  // VAT Classification - Clasificare fiscală pentru jurnal de vânzări
+  vatCategory: vatCategory('vat_category').default('STANDARD_19'), // Categoria fiscală
+  vatCode: text('vat_code'), // Cod TVA specific (opțional, pentru mapare detaliată)
   
   // Reference to original item (for credit notes)
   originalItemId: uuid('original_item_id'), // Reference to the original invoice line item
@@ -821,6 +853,60 @@ export type InsertInvoiceLine = z.infer<typeof insertInvoiceLineSchema>;
 
 export type InvoiceDetail = typeof invoiceDetails.$inferSelect;
 export type InsertInvoiceDetail = z.infer<typeof insertInvoiceDetailSchema>;
+
+// Invoice Payments - Tracking plăți pentru facturi
+export const invoicePayments = pgTable('invoice_payments', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  invoiceId: uuid('invoice_id').notNull().references(() => invoices.id),
+  companyId: uuid('company_id').notNull().references(() => companies.id),
+  
+  // Payment details
+  paymentDate: timestamp('payment_date').notNull(),
+  amount: decimal('amount', { precision: 15, scale: 2 }).notNull(),
+  paymentMethod: text('payment_method').notNull(), // bank_transfer, cash, card, etc.
+  
+  // Reference documents
+  paymentReference: text('payment_reference'), // Număr chitanță, OP, extras bancar
+  bankTransactionId: uuid('bank_transaction_id'), // Link către tranzacție bancară
+  cashTransactionId: uuid('cash_transaction_id'), // Link către tranzacție casă
+  
+  // TVA transfer tracking (pentru TVA la încasare)
+  vatTransferLedgerId: uuid('vat_transfer_ledger_id'), // Link către nota contabilă de transfer TVA
+  vatAmountTransferred: decimal('vat_amount_transferred', { precision: 15, scale: 2 }), // Suma TVA transferată 4428->4427
+  
+  // Notes and metadata
+  notes: text('notes'),
+  metadata: jsonb('metadata'),
+  
+  // Audit
+  createdBy: uuid('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  invoiceIdx: index('invoice_payments_invoice_idx').on(table.invoiceId),
+  companyIdx: index('invoice_payments_company_idx').on(table.companyId),
+  dateIdx: index('invoice_payments_date_idx').on(table.paymentDate),
+}));
+
+export const invoicePaymentRelations = relations(invoicePayments, ({ one }) => ({
+  invoice: one(invoices, {
+    fields: [invoicePayments.invoiceId],
+    references: [invoices.id],
+  }),
+  company: one(companies, {
+    fields: [invoicePayments.companyId],
+    references: [companies.id],
+  }),
+}));
+
+export const insertInvoicePaymentSchema = createInsertSchema(invoicePayments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InvoicePayment = typeof invoicePayments.$inferSelect;
+export type InsertInvoicePayment = z.infer<typeof insertInvoicePaymentSchema>;
 
 // Exchange Rates System
 export const fx_rates = pgTable("fx_rates", {

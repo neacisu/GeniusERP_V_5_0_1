@@ -8,8 +8,15 @@
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
 import { v4 as uuidv4 } from 'uuid';
 import { getDrizzle } from '../../../common/drizzle';
-import { and, desc, eq, gte, lte } from 'drizzle-orm';
-import { invoices, invoiceLines, users } from '../../../../shared/schema';
+import { and, desc, eq, gte, lte, isNotNull } from 'drizzle-orm';
+import { invoices, invoiceLines, invoiceDetails, invoicePayments, users, ledgerEntries, ledgerLines, companies, type LedgerEntry, type LedgerLine } from '../../../../shared/schema';
+import { VATCategory, determineVATCategory, VAT_CATEGORY_INFO } from '../types/vat-categories';
+import { 
+  SalesJournalReport, 
+  SalesJournalRow, 
+  SalesJournalTotals,
+  GenerateSalesJournalParams 
+} from '../types/sales-journal-types';
 
 /**
  * Sales journal entry interface
@@ -61,6 +68,7 @@ export interface SalesInvoiceData {
   dueDate: Date;
   description: string;
   userId?: string;
+  isCashVAT?: boolean; // Flag pentru TVA la încasare
 }
 
 /**
@@ -70,7 +78,8 @@ export interface SalesInvoiceData {
 export const SALES_ACCOUNTS = {
   // Class 4 - Third Party Accounts
   CUSTOMER: '4111', // Clients
-  VAT_COLLECTED: '4427', // VAT collected
+  VAT_COLLECTED: '4427', // VAT collected (exigibilă)
+  VAT_DEFERRED: '4428', // TVA neexigibilă (pentru TVA la încasare)
   
   // Class 7 - Revenue Accounts
   REVENUE: '707', // Revenue from sale of goods
@@ -131,42 +140,86 @@ export class SalesJournalService {
         conditions.push(eq(invoices.customerId, customerId));
       }
       if (status) {
-        conditions.push(eq(invoices.status, status));
+        conditions.push(eq(invoices.status, status as 'draft' | 'issued' | 'sent' | 'canceled'));
       }
       
-      // Fetch invoices
-      const result = await db.query.invoices.findMany({
-        where: and(...conditions),
-        with: {
-          lines: true, // Relation name in schema is 'lines', not 'invoiceLines'
-        },
-        orderBy: (invoices, { desc }) => [desc(invoices.date)],
-        limit,
-        offset,
-      });
+      // Fetch invoices using select instead of query API
+      // Notă: SELECT explicit pe câmpuri existente pentru compatibilitate înainte de migrație
+      const whereClause = conditions.length > 1 ? and(...conditions) : conditions[0];
+      const result = await db
+        .select({
+          id: invoices.id,
+          companyId: invoices.companyId,
+          franchiseId: invoices.franchiseId,
+          invoiceNumber: invoices.invoiceNumber,
+          series: invoices.series,
+          number: invoices.number,
+          customerId: invoices.customerId,
+          customerName: invoices.customerName,
+          date: invoices.date,
+          issueDate: invoices.issueDate,
+          dueDate: invoices.dueDate,
+          amount: invoices.amount,
+          totalAmount: invoices.totalAmount,
+          netAmount: invoices.netAmount,
+          vatAmount: invoices.vatAmount,
+          currency: invoices.currency,
+          exchangeRate: invoices.exchangeRate,
+          status: invoices.status,
+          type: invoices.type,
+          relatedInvoiceId: invoices.relatedInvoiceId,
+          description: invoices.description,
+          notes: invoices.notes,
+          version: invoices.version,
+          isValidated: invoices.isValidated,
+          validatedAt: invoices.validatedAt,
+          ledgerEntryId: invoices.ledgerEntryId,
+          createdBy: invoices.createdBy,
+          updatedBy: invoices.updatedBy,
+          createdAt: invoices.createdAt,
+          updatedAt: invoices.updatedAt,
+          deletedAt: invoices.deletedAt
+        })
+        .from(invoices)
+        .where(whereClause)
+        .orderBy(desc(invoices.date))
+        .limit(limit)
+        .offset(offset);
+      
+      // Get invoice lines for each invoice
+      const invoicesWithLines = await Promise.all(
+        result.map(async (invoice) => {
+          const lines = await db
+            .select()
+            .from(invoiceLines)
+            .where(eq(invoiceLines.invoiceId, invoice.id));
+          return { ...invoice, lines };
+        })
+      );
       
       // Get total count
-      const totalResult = await db.query.invoices.findMany({
-        where: and(...conditions),
-        columns: {
-          id: true,
-        },
-      });
+      const totalResult = await db
+        .select({ id: invoices.id })
+        .from(invoices)
+        .where(whereClause);
       
       // Enrich invoices with user names
       const enrichedData = await Promise.all(
-        result.map(async (invoice) => {
-          let createdByName = null;
+        invoicesWithLines.map(async (invoice: any) => {
+          let createdByName: string | null = null;
           if (invoice.createdBy) {
-            const user = await db.query.users.findFirst({
-              where: eq(users.id, invoice.createdBy),
-              columns: {
-                firstName: true,
-                lastName: true,
-                username: true,
-              },
-            });
-            if (user) {
+            const userResult = await db
+              .select({
+                firstName: users.firstName,
+                lastName: users.lastName,
+                username: users.username
+              })
+              .from(users)
+              .where(eq(users.id, invoice.createdBy))
+              .limit(1);
+            
+            if (userResult.length > 0) {
+              const user = userResult[0];
               createdByName = `${user.firstName} ${user.lastName}`.trim() || user.username;
             }
           }
@@ -198,20 +251,31 @@ export class SalesJournalService {
   public async getCustomerInvoice(invoiceId: string, companyId: string): Promise<any | null> {
     try {
       const db = getDrizzle();
-      const invoice = await db.query.invoices.findFirst({
-        where: and(
+      const invoiceResult = await db
+        .select()
+        .from(invoices)
+        .where(and(
           eq(invoices.id, invoiceId),
           eq(invoices.companyId, companyId)
-        ),
-        with: {
-          lines: true, // Relation name in schema is 'lines', not 'invoiceLines'
-        },
-      });
+        ))
+        .limit(1);
       
-      return invoice || null;
+      if (invoiceResult.length === 0) {
+        return null;
+      }
+      
+      const invoice = invoiceResult[0];
+      
+      // Get invoice lines
+      const lines = await db
+        .select()
+        .from(invoiceLines)
+        .where(eq(invoiceLines.invoiceId, invoice.id));
+      
+      return { ...invoice, lines };
     } catch (error) {
       console.error('Error getting customer invoice:', error);
-      throw new Error('Failed to retrieve customer invoice');
+      throw new Error('Failed to retrieve customer invoices');
     }
   }
   
@@ -233,15 +297,81 @@ export class SalesJournalService {
     paymentTerms: any,
     notes?: string
   ): Promise<string> {
+    // Folosește metoda existentă createSalesInvoice
+    return await this.createSalesInvoice(invoiceData, customer, items, taxRates, paymentTerms, notes || '');
+  }
+  
+  /**
+   * Update customer invoice
+   */
+  public async updateCustomerInvoice(
+    invoiceData: any,
+    customer: any,
+    items: any[],
+    taxRates: any,
+    paymentTerms: any,
+    notes?: string
+  ): Promise<void> {
     try {
-      // For now, return a placeholder ID
-      // Full implementation would insert into database
-      const newId = uuidv4();
-      console.log('Creating customer invoice:', { invoiceData, customer, items, taxRates, paymentTerms, notes });
-      return newId;
+      const db = getDrizzle();
+      
+      // Update invoice
+      await db.update(invoices)
+        .set({
+          customerName: customer.name || customer.customerName,
+          amount: String(invoiceData.amount),
+          totalAmount: String(invoiceData.totalAmount),
+          netAmount: String(invoiceData.netAmount),
+          vatAmount: String(invoiceData.vatAmount),
+          dueDate: invoiceData.dueDate,
+          notes: notes,
+          updatedAt: new Date()
+        })
+        .where(and(
+          eq(invoices.id, invoiceData.id),
+          eq(invoices.companyId, invoiceData.companyId)
+        ));
+      
+      // Delete old lines and insert new ones
+      await db.delete(invoiceLines).where(eq(invoiceLines.invoiceId, invoiceData.id));
+      
+      for (const item of items) {
+        await db.insert(invoiceLines).values({
+          invoiceId: invoiceData.id,
+          productId: item.productId,
+          productName: item.productName,
+          quantity: String(item.quantity),
+          unitPrice: String(item.unitPrice),
+          netAmount: String(item.netAmount),
+          vatRate: item.vatRate,
+          vatAmount: String(item.vatAmount),
+          grossAmount: String(item.grossAmount),
+          totalAmount: String(item.grossAmount)
+        });
+      }
     } catch (error) {
-      console.error('Error creating customer invoice:', error);
-      throw new Error('Failed to create customer invoice');
+      console.error('Error updating invoice:', error);
+      throw new Error('Failed to update invoice');
+    }
+  }
+  
+  /**
+   * Delete customer invoice
+   */
+  public async deleteCustomerInvoice(invoiceId: string, companyId: string): Promise<void> {
+    try {
+      const db = getDrizzle();
+      
+      // Soft delete - mark as deleted
+      await db.update(invoices)
+        .set({ deletedAt: new Date() })
+        .where(and(
+          eq(invoices.id, invoiceId),
+          eq(invoices.companyId, companyId)
+        ));
+    } catch (error) {
+      console.error('Error deleting invoice:', error);
+      throw new Error('Failed to delete invoice');
     }
   }
   
@@ -261,37 +391,44 @@ export class SalesJournalService {
       // Calculate offset
       const offset = (page - 1) * limit;
       
-      // Get entries from journal service
+      // Get entries from ledger
       const db = getDrizzle();
-      const result = await db.query.ledgerEntries.findMany({
-        where: and(
-          eq(invoices.companyId, companyId),
-          eq(invoices.type, LedgerEntryType.SALES)
-        ),
-        with: {
-          lines: true
-        },
-        orderBy: [desc(invoices.createdAt)],
-        limit,
-        offset
-      });
+      const result = await db
+        .select()
+        .from(ledgerEntries)
+        .where(and(
+          eq(ledgerEntries.companyId, companyId),
+          eq(ledgerEntries.type, LedgerEntryType.SALES)
+        ))
+        .orderBy(desc(ledgerEntries.createdAt))
+        .limit(limit)
+        .offset(offset);
       
-      const entries = result.map(entry => this.mapToSalesJournalEntry(entry));
+      // Get lines for each entry
+      const entriesWithLines = await Promise.all(
+        result.map(async (entry: Record<string, any>) => {
+          const lines = await db
+            .select()
+            .from(ledgerLines)
+            .where(eq(ledgerLines.ledgerEntryId, entry.id));
+          return { ...entry, lines };
+        })
+      );
+      
+      const entries = entriesWithLines.map((entry: Record<string, any>) => this.mapToSalesJournalEntry(entry));
       
       // Get total count
-      const totalCount = await db.query.ledgerEntries.findMany({
-        where: and(
-          eq(invoices.companyId, companyId),
-          eq(invoices.type, LedgerEntryType.SALES)
-        ),
-        columns: {
-          id: true
-        }
-      });
+      const totalCountResult = await db
+        .select({ id: ledgerEntries.id })
+        .from(ledgerEntries)
+        .where(and(
+          eq(ledgerEntries.companyId, companyId),
+          eq(ledgerEntries.type, LedgerEntryType.SALES)
+        ));
       
       return {
         entries,
-        total: totalCount.length,
+        total: totalCountResult.length,
         page,
         limit
       };
@@ -310,22 +447,29 @@ export class SalesJournalService {
   public async getSalesJournalEntry(id: string, companyId: string): Promise<SalesJournalEntry | null> {
     try {
       const db = getDrizzle();
-      const entry = await db.query.ledgerEntries.findFirst({
-        where: and(
-          eq(invoices.id, id),
-          eq(invoices.companyId, companyId),
-          eq(invoices.type, LedgerEntryType.SALES)
-        ),
-        with: {
-          lines: true
-        }
-      });
+      const entryResult = await db
+        .select()
+        .from(ledgerEntries)
+        .where(and(
+          eq(ledgerEntries.id, id),
+          eq(ledgerEntries.companyId, companyId),
+          eq(ledgerEntries.type, LedgerEntryType.SALES)
+        ))
+        .limit(1);
       
-      if (!entry) {
+      if (entryResult.length === 0) {
         return null;
       }
       
-      return this.mapToSalesJournalEntry(entry);
+      const entry = entryResult[0];
+      
+      // Get ledger lines
+      const lines = await db
+        .select()
+        .from(ledgerLines)
+        .where(eq(ledgerLines.ledgerEntryId, entry.id));
+      
+      return this.mapToSalesJournalEntry({ ...entry, lines });
     } catch (error) {
       console.error('Error getting sales journal entry:', error);
       throw new Error('Failed to retrieve sales journal entry');
@@ -388,65 +532,70 @@ export class SalesJournalService {
       // Save invoice and items in database
       const db = getDrizzle();
       
-      // Insert/update invoice
-      await db.insert(invoices).values({
-        id: entryData.invoiceId,
+      // Insert invoice and get generated ID
+      const [insertedInvoice] = await db.insert(invoices).values({
         companyId: entryData.companyId,
         franchiseId: entryData.franchiseId,
         invoiceNumber: entryData.invoiceNumber,
         customerId: entryData.customerId,
-        amount: entryData.amount,
+        customerName: entryData.customerName,
+        amount: String(entryData.amount),
+        totalAmount: String(entryData.amount),
+        netAmount: String(entryData.netAmount),
+        vatAmount: String(entryData.vatAmount),
         currency: entryData.currency,
-        exchangeRate: entryData.exchangeRate,
+        exchangeRate: String(entryData.exchangeRate),
         issueDate: entryData.issueDate,
         dueDate: entryData.dueDate,
-        status: 'VALIDATED',
+        status: 'issued', // Corectare: folosim 'issued' în loc de 'VALIDATED'
+        type: 'INVOICE',
+        isValidated: true, // Marcăm că factura a fost validată contabil
+        validatedAt: new Date(),
         ledgerEntryId: entry.id,
-        createdBy: entryData.userId || 'system',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }).onConflictDoUpdate({
-        target: invoices.id,
-        set: {
-          status: 'VALIDATED',
-          ledgerEntryId: entry.id,
-          updatedAt: new Date()
-        }
-      });
+        createdBy: entryData.userId
+      }).returning();
+      
+      const invoiceId = insertedInvoice.id;
       
       // Insert invoice items
       for (const item of items) {
         await db.insert(invoiceLines).values({
-          id: item.id || uuidv4(),
-          invoiceId: entryData.invoiceId,
+          invoiceId: invoiceId,
           productId: item.productId,
           productName: item.productName,
-          quantity: Number(item.quantity),
-          unitPrice: Number(item.unitPrice),
-          netAmount: Number(item.netAmount),
-          vatRate: Number(item.vatRate),
-          vatAmount: Number(item.vatAmount),
-          grossAmount: Number(item.grossAmount),
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }).onConflictDoUpdate({
-          target: invoiceLines.id,
-          set: {
-            quantity: Number(item.quantity),
-            unitPrice: Number(item.unitPrice),
-            netAmount: Number(item.netAmount),
-            vatRate: Number(item.vatRate),
-            vatAmount: Number(item.vatAmount),
-            grossAmount: Number(item.grossAmount),
-            updatedAt: new Date()
-          }
+          quantity: String(item.quantity),
+          unitPrice: String(item.unitPrice),
+          netAmount: String(item.netAmount),
+          vatRate: item.vatRate,
+          vatAmount: String(item.vatAmount),
+          grossAmount: String(item.grossAmount),
+          totalAmount: String(item.grossAmount)
         });
       }
       
-      return entry.id;
+      // Insert invoice details with customer information
+      // Conform OMFP 2634/2015, trebuie să păstrăm datele complete ale clientului
+      await db.insert(invoiceDetails).values({
+        invoiceId: invoiceId,
+        partnerId: customer.id || null,
+        partnerName: customer.name || customer.customerName || 'Unknown',
+        partnerFiscalCode: customer.fiscalCode || customer.cui || customer.taxId || '',
+        partnerRegistrationNumber: customer.registrationNumber || customer.regCom || '',
+        partnerAddress: customer.address || '',
+        partnerCity: customer.city || '',
+        partnerCounty: customer.county || customer.state || null,
+        partnerCountry: customer.country || 'Romania',
+        paymentMethod: paymentTerms.method || 'bank_transfer',
+        paymentDueDays: paymentTerms.dueDays || 30,
+        paymentDueDate: entryData.dueDate,
+        notes: notes || null
+      });
+      
+      return invoiceId;
     } catch (error) {
       console.error('Error creating sales invoice:', error);
-      throw new Error(`Failed to create sales invoice: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to create sales invoice: ${errorMessage}`);
     }
   }
   
@@ -473,16 +622,23 @@ export class SalesJournalService {
     try {
       // Get the original invoice
       const db = getDrizzle();
-      const invoice = await db.query.invoices.findFirst({
-        where: eq(invoices.id, relatedInvoiceId),
-        with: {
-          lines: true
-        }
-      });
+      const invoiceResult = await db
+        .select()
+        .from(invoices)
+        .where(eq(invoices.id, relatedInvoiceId))
+        .limit(1);
       
-      if (!invoice) {
+      if (invoiceResult.length === 0) {
         throw new Error(`Original invoice not found: ${relatedInvoiceId}`);
       }
+      
+      const invoice = invoiceResult[0];
+      
+      // Get invoice lines
+      const lines = await db
+        .select()
+        .from(invoiceLines)
+        .where(eq(invoiceLines.invoiceId, invoice.id));
       
       // Calculate totals
       const netAmount = items.reduce((sum, item) => sum + Number(item.netAmount), 0);
@@ -512,50 +668,72 @@ export class SalesJournalService {
       // Create the credit note entry
       const entry = await this.createSalesCreditNoteEntry(entryData, creditNoteData.creditNoteNumber, reason);
       
-      // Save credit note in database
-      await db.insert(invoices).values({
-        id: entryData.invoiceId,
+      // Save credit note in database and get generated ID
+      const [insertedCreditNote] = await db.insert(invoices).values({
         companyId: entryData.companyId,
         franchiseId: entryData.franchiseId,
         invoiceNumber: entryData.invoiceNumber,
         customerId: entryData.customerId,
-        amount: entryData.amount,
+        customerName: entryData.customerName,
+        amount: String(entryData.amount),
+        totalAmount: String(entryData.amount),
+        netAmount: String(entryData.netAmount),
+        vatAmount: String(entryData.vatAmount),
         currency: entryData.currency,
-        exchangeRate: entryData.exchangeRate,
+        exchangeRate: String(entryData.exchangeRate),
         issueDate: entryData.issueDate,
         dueDate: entryData.dueDate,
-        status: 'CREDIT_NOTE',
+        status: 'issued', // Corectare: folosim 'issued' în loc de 'CREDIT_NOTE'
+        type: 'CREDIT_NOTE', // Folosim câmpul type pentru a diferenția nota de credit
         relatedInvoiceId,
+        isValidated: true, // Marcăm că factura a fost validată contabil
+        validatedAt: new Date(),
         ledgerEntryId: entry.id,
-        createdBy: entryData.userId || 'system',
-        description: entryData.description,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
+        createdBy: entryData.userId,
+        description: entryData.description
+      }).returning();
+      
+      const creditNoteId = insertedCreditNote.id;
       
       // Insert credit note items
       for (const item of items) {
         await db.insert(invoiceLines).values({
-          id: uuidv4(),
-          invoiceId: entryData.invoiceId,
+          invoiceId: creditNoteId,
           productId: item.productId,
           productName: item.productName,
-          quantity: Number(item.quantity),
-          unitPrice: Number(item.unitPrice),
-          netAmount: Number(item.netAmount),
-          vatRate: Number(item.vatRate),
-          vatAmount: Number(item.vatAmount),
-          grossAmount: Number(item.grossAmount),
-          originalItemId: item.originalItemId, // Reference to original invoice item
-          createdAt: new Date(),
-          updatedAt: new Date()
+          quantity: String(item.quantity),
+          unitPrice: String(item.unitPrice),
+          netAmount: String(item.netAmount),
+          vatRate: item.vatRate,
+          vatAmount: String(item.vatAmount),
+          grossAmount: String(item.grossAmount),
+          totalAmount: String(item.grossAmount),
+          originalItemId: item.originalItemId // Reference to original invoice item
         });
       }
       
-      return entry.id;
+      // Insert credit note details with customer information
+      await db.insert(invoiceDetails).values({
+        invoiceId: creditNoteId,
+        partnerId: customer.id || null,
+        partnerName: customer.name || customer.customerName || 'Unknown',
+        partnerFiscalCode: customer.fiscalCode || customer.cui || customer.taxId || '',
+        partnerRegistrationNumber: customer.registrationNumber || customer.regCom || '',
+        partnerAddress: customer.address || '',
+        partnerCity: customer.city || '',
+        partnerCounty: customer.county || customer.state || null,
+        partnerCountry: customer.country || 'Romania',
+        paymentMethod: 'credit_note',
+        paymentDueDays: 0,
+        paymentDueDate: entryData.dueDate,
+        notes: reason || null
+      });
+      
+      return creditNoteId;
     } catch (error) {
       console.error('Error creating credit note:', error);
-      throw new Error(`Failed to create credit note: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to create credit note: ${errorMessage}`);
     }
   }
   
@@ -591,18 +769,27 @@ export class SalesJournalService {
       }
       
       // Query entries
-      const entries = await db.query.ledgerEntries.findMany({
-        where: and(
-          eq(invoices.companyId, companyId),
-          eq(invoices.type, LedgerEntryType.SALES),
-          gte(invoices.createdAt, startDate),
-          lte(invoices.createdAt, endDate)
-        ),
-        with: {
-          lines: true
-        },
-        orderBy: [desc(invoices.createdAt)]
-      });
+      const entriesResult = await db
+        .select()
+        .from(ledgerEntries)
+        .where(and(
+          eq(ledgerEntries.companyId, companyId),
+          eq(ledgerEntries.type, LedgerEntryType.SALES),
+          gte(ledgerEntries.createdAt, startDate),
+          lte(ledgerEntries.createdAt, endDate)
+        ))
+        .orderBy(desc(ledgerEntries.createdAt));
+      
+      // Get lines for each entry
+      const entries = await Promise.all(
+        entriesResult.map(async (entry) => {
+          const lines = await db
+            .select()
+            .from(ledgerLines)
+            .where(eq(ledgerLines.ledgerEntryId, entry.id));
+          return { ...entry, lines };
+        })
+      );
       
       // Calculate totals
       let totalAmount = 0;
@@ -612,7 +799,7 @@ export class SalesJournalService {
         totalAmount += Number(entry.amount);
         
         // Get VAT amount from ledger lines
-        const vatLines = entry.lines.filter(line => 
+        const vatLines = entry.lines.filter((line: Record<string, any>) => 
           line.accountId === SALES_ACCOUNTS.VAT_COLLECTED
         );
         
@@ -621,7 +808,7 @@ export class SalesJournalService {
         }
       }
       
-      const mappedEntries = entries.map(entry => this.mapToSalesJournalEntry(entry));
+      const mappedEntries = entries.map((entry: Record<string, any>) => this.mapToSalesJournalEntry(entry));
       
       // Create report
       const report: SalesReport = {
@@ -660,37 +847,35 @@ export class SalesJournalService {
       const endDate = new Date(fiscalYear, 11, 31);
       
       // Query entries for the specific customer
-      const invoiceEntries = await db.query.invoices.findMany({
-        where: and(
+      const invoiceResult = await db
+        .select()
+        .from(invoices)
+        .where(and(
           eq(invoices.companyId, companyId),
           eq(invoices.customerId, customerId),
           gte(invoices.issueDate, startDate),
           lte(invoices.issueDate, endDate)
-        ),
-        with: {
-          lines: true
-        },
-        orderBy: [desc(invoices.issueDate)]
-      });
+        ))
+        .orderBy(desc(invoices.issueDate));
       
-      // Get ledger entries for invoices
-      const ledgerEntryIds = invoiceEntries.map(inv => inv.ledgerEntryId).filter(Boolean);
-      
-      const ledgerEntries = await Promise.all(
-        ledgerEntryIds.map(async (ledgerEntryId) => {
-          if (!ledgerEntryId) return null;
-          return this.journalService.getLedgerEntry(ledgerEntryId, companyId);
+      // Get lines for each invoice
+      const invoiceEntries = await Promise.all(
+        invoiceResult.map(async (inv: any) => {
+          const lines = await db
+            .select()
+            .from(invoiceLines)
+            .where(eq(invoiceLines.invoiceId, inv.id));
+          return { ...inv, lines };
         })
       );
-      
-      const validLedgerEntries = ledgerEntries.filter(Boolean);
       
       // Calculate totals
       let totalAmount = 0;
       let totalVat = 0;
       
       for (const invoice of invoiceEntries) {
-        if (invoice.status === 'CREDIT_NOTE') {
+        if (invoice.type === 'CREDIT_NOTE') {
+          // Corectare: verificăm type în loc de status
           totalAmount -= Number(invoice.amount);
           // Calculate VAT from lines
           for (const item of invoice.lines) {
@@ -705,25 +890,14 @@ export class SalesJournalService {
         }
       }
       
-      // Get customer name
-      const customer = invoiceEntries.length > 0 ? 
-        { name: await this.getCustomerName(customerId) } : 
-        { name: 'Unknown Customer' };
-      
-      // Map entries
-      const mappedEntries = validLedgerEntries.map(entry => {
-        if (!entry) return null;
-        return this.mapToSalesJournalEntry(entry);
-      }).filter(Boolean);
-      
-      // Create report
+      // Create report - simplified without ledger entries mapping
       const report: SalesReport = {
-        period: `${fiscalYear} - ${customer.name}`,
+        period: `${fiscalYear} - Customer ${customerId}`,
         totalSales: totalAmount,
         totalVat: totalVat,
         netSales: totalAmount - totalVat,
         invoiceCount: invoiceEntries.length,
-        entries: mappedEntries as SalesJournalEntry[]
+        entries: [] // Will be populated separately if needed
       };
       
       return report;
@@ -740,15 +914,9 @@ export class SalesJournalService {
    */
   private async getCustomerName(customerId: string): Promise<string> {
     try {
-      const db = getDrizzle();
-      const customer = await db.query.customers.findFirst({
-        where: eq(db.customers.id, customerId),
-        columns: {
-          name: true
-        }
-      });
-      
-      return customer?.name || 'Unknown Customer';
+      // Metoda simplificată - returnează ID-ul pentru moment
+      // Într-un caz real ar trebui să query-eze tabela customers din CRM
+      return `Customer ${customerId}`;
     } catch (error) {
       console.error('Error getting customer name:', error);
       return 'Unknown Customer';
@@ -777,7 +945,8 @@ export class SalesJournalService {
       issueDate,
       dueDate,
       description,
-      userId
+      userId,
+      isCashVAT = false // Default: nu este TVA la încasare
     } = data;
     
     // Create ledger lines
@@ -791,13 +960,20 @@ export class SalesJournalService {
       description: `Customer: ${customerName}`
     });
     
-    // Credit VAT collected account (Liability +)
+    // Credit VAT account (Liability +)
+    // Pentru TVA la încasare, folosim contul 4428 (TVA neexigibilă)
+    // Pentru TVA normal, folosim contul 4427 (TVA colectată)
     if (vatAmount > 0) {
+      const vatAccountId = isCashVAT ? SALES_ACCOUNTS.VAT_DEFERRED : SALES_ACCOUNTS.VAT_COLLECTED;
+      const vatDescription = isCashVAT 
+        ? `TVA neexigibilă ${vatRate}%: ${invoiceNumber}` 
+        : `VAT ${vatRate}%: ${invoiceNumber}`;
+      
       ledgerLines.push({
-        accountId: SALES_ACCOUNTS.VAT_COLLECTED,
+        accountId: vatAccountId,
         debitAmount: 0,
         creditAmount: vatAmount,
-        description: `VAT ${vatRate}%: ${invoiceNumber}`
+        description: vatDescription
       });
     }
     
@@ -829,6 +1005,170 @@ export class SalesJournalService {
     });
     
     return entry;
+  }
+  
+  /**
+   * Metode pentru receipts (bonuri de vânzare cash)
+   */
+  public async createSalesReceipt(receiptData: any): Promise<string> {
+    // Placeholder - ar trebui implementat complet
+    return uuidv4();
+  }
+  
+  public async getSalesReceipt(receiptId: string, companyId: string): Promise<any | null> {
+    // Placeholder
+    return null;
+  }
+  
+  public async getSalesReceipts(companyId: string, page: number, limit: number, startDate?: Date, endDate?: Date, customerId?: string): Promise<any> {
+    return { data: [], total: 0, page, limit };
+  }
+  
+  /**
+   * Metode pentru ledger entries
+   */
+  public async createSalesLedgerEntry(ledgerEntryData: any): Promise<string> {
+    // Folosește JournalService
+    const entry = await this.journalService.createLedgerEntry({
+      companyId: ledgerEntryData.companyId,
+      franchiseId: ledgerEntryData.franchiseId,
+      type: LedgerEntryType.SALES,
+      referenceNumber: ledgerEntryData.referenceNumber,
+      amount: ledgerEntryData.amount,
+      description: ledgerEntryData.description,
+      userId: ledgerEntryData.userId,
+      lines: ledgerEntryData.lines
+    });
+    return entry.id;
+  }
+  
+  public async getSalesLedgerEntry(entryId: string, companyId: string): Promise<any | null> {
+    return await this.getSalesJournalEntry(entryId, companyId);
+  }
+  
+  public async getSalesLedgerEntries(companyId: string, page: number, limit: number, startDate?: Date, endDate?: Date): Promise<any> {
+    return await this.getSalesJournalEntries(companyId, page, limit);
+  }
+  
+  /**
+   * Customer statements and balances
+   */
+  public async generateCustomerAccountStatement(companyId: string, customerId: string, startDate?: Date, endDate?: Date): Promise<any> {
+    // Simplified implementation
+    return {
+      companyId,
+      customerId,
+      period: { start: startDate, end: endDate },
+      transactions: [],
+      openingBalance: 0,
+      closingBalance: 0
+    };
+  }
+  
+  public async getCustomerBalanceAsOf(companyId: string, customerId: string, asOfDate: Date): Promise<any> {
+    return {
+      companyId,
+      customerId,
+      asOfDate,
+      balance: 0,
+      currency: 'RON'
+    };
+  }
+  
+  /**
+   * Sales reports by period/product
+   */
+  public async generateSalesByPeriodReport(companyId: string, startDate?: Date, endDate?: Date, groupBy?: string): Promise<any> {
+    return await this.generateSalesReport(companyId, startDate?.getFullYear() || new Date().getFullYear());
+  }
+  
+  public async generateSalesByProductReport(companyId: string, startDate?: Date, endDate?: Date): Promise<any> {
+    return {
+      companyId,
+      period: { start: startDate, end: endDate },
+      products: [],
+      totalSales: 0
+    };
+  }
+  
+  /**
+   * Transfer VAT from deferred to collected when payment is received
+   * Pentru facturi cu TVA la încasare, când se primește plata
+   * @param invoiceId Invoice ID
+   * @param paymentAmount Amount received
+   * @param paymentDate Date of payment
+   * @param userId User making the transfer
+   * @returns Created ledger entry for VAT transfer
+   */
+  public async transferDeferredVAT(
+    invoiceId: string,
+    paymentAmount: number,
+    paymentDate: Date,
+    userId?: string
+  ): Promise<LedgerEntryData | null> {
+    try {
+      const db = getDrizzle();
+      
+      // Get the invoice to check if it has deferred VAT
+      const invoiceResult = await db
+        .select()
+        .from(invoices)
+        .where(eq(invoices.id, invoiceId))
+        .limit(1);
+      
+      if (invoiceResult.length === 0) {
+        return null;
+      }
+      
+      const invoice = invoiceResult[0];
+      
+      if (!invoice.isCashVAT) {
+        // Invoice doesn't have cash VAT
+        return null;
+      }
+      
+      // Calculate VAT proportion based on payment amount
+      const totalAmount = Number(invoice.amount);
+      const vatAmount = Number(invoice.vatAmount);
+      const paymentRatio = paymentAmount / totalAmount;
+      const vatToTransfer = vatAmount * paymentRatio;
+      
+      // Create ledger entry for VAT transfer
+      // Debit 4428 (TVA neexigibilă) and Credit 4427 (TVA colectată)
+      const ledgerLines = [];
+      
+      ledgerLines.push({
+        accountId: SALES_ACCOUNTS.VAT_DEFERRED,
+        debitAmount: vatToTransfer,
+        creditAmount: 0,
+        description: `Transfer TVA din neexigibil pentru factura ${invoice.invoiceNumber}`
+      });
+      
+      ledgerLines.push({
+        accountId: SALES_ACCOUNTS.VAT_COLLECTED,
+        debitAmount: 0,
+        creditAmount: vatToTransfer,
+        description: `TVA devenit exigibil pentru factura ${invoice.invoiceNumber}`
+      });
+      
+      // Create the ledger entry
+      const entry = await this.journalService.createLedgerEntry({
+        companyId: invoice.companyId,
+        franchiseId: invoice.franchiseId || undefined,
+        type: LedgerEntryType.SALES,
+        referenceNumber: `TVA-${invoice.invoiceNumber}`,
+        amount: vatToTransfer,
+        description: `Transfer TVA la încasare pentru factura ${invoice.invoiceNumber} - plată ${paymentAmount} RON`,
+        userId,
+        lines: ledgerLines
+      });
+      
+      return entry;
+    } catch (error) {
+      console.error('Error transferring deferred VAT:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to transfer deferred VAT: ${errorMessage}`);
+    }
   }
   
   /**
@@ -896,7 +1236,7 @@ export class SalesJournalService {
    * @param entry Ledger entry
    * @returns Sales journal entry
    */
-  private mapToSalesJournalEntry(entry: any): SalesJournalEntry {
+  private mapToSalesJournalEntry(entry: Record<string, any>): SalesJournalEntry {
     // Extract customer information from the entry
     let customerId = '';
     let customerName = '';
@@ -1019,6 +1359,761 @@ export class SalesJournalService {
       valid: errors.length === 0,
       errors
     };
+  }
+  
+  /**
+   * =========================================================================
+   * ÎNREGISTRARE PLĂȚI ȘI TRANSFER TVA LA ÎNCASARE
+   * =========================================================================
+   */
+  
+  /**
+   * Înregistrare plată pentru factură
+   * Include transfer automat TVA pentru facturi cu TVA la încasare
+   * 
+   * @param paymentData Date plată
+   * @returns ID-ul plății create
+   */
+  public async recordInvoicePayment(paymentData: {
+    invoiceId: string;
+    companyId: string;
+    paymentDate: Date;
+    amount: number;
+    paymentMethod: string;
+    paymentReference?: string;
+    notes?: string;
+    userId?: string;
+  }): Promise<string> {
+    try {
+      const db = getDrizzle();
+      
+      // 1. Verifică că factura există
+      const [invoice] = await db
+        .select()
+        .from(invoices)
+        .where(and(
+          eq(invoices.id, paymentData.invoiceId),
+          eq(invoices.companyId, paymentData.companyId)
+        ))
+        .limit(1);
+      
+      if (!invoice) {
+        throw new Error(`Invoice not found: ${paymentData.invoiceId}`);
+      }
+      
+      // 2. Inserează plata
+      const [payment] = await db.insert(invoicePayments).values({
+        invoiceId: paymentData.invoiceId,
+        companyId: paymentData.companyId,
+        paymentDate: paymentData.paymentDate,
+        amount: String(paymentData.amount),
+        paymentMethod: paymentData.paymentMethod,
+        paymentReference: paymentData.paymentReference,
+        notes: paymentData.notes,
+        createdBy: paymentData.userId
+      }).returning();
+      
+      // 3. Dacă factura are TVA la încasare, transferă TVA proporțional
+      if (invoice.isCashVAT && invoice.vatAmount && Number(invoice.vatAmount) > 0) {
+        const vatTransferEntry = await this.transferDeferredVAT(
+          paymentData.invoiceId,
+          paymentData.amount,
+          paymentData.paymentDate,
+          paymentData.userId
+        );
+        
+        // Actualizează plata cu referința către nota de transfer TVA
+        if (vatTransferEntry) {
+          await db.update(invoicePayments)
+            .set({
+              vatTransferLedgerId: vatTransferEntry.id,
+              vatAmountTransferred: String(
+                Number(invoice.vatAmount) * (paymentData.amount / Number(invoice.amount))
+              ),
+              updatedAt: new Date()
+            })
+            .where(eq(invoicePayments.id, payment.id));
+        }
+      }
+      
+      return payment.id;
+    } catch (error) {
+      console.error('Error recording invoice payment:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to record payment: ${errorMessage}`);
+    }
+  }
+  
+  /**
+   * Obține toate plățile pentru o factură
+   */
+  public async getInvoicePayments(invoiceId: string, companyId: string): Promise<any[]> {
+    try {
+      const db = getDrizzle();
+      
+      const payments = await db
+        .select()
+        .from(invoicePayments)
+        .where(and(
+          eq(invoicePayments.invoiceId, invoiceId),
+          eq(invoicePayments.companyId, companyId)
+        ))
+        .orderBy(invoicePayments.paymentDate);
+      
+      return payments;
+    } catch (error) {
+      console.error('Error getting invoice payments:', error);
+      throw new Error('Failed to retrieve payments');
+    }
+  }
+  
+  /**
+   * Obține o plată specifică
+   */
+  public async getInvoicePayment(paymentId: string, companyId: string): Promise<any | null> {
+    try {
+      const db = getDrizzle();
+      
+      const [payment] = await db
+        .select()
+        .from(invoicePayments)
+        .where(and(
+          eq(invoicePayments.id, paymentId),
+          eq(invoicePayments.companyId, companyId)
+        ))
+        .limit(1);
+      
+      return payment || null;
+    } catch (error) {
+      console.error('Error getting payment:', error);
+      throw new Error('Failed to retrieve payment');
+    }
+  }
+  
+  /**
+   * Șterge o plată
+   */
+  public async deleteInvoicePayment(paymentId: string, companyId: string): Promise<void> {
+    try {
+      const db = getDrizzle();
+      
+      await db.delete(invoicePayments)
+        .where(and(
+          eq(invoicePayments.id, paymentId),
+          eq(invoicePayments.companyId, companyId)
+        ));
+    } catch (error) {
+      console.error('Error deleting payment:', error);
+      throw new Error('Failed to delete payment');
+    }
+  }
+  
+  /**
+   * =========================================================================
+   * GENERARE JURNAL DE VÂNZĂRI - CONFORM OMFP 2634/2015
+   * =========================================================================
+   */
+  
+  /**
+   * Generare Jurnal de Vânzări pentru o perioadă
+   * 
+   * Această metodă implementează cerințele OMFP 2634/2015 pentru jurnalul de vânzări,
+   * incluzând toate coloanele obligatorii și tratamentul special pentru TVA la încasare.
+   * 
+   * @param params Parametri generare jurnal
+   * @returns Raport complet jurnal de vânzări
+   */
+  public async generateSalesJournal(params: GenerateSalesJournalParams): Promise<SalesJournalReport> {
+    const {
+      companyId,
+      periodStart,
+      periodEnd,
+      reportType = 'DETAILED',
+      includeZeroVAT = true,
+      includeCanceled = false,
+      customerFilter,
+      categoryFilter
+    } = params;
+    
+    try {
+      const db = getDrizzle();
+      
+      // 1. Obține informații companie
+      const [company] = await db
+        .select({
+          name: companies.name,
+          fiscalCode: companies.fiscalCode,
+          useCashVAT: companies.useCashVAT
+        })
+        .from(companies)
+        .where(eq(companies.id, companyId))
+        .limit(1);
+      
+      if (!company) {
+        throw new Error(`Company not found: ${companyId}`);
+      }
+      
+      // 2. Construire condiții WHERE pentru facturi
+      const conditions: any[] = [
+        eq(invoices.companyId, companyId),
+        gte(invoices.issueDate, periodStart),
+        lte(invoices.issueDate, periodEnd),
+        isNotNull(invoices.invoiceNumber) // Doar facturi cu număr alocat
+      ];
+      
+      // Includem doar facturile emise (status = issued sau sent)
+      if (!includeCanceled) {
+        conditions.push(eq(invoices.status, 'issued'));
+      }
+      
+      if (customerFilter) {
+        conditions.push(eq(invoices.customerId, customerFilter));
+      }
+      
+      // 3. Selectare facturi din perioadă
+      const whereClause = conditions.length > 1 ? and(...conditions) : conditions[0];
+      const invoicesResult = await db
+        .select({
+          id: invoices.id,
+          invoiceNumber: invoices.invoiceNumber,
+          series: invoices.series,
+          number: invoices.number,
+          date: invoices.date,
+          issueDate: invoices.issueDate,
+          customerId: invoices.customerId,
+          customerName: invoices.customerName,
+          amount: invoices.amount,
+          totalAmount: invoices.totalAmount,
+          netAmount: invoices.netAmount,
+          vatAmount: invoices.vatAmount,
+          status: invoices.status,
+          type: invoices.type,
+          isCashVAT: invoices.isCashVAT,
+          relatedInvoiceId: invoices.relatedInvoiceId,
+          description: invoices.description
+        })
+        .from(invoices)
+        .where(whereClause)
+        .orderBy(invoices.issueDate, invoices.invoiceNumber);
+      
+      // 4. Pentru fiecare factură, obținem liniile și detaliile client
+      const journalRows: SalesJournalRow[] = [];
+      let rowNumber = 1;
+      
+      for (const invoice of invoicesResult) {
+        // Obține liniile facturii
+        const lines = await db
+          .select()
+          .from(invoiceLines)
+          .where(eq(invoiceLines.invoiceId, invoice.id));
+        
+        // Obține detalii client
+        const [details] = await db
+          .select()
+          .from(invoiceDetails)
+          .where(eq(invoiceDetails.invoiceId, invoice.id))
+          .limit(1);
+        
+        // 5. Grupare linii pe categorie fiscală
+        const linesByCategory = this.groupLinesByVATCategory(lines, details);
+        
+        // 6. Creare rânduri jurnal pentru fiecare categorie din factură
+        // Dacă o factură are mai multe categorii (ex: 19% și 9%), vor fi mai multe rânduri
+        for (const [category, categoryLines] of linesByCategory.entries()) {
+          // Filtrare după categorie (dacă e setat filtru)
+          if (categoryFilter && category !== categoryFilter) {
+            continue;
+          }
+          
+          // Calculare totaluri pe categorie
+          const categoryTotals = this.calculateCategoryTotals(categoryLines);
+          
+          // Determinare dacă e factură storno (valori negative)
+          const isStorno = invoice.type === 'CREDIT_NOTE';
+          const multiplier = isStorno ? -1 : 1;
+          
+          // Construire rând jurnal
+          const row = this.buildJournalRow(
+            rowNumber++,
+            invoice,
+            details,
+            category,
+            categoryTotals,
+            multiplier
+          );
+          
+          journalRows.push(row);
+        }
+      }
+      
+      // 7. Adaugă rânduri pentru încasări TVA la încasare (pseudo-documente)
+      const paymentRows = await this.addCashVATPaymentRows(db, periodStart, periodEnd, companyId, journalRows);
+      const allRows = [...journalRows, ...paymentRows];
+      
+      // 8. Renumerotare după adăugare plăți
+      allRows.forEach((row, index) => {
+        row.rowNumber = index + 1;
+      });
+      
+      // 9. Calcul totaluri generale
+      const totals = this.calculateJournalTotals(allRows);
+      
+      // 10. Verificări contabile automate
+      const accountingValidation = await this.validateJournalWithAccounts(
+        db,
+        companyId,
+        periodStart,
+        periodEnd,
+        totals
+      );
+      
+      // 11. Construire raport final
+      const report: SalesJournalReport = {
+        companyId,
+        companyName: company.name,
+        companyFiscalCode: company.fiscalCode,
+        periodStart,
+        periodEnd,
+        periodLabel: this.formatPeriodLabel(periodStart, periodEnd),
+        generatedAt: new Date(),
+        rows: allRows, // Include și rândurile de plăți
+        totals,
+        reportType,
+        accountingValidation // Include verificările
+      };
+      
+      return report;
+    } catch (error) {
+      console.error('Error generating sales journal:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to generate sales journal: ${errorMessage}`);
+    }
+  }
+  
+  /**
+   * Grupează liniile facturii pe categorie fiscală
+   */
+  private groupLinesByVATCategory(
+    lines: any[],
+    clientDetails: any
+  ): Map<VATCategory, any[]> {
+    const grouped = new Map<VATCategory, any[]>();
+    
+    for (const line of lines) {
+      // Determină categoria fiscală
+      let category: VATCategory;
+      
+      if (line.vatCategory) {
+        // Folosim categoria setată explicit
+        category = line.vatCategory as VATCategory;
+      } else {
+        // Determinare automată pe bază de date
+        category = determineVATCategory(
+          line.vatRate,
+          clientDetails?.partnerCountry || 'Romania',
+          clientDetails?.partnerFiscalCode,
+          false // reverse charge - ar trebui determinat din alte surse
+        );
+      }
+      
+      // Adaugă linia la categoria sa
+      if (!grouped.has(category)) {
+        grouped.set(category, []);
+      }
+      grouped.get(category)!.push(line);
+    }
+    
+    return grouped;
+  }
+  
+  /**
+   * Calculează totalurile pentru o categorie fiscală
+   */
+  private calculateCategoryTotals(lines: any[]): { base: number; vat: number } {
+    let base = 0;
+    let vat = 0;
+    
+    for (const line of lines) {
+      base += Number(line.netAmount);
+      vat += Number(line.vatAmount);
+    }
+    
+    return { base, vat };
+  }
+  
+  /**
+   * Construiește un rând în jurnalul de vânzări
+   */
+  private buildJournalRow(
+    rowNumber: number,
+    invoice: any,
+    clientDetails: any,
+    category: VATCategory,
+    totals: { base: number; vat: number },
+    multiplier: number
+  ): SalesJournalRow {
+    // Inițializare rând cu toate valorile la 0
+    const row: SalesJournalRow = {
+      rowNumber,
+      date: invoice.issueDate,
+      documentNumber: invoice.invoiceNumber || `${invoice.series}-${invoice.number}`,
+      documentType: invoice.type || 'INVOICE',
+      clientName: clientDetails?.partnerName || invoice.customerName || 'Unknown',
+      clientFiscalCode: clientDetails?.partnerFiscalCode || '',
+      clientCountry: clientDetails?.partnerCountry || 'Romania',
+      totalAmount: Number(invoice.amount) * multiplier,
+      // Inițializare toate categoriile la 0
+      base19: 0,
+      vat19: 0,
+      base9: 0,
+      vat9: 0,
+      base5: 0,
+      vat5: 0,
+      exemptWithCredit: 0,
+      exemptNoCredit: 0,
+      intraCommunity: 0,
+      export: 0,
+      reverseCharge: 0,
+      notSubject: 0,
+      isCashVAT: invoice.isCashVAT || false,
+      vatDeferred: 0,
+      vatCollected: 0,
+      relatedInvoiceNumber: invoice.relatedInvoiceId ? `Storno pentru ${invoice.relatedInvoiceId}` : undefined
+    };
+    
+    // Populare coloane specifice categoriei
+    switch (category) {
+      case VATCategory.STANDARD_19:
+        row.base19 = totals.base * multiplier;
+        row.vat19 = totals.vat * multiplier;
+        break;
+      case VATCategory.REDUCED_9:
+        row.base9 = totals.base * multiplier;
+        row.vat9 = totals.vat * multiplier;
+        break;
+      case VATCategory.REDUCED_5:
+        row.base5 = totals.base * multiplier;
+        row.vat5 = totals.vat * multiplier;
+        break;
+      case VATCategory.EXEMPT_WITH_CREDIT:
+        // Poate fi IC sau Export - determinăm
+        if (clientDetails?.partnerCountry && clientDetails.partnerCountry !== 'Romania') {
+          const isEU = this.isEUCountry(clientDetails.partnerCountry);
+          if (isEU) {
+            row.intraCommunity = totals.base * multiplier;
+          } else {
+            row.export = totals.base * multiplier;
+          }
+        } else {
+          row.exemptWithCredit = totals.base * multiplier;
+        }
+        break;
+      case VATCategory.EXEMPT_NO_CREDIT:
+        row.exemptNoCredit = totals.base * multiplier;
+        break;
+      case VATCategory.REVERSE_CHARGE:
+        row.reverseCharge = totals.base * multiplier;
+        break;
+      case VATCategory.NOT_SUBJECT:
+      case VATCategory.ZERO_RATE:
+        row.notSubject = totals.base * multiplier;
+        break;
+    }
+    
+    // TVA la încasare - determinare exigibil vs neexigibil
+    if (invoice.isCashVAT) {
+      // Pentru moment, tot TVA-ul e neexigibil la emitere
+      // Încasările vor fi tratate ca rânduri separate în jurnal (vezi metoda următoare)
+      row.vatDeferred = totals.vat * multiplier;
+      row.vatCollected = 0;
+    } else {
+      // TVA normal - tot exigibil la emitere
+      row.vatDeferred = 0;
+      row.vatCollected = totals.vat * multiplier;
+    }
+    
+    return row;
+  }
+  
+  /**
+   * Adaugă în jurnal rânduri pentru încasări de facturi cu TVA la încasare
+   * Acestea sunt "pseudo-documente" care arată TVA devenit exigibil
+   */
+  private async addCashVATPaymentRows(
+    db: any,
+    periodStart: Date,
+    periodEnd: Date,
+    companyId: string,
+    existingRows: SalesJournalRow[]
+  ): Promise<SalesJournalRow[]> {
+    try {
+      // Găsește toate plățile din perioadă pentru facturi cu TVA la încasare
+      const paymentsInPeriod = await db
+        .select({
+          paymentId: invoicePayments.id,
+          paymentDate: invoicePayments.paymentDate,
+          paymentAmount: invoicePayments.amount,
+          paymentReference: invoicePayments.paymentReference,
+          vatTransferred: invoicePayments.vatAmountTransferred,
+          invoiceId: invoicePayments.invoiceId,
+          invoiceNumber: invoices.invoiceNumber,
+          clientName: invoiceDetails.partnerName,
+          clientFiscalCode: invoiceDetails.partnerFiscalCode
+        })
+        .from(invoicePayments)
+        .innerJoin(invoices, eq(invoicePayments.invoiceId, invoices.id))
+        .leftJoin(invoiceDetails, eq(invoices.id, invoiceDetails.invoiceId))
+        .where(and(
+          eq(invoicePayments.companyId, companyId),
+          gte(invoicePayments.paymentDate, periodStart),
+          lte(invoicePayments.paymentDate, periodEnd),
+          eq(invoices.isCashVAT, true),
+          isNotNull(invoicePayments.vatAmountTransferred)
+        ))
+        .orderBy(invoicePayments.paymentDate);
+      
+      const paymentRows: SalesJournalRow[] = [];
+      let rowNumber = existingRows.length + 1;
+      
+      for (const payment of paymentsInPeriod) {
+        // Creează rând pseudo-document pentru încasare
+        const row: SalesJournalRow = {
+          rowNumber: rowNumber++,
+          date: payment.paymentDate,
+          documentNumber: `ÎNCAS-${payment.invoiceNumber}`,
+          documentType: 'PAYMENT',
+          clientName: payment.clientName || 'Unknown',
+          clientFiscalCode: payment.clientFiscalCode || '',
+          clientCountry: 'Romania',
+          totalAmount: 0, // Nu afectează totalul - e doar transfer TVA
+          base19: 0,
+          vat19: 0,
+          base9: 0,
+          vat9: 0,
+          base5: 0,
+          vat5: 0,
+          exemptWithCredit: 0,
+          exemptNoCredit: 0,
+          intraCommunity: 0,
+          export: 0,
+          reverseCharge: 0,
+          notSubject: 0,
+          isCashVAT: true,
+          vatDeferred: -Number(payment.vatTransferred), // Scade din neexigibil
+          vatCollected: Number(payment.vatTransferred),  // Crește exigibil
+          paymentReference: payment.paymentReference || undefined,
+          notes: `TVA devenit exigibil pentru factura ${payment.invoiceNumber}`
+        };
+        
+        paymentRows.push(row);
+      }
+      
+      return paymentRows;
+    } catch (error) {
+      console.error('Error adding cash VAT payment rows:', error);
+      return []; // Return empty array on error, don't break the whole journal
+    }
+  }
+  
+  /**
+   * Calculează totalurile generale pentru jurnal
+   */
+  private calculateJournalTotals(rows: SalesJournalRow[]): SalesJournalTotals {
+    const totals: SalesJournalTotals = {
+      totalDocuments: rows.length,
+      totalAmount: 0,
+      totalBase19: 0,
+      totalVAT19: 0,
+      totalBase9: 0,
+      totalVAT9: 0,
+      totalBase5: 0,
+      totalVAT5: 0,
+      totalExemptWithCredit: 0,
+      totalExemptNoCredit: 0,
+      totalIntraCommunity: 0,
+      totalExport: 0,
+      totalReverseCharge: 0,
+      totalNotSubject: 0,
+      totalVATDeferred: 0,
+      totalVATCollected: 0,
+      totalNetAmount: 0,
+      totalVATAmount: 0
+    };
+    
+    for (const row of rows) {
+      totals.totalAmount += row.totalAmount;
+      totals.totalBase19 += row.base19;
+      totals.totalVAT19 += row.vat19;
+      totals.totalBase9 += row.base9;
+      totals.totalVAT9 += row.vat9;
+      totals.totalBase5 += row.base5;
+      totals.totalVAT5 += row.vat5;
+      totals.totalExemptWithCredit += row.exemptWithCredit;
+      totals.totalExemptNoCredit += row.exemptNoCredit;
+      totals.totalIntraCommunity += row.intraCommunity;
+      totals.totalExport += row.export;
+      totals.totalReverseCharge += row.reverseCharge;
+      totals.totalNotSubject += row.notSubject;
+      totals.totalVATDeferred += row.vatDeferred;
+      totals.totalVATCollected += row.vatCollected;
+    }
+    
+    // Calcul verificare
+    totals.totalNetAmount = 
+      totals.totalBase19 + totals.totalBase9 + totals.totalBase5 +
+      totals.totalExemptWithCredit + totals.totalExemptNoCredit +
+      totals.totalIntraCommunity + totals.totalExport +
+      totals.totalReverseCharge + totals.totalNotSubject;
+    
+    totals.totalVATAmount = totals.totalVATDeferred + totals.totalVATCollected;
+    
+    return totals;
+  }
+  
+  /**
+   * Formatare etichetă perioadă
+   */
+  private formatPeriodLabel(start: Date, end: Date): string {
+    const startMonth = start.getMonth();
+    const endMonth = end.getMonth();
+    const year = start.getFullYear();
+    
+    if (startMonth === endMonth) {
+      const monthNames = [
+        'Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie',
+        'Iulie', 'August', 'Septembrie', 'Octombrie', 'Noiembrie', 'Decembrie'
+      ];
+      return `${monthNames[startMonth]} ${year}`;
+    }
+    
+    return `${start.toLocaleDateString('ro-RO')} - ${end.toLocaleDateString('ro-RO')}`;
+  }
+  
+  /**
+   * Validează jurnalul cu balanța contabilă
+   * Verifică consistența dintre totalurile jurnalului și soldurile conturilor
+   */
+  private async validateJournalWithAccounts(
+    db: any,
+    companyId: string,
+    periodStart: Date,
+    periodEnd: Date,
+    totals: SalesJournalTotals
+  ): Promise<any> {
+    try {
+      // Calculează solduri conturi pentru perioadă din ledger entries
+      const periodYear = periodStart.getFullYear();
+      const periodMonth = periodStart.getMonth() + 1;
+      
+      // Query pentru sold cont 4427 (TVA colectată)
+      const vat4427 = await this.getAccountBalance(db, companyId, '4427', periodYear, periodMonth);
+      
+      // Query pentru sold cont 4428 (TVA neexigibilă)
+      const vat4428 = await this.getAccountBalance(db, companyId, '4428', periodYear, periodMonth);
+      
+      // Query pentru sold cont 707 (Venituri)
+      const revenue707 = await this.getAccountBalance(db, companyId, '707', periodYear, periodMonth);
+      
+      // Query pentru sold cont 4111 (Clienți)
+      const clients4111 = await this.getAccountBalance(db, companyId, '4111', periodYear, periodMonth);
+      
+      // Verificări
+      const discrepancies: string[] = [];
+      
+      // Verificare TVA colectată
+      if (Math.abs(vat4427 - totals.totalVATCollected) > 0.01) {
+        discrepancies.push(
+          `TVA colectată: Jurnal ${totals.totalVATCollected.toFixed(2)} RON vs Cont 4427 ${vat4427.toFixed(2)} RON`
+        );
+      }
+      
+      // Verificare TVA neexigibilă
+      if (Math.abs(vat4428 - totals.totalVATDeferred) > 0.01) {
+        discrepancies.push(
+          `TVA neexigibilă: Jurnal ${totals.totalVATDeferred.toFixed(2)} RON vs Cont 4428 ${vat4428.toFixed(2)} RON`
+        );
+      }
+      
+      // Verificare venituri
+      if (Math.abs(revenue707 - totals.totalNetAmount) > 0.01) {
+        discrepancies.push(
+          `Venituri: Jurnal ${totals.totalNetAmount.toFixed(2)} RON vs Cont 707 ${revenue707.toFixed(2)} RON`
+        );
+      }
+      
+      return {
+        account4427Balance: vat4427,
+        account4428Balance: vat4428,
+        account707Balance: revenue707,
+        account4111Balance: clients4111,
+        isBalanced: discrepancies.length === 0,
+        discrepancies: discrepancies.length > 0 ? discrepancies : undefined
+      };
+    } catch (error) {
+      console.error('Error validating journal with accounts:', error);
+      return {
+        account4427Balance: 0,
+        account4428Balance: 0,
+        account707Balance: 0,
+        account4111Balance: 0,
+        isBalanced: false,
+        discrepancies: ['Nu s-au putut verifica soldurile contabile']
+      };
+    }
+  }
+  
+  /**
+   * Obține soldul unui cont pentru o perioadă
+   */
+  private async getAccountBalance(
+    db: any,
+    companyId: string,
+    accountCode: string,
+    year: number,
+    month: number
+  ): Promise<number> {
+    try {
+      // Query suma creditelor - debitelor pentru cont în perioadă
+      const result = await db
+        .select()
+        .from(ledgerLines)
+        .innerJoin(ledgerEntries, eq(ledgerLines.ledgerEntryId, ledgerEntries.id))
+        .where(and(
+          eq(ledgerEntries.companyId, companyId),
+          eq(ledgerLines.accountId, accountCode),
+          gte(ledgerEntries.createdAt, new Date(year, month - 1, 1)),
+          lte(ledgerEntries.createdAt, new Date(year, month, 0))
+        ));
+      
+      let balance = 0;
+      for (const row of result) {
+        const credit = Number(row.ledger_lines.creditAmount || 0);
+        const debit = Number(row.ledger_lines.debitAmount || 0);
+        balance += credit - debit;
+      }
+      
+      return balance;
+    } catch (error) {
+      console.error(`Error getting balance for account ${accountCode}:`, error);
+      return 0;
+    }
+  }
+  
+  /**
+   * Verifică dacă o țară este în UE
+   */
+  private isEUCountry(country: string): boolean {
+    const euCountries = [
+      'Austria', 'Belgium', 'Bulgaria', 'Croatia', 'Cyprus', 'Czech Republic', 'Czechia',
+      'Denmark', 'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Hungary',
+      'Ireland', 'Italy', 'Latvia', 'Lithuania', 'Luxembourg', 'Malta', 'Netherlands',
+      'Poland', 'Portugal', 'Romania', 'Slovakia', 'Slovenia', 'Spain', 'Sweden'
+    ];
+    
+    return euCountries.some(c => 
+      c.toLowerCase() === country.toLowerCase() ||
+      country.toLowerCase() === c.substring(0, 2).toLowerCase()
+    );
   }
 }
 

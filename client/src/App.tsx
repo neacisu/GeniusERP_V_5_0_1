@@ -251,18 +251,18 @@ function Router() {
         <SalesModule />
       </Route>
       {/* Marketing Module Routes */}
-      <ProtectedRoute path="/marketing/:path*" component={MarketingModule} />
-      <ProtectedRoute path="/marketing" component={MarketingModule} />
+      <ProtectedRoute path="/marketing/:path*" component={MarketingModule as any} />
+      <ProtectedRoute path="/marketing" component={MarketingModule as any} />
       {/* No direct page needed anymore as we fixed the module-level page */}
 
       {/* Invoicing Module Routes */}
-      <ProtectedRoute path="/invoicing/:path*" component={InvoicingModule} />
-      <ProtectedRoute path="/invoicing" component={InvoicingModule} />
-      <ProtectedRoute path="/facturare/:path*" component={InvoicingModule} />
-      <ProtectedRoute path="/facturare" component={InvoicingModule} />
+      <ProtectedRoute path="/invoicing/:path*" component={InvoicingModule as any} />
+      <ProtectedRoute path="/invoicing" component={InvoicingModule as any} />
+      <ProtectedRoute path="/facturare/:path*" component={InvoicingModule as any} />
+      <ProtectedRoute path="/facturare" component={InvoicingModule as any} />
       {/* Documents Module Routes */}
-      <ProtectedRoute path="/documents/:path*" component={DocumentsRoutes} />
-      <ProtectedRoute path="/documents" component={DocumentsRoutes} />
+      <ProtectedRoute path="/documents/:path*" component={DocumentsRoutes as any} />
+      <ProtectedRoute path="/documents" component={DocumentsRoutes as any} />
       {/* Settings Module Routes */}
       <ProtectedRoute path="/settings/company" component={SettingsModule} />
       <ProtectedRoute

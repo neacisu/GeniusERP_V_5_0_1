@@ -390,10 +390,10 @@ export const collaborationNotifications = pgTable('collaboration_notifications',
 }));
 
 // Type definitions for activities and notifications
-export type Activity = typeof collaborationActivities.$inferSelect;
+export type CollaborationActivity = typeof collaborationActivities.$inferSelect;
 export type Notification = typeof collaborationNotifications.$inferSelect;
 
-export const insertActivitySchema = createInsertSchema(collaborationActivities, {
+export const insertCollaborationActivitySchema = createInsertSchema(collaborationActivities, {
   id: z.string().uuid().optional(),
   createdAt: z.date().optional(),
   data: z.record(z.string(), z.any()).optional()
@@ -406,5 +406,5 @@ export const insertNotificationSchema = createInsertSchema(collaborationNotifica
   metadata: z.record(z.string(), z.any()).optional()
 });
 
-export type NewActivity = z.infer<typeof insertActivitySchema>;
+export type NewCollaborationActivity = z.infer<typeof insertCollaborationActivitySchema>;
 export type NewNotification = z.infer<typeof insertNotificationSchema>;
