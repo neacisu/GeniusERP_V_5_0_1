@@ -305,4 +305,3 @@ export class SalesJournalExportService {
 }
 
 export default SalesJournalExportService;
-
