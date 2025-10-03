@@ -115,15 +115,15 @@ export function setupPurchaseJournalRoutes() {
   /**
    * Get purchase ledger entries
    */
-  router.get("/ledger-entries", (req: AuthenticatedRequest, res: Response) => {
-    purchaseJournalController.getPurchaseLedgerEntries(req, res);
+  router.get("/ledger-entries", (req, res) => {
+    purchaseJournalController.getPurchaseLedgerEntries(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get purchase ledger entry by ID
    */
-  router.get("/ledger-entries/:id", (req: AuthenticatedRequest, res: Response) => {
-    purchaseJournalController.getPurchaseLedgerEntry(req, res);
+  router.get("/ledger-entries/:id", (req, res) => {
+    purchaseJournalController.getPurchaseLedgerEntry(req as AuthenticatedRequest, res);
   });
   
   /**
