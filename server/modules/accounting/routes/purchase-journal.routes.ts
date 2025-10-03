@@ -144,5 +144,13 @@ export function setupPurchaseJournalRoutes() {
     purchaseJournalController.generatePurchaseJournal(req as AuthenticatedRequest, res);
   });
   
+  router.get("/journal/export/excel", (req, res) => {
+    purchaseJournalController.exportPurchaseJournalExcel(req as AuthenticatedRequest, res);
+  });
+  
+  router.get("/journal/export/pdf", (req, res) => {
+    purchaseJournalController.exportPurchaseJournalPDF(req as AuthenticatedRequest, res);
+  });
+  
   return router;
 }

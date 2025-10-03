@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { PurchaseJournalService } from '../services/purchase-journal.service';
-import { SalesJournalExportService } from '../services/sales-journal-export.service';
+import { PurchaseJournalExportService } from '../services/purchase-journal-export.service';
 import { BaseController } from './base.controller';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
 
@@ -11,11 +11,14 @@ import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
  * payments, and reporting for the romanian accounting system
  */
 export class PurchaseJournalController extends BaseController {
+  private exportService: PurchaseJournalExportService;
+  
   /**
    * Constructor
    */
   constructor(private purchaseJournalService: PurchaseJournalService) {
     super();
+    this.exportService = new PurchaseJournalExportService();
   }
   
   /**
@@ -351,5 +354,55 @@ export class PurchaseJournalController extends BaseController {
         companyId, periodStart, periodEnd
       });
     });
+  }
+  
+  async exportPurchaseJournalExcel(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const companyId = this.getCompanyId(req);
+      const periodStart = this.parseDate(req.query.periodStart as string);
+      const periodEnd = this.parseDate(req.query.periodEnd as string);
+      
+      if (!periodStart || !periodEnd) {
+        res.status(400).json({ error: 'periodStart and periodEnd required' });
+        return;
+      }
+      
+      const report = await this.purchaseJournalService.generatePurchaseJournal({
+        companyId, periodStart, periodEnd
+      });
+      
+      const excelBuffer = await this.exportService.exportToExcel(report);
+      const filename = `Jurnal_Cumparari_${report.periodLabel.replace(/\s/g, '_')}.csv`;
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(excelBuffer);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to export' });
+    }
+  }
+  
+  async exportPurchaseJournalPDF(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const companyId = this.getCompanyId(req);
+      const periodStart = this.parseDate(req.query.periodStart as string);
+      const periodEnd = this.parseDate(req.query.periodEnd as string);
+      
+      if (!periodStart || !periodEnd) {
+        res.status(400).json({ error: 'periodStart and periodEnd required' });
+        return;
+      }
+      
+      const report = await this.purchaseJournalService.generatePurchaseJournal({
+        companyId, periodStart, periodEnd
+      });
+      
+      const pdfBuffer = await this.exportService.exportToPDF(report);
+      const filename = `Jurnal_Cumparari_${report.periodLabel.replace(/\s/g, '_')}.html`;
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to export' });
+    }
   }
 }

@@ -137,6 +137,12 @@ type Supplier = {
 };
 
 export default function PurchaseJournalPage() {
+  const { toast } = useToast();
+  
+  // Main section selector  
+  const [mainSection, setMainSection] = useState<'invoices' | 'journal-report'>('invoices');
+  
+  // Invoices section
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [selectedInvoice, setSelectedInvoice] = useState<PurchaseInvoice | null>(null);
@@ -148,7 +154,10 @@ export default function PurchaseJournalPage() {
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0], 
     to: new Date().toISOString().split('T')[0] 
   });
-  const { toast } = useToast();
+  
+  // Journal Report section (NOU!)
+  const [reportPeriodStart, setReportPeriodStart] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [reportPeriodEnd, setReportPeriodEnd] = useState<Date>(new Date());
 
   // Fetch purchase invoices
   const { data: invoicesResponse, isLoading: isLoadingInvoices } = useQuery<{ data: PurchaseInvoice[]; total: number; page: number; limit: number }>({
