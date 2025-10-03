@@ -61,6 +61,13 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format, startOfMonth, endOfMonth } from "date-fns";
+import { ro } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   PlusCircle,
   FileText,
@@ -79,7 +86,9 @@ import {
   Building,
   ShoppingCart,
   Send,
-  AlertCircle
+  AlertCircle,
+  Loader2,
+  FileSpreadsheet
 } from "lucide-react";
 import { Link } from "wouter";
 
