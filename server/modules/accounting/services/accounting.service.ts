@@ -1,12 +1,17 @@
 import { IStorage } from "../../../storage";
-import { 
-  AccountClass, AccountGroup, SyntheticAccount, AnalyticAccount, 
+import { DrizzleService } from "../../../common/drizzle/drizzle.service";
+import {
+  AccountClass, AccountGroup, SyntheticAccount, AnalyticAccount,
   JournalEntry, JournalLine,
   InsertJournalEntry, InsertJournalLine
 } from "@shared/schema";
 
 export class AccountingService {
-  constructor(private storage: IStorage) {}
+  private drizzleService: DrizzleService;
+
+  constructor(private storage: IStorage) {
+    this.drizzleService = new DrizzleService();
+  }
   
   // Account Classes
   async getAccountClasses(): Promise<AccountClass[]> {
@@ -70,7 +75,7 @@ export class AccountingService {
   
   // All Accounts (legacy accounts table - for forms and dropdowns)
   async getAllAccounts(): Promise<any[]> {
-    return this.storage.getAllAccounts();
+    return this.storage.getAccounts();
   }
   
   // Journal Entries
@@ -108,5 +113,70 @@ export class AccountingService {
     if (lines.length < 2) {
       throw new Error("Journal entry must have at least two lines");
     }
+  }
+
+  /**
+   * Get all suppliers for a company
+   */
+  async getSuppliers(companyId: string): Promise<any[]> {
+    // Get suppliers from CRM companies table where isSupplier is true
+    const query = `
+      SELECT
+        id,
+        name,
+        cui,
+        vat_number as "vatNumber",
+        registration_number as "registrationNumber",
+        address,
+        city,
+        county,
+        country,
+        postal_code as "postalCode",
+        phone,
+        email,
+        website,
+        custom_fields as "customFields",
+        analythic_401 as "analythic401",
+        analythic_4111 as "analythic4111",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+      FROM crm_companies
+      WHERE company_id = $1 AND is_supplier = true
+      ORDER BY name ASC
+    `;
+
+    return this.drizzleService.executeQuery(query, [companyId]);
+  }
+
+  /**
+   * Get supplier by ID for a company
+   */
+  async getSupplier(supplierId: string, companyId: string): Promise<any> {
+    const query = `
+      SELECT
+        id,
+        name,
+        cui,
+        vat_number as "vatNumber",
+        registration_number as "registrationNumber",
+        address,
+        city,
+        county,
+        country,
+        postal_code as "postalCode",
+        phone,
+        email,
+        website,
+        custom_fields as "customFields",
+        analythic_401 as "analythic401",
+        analythic_4111 as "analythic4111",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+      FROM crm_companies
+      WHERE id = $1 AND company_id = $2 AND is_supplier = true
+    `;
+
+    const result = await this.drizzleService.executeQuery(query, [supplierId, companyId]);
+    return result[0] || null;
   }
 }

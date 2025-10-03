@@ -429,20 +429,52 @@ export class AccountingController extends BaseController {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
       const userId = this.getUserId(req);
-      
+
       // Remapăm parentId la syntheticId care este cerut de schema bazei de date
       const { parentId, ...restData } = req.body;
-      const accountData = { 
-        ...restData, 
+      const accountData = {
+        ...restData,
         syntheticId: parentId, // Remapăm parentId la syntheticId
-        companyId, 
-        createdBy: userId 
+        companyId,
+        createdBy: userId
       };
-      
+
       // Use the storage directly for analytic accounts
       const analyticAccount = await this.accountingService.createAnalyticAccount(accountData);
-      
+
       return analyticAccount;
+    });
+  }
+
+  /**
+   * Get all suppliers for the company
+   */
+  async getSuppliers(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+
+      // Get suppliers from CRM companies table where isSupplier is true
+      const suppliers = await this.accountingService.getSuppliers(companyId);
+
+      return suppliers;
+    });
+  }
+
+  /**
+   * Get supplier by ID
+   */
+  async getSupplier(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      const supplierId = req.params.id;
+
+      const supplier = await this.accountingService.getSupplier(supplierId, companyId);
+
+      if (!supplier) {
+        throw { statusCode: 404, message: 'Supplier not found' };
+      }
+
+      return supplier;
     });
   }
 }

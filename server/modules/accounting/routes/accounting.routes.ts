@@ -102,12 +102,21 @@ export function setupAccountingRoutes() {
   );
   
   router.get(
-    "/income-statement", 
-    AuthGuard.roleGuard(["accountant", "admin", "manager"]), 
+    "/income-statement",
+    AuthGuard.roleGuard(["accountant", "admin", "manager"]),
     async (req, res) => {
       await accountingController.getIncomeStatement(req as AuthenticatedRequest, res as Response);
     }
   );
-  
+
+  // Suppliers routes
+  router.get("/suppliers", async (req, res) => {
+    await accountingController.getSuppliers(req as AuthenticatedRequest, res as Response);
+  });
+
+  router.get("/suppliers/:id", async (req, res) => {
+    await accountingController.getSupplier(req as AuthenticatedRequest, res as Response);
+  });
+
   return router;
 }
