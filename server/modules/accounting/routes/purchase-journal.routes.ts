@@ -113,7 +113,7 @@ export function setupPurchaseJournalRoutes() {
   );
   
   /**
-   * Get purchase ledger entries
+   * Get purchase ledger entries  
    */
   router.get("/ledger-entries", (req, res) => {
     purchaseJournalController.getPurchaseLedgerEntries(req as AuthenticatedRequest, res);
