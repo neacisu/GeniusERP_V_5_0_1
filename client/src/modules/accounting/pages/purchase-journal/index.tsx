@@ -158,6 +158,20 @@ export default function PurchaseJournalPage() {
   // Journal Report section (NOU!)
   const [reportPeriodStart, setReportPeriodStart] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [reportPeriodEnd, setReportPeriodEnd] = useState<Date>(new Date());
+  
+  // Fetch Purchase Journal Report
+  const { data: journalReport, isLoading: isLoadingReport, refetch: refetchReport } = useQuery({
+    queryKey: ['purchase-journal-report', reportPeriodStart, reportPeriodEnd],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        periodStart: format(reportPeriodStart, 'yyyy-MM-dd'),
+        periodEnd: format(reportPeriodEnd, 'yyyy-MM-dd')
+      });
+      const response = await apiRequest(`/api/accounting/purchases/journal?${params}`);
+      return response.data || response;
+    },
+    enabled: mainSection === 'journal-report' && !!reportPeriodStart && !!reportPeriodEnd
+  });
 
   // Fetch purchase invoices
   const { data: invoicesResponse, isLoading: isLoadingInvoices } = useQuery<{ data: PurchaseInvoice[]; total: number; page: number; limit: number }>({
