@@ -296,7 +296,7 @@ export class SalesJournalExportService {
 </html>
     `;
     
-      return Buffer.from(html, 'utf-8');
+    return Buffer.from(html, 'utf-8');
     } catch (error) {
       console.error('Error generating HTML report:', error);
       throw new Error('Failed to generate report');
