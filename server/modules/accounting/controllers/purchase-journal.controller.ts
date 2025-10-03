@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PurchaseJournalService } from '../services/purchase-journal.service';
+import { SalesJournalExportService } from '../services/sales-journal-export.service';
 import { BaseController } from './base.controller';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
 
@@ -333,6 +334,22 @@ export class PurchaseJournalController extends BaseController {
         supplierId,
         asOfDate
       );
+    });
+  }
+  
+  async generatePurchaseJournal(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      const periodStart = this.parseDate(req.query.periodStart as string);
+      const periodEnd = this.parseDate(req.query.periodEnd as string);
+      
+      if (!periodStart || !periodEnd) {
+        throw { statusCode: 400, message: 'periodStart and periodEnd required' };
+      }
+      
+      return await this.purchaseJournalService.generatePurchaseJournal({
+        companyId, periodStart, periodEnd
+      });
     });
   }
 }

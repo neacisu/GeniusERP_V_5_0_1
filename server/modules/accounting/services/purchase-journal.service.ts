@@ -574,19 +574,109 @@ export class PurchaseJournalService {
   }
   
   /**
-   * PARTEA 2 - JURNAL DE CUMPĂRĂRI CONTINUARE
-   * Implementare completă conform planului
+   * PARTEA 2 - PLĂȚI ȘI TRANSFER TVA
    */
   
-  // Metodele pentru payments, transfer TVA, și generatePurchaseJournal
-  // vor fi adăugate aici (similare cu SalesJournalService)
-  // Din cauza limitării de tokeni, acestea vor fi implementate în commit următor
+  public async recordSupplierPayment(paymentData: any): Promise<string> {
+    const db = getDrizzle();
+    const [invoice] = await db.select().from(invoices).where(eq(invoices.id, paymentData.invoiceId)).limit(1);
+    if (!invoice) throw new Error('Invoice not found');
+    
+    const [payment] = await db.insert(invoicePayments).values({
+      invoiceId: paymentData.invoiceId,
+      companyId: paymentData.companyId,
+      paymentDate: paymentData.paymentDate,
+      amount: String(paymentData.amount),
+      paymentMethod: paymentData.paymentMethod,
+      paymentReference: paymentData.paymentReference,
+      notes: paymentData.notes,
+      createdBy: paymentData.userId
+    }).returning();
+    
+    if (invoice.isCashVAT && invoice.vatAmount && Number(invoice.vatAmount) > 0) {
+      const vatEntry = await this.transferDeferredVATForPurchases(paymentData.invoiceId, paymentData.amount, paymentData.paymentDate, paymentData.userId);
+      if (vatEntry) {
+        await db.update(invoicePayments).set({
+          vatTransferLedgerId: vatEntry.id,
+          vatAmountTransferred: String(Number(invoice.vatAmount) * (paymentData.amount / Number(invoice.amount)))
+        }).where(eq(invoicePayments.id, payment.id));
+      }
+    }
+    
+    return payment.id;
+  }
   
-  // PLACEHOLDER pentru:
-  // - recordSupplierPayment()
-  // - transferDeferredVATForPurchases() 
-  // - generatePurchaseJournal()
-  // - Export methods
+  public async transferDeferredVATForPurchases(invoiceId: string, paymentAmount: number, paymentDate: Date, userId?: string): Promise<LedgerEntryData | null> {
+    const db = getDrizzle();
+    const [invoice] = await db.select().from(invoices).where(eq(invoices.id, invoiceId)).limit(1);
+    if (!invoice || !invoice.isCashVAT) return null;
+    
+    const vatToTransfer = Number(invoice.vatAmount) * (paymentAmount / Number(invoice.amount));
+    
+    const entry = await this.journalService.createLedgerEntry({
+      companyId: invoice.companyId,
+      franchiseId: invoice.franchiseId || undefined,
+      type: LedgerEntryType.PURCHASE,
+      referenceNumber: `TVA-${invoice.invoiceNumber}`,
+      amount: vatToTransfer,
+      description: `Transfer TVA deductibil pentru ${invoice.invoiceNumber}`,
+      userId,
+      lines: [
+        { accountId: PURCHASE_ACCOUNTS.VAT_DEDUCTIBLE, debitAmount: vatToTransfer, creditAmount: 0, description: 'TVA devenit deductibil' },
+        { accountId: PURCHASE_ACCOUNTS.VAT_DEFERRED, debitAmount: 0, creditAmount: vatToTransfer, description: 'Transfer din TVA neexigibil' }
+      ]
+    });
+    
+    return entry;
+  }
+  
+  /**
+   * PARTEA 3 - GENERARE RAPORT JURNAL CUMPĂRĂRI
+   */
+  
+  public async generatePurchaseJournal(params: any): Promise<any> {
+    const { companyId, periodStart, periodEnd } = params;
+    const db = getDrizzle();
+    
+    const [company] = await db.select({ name: companies.name, fiscalCode: companies.fiscalCode }).from(companies).where(eq(companies.id, companyId)).limit(1);
+    if (!company) throw new Error('Company not found');
+    
+    const invoicesResult = await db.select().from(invoices).where(and(
+      eq(invoices.companyId, companyId),
+      eq(invoices.type, 'PURCHASE'),
+      gte(invoices.issueDate, periodStart),
+      lte(invoices.issueDate, periodEnd)
+    )).orderBy(invoices.issueDate);
+    
+    const rows = [];
+    for (const invoice of invoicesResult) {
+      const [details] = await db.select().from(invoiceDetails).where(eq(invoiceDetails.invoiceId, invoice.id)).limit(1);
+      const lines = await db.select().from(invoiceLines).where(eq(invoiceLines.invoiceId, invoice.id));
+      
+      rows.push({
+        rowNumber: rows.length + 1,
+        date: invoice.issueDate,
+        documentNumber: invoice.invoiceNumber,
+        supplierName: details?.partnerName || invoice.customerName,
+        supplierFiscalCode: details?.partnerFiscalCode || '',
+        totalAmount: Number(invoice.amount),
+        base19: lines.filter(l => l.vatRate === 19).reduce((sum, l) => sum + Number(l.netAmount), 0),
+        vat19: lines.filter(l => l.vatRate === 19).reduce((sum, l) => sum + Number(l.vatAmount), 0),
+        vatDeductible: invoice.isCashVAT ? 0 : Number(invoice.vatAmount)
+      });
+    }
+    
+    return {
+      companyId,
+      companyName: company.name,
+      companyFiscalCode: company.fiscalCode,
+      periodStart,
+      periodEnd,
+      periodLabel: new Date(periodStart).toLocaleDateString('ro-RO', { month: 'long', year: 'numeric' }),
+      rows,
+      totals: { totalAmount: rows.reduce((s, r) => s + r.totalAmount, 0) }
+    };
+  }
 }
 
 export default PurchaseJournalService;

@@ -136,8 +136,12 @@ export function setupPurchaseJournalRoutes() {
   /**
    * Get supplier balance
    */
-  router.get("/suppliers/:id/balance", (req: AuthenticatedRequest, res: Response) => {
-    purchaseJournalController.getSupplierBalance(req, res);
+  router.get("/suppliers/:id/balance", (req, res) => {
+    purchaseJournalController.getSupplierBalance(req as AuthenticatedRequest, res);
+  });
+  
+  router.get("/journal", (req, res) => {
+    purchaseJournalController.generatePurchaseJournal(req as AuthenticatedRequest, res);
   });
   
   return router;
