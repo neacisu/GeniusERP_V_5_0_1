@@ -565,40 +565,27 @@ export default function PurchaseJournalPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Jurnal Cumpărări</h1>
-          <p className="text-sm text-gray-500">Gestionați facturile de achiziție și urmăriți plățile</p>
+          <p className="text-sm text-gray-500">Gestionați facturile și generați raportul conform OMFP 2634/2015</p>
         </div>
         
         <div className="flex space-x-2 mt-4 md:mt-0">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center">
-                <Download className="h-4 w-4 mr-2" />
-                <span>Export</span>
-                <ChevronDown className="h-4 w-4 ml-2" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Export Jurnal Cumpărări</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <span>Export PDF</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <span>Export Excel</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <span>Export CSV</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          <Button>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            <span>Factură Nouă</span>
-          </Button>
+          {mainSection === 'invoices' && (
+            <Button>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              <span>Factură Nouă</span>
+            </Button>
+          )}
         </div>
       </div>
       
+      {/* Main Tabs */}
+      <Tabs value={mainSection} onValueChange={(val: any) => setMainSection(val)} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="invoices">📄 Facturi Achiziție</TabsTrigger>
+          <TabsTrigger value="journal-report">📊 Raport Jurnal Cumpărări</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="invoices">
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-col space-y-4">
@@ -1098,6 +1085,74 @@ export default function PurchaseJournalPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </TabsContent>
+      
+      {/* TAB 2: Raport Jurnal Cumpărări */}
+      <TabsContent value="journal-report">
+        {journalReport && (
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between">
+                <div>
+                  <CardTitle>Jurnal de Cumpărări - {journalReport.periodLabel}</CardTitle>
+                  <CardDescription>{journalReport.companyName} (CUI: {journalReport.companyFiscalCode})</CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => window.open(`/api/accounting/purchases/journal/export/excel?periodStart=${format(reportPeriodStart, 'yyyy-MM-dd')}&periodEnd=${format(reportPeriodEnd, 'yyyy-MM-dd')}`, '_blank')}>
+                    <FileSpreadsheet className="h-4 w-4 mr-2" />Excel
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => window.open(`/api/accounting/purchases/journal/export/pdf?periodStart=${format(reportPeriodStart, 'yyyy-MM-dd')}&periodEnd=${format(reportPeriodEnd, 'yyyy-MM-dd')}`, '_blank')}>
+                    <FileText className="h-4 w-4 mr-2" />PDF
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-100">
+                      <TableHead>Nr</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Document</TableHead>
+                      <TableHead>Furnizor</TableHead>
+                      <TableHead>CUI</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                      <TableHead className="text-right bg-blue-50">Bază 19%</TableHead>
+                      <TableHead className="text-right bg-blue-50">TVA 19%</TableHead>
+                      <TableHead className="text-right bg-green-50">TVA Deductibil</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {journalReport.rows?.map((row: any) => (
+                      <TableRow key={row.rowNumber}>
+                        <TableCell>{row.rowNumber}</TableCell>
+                        <TableCell>{new Date(row.date).toLocaleDateString('ro-RO')}</TableCell>
+                        <TableCell>{row.documentNumber}</TableCell>
+                        <TableCell>{row.supplierName}</TableCell>
+                        <TableCell>{row.supplierFiscalCode}</TableCell>
+                        <TableCell className="text-right">{row.totalAmount?.toFixed(2)}</TableCell>
+                        <TableCell className="text-right bg-blue-50">{row.base19?.toFixed(2)}</TableCell>
+                        <TableCell className="text-right bg-blue-50">{row.vat19?.toFixed(2)}</TableCell>
+                        <TableCell className="text-right bg-green-50">{row.vatDeductible?.toFixed(2)}</TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow className="font-bold bg-gray-200">
+                      <TableCell colSpan={5}>TOTAL:</TableCell>
+                      <TableCell className="text-right">{journalReport.totals?.totalAmount?.toFixed(2)}</TableCell>
+                      <TableCell className="text-right bg-blue-100">-</TableCell>
+                      <TableCell className="text-right bg-blue-100">-</TableCell>
+                      <TableCell className="text-right bg-green-100">-</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        {isLoadingReport && <div className="text-center py-12"><Loader2 className="h-8 w-8 animate-spin mx-auto" /><p>Se generează jurnalul...</p></div>}
+      </TabsContent>
+      </Tabs>
     </AppLayout>
   );
 }
