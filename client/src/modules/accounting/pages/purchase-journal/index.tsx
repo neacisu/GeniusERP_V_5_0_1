@@ -101,13 +101,16 @@ type PurchaseInvoice = {
   dueDate: string;
   supplierId: string;
   supplierName: string;
+  customerId: string;
   amount: number;
   vatAmount: number;
   totalAmount: number;
   status: 'draft' | 'registered' | 'paid' | 'canceled' | 'overdue';
   posted: boolean;
   createdBy: string;
+  createdByName?: string;
   createdAt: string;
+  lines?: any[];
 };
 
 type InvoiceItem = {
@@ -187,13 +190,14 @@ export default function PurchaseJournalPage() {
     queryKey: ['/api/accounting/purchases/invoices', dateRange],
     // This is just for structure - we'll use actual API data in production
     placeholderData: { data: [
-      { 
-        id: '1', 
-        number: 'ACH-2025-0001', 
-        supplierNumber: 'F-12345', 
-        date: '2025-04-10', 
+      {
+        id: '1',
+        number: 'ACH-2025-0001',
+        supplierNumber: 'F-12345',
+        date: '2025-04-10',
         dueDate: '2025-05-10',
         supplierId: '1',
+        customerId: '1',
         supplierName: 'SC Tech Supply SRL',
         amount: 4200.00,
         vatAmount: 798.00,
@@ -203,13 +207,14 @@ export default function PurchaseJournalPage() {
         createdBy: 'Maria Ionescu',
         createdAt: '2025-04-10T10:15:00Z'
       },
-      { 
-        id: '2', 
-        number: 'ACH-2025-0002', 
-        supplierNumber: 'F-23456', 
-        date: '2025-04-09', 
+      {
+        id: '2',
+        number: 'ACH-2025-0002',
+        supplierNumber: 'F-23456',
+        date: '2025-04-09',
         dueDate: '2025-05-09',
         supplierId: '2',
+        customerId: '2',
         supplierName: 'SC Office Supplies SRL',
         amount: 1850.00,
         vatAmount: 351.50,
@@ -226,6 +231,7 @@ export default function PurchaseJournalPage() {
         date: '2025-04-09', 
         dueDate: '2025-05-09',
         supplierId: '3',
+        customerId: '3',
         supplierName: 'SC Transport Solutions SA',
         amount: 3600.00,
         vatAmount: 684.00,
@@ -242,6 +248,7 @@ export default function PurchaseJournalPage() {
         date: '2025-04-08', 
         dueDate: '2025-05-08',
         supplierId: '4',
+        customerId: '4',
         supplierName: 'SC Utility Provider SA',
         amount: 2450.00,
         vatAmount: 465.50,
@@ -258,6 +265,7 @@ export default function PurchaseJournalPage() {
         date: '2025-04-08', 
         dueDate: '2025-05-08',
         supplierId: '5',
+        customerId: '5',
         supplierName: 'SC Cleaning Services SRL',
         amount: 1240.00,
         vatAmount: 235.60,
@@ -271,9 +279,10 @@ export default function PurchaseJournalPage() {
         id: '6', 
         number: 'ACH-2025-0006', 
         supplierNumber: 'F-6789', 
-        date: '2025-04-07', 
+        date: '2025-04-07',
         dueDate: '2025-05-07',
         supplierId: '1',
+        customerId: '1',
         supplierName: 'SC Tech Supply SRL',
         amount: 7850.00,
         vatAmount: 1491.50,
@@ -290,6 +299,7 @@ export default function PurchaseJournalPage() {
         date: '2025-04-07', 
         dueDate: '2025-05-07',
         supplierId: '6',
+        customerId: '6',
         supplierName: 'SC Marketing Agency SRL',
         amount: 5320.00,
         vatAmount: 1010.80,
@@ -306,6 +316,7 @@ export default function PurchaseJournalPage() {
         date: '2025-04-06', 
         dueDate: '2025-05-06',
         supplierId: '6',
+        customerId: '6',
         supplierName: 'SC Marketing Agency SRL',
         amount: 1540.00,
         vatAmount: 292.60,
@@ -322,6 +333,7 @@ export default function PurchaseJournalPage() {
         date: '2025-04-05', 
         dueDate: '2025-05-05',
         supplierId: '3',
+        customerId: '3',
         supplierName: 'SC Transport Solutions SA',
         amount: 2150.00,
         vatAmount: 408.50,
@@ -338,6 +350,7 @@ export default function PurchaseJournalPage() {
         date: '2025-04-05', 
         dueDate: '2025-05-05',
         supplierId: '4',
+        customerId: '4',
         supplierName: 'SC Utility Provider SA',
         amount: 3650.00,
         vatAmount: 693.50,
@@ -358,27 +371,6 @@ export default function PurchaseJournalPage() {
     number: String(inv.number || inv.series || ''), // Conversie safe la string
   }));
 
-  // Fetch invoice details when viewing an invoice
-  const { data: invoiceItems, isLoading: isLoadingItems } = useQuery<InvoiceItem[]>({
-    queryKey: ['/api/accounting/purchases/invoices', selectedInvoice?.id, 'items'],
-    enabled: !!selectedInvoice && isViewDialogOpen,
-    // This is just for structure - we'll use actual API data in production
-    placeholderData: [
-      { 
-        id: '1',
-        invoiceId: '1',
-        productCode: 'PROD-001',
-        productName: 'Laptop Dell Latitude 5520',
-        description: 'Laptop pentru departamentul de vânzări',
-        quantity: 2,
-        unitPrice: 2100.00,
-        vatRate: 19,
-        amount: 4200.00,
-        vatAmount: 798.00,
-        totalAmount: 4998.00
-      }
-    ]
-  });
 
   // Fetch invoice journal entry
   const { data: journalEntry, isLoading: isLoadingJournal } = useQuery<InvoiceJournalEntry[]>({
@@ -418,7 +410,7 @@ export default function PurchaseJournalPage() {
 
   // Fetch supplier details when viewing an invoice
   const { data: supplier, isLoading: isLoadingSupplier } = useQuery<Supplier>({
-    queryKey: ['/api/accounting/suppliers', selectedInvoice?.supplierId],
+    queryKey: ['/api/accounting/suppliers', selectedInvoice?.customerId],
     enabled: !!selectedInvoice && isViewDialogOpen,
     // This is just for structure - we'll use actual API data in production
     placeholderData: { 
@@ -700,7 +692,7 @@ export default function PurchaseJournalPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  currentInvoices.map((invoice) => (
+                  currentInvoices.map((invoice: PurchaseInvoice) => (
                     <TableRow 
                       key={invoice.id} 
                       className={`cursor-pointer hover:bg-gray-50 ${invoice.status === 'canceled' ? 'opacity-60' : ''}`}
@@ -875,7 +867,7 @@ export default function PurchaseJournalPage() {
                     </div>
                     
                     <div className="mt-4 space-y-1 text-sm text-gray-500">
-                      <p>Înregistrată de: {selectedInvoice.createdBy}</p>
+                      <p>Înregistrată de: {selectedInvoice.createdByName || selectedInvoice.createdBy}</p>
                       <p>Data înregistrării: {new Date(selectedInvoice.createdAt).toLocaleString('ro-RO')}</p>
                     </div>
                   </div>
@@ -885,12 +877,7 @@ export default function PurchaseJournalPage() {
               {/* Invoice items */}
               <h3 className="text-base font-medium mb-3">Articole Factură</h3>
               
-              {isLoadingItems ? (
-                <div className="flex justify-center items-center p-8">
-                  <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  <span className="ml-2">Se încarcă detaliile...</span>
-                </div>
-              ) : invoiceItems && invoiceItems.length > 0 ? (
+              {selectedInvoice.lines && selectedInvoice.lines.length > 0 ? (
                 <div className="border rounded-md overflow-hidden">
                   <Table>
                     <TableHeader>
@@ -906,9 +893,9 @@ export default function PurchaseJournalPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {invoiceItems.map((item) => (
+                      {selectedInvoice.lines.map((item) => (
                         <TableRow key={item.id}>
-                          <TableCell className="font-medium">{item.productCode}</TableCell>
+                          <TableCell className="font-medium">{item.description || '-'}</TableCell>
                           <TableCell>
                             <div>
                               <p>{item.productName}</p>
@@ -922,7 +909,7 @@ export default function PurchaseJournalPage() {
                             {formatCurrency(item.unitPrice)}
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
-                            {formatCurrency(item.amount)}
+                            {formatCurrency(item.netAmount)}
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
                             {item.vatRate}%
@@ -942,14 +929,14 @@ export default function PurchaseJournalPage() {
                           Total:
                         </td>
                         <td className="px-4 py-2 text-right tabular-nums">
-                          {formatCurrency(invoiceItems.reduce((sum, item) => sum + item.amount, 0))} RON
+                          {formatCurrency(selectedInvoice.lines.reduce((sum, item) => sum + Number(item.netAmount), 0))} RON
                         </td>
                         <td className="px-4 py-2"></td>
                         <td className="px-4 py-2 text-right tabular-nums">
-                          {formatCurrency(invoiceItems.reduce((sum, item) => sum + item.vatAmount, 0))} RON
+                          {formatCurrency(selectedInvoice.lines.reduce((sum, item) => sum + Number(item.vatAmount), 0))} RON
                         </td>
                         <td className="px-4 py-2 text-right tabular-nums">
-                          {formatCurrency(invoiceItems.reduce((sum, item) => sum + item.totalAmount, 0))} RON
+                          {formatCurrency(selectedInvoice.lines.reduce((sum, item) => sum + Number(item.totalAmount), 0))} RON
                         </td>
                       </tr>
                     </tfoot>

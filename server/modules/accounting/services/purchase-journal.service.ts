@@ -7,8 +7,8 @@
 
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
 import { getDrizzle } from '../../../common/drizzle';
-import { and, desc, eq, gte, lte, isNotNull } from 'drizzle-orm';
-import { invoices, invoiceLines, invoiceDetails, invoicePayments, companies } from '../../../../shared/schema';
+import { and, desc, eq, gte, lte, isNotNull, sql } from 'drizzle-orm';
+import { invoices, invoiceLines, invoiceDetails, invoicePayments, companies, users } from '../../../../shared/schema';
 import { v4 as uuidv4 } from 'uuid';
 import { VATCategory, determineVATCategory } from '../types/vat-categories';
 
@@ -182,25 +182,48 @@ export class PurchaseJournalService {
   public async getSupplierInvoice(invoiceId: string, companyId: string): Promise<any | null> {
     try {
       const db = getDrizzle();
+
+      // Get invoice with creator name
       const invoiceResult = await db
-        .select()
+        .select({
+          id: invoices.id,
+          companyId: invoices.companyId,
+          franchiseId: invoices.franchiseId,
+          customerId: invoices.customerId,
+          invoiceNumber: invoices.invoiceNumber,
+          status: invoices.status,
+          issueDate: invoices.issueDate,
+          dueDate: invoices.dueDate,
+          currency: invoices.currency,
+          exchangeRate: invoices.exchangeRate,
+          notes: invoices.notes,
+          isValidated: invoices.isValidated,
+          validatedAt: invoices.validatedAt,
+          ledgerEntryId: invoices.ledgerEntryId,
+          createdAt: invoices.createdAt,
+          updatedAt: invoices.updatedAt,
+          createdBy: invoices.createdBy,
+          // Join with users table to get creator name
+          createdByName: sql<string>`${users.firstName} || ' ' || ${users.lastName}`,
+        })
         .from(invoices)
+        .leftJoin(users, eq(invoices.createdBy, users.id))
         .where(and(
           eq(invoices.id, invoiceId),
           eq(invoices.companyId, companyId)
         ))
         .limit(1);
-      
+
       if (!invoiceResult || invoiceResult.length === 0) {
         return null;
       }
-      
+
       const invoice = invoiceResult[0];
       const lines = await db
         .select()
         .from(invoiceLines)
         .where(eq(invoiceLines.invoiceId, invoice.id));
-      
+
       return { ...invoice, lines };
     } catch (error) {
       console.error('Error getting supplier invoice:', error);
