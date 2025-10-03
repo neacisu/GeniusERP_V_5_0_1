@@ -1121,41 +1121,138 @@ export default function PurchaseJournalPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-gray-100">
-                      <TableHead>Nr</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Document</TableHead>
+                      <TableHead className="sticky left-0 bg-gray-100">Nr. Crt</TableHead>
+                      <TableHead>Data Factură</TableHead>
+                      <TableHead>Nr. Document</TableHead>
                       <TableHead>Furnizor</TableHead>
-                      <TableHead>CUI</TableHead>
-                      <TableHead className="text-right">Total</TableHead>
+                      <TableHead>CUI Furnizor</TableHead>
+                      <TableHead className="text-right">Total Document</TableHead>
+                      
+                      {/* Coloane TVA 19% */}
                       <TableHead className="text-right bg-blue-50">Bază 19%</TableHead>
                       <TableHead className="text-right bg-blue-50">TVA 19%</TableHead>
+                      
+                      {/* Coloane TVA 9% */}
+                      <TableHead className="text-right bg-green-50">Bază 9%</TableHead>
+                      <TableHead className="text-right bg-green-50">TVA 9%</TableHead>
+                      
+                      {/* Coloane TVA 5% */}
+                      <TableHead className="text-right bg-yellow-50">Bază 5%</TableHead>
+                      <TableHead className="text-right bg-yellow-50">TVA 5%</TableHead>
+                      
+                      {/* Operațiuni speciale */}
+                      <TableHead className="text-right">Achiziții IC</TableHead>
+                      <TableHead className="text-right">Import</TableHead>
+                      <TableHead className="text-right">Taxare Inversă</TableHead>
+                      
+                      {/* TVA la încasare */}
+                      <TableHead className="text-right bg-orange-50">TVA Neexigibil</TableHead>
                       <TableHead className="text-right bg-green-50">TVA Deductibil</TableHead>
+                      
+                      <TableHead>Tip Cheltuială</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {journalReport.rows?.map((row: any) => (
                       <TableRow key={row.rowNumber}>
-                        <TableCell>{row.rowNumber}</TableCell>
+                        <TableCell className="sticky left-0 bg-white font-medium">{row.rowNumber}</TableCell>
                         <TableCell>{new Date(row.date).toLocaleDateString('ro-RO')}</TableCell>
                         <TableCell>{row.documentNumber}</TableCell>
-                        <TableCell>{row.supplierName}</TableCell>
+                        <TableCell className="max-w-xs truncate">{row.supplierName}</TableCell>
                         <TableCell>{row.supplierFiscalCode}</TableCell>
-                        <TableCell className="text-right">{row.totalAmount?.toFixed(2)}</TableCell>
-                        <TableCell className="text-right bg-blue-50">{row.base19?.toFixed(2)}</TableCell>
-                        <TableCell className="text-right bg-blue-50">{row.vat19?.toFixed(2)}</TableCell>
-                        <TableCell className="text-right bg-green-50">{row.vatDeductible?.toFixed(2)}</TableCell>
+                        <TableCell className="text-right tabular-nums font-medium">{row.totalAmount?.toFixed(2)}</TableCell>
+                        
+                        {/* TVA 19% */}
+                        <TableCell className="text-right tabular-nums bg-blue-50">{row.base19 !== 0 ? row.base19?.toFixed(2) : ''}</TableCell>
+                        <TableCell className="text-right tabular-nums bg-blue-50">{row.vat19 !== 0 ? row.vat19?.toFixed(2) : ''}</TableCell>
+                        
+                        {/* TVA 9% */}
+                        <TableCell className="text-right tabular-nums bg-green-50">{row.base9 !== 0 ? row.base9?.toFixed(2) : ''}</TableCell>
+                        <TableCell className="text-right tabular-nums bg-green-50">{row.vat9 !== 0 ? row.vat9?.toFixed(2) : ''}</TableCell>
+                        
+                        {/* TVA 5% */}
+                        <TableCell className="text-right tabular-nums bg-yellow-50">{row.base5 !== 0 ? row.base5?.toFixed(2) : ''}</TableCell>
+                        <TableCell className="text-right tabular-nums bg-yellow-50">{row.vat5 !== 0 ? row.vat5?.toFixed(2) : ''}</TableCell>
+                        
+                        {/* Operațiuni speciale */}
+                        <TableCell className="text-right tabular-nums">{row.intraCommunity !== 0 ? row.intraCommunity?.toFixed(2) : ''}</TableCell>
+                        <TableCell className="text-right tabular-nums">{row.import !== 0 ? row.import?.toFixed(2) : ''}</TableCell>
+                        <TableCell className="text-right tabular-nums">{row.reverseCharge !== 0 ? row.reverseCharge?.toFixed(2) : ''}</TableCell>
+                        
+                        {/* TVA la încasare */}
+                        <TableCell className="text-right tabular-nums bg-orange-50">{row.vatDeferred !== 0 ? row.vatDeferred?.toFixed(2) : ''}</TableCell>
+                        <TableCell className="text-right tabular-nums bg-green-50">{row.vatDeductible !== 0 ? row.vatDeductible?.toFixed(2) : ''}</TableCell>
+                        
+                        <TableCell className="text-xs">{row.expenseType || ''}</TableCell>
                       </TableRow>
                     ))}
-                    <TableRow className="font-bold bg-gray-200">
-                      <TableCell colSpan={5}>TOTAL:</TableCell>
+                    
+                    {/* TOTAL ROW - conform OMFP 2634/2015 */}
+                    <TableRow className="font-bold bg-gray-200 border-t-2 border-gray-400">
+                      <TableCell colSpan={5} className="sticky left-0 bg-gray-200">TOTAL:</TableCell>
                       <TableCell className="text-right">{journalReport.totals?.totalAmount?.toFixed(2)}</TableCell>
-                      <TableCell className="text-right bg-blue-100">-</TableCell>
-                      <TableCell className="text-right bg-blue-100">-</TableCell>
-                      <TableCell className="text-right bg-green-100">-</TableCell>
+                      
+                      <TableCell className="text-right bg-blue-100">{journalReport.totals?.totalBase19?.toFixed(2)}</TableCell>
+                      <TableCell className="text-right bg-blue-100">{journalReport.totals?.totalVAT19?.toFixed(2)}</TableCell>
+                      
+                      <TableCell className="text-right bg-green-100">{journalReport.totals?.totalBase9?.toFixed(2)}</TableCell>
+                      <TableCell className="text-right bg-green-100">{journalReport.totals?.totalVAT9?.toFixed(2)}</TableCell>
+                      
+                      <TableCell className="text-right bg-yellow-100">{journalReport.totals?.totalBase5?.toFixed(2)}</TableCell>
+                      <TableCell className="text-right bg-yellow-100">{journalReport.totals?.totalVAT5?.toFixed(2)}</TableCell>
+                      
+                      <TableCell className="text-right">{journalReport.totals?.totalIntraCommunity?.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{journalReport.totals?.totalImport?.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{journalReport.totals?.totalReverseCharge?.toFixed(2)}</TableCell>
+                      
+                      <TableCell className="text-right bg-orange-100">{journalReport.totals?.totalVATDeferred?.toFixed(2)}</TableCell>
+                      <TableCell className="text-right bg-green-100">{journalReport.totals?.totalVATDeductible?.toFixed(2)}</TableCell>
+                      
+                      <TableCell></TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
               </div>
+              
+              {/* Verificări contabile - conform documentației */}
+              {journalReport.accountingValidation && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <h4 className="font-semibold mb-3">Verificări Contabile:</h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="font-medium">Cont 4426 (TVA deductibilă):</span>{' '}
+                      {journalReport.accountingValidation.account4426Balance?.toFixed(2)} RON
+                    </div>
+                    <div>
+                      <span className="font-medium">Cont 4428 (TVA neexigibilă):</span>{' '}
+                      {journalReport.accountingValidation.account4428Balance?.toFixed(2)} RON
+                    </div>
+                    <div>
+                      <span className="font-medium">Cont 401 (Furnizori):</span>{' '}
+                      {journalReport.accountingValidation.account401Balance?.toFixed(2)} RON
+                    </div>
+                    <div>
+                      <span className="font-medium">Status:</span>{' '}
+                      <Badge variant={journalReport.accountingValidation.isBalanced ? "default" : "destructive"}>
+                        {journalReport.accountingValidation.isBalanced ? '✓ BALANSAT' : '✗ DISCREPANȚE'}
+                      </Badge>
+                    </div>
+                    {journalReport.accountingValidation.discrepancies && journalReport.accountingValidation.discrepancies.length > 0 && (
+                      <div className="col-span-2 mt-2">
+                        <p className="font-medium text-red-600">Discrepanțe:</p>
+                        <ul className="list-disc list-inside text-xs">
+                          {journalReport.accountingValidation.discrepancies.map((disc: string, idx: number) => (
+                            <li key={idx}>{disc}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <div className="col-span-2 text-xs text-muted-foreground mt-2">
+                      ✅ Verificați că totalurile corespund cu decontul de TVA (D300) și balanța contabilă.
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
