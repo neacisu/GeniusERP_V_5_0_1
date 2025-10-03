@@ -22,15 +22,15 @@ export function setupPurchaseJournalRoutes() {
   /**
    * Get all supplier invoices with pagination and filtering
    */
-  router.get("/invoices", (req: AuthenticatedRequest, res: Response) => {
-    purchaseJournalController.getSupplierInvoices(req, res);
+  router.get("/invoices", (req, res) => {
+    purchaseJournalController.getSupplierInvoices(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get supplier invoice by ID
    */
-  router.get("/invoices/:id", (req: AuthenticatedRequest, res: Response) => {
-    purchaseJournalController.getSupplierInvoice(req, res);
+  router.get("/invoices/:id", (req, res) => {
+    purchaseJournalController.getSupplierInvoice(req as AuthenticatedRequest, res);
   });
   
   /**
@@ -40,8 +40,8 @@ export function setupPurchaseJournalRoutes() {
   router.post(
     "/invoices", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      purchaseJournalController.recordSupplierInvoice(req, res);
+    (req, res) => {
+      purchaseJournalController.recordSupplierInvoice(req as AuthenticatedRequest, res);
     }
   );
   
@@ -52,8 +52,8 @@ export function setupPurchaseJournalRoutes() {
   router.put(
     "/invoices/:id", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      purchaseJournalController.updateSupplierInvoice(req, res);
+    (req, res) => {
+      purchaseJournalController.updateSupplierInvoice(req as AuthenticatedRequest, res);
     }
   );
   
@@ -64,8 +64,8 @@ export function setupPurchaseJournalRoutes() {
   router.delete(
     "/invoices/:id", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      purchaseJournalController.deleteSupplierInvoice(req, res);
+    (req, res) => {
+      purchaseJournalController.deleteSupplierInvoice(req as AuthenticatedRequest, res);
     }
   );
   
@@ -76,16 +76,16 @@ export function setupPurchaseJournalRoutes() {
   router.post(
     "/invoices/:id/payments", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      purchaseJournalController.recordInvoicePayment(req, res);
+    (req, res) => {
+      purchaseJournalController.recordInvoicePayment(req as AuthenticatedRequest, res);
     }
   );
   
   /**
    * Get payments for an invoice
    */
-  router.get("/invoices/:id/payments", (req: AuthenticatedRequest, res: Response) => {
-    purchaseJournalController.getInvoicePayments(req, res);
+  router.get("/invoices/:id/payments", (req, res) => {
+    purchaseJournalController.getInvoicePayments(req as AuthenticatedRequest, res);
   });
   
   /**
@@ -95,8 +95,8 @@ export function setupPurchaseJournalRoutes() {
   router.delete(
     "/payments/:id", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      purchaseJournalController.deleteInvoicePayment(req, res);
+    (req, res) => {
+      purchaseJournalController.deleteInvoicePayment(req as AuthenticatedRequest, res);
     }
   );
   
@@ -107,8 +107,8 @@ export function setupPurchaseJournalRoutes() {
   router.post(
     "/ledger-entries", 
     AuthGuard.roleGuard(["accountant", "admin"]), 
-    (req: AuthenticatedRequest, res: Response) => {
-      purchaseJournalController.createPurchaseLedgerEntry(req, res);
+    (req, res) => {
+      purchaseJournalController.createPurchaseLedgerEntry(req as AuthenticatedRequest, res);
     }
   );
   
@@ -129,8 +129,8 @@ export function setupPurchaseJournalRoutes() {
   /**
    * Generate supplier account statement
    */
-  router.get("/suppliers/:id/statement", (req: AuthenticatedRequest, res: Response) => {
-    purchaseJournalController.getSupplierAccountStatement(req, res);
+  router.get("/suppliers/:id/statement", (req, res) => {
+    purchaseJournalController.getSupplierAccountStatement(req as AuthenticatedRequest, res);
   });
   
   /**
