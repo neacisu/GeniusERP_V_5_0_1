@@ -160,10 +160,31 @@ async function createAccountingTables() {
         
         IF NOT EXISTS (SELECT FROM chart_of_accounts WHERE code = '5311') THEN
           INSERT INTO chart_of_accounts (
-            id, code, name, description, account_class, account_group, account_type, 
+            id, code, name, description, account_class, account_group, account_type,
             is_active, created_at, updated_at
           ) VALUES (
             gen_random_uuid(), '5311', 'Cash in RON', 'Cash in Romanian currency', 5, 53, 'ASSET',
+            1, NOW(), NOW()
+          );
+        END IF;
+
+        -- VAT accounts for Romanian accounting (Class 4 - Third Party Accounts)
+        IF NOT EXISTS (SELECT FROM chart_of_accounts WHERE code = '4426') THEN
+          INSERT INTO chart_of_accounts (
+            id, code, name, description, account_class, account_group, account_type,
+            is_active, created_at, updated_at
+          ) VALUES (
+            gen_random_uuid(), '4426', 'TVA deductibilă', 'VAT deductible (exigible)', 4, 44, 'LIABILITY',
+            1, NOW(), NOW()
+          );
+        END IF;
+
+        IF NOT EXISTS (SELECT FROM chart_of_accounts WHERE code = '4428') THEN
+          INSERT INTO chart_of_accounts (
+            id, code, name, description, account_class, account_group, account_type,
+            is_active, created_at, updated_at
+          ) VALUES (
+            gen_random_uuid(), '4428', 'TVA neexigibilă', 'VAT deferred (cash basis)', 4, 44, 'LIABILITY',
             1, NOW(), NOW()
           );
         END IF;
