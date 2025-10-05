@@ -132,7 +132,10 @@ export class PurchaseJournalService {
         conditions.push(lte(invoices.date, endDate));
       }
       if (supplierId) {
-        conditions.push(eq(invoices.customerId, supplierId)); // Using customerId for supplier
+        // NOTE: For PURCHASE invoices, customerId field stores the supplier ID
+        // This is a design choice to reuse the same table for both sales and purchase invoices
+        const supplierIdForQuery = supplierId; // Alias for clarity: supplierId maps to customerId in DB
+        conditions.push(eq(invoices.customerId, supplierIdForQuery));
       }
       if (status) {
         // Status must be one of the enum values
@@ -193,7 +196,7 @@ export class PurchaseJournalService {
           id: invoices.id,
           companyId: invoices.companyId,
           franchiseId: invoices.franchiseId,
-          customerId: invoices.customerId,
+          customerId: invoices.customerId, // NOTE: For PURCHASE invoices, this represents supplierId
           invoiceNumber: invoices.invoiceNumber,
           status: invoices.status,
           issueDate: invoices.issueDate,
@@ -691,12 +694,13 @@ export class PurchaseJournalService {
       const db = getDrizzle();
 
       // Find purchase invoices without invoice_details
+      // NOTE: customerName and customerId fields contain supplier information for PURCHASE type invoices
       const invoicesWithoutDetails = await db
         .select({
           id: invoices.id,
           invoiceNumber: invoices.invoiceNumber,
-          customerName: invoices.customerName,
-          customerId: invoices.customerId,
+          customerName: invoices.customerName, // Supplier name for PURCHASE invoices
+          customerId: invoices.customerId, // Supplier ID for PURCHASE invoices
           date: invoices.date
         })
         .from(invoices)
@@ -710,9 +714,11 @@ export class PurchaseJournalService {
       let completedCount = 0;
 
       for (const invoice of invoicesWithoutDetails) {
-        // Try to get supplier data from crm_companies if customerId exists
+        // Try to get supplier data from crm_companies using customerId (which stores supplier ID for PURCHASE invoices)
         let supplierData = null;
-        if (invoice.customerId) {
+        const supplierId = invoice.customerId; // Alias for clarity: customerId = supplierId for PURCHASE invoices
+
+        if (supplierId) {
           try {
             // Use raw SQL query to get supplier data
             const supplierQuery = `
@@ -721,7 +727,7 @@ export class PurchaseJournalService {
               WHERE id = $1 AND is_supplier = true
               LIMIT 1
             `;
-            const supplierResult = await db.$client.unsafe(supplierQuery, [invoice.customerId]);
+            const supplierResult = await db.$client.unsafe(supplierQuery, [supplierId]);
 
             if (supplierResult.length > 0) {
               const supplier = supplierResult[0];
@@ -737,15 +743,16 @@ export class PurchaseJournalService {
               };
             }
           } catch (error) {
-            console.warn(`Could not find supplier ${invoice.customerId} in crm_companies:`, error);
+            console.warn(`Could not find supplier ${supplierId} in crm_companies:`, error);
           }
         }
 
-        // If no supplier data found, use minimal data from invoice
+        // If no supplier data found in crm_companies, use minimal data from invoice
+        // NOTE: invoice.customerName contains supplier name for PURCHASE invoices
         if (!supplierData) {
           supplierData = {
             id: null,
-            name: invoice.customerName || 'Furnizor necunoscut',
+            name: invoice.customerName || 'Furnizor necunoscut', // customerName = supplierName for PURCHASE
             fiscalCode: 'N/A',
             registrationNumber: null,
             address: 'Adresă necunoscută',
@@ -868,7 +875,7 @@ export class PurchaseJournalService {
         rowNumber: rows.length + 1,
         date: invoice.issueDate,
         documentNumber: invoice.invoiceNumber,
-        supplierName: details?.partnerName || invoice.customerName,
+        supplierName: details?.partnerName || invoice.customerName, // customerName = supplierName for PURCHASE invoices
         supplierFiscalCode: details?.partnerFiscalCode || '',
         totalAmount: Number(invoice.amount),
         base19: lines.filter(l => l.vatRate === 19).reduce((sum, l) => sum + Number(l.netAmount), 0),
@@ -1261,11 +1268,12 @@ export class PurchaseJournalService {
       }
 
       // Get all purchase invoices for the supplier in the date range
+      // NOTE: Using customerId field to filter by supplierId for PURCHASE type invoices
       const invoiceList = await db
         .select()
         .from(invoices)
         .where(and(
-          eq(invoices.customerId, supplierId),
+          eq(invoices.customerId, supplierId), // customerId = supplierId for PURCHASE invoices
           eq(invoices.companyId, companyId),
           eq(invoices.type, 'PURCHASE'),
           gte(invoices.date, startDate),
@@ -1320,11 +1328,12 @@ export class PurchaseJournalService {
       const db = getDrizzle();
 
       // Get all invoices up to the date
+      // NOTE: Using customerId field to filter by supplierId for PURCHASE type invoices
       const invoiceList = await db
         .select()
         .from(invoices)
         .where(and(
-          eq(invoices.customerId, supplierId),
+          eq(invoices.customerId, supplierId), // customerId = supplierId for PURCHASE invoices
           eq(invoices.companyId, companyId),
           eq(invoices.type, 'PURCHASE'),
           lte(invoices.date, asOfDate)
