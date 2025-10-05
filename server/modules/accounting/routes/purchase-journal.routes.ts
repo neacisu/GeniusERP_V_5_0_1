@@ -151,6 +151,18 @@ export function setupPurchaseJournalRoutes() {
   router.get("/journal/export/pdf", (req, res) => {
     purchaseJournalController.exportPurchaseJournalPDF(req as AuthenticatedRequest, res);
   });
-  
+
+  /**
+   * Complete missing supplier details for existing purchase invoices
+   * Requires admin role
+   */
+  router.post(
+    "/complete-supplier-details",
+    AuthGuard.roleGuard(["admin"]),
+    (req, res) => {
+      purchaseJournalController.completeMissingSupplierDetails(req as AuthenticatedRequest, res);
+    }
+  );
+
   return router;
 }

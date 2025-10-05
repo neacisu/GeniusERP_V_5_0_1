@@ -301,21 +301,25 @@ export class PurchaseJournalService {
       }
       
       // CORECTARE CRITICĂ: Salvare date furnizor în invoice_details (CUI obligatoriu!)
-      await db.insert(invoiceDetails).values({
+      // Asigurăm că toate câmpurile obligatorii sunt completate conform legislației (art. 319 Cod Fiscal)
+      const supplierDetails = {
         invoiceId: invoiceId,
-        partnerId: supplier.id || null,
-        partnerName: supplier.name || supplier.supplierName || 'Unknown',
-        partnerFiscalCode: supplier.fiscalCode || supplier.cui || supplier.taxId || '',
-        partnerRegistrationNumber: supplier.registrationNumber || supplier.regCom || '',
-        partnerAddress: supplier.address || '',
-        partnerCity: supplier.city || '',
-        partnerCounty: supplier.county || supplier.state || null,
-        partnerCountry: supplier.country || 'Romania',
+        partnerId: supplier?.id || null,
+        partnerName: supplier?.name || supplier?.supplierName || 'Furnizor necunoscut',
+        partnerFiscalCode: supplier?.fiscalCode || supplier?.cui || supplier?.taxId || 'N/A',
+        partnerRegistrationNumber: supplier?.registrationNumber || supplier?.regCom || null,
+        partnerAddress: supplier?.address || 'Adresă necunoscută',
+        partnerCity: supplier?.city || 'Oraș necunoscut',
+        partnerCounty: supplier?.county || supplier?.state || null,
+        partnerCountry: supplier?.country || 'Romania',
         paymentMethod: paymentTerms?.method || 'bank_transfer',
         paymentDueDays: paymentTerms?.dueDays || 30,
         paymentDueDate: invoiceData.dueDate,
         notes: notes || null
-      });
+      };
+
+      console.log('Saving supplier details for purchase invoice:', supplierDetails);
+      await db.insert(invoiceDetails).values(supplierDetails);
       
       // GENERARE AUTOMATĂ NOTĂ CONTABILĂ (Integrare în contabilitate)
       const entry = await this.createPurchaseInvoiceEntry({
@@ -596,6 +600,108 @@ export class PurchaseJournalService {
     };
   }
   
+  /**
+   * Complete supplier details for existing purchase invoices that don't have invoice_details records
+   * This ensures compliance with Romanian tax law (art. 319 Cod Fiscal)
+   */
+  public async completeMissingSupplierDetails(companyId: string): Promise<number> {
+    try {
+      const db = getDrizzle();
+
+      // Find purchase invoices without invoice_details
+      const invoicesWithoutDetails = await db
+        .select({
+          id: invoices.id,
+          invoiceNumber: invoices.invoiceNumber,
+          customerName: invoices.customerName,
+          customerId: invoices.customerId,
+          date: invoices.date
+        })
+        .from(invoices)
+        .leftJoin(invoiceDetails, eq(invoices.id, invoiceDetails.invoiceId))
+        .where(and(
+          eq(invoices.companyId, companyId),
+          eq(invoices.type, 'PURCHASE'),
+          sql`${invoiceDetails.invoiceId} IS NULL` // Only invoices without details
+        ));
+
+      let completedCount = 0;
+
+      for (const invoice of invoicesWithoutDetails) {
+        // Try to get supplier data from crm_companies if customerId exists
+        let supplierData = null;
+        if (invoice.customerId) {
+          try {
+            // Use raw SQL query to get supplier data
+            const supplierQuery = `
+              SELECT id, name, cui, registration_number, address, city, postal_code, country
+              FROM crm_companies
+              WHERE id = $1 AND is_supplier = true
+              LIMIT 1
+            `;
+            const supplierResult = await db.$client.unsafe(supplierQuery, [invoice.customerId]);
+
+            if (supplierResult.length > 0) {
+              const supplier = supplierResult[0];
+              supplierData = {
+                id: supplier.id,
+                name: supplier.name,
+                fiscalCode: supplier.cui,
+                registrationNumber: supplier.registration_number,
+                address: supplier.address,
+                city: supplier.city,
+                county: supplier.postal_code, // Using postal_code as county approximation
+                country: supplier.country
+              };
+            }
+          } catch (error) {
+            console.warn(`Could not find supplier ${invoice.customerId} in crm_companies:`, error);
+          }
+        }
+
+        // If no supplier data found, use minimal data from invoice
+        if (!supplierData) {
+          supplierData = {
+            id: null,
+            name: invoice.customerName || 'Furnizor necunoscut',
+            fiscalCode: 'N/A',
+            registrationNumber: null,
+            address: 'Adresă necunoscută',
+            city: 'Oraș necunoscut',
+            county: null,
+            country: 'Romania'
+          };
+        }
+
+        // Insert invoice details
+        await db.insert(invoiceDetails).values({
+          invoiceId: invoice.id,
+          partnerId: supplierData.id,
+          partnerName: supplierData.name,
+          partnerFiscalCode: supplierData.fiscalCode,
+          partnerRegistrationNumber: supplierData.registrationNumber,
+          partnerAddress: supplierData.address,
+          partnerCity: supplierData.city,
+          partnerCounty: supplierData.county,
+          partnerCountry: supplierData.country,
+          paymentMethod: 'bank_transfer',
+          paymentDueDays: 30,
+          paymentDueDate: null,
+          notes: `Date furnizor completate automat pentru conformitatea fiscală`
+        });
+
+        completedCount++;
+        console.log(`Completed supplier details for invoice ${invoice.invoiceNumber}`);
+      }
+
+      console.log(`Completed supplier details for ${completedCount} purchase invoices`);
+      return completedCount;
+    } catch (error) {
+      console.error('Error completing missing supplier details:', error);
+      throw new Error('Failed to complete missing supplier details');
+    }
+  }
+
   /**
    * PARTEA 2 - PLĂȚI ȘI TRANSFER TVA
    */

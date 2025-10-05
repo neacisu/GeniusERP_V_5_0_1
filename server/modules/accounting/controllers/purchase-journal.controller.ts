@@ -340,16 +340,34 @@ export class PurchaseJournalController extends BaseController {
     });
   }
   
+  /**
+   * Complete missing supplier details for existing purchase invoices
+   * Requires admin role for data correction operations
+   */
+  async completeMissingSupplierDetails(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+
+      const completedCount = await this.purchaseJournalService.completeMissingSupplierDetails(companyId);
+
+      return {
+        success: true,
+        message: `Completed supplier details for ${completedCount} purchase invoices`,
+        completedCount
+      };
+    });
+  }
+
   async generatePurchaseJournal(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
       const periodStart = this.parseDate(req.query.periodStart as string);
       const periodEnd = this.parseDate(req.query.periodEnd as string);
-      
+
       if (!periodStart || !periodEnd) {
         throw { statusCode: 400, message: 'periodStart and periodEnd required' };
       }
-      
+
       return await this.purchaseJournalService.generatePurchaseJournal({
         companyId, periodStart, periodEnd
       });
