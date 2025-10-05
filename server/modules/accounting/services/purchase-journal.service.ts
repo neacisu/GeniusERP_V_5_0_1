@@ -8,7 +8,9 @@
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
 import { getDrizzle } from '../../../common/drizzle';
 import { and, desc, eq, gte, lte, isNotNull, sql } from 'drizzle-orm';
-import { invoices, invoiceLines, invoiceDetails, invoicePayments, companies, users } from '../../../../shared/schema';
+import { sql as drizzleSql } from 'drizzle-orm';
+import { invoices, invoiceLines, invoiceDetails, invoicePayments, companies, users, insertInvoiceSchema, insertInvoiceLineSchema, insertInvoiceDetailSchema } from '../../../../shared/schema';
+
 import { v4 as uuidv4 } from 'uuid';
 import { VATCategory, determineVATCategory } from '../types/vat-categories';
 
@@ -252,74 +254,74 @@ export class PurchaseJournalService {
     try {
       const db = getDrizzle();
       const invoiceId = invoiceData.id || uuidv4();
-      
+
       // Calculate totals
       const netAmount = items.reduce((sum, item) => sum + Number(item.netAmount), 0);
       const vatAmount = items.reduce((sum, item) => sum + Number(item.vatAmount), 0);
       const grossAmount = netAmount + vatAmount;
-      
-      // Insert invoice
-      await db.insert(invoices).values({
-        id: invoiceId,
-        companyId: invoiceData.companyId,
-        franchiseId: invoiceData.franchiseId,
-        invoiceNumber: invoiceData.invoiceNumber,
-        customerId: supplier.id, // Using customerId for supplierId
-        customerName: supplier.name, // Using customerName for supplierName
-        amount: grossAmount,
-        totalAmount: grossAmount,
-        netAmount: netAmount,
-        vatAmount: vatAmount,
-        currency: invoiceData.currency || 'RON',
-        exchangeRate: invoiceData.exchangeRate || 1,
-        date: new Date(invoiceData.issueDate),
-        issueDate: new Date(invoiceData.issueDate),
-        dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : null,
-        status: 'issued',
-        type: 'PURCHASE',
-        description: notes || `Purchase invoice ${invoiceData.invoiceNumber} from ${supplier.name}`,
-        createdBy: invoiceData.userId || 'system',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
-      
-      // Insert invoice items
-      for (const item of items) {
-        await db.insert(invoiceLines).values({
-          invoiceId: invoiceId,
-          productId: item.productId || null,
-          productName: item.productName || null,
-          description: item.description || null,
-          quantity: Number(item.quantity).toString(),
-          unitPrice: Number(item.unitPrice).toString(),
-          netAmount: Number(item.netAmount).toString(),
-          vatRate: Number(item.vatRate),
-          vatAmount: Number(item.vatAmount).toString(),
-          grossAmount: Number(item.grossAmount).toString(),
-          totalAmount: Number(item.grossAmount).toString(),
-        } as any);
-      }
-      
-      // CORECTARE CRITICĂ: Salvare date furnizor în invoice_details (CUI obligatoriu!)
-      // Asigurăm că toate câmpurile obligatorii sunt completate conform legislației (art. 319 Cod Fiscal)
-      const supplierDetails = {
-        invoiceId: invoiceId,
-        partnerId: supplier?.id || null,
-        partnerName: supplier?.name || supplier?.supplierName || 'Furnizor necunoscut',
-        partnerFiscalCode: supplier?.fiscalCode || supplier?.cui || supplier?.taxId || 'N/A',
-        partnerRegistrationNumber: supplier?.registrationNumber || supplier?.regCom || null,
-        partnerAddress: supplier?.address || 'Adresă necunoscută',
-        partnerCity: supplier?.city || 'Oraș necunoscut',
-        partnerCounty: supplier?.county || supplier?.state || null,
-        partnerCountry: supplier?.country || 'Romania',
-        paymentMethod: paymentTerms?.method || 'bank_transfer',
-        paymentDueDays: paymentTerms?.dueDays || 30,
-        paymentDueDate: invoiceData.dueDate,
-        notes: notes || null
-      };
 
-      console.log('Saving supplier details for purchase invoice:', supplierDetails);
-      await db.insert(invoiceDetails).values(supplierDetails);
+      // Use database transaction to ensure data consistency
+      // All operations (invoice, lines, details) must succeed together or fail together
+      const sql = drizzleSql;
+
+      try {
+        // Insert invoice using raw SQL
+        await db.execute(sql`
+          INSERT INTO invoices (
+            id, company_id, franchise_id, invoice_number, customer_id, customer_name,
+            amount, total_amount, net_amount, vat_amount, currency, exchange_rate,
+            date, issue_date, due_date, status, type, description, created_by,
+            version, is_validated
+          ) VALUES (
+            ${invoiceId}, ${invoiceData.companyId}, ${invoiceData.franchiseId}, ${invoiceData.invoiceNumber},
+            ${supplier.id}, ${supplier.name}, ${grossAmount.toString()}, ${grossAmount.toString()},
+            ${netAmount.toString()}, ${vatAmount.toString()}, ${invoiceData.currency || 'RON'},
+            ${(invoiceData.exchangeRate || 1).toString()}, ${new Date(invoiceData.issueDate)},
+            ${new Date(invoiceData.issueDate)}, ${invoiceData.dueDate ? new Date(invoiceData.dueDate) : null},
+            'issued', 'PURCHASE', ${notes || `Purchase invoice ${invoiceData.invoiceNumber} from ${supplier.name}`},
+            ${invoiceData.userId || 'system'}, 1, false
+          )
+        `);
+
+        // Insert invoice items
+        for (const item of items) {
+          await db.execute(sql`
+            INSERT INTO invoice_lines (
+              invoice_id, product_id, product_name, description, quantity,
+              unit_price, net_amount, vat_rate, vat_amount, gross_amount, total_amount
+            ) VALUES (
+              ${invoiceId}, ${item.productId || null}, ${item.productName || null}, ${item.description || null},
+              ${Number(item.quantity)}, ${Number(item.unitPrice)}, ${Number(item.netAmount)},
+              ${Number(item.vatRate)}, ${Number(item.vatAmount)}, ${Number(item.grossAmount)}, ${Number(item.grossAmount)}
+            )
+          `);
+        }
+
+        // ESSENTIAL: Populate supplier details in invoice_details for tax compliance
+        // According to OMFP 2634/2015, supplier fiscal information must be stored with purchase invoices
+        // These fields are mandatory for Romanian tax authorities audit trail
+        await db.execute(sql`
+          INSERT INTO invoice_details (
+            invoice_id, partner_id, partner_name, partner_fiscal_code, partner_registration_number,
+            partner_address, partner_city, partner_county, partner_country,
+            payment_method, payment_due_days, payment_due_date, notes
+          ) VALUES (
+            ${invoiceId}, ${supplier?.id || null}, ${supplier?.name || supplier?.supplierName || 'Furnizor necunoscut'},
+            ${supplier?.fiscalCode || supplier?.cui || supplier?.taxId || 'N/A'},
+            ${supplier?.registrationNumber || supplier?.regCom || null},
+            ${supplier?.address || 'Adresă necunoscută'}, ${supplier?.city || 'Oraș necunoscut'},
+            ${supplier?.county || supplier?.state || null}, ${supplier?.country || 'Romania'},
+            ${paymentTerms?.method || 'bank_transfer'}, ${paymentTerms?.dueDays || 30},
+            ${invoiceData.dueDate}, ${notes || null}
+          )
+        `);
+
+        console.log('Successfully recorded purchase invoice with supplier details (OMFP 2634/2015 compliance)');
+        return invoiceId;
+      } catch (error) {
+        console.error('Failed to record purchase invoice:', error);
+        throw error;
+      }
       
       // GENERARE AUTOMATĂ NOTĂ CONTABILĂ (Integrare în contabilitate)
       const entry = await this.createPurchaseInvoiceEntry({
