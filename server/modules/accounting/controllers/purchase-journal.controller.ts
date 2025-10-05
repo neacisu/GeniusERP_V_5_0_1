@@ -69,11 +69,19 @@ export class PurchaseJournalController extends BaseController {
    * Record supplier invoice
    */
   async recordSupplierInvoice(req: AuthenticatedRequest, res: Response): Promise<void> {
+    console.log('=== CONTROLLER START ===');
+    console.log('req.user:', req.user);
+    console.log('req.body keys:', Object.keys(req.body));
+
     await this.handleRequest(req, res, async () => {
+      console.log('Inside handleRequest');
       const companyId = this.getCompanyId(req);
+      console.log('companyId from getCompanyId:', companyId, 'type:', typeof companyId);
+
       const userId = this.getUserId(req);
-      
-      const { 
+      console.log('userId from getUserId:', userId, 'type:', typeof userId);
+
+      const {
         invoiceData,
         supplier,
         items,
@@ -81,10 +89,15 @@ export class PurchaseJournalController extends BaseController {
         paymentTerms,
         notes
       } = req.body;
-      
+
+      console.log('invoiceData from req.body:', invoiceData);
+      console.log('invoiceData.companyId:', invoiceData.companyId, 'type:', typeof invoiceData.companyId);
+
       // Add company and user information
       invoiceData.companyId = companyId;
       invoiceData.userId = userId;
+
+      console.log('After assignment - invoiceData.companyId:', invoiceData.companyId, 'type:', typeof invoiceData.companyId);
       
       const invoiceId = await this.purchaseJournalService.recordSupplierInvoice(
         invoiceData,
@@ -312,6 +325,10 @@ export class PurchaseJournalController extends BaseController {
       const startDate = this.parseDate(req.query.startDate as string);
       const endDate = this.parseDate(req.query.endDate as string) || new Date();
       
+      if (!startDate) {
+        throw { statusCode: 400, message: 'startDate is required' };
+      }
+
       return await this.purchaseJournalService.generateSupplierAccountStatement(
         companyId,
         supplierId,
