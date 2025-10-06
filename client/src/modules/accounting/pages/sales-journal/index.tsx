@@ -176,8 +176,30 @@ export default function SalesJournalPage() {
   const [reportPeriodEnd, setReportPeriodEnd] = useState<Date>(endOfMonth(new Date()));
   const [reportType, setReportType] = useState<'DETAILED' | 'SUMMARY'>('DETAILED');
   
-  // NEW: State pentru crearea facturii
+  // NEW: State pentru crearea facturii COMPLET
   const [isCreateInvoiceDialogOpen, setIsCreateInvoiceDialogOpen] = useState(false);
+  const [newInvoiceForm, setNewInvoiceForm] = useState({
+    invoiceNumber: '',
+    series: 'FV',
+    customerId: '',
+    customerName: '',
+    issueDate: new Date().toISOString().split('T')[0],
+    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    description: '',
+    paymentTermDays: 30
+  });
+  const [newInvoiceItems, setNewInvoiceItems] = useState([{
+    id: '1',
+    productName: '',
+    description: '',
+    quantity: 1,
+    unitPrice: 0,
+    vatRate: 19,
+    netAmount: 0,
+    vatAmount: 0,
+    grossAmount: 0
+  }]);
+  const [isSubmittingInvoice, setIsSubmittingInvoice] = useState(false);
   
   // Fetch Sales Journal Report (OMFP 2634/2015)
   const { data: journalReport, isLoading: isLoadingReport, refetch: refetchReport } = useQuery({
@@ -1378,105 +1400,367 @@ export default function SalesJournalPage() {
       </TabsContent>
       </Tabs>
       
-      {/* NEW: Dialog Creare Factură */}
+      {/* NEW: Dialog COMPLET Creare Factură Vânzare */}
       <Dialog open={isCreateInvoiceDialogOpen} onOpenChange={setIsCreateInvoiceDialogOpen}>
-        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>📄 Factură Nouă de Vânzare</DialogTitle>
+            <DialogTitle>📄 Factur Nouă de Vânzare</DialogTitle>
             <DialogDescription>
-              Completați datele pentru a crea o nouă factură de vânzare. Se va contabiliza automat.
+              Creați factură completă cu linii de produse. Se va contabiliza automat în Jurnalul de Vânzări.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
-            <Alert className="bg-blue-50 border-blue-200">
-              <AlertCircle className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-900">
-                <strong>Informație:</strong> Pentru o funcționalitate completă de creare factură cu linii de produse, 
-                TVA automat și toate validările, vă recomandăm să accesați modulul dedicat de Facturare.
-                <br />
-                <Link href="/sales/invoices" className="text-blue-600 underline font-medium mt-2 inline-block">
-                  → Mergi la Modulul Facturare Completă
-                </Link>
-              </AlertDescription>
-            </Alert>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setIsSubmittingInvoice(true);
+            
+            try {
+              // Calculează totaluri
+              const netTotal = newInvoiceItems.reduce((sum, item) => sum + Number(item.netAmount), 0);
+              const vatTotal = newInvoiceItems.reduce((sum, item) => sum + Number(item.vatAmount), 0);
+              const grossTotal = netTotal + vatTotal;
+              
+              // API Call
+              const response = await fetch('/api/accounting/sales/invoices', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                  invoiceData: {
+                    invoiceNumber: newInvoiceForm.invoiceNumber || `${newInvoiceForm.series}-${Date.now()}`,
+                    series: newInvoiceForm.series,
+                    issueDate: newInvoiceForm.issueDate,
+                    dueDate: newInvoiceForm.dueDate,
+                    description: newInvoiceForm.description,
+                    currency: 'RON',
+                    exchangeRate: 1,
+                    vatRate: 19
+                  },
+                  customer: {
+                    id: newInvoiceForm.customerId,
+                    name: newInvoiceForm.customerName
+                  },
+                  items: newInvoiceItems.map(item => ({
+                    productName: item.productName,
+                    description: item.description,
+                    quantity: Number(item.quantity),
+                    unitPrice: Number(item.unitPrice),
+                    netAmount: Number(item.netAmount),
+                    vatRate: Number(item.vatRate),
+                    vatAmount: Number(item.vatAmount),
+                    grossAmount: Number(item.grossAmount)
+                  })),
+                  taxRates: { default: 19 },
+                  paymentTerms: { days: newInvoiceForm.paymentTermDays },
+                  notes: newInvoiceForm.description
+                })
+              });
+              
+              if (!response.ok) throw new Error(await response.text());
+              
+              const result = await response.json();
+              
+              toast({
+                title: '✅ Factură creată cu succes!',
+                description: `Factura a fost emisă și contabilizată automat în Jurnalul de Vânzări.`
+              });
+              
+              // Reset form
+              setNewInvoiceForm({
+                invoiceNumber: '',
+                series: 'FV',
+                customerId: '',
+                customerName: '',
+                issueDate: new Date().toISOString().split('T')[0],
+                dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                description: '',
+                paymentTermDays: 30
+              });
+              setNewInvoiceItems([{
+                id: '1',
+                productName: '',
+                description: '',
+                quantity: 1,
+                unitPrice: 0,
+                vatRate: 19,
+                netAmount: 0,
+                vatAmount: 0,
+                grossAmount: 0
+              }]);
+              
+              setIsCreateInvoiceDialogOpen(false);
+              
+            } catch (error: any) {
+              toast({
+                title: '❌ Eroare',
+                description: error.message,
+                variant: 'destructive'
+              });
+            } finally {
+              setIsSubmittingInvoice(false);
+            }
+          }} className="space-y-4 py-4">
+            
+            {/* Date generale */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="series">Serie Factură</Label>
+                <Input 
+                  id="series"
+                  value={newInvoiceForm.series}
+                  onChange={(e) => setNewInvoiceForm({...newInvoiceForm, series: e.target.value})}
+                  placeholder="FV"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="invoiceNumber">Număr (opțional)</Label>
+                <Input 
+                  id="invoiceNumber"
+                  value={newInvoiceForm.invoiceNumber}
+                  onChange={(e) => setNewInvoiceForm({...newInvoiceForm, invoiceNumber: e.target.value})}
+                  placeholder="Se generează automat"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="issueDate">Data Emitere *</Label>
+                <Input 
+                  id="issueDate"
+                  type="date"
+                  value={newInvoiceForm.issueDate}
+                  onChange={(e) => setNewInvoiceForm({...newInvoiceForm, issueDate: e.target.value})}
+                  required
+                />
+              </div>
+            </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Serie Factură</Label>
-                <Input placeholder="FV" defaultValue="FV" />
+                <Label htmlFor="customerName">Client *</Label>
+                <Input 
+                  id="customerName"
+                  placeholder="SC Client SRL"
+                  value={newInvoiceForm.customerName}
+                  onChange={(e) => setNewInvoiceForm({...newInvoiceForm, customerName: e.target.value})}
+                  required
+                />
               </div>
               
               <div className="space-y-2">
-                <Label>Număr</Label>
-                <Input placeholder="Se generează automat..." disabled />
+                <Label htmlFor="dueDate">Data Scadentă</Label>
+                <Input 
+                  id="dueDate"
+                  type="date"
+                  value={newInvoiceForm.dueDate}
+                  onChange={(e) => setNewInvoiceForm({...newInvoiceForm, dueDate: e.target.value})}
+                />
+              </div>
+            </div>
+            
+            <Separator />
+            
+            {/* Linii factură */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Produse/Servicii</Label>
+                <Button 
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setNewInvoiceItems([...newInvoiceItems, {
+                    id: Date.now().toString(),
+                    productName: '',
+                    description: '',
+                    quantity: 1,
+                    unitPrice: 0,
+                    vatRate: 19,
+                    netAmount: 0,
+                    vatAmount: 0,
+                    grossAmount: 0
+                  }])}
+                >
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Adaugă Linie
+                </Button>
               </div>
               
-              <div className="space-y-2">
-                <Label>Client</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selectați clientul..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="client1">SC Client 1 SRL</SelectItem>
-                    <SelectItem value="client2">SC Client 2 SA</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="w-[200px]">Produs/Serviciu</TableHead>
+                      <TableHead className="w-[150px]">Descriere</TableHead>
+                      <TableHead className="w-[80px]">Cant.</TableHead>
+                      <TableHead className="w-[100px]">Preț Unit.</TableHead>
+                      <TableHead className="w-[80px]">TVA %</TableHead>
+                      <TableHead className="w-[100px]">Valoare</TableHead>
+                      <TableHead className="w-[100px]">TVA</TableHead>
+                      <TableHead className="w-[100px]">Total</TableHead>
+                      <TableHead className="w-[50px]"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {newInvoiceItems.map((item, index) => {
+                      const updateItem = (field: string, value: any) => {
+                        const newItems = [...newInvoiceItems];
+                        newItems[index] = { ...newItems[index], [field]: value };
+                        
+                        // Calculează automat sumele
+                        const qty = Number(newItems[index].quantity);
+                        const price = Number(newItems[index].unitPrice);
+                        const vat = Number(newItems[index].vatRate);
+                        
+                        newItems[index].netAmount = qty * price;
+                        newItems[index].vatAmount = (qty * price * vat) / 100;
+                        newItems[index].grossAmount = newItems[index].netAmount + newItems[index].vatAmount;
+                        
+                        setNewInvoiceItems(newItems);
+                      };
+                      
+                      return (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            <Input 
+                              placeholder="Denumire produs"
+                              value={item.productName}
+                              onChange={(e) => updateItem('productName', e.target.value)}
+                              required
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input 
+                              placeholder="Detalii"
+                              value={item.description}
+                              onChange={(e) => updateItem('description', e.target.value)}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input 
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) => updateItem('quantity', e.target.value)}
+                              min="0.01"
+                              step="0.01"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input 
+                              type="number"
+                              value={item.unitPrice}
+                              onChange={(e) => updateItem('unitPrice', e.target.value)}
+                              min="0"
+                              step="0.01"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Select value={item.vatRate.toString()} onValueChange={(val) => updateItem('vatRate', val)}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="0">0%</SelectItem>
+                                <SelectItem value="5">5%</SelectItem>
+                                <SelectItem value="9">9%</SelectItem>
+                                <SelectItem value="19">19%</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {item.netAmount.toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {item.vatAmount.toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right font-bold">
+                            {item.grossAmount.toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            {newInvoiceItems.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setNewInvoiceItems(newInvoiceItems.filter(i => i.id !== item.id))}
+                              >
+                                <XCircle className="h-4 w-4 text-red-500" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
               </div>
-              
-              <div className="space-y-2">
-                <Label>Data Emitere</Label>
-                <Input type="date" defaultValue={new Date().toISOString().split('T')[0]} />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Sumă Totală (fără TVA)</Label>
-                <Input type="number" placeholder="0.00" step="0.01" />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Cotă TVA (%)</Label>
-                <Select defaultValue="19">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">0% (Scutit)</SelectItem>
-                    <SelectItem value="5">5% (Redusă)</SelectItem>
-                    <SelectItem value="9">9% (Redusă)</SelectItem>
-                    <SelectItem value="19">19% (Standard)</SelectItem>
-                  </SelectContent>
-                </Select>
+            </div>
+            
+            {/* Totaluri */}
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+              <div className="grid grid-cols-4 gap-4">
+                <div>
+                  <p className="text-sm text-blue-700">Valoare (fără TVA)</p>
+                  <p className="text-xl font-bold text-blue-900">
+                    {newInvoiceItems.reduce((sum, item) => sum + Number(item.netAmount), 0).toFixed(2)} Lei
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-blue-700">TVA Total</p>
+                  <p className="text-xl font-bold text-orange-600">
+                    {newInvoiceItems.reduce((sum, item) => sum + Number(item.vatAmount), 0).toFixed(2)} Lei
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-blue-700">Total Factură</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {newInvoiceItems.reduce((sum, item) => sum + Number(item.grossAmount), 0).toFixed(2)} Lei
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-blue-700">Linii</p>
+                  <p className="text-xl font-bold text-gray-700">
+                    {newInvoiceItems.length}
+                  </p>
+                </div>
               </div>
             </div>
             
             <div className="space-y-2">
-              <Label>Descriere / Observații</Label>
-              <Input placeholder="Descriere factură..." />
+              <Label htmlFor="description">Observații</Label>
+              <Input 
+                id="description"
+                placeholder="Observații factură..."
+                value={newInvoiceForm.description}
+                onChange={(e) => setNewInvoiceForm({...newInvoiceForm, description: e.target.value})}
+              />
             </div>
             
-            <Alert className="border-green-500 bg-green-50">
+            <Alert className="bg-green-50 border-green-200">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-900">
-                <strong>Notă:</strong> Pentru crearea completă a facturilor cu toate detaliile 
-                (linii de produse, multiple cote TVA, discount-uri), folosiți modulul dedicat de Facturare 
-                care oferă toate funcționalitățile necesare conform legislației.
+                <strong>Se va contabiliza automat:</strong> Debit 4111 Clienți / Credit 707 Venituri + 4427 TVA colectată
               </AlertDescription>
             </Alert>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateInvoiceDialogOpen(false)}>
-              Anulează
-            </Button>
-            <Link href="/sales/invoices/create">
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Deschide Modulul Facturare Complet
+            
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsCreateInvoiceDialogOpen(false)} disabled={isSubmittingInvoice}>
+                Anulează
               </Button>
-            </Link>
-          </DialogFooter>
+              <Button type="submit" disabled={isSubmittingInvoice || !newInvoiceForm.customerName || newInvoiceItems.length === 0}>
+                {isSubmittingInvoice ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Se emite...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    Emite și Contabilizează Factură
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </AppLayout>

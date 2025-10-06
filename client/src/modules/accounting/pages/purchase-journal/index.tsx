@@ -173,6 +173,28 @@ export default function PurchaseJournalPage() {
   
   // NEW: State pentru crearea facturii
   const [isCreateInvoiceDialogOpen, setIsCreateInvoiceDialogOpen] = useState(false);
+  const [invoiceForm, setInvoiceForm] = useState({
+    supplierNumber: '',
+    series: 'ACH',
+    supplierId: '',
+    supplierName: '',
+    issueDate: new Date().toISOString().split('T')[0],
+    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    description: '',
+    expenseType: 'services'
+  });
+  const [invoiceItems, setInvoiceItems] = useState([{
+    id: '1',
+    productName: '',
+    description: '',
+    quantity: 1,
+    unitPrice: 0,
+    vatRate: 19,
+    netAmount: 0,
+    vatAmount: 0,
+    grossAmount: 0
+  }]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Fetch Purchase Journal Report
   const { data: journalReport, isLoading: isLoadingReport, refetch: refetchReport } = useQuery({
@@ -1321,123 +1343,387 @@ export default function PurchaseJournalPage() {
       </TabsContent>
       </Tabs>
       
-      {/* NEW: Dialog Creare Factură Furnizor */}
+      {/* NEW: Dialog COMPLET Creare Factură Furnizor */}
       <Dialog open={isCreateInvoiceDialogOpen} onOpenChange={setIsCreateInvoiceDialogOpen}>
-        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>📄 Factură Nouă de Achiziție</DialogTitle>
+            <DialogTitle>📄 Înregistrare Factură Furnizor</DialogTitle>
             <DialogDescription>
-              Înregistrați o nouă factură de la furnizor. Se va contabiliza automat în Jurnalul de Cumpărări.
+              Înregistrați factura de achiziție cu toate detaliile. Se va contabiliza automat.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
-            <Alert className="bg-blue-50 border-blue-200">
-              <AlertCircle className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-900">
-                <strong>Informație:</strong> Pentru o funcționalitate completă de înregistrare factură furnizor 
-                cu linii de produse, TVA deductibil, categorii de cheltuieli și toate validările, 
-                vă recomandăm să accesați modulul dedicat de Achiziții.
-                <br />
-                <Link href="/purchases/invoices" className="text-blue-600 underline font-medium mt-2 inline-block">
-                  → Mergi la Modulul Achiziții Complet
-                </Link>
-              </AlertDescription>
-            </Alert>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setIsSubmitting(true);
             
-            <div className="grid grid-cols-2 gap-4">
+            try {
+              // Calculează totaluri
+              const netTotal = invoiceItems.reduce((sum, item) => sum + Number(item.netAmount), 0);
+              const vatTotal = invoiceItems.reduce((sum, item) => sum + Number(item.vatAmount), 0);
+              const grossTotal = netTotal + vatTotal;
+              
+              // API Call
+              const response = await fetch('/api/accounting/purchases/invoices', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                  invoiceData: {
+                    supplierNumber: invoiceForm.supplierNumber,
+                    series: invoiceForm.series,
+                    issueDate: invoiceForm.issueDate,
+                    dueDate: invoiceForm.dueDate,
+                    description: invoiceForm.description,
+                    currency: 'RON',
+                    exchangeRate: 1,
+                    expenseType: invoiceForm.expenseType,
+                    deductibleVat: true
+                  },
+                  supplier: {
+                    id: invoiceForm.supplierId,
+                    name: invoiceForm.supplierName
+                  },
+                  items: invoiceItems.map(item => ({
+                    productName: item.productName,
+                    description: item.description,
+                    quantity: Number(item.quantity),
+                    unitPrice: Number(item.unitPrice),
+                    netAmount: Number(item.netAmount),
+                    vatRate: Number(item.vatRate),
+                    vatAmount: Number(item.vatAmount),
+                    grossAmount: Number(item.grossAmount)
+                  })),
+                  taxRates: { default: 19 },
+                  paymentTerms: { days: 30 }
+                })
+              });
+              
+              if (!response.ok) throw new Error(await response.text());
+              
+              const result = await response.json();
+              
+              toast({
+                title: '✅ Factură înregistrată cu succes!',
+                description: `Factura ${invoiceForm.supplierNumber} a fost înregistrată și contabilizată automat.`
+              });
+              
+              // Reset form
+              setInvoiceForm({
+                supplierNumber: '',
+                series: 'ACH',
+                supplierId: '',
+                supplierName: '',
+                issueDate: new Date().toISOString().split('T')[0],
+                dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                description: '',
+                expenseType: 'services'
+              });
+              setInvoiceItems([{
+                id: '1',
+                productName: '',
+                description: '',
+                quantity: 1,
+                unitPrice: 0,
+                vatRate: 19,
+                netAmount: 0,
+                vatAmount: 0,
+                grossAmount: 0
+              }]);
+              
+              setIsCreateInvoiceDialogOpen(false);
+              
+              // Refresh lista
+              // TODO: invalidate queries
+              
+            } catch (error: any) {
+              toast({
+                title: '❌ Eroare',
+                description: error.message,
+                variant: 'destructive'
+              });
+            } finally {
+              setIsSubmitting(false);
+            }
+          }} className="space-y-4 py-4">
+            
+            {/* Date generale factură */}
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label>Număr Factură Furnizor</Label>
-                <Input placeholder="Ex: F-123456/2025" />
+                <Label htmlFor="supplierNumber">Număr Factură Furnizor *</Label>
+                <Input 
+                  id="supplierNumber"
+                  placeholder="Ex: F-123456/2025"
+                  value={invoiceForm.supplierNumber}
+                  onChange={(e) => setInvoiceForm({...invoiceForm, supplierNumber: e.target.value})}
+                  required
+                />
               </div>
               
               <div className="space-y-2">
-                <Label>Seria Internă</Label>
-                <Input placeholder="ACH" defaultValue="ACH" />
+                <Label htmlFor="series">Serie Internă</Label>
+                <Input 
+                  id="series"
+                  value={invoiceForm.series}
+                  onChange={(e) => setInvoiceForm({...invoiceForm, series: e.target.value})}
+                />
               </div>
               
               <div className="space-y-2">
-                <Label>Furnizor</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selectați furnizorul..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="supplier1">SC Furnizor 1 SRL</SelectItem>
-                    <SelectItem value="supplier2">SC Furnizor 2 SA</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Data Facturii</Label>
-                <Input type="date" defaultValue={new Date().toISOString().split('T')[0]} />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Valoare (fără TVA)</Label>
-                <Input type="number" placeholder="0.00" step="0.01" />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>TVA Deductibil</Label>
-                <Select defaultValue="19">
-                  <SelectTrigger>
+                <Label htmlFor="expenseType">Categorie Cheltuială *</Label>
+                <Select value={invoiceForm.expenseType} onValueChange={(val) => setInvoiceForm({...invoiceForm, expenseType: val})}>
+                  <SelectTrigger id="expenseType">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="0">0% (Scutit)</SelectItem>
-                    <SelectItem value="5">5% (Redusă)</SelectItem>
-                    <SelectItem value="9">9% (Redusă)</SelectItem>
-                    <SelectItem value="19">19% (Standard)</SelectItem>
+                    <SelectItem value="goods">Mărfuri (cont 607)</SelectItem>
+                    <SelectItem value="materials">Materii prime (cont 601)</SelectItem>
+                    <SelectItem value="services">Servicii (cont 628)</SelectItem>
+                    <SelectItem value="utilities">Utilități (cont 605)</SelectItem>
+                    <SelectItem value="transport">Transport (cont 624)</SelectItem>
+                    <SelectItem value="fixed_assets">Imobilizări (cont 2xxx)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="supplierName">Furnizor *</Label>
+                <Input 
+                  id="supplierName"
+                  placeholder="SC Furnizor SRL"
+                  value={invoiceForm.supplierName}
+                  onChange={(e) => setInvoiceForm({...invoiceForm, supplierName: e.target.value})}
+                  required
+                />
+              </div>
               
-              <div className="space-y-2 col-span-2">
-                <Label>Categorie Cheltuială</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selectați categoria..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="goods">Mărfuri</SelectItem>
-                    <SelectItem value="materials">Materii prime</SelectItem>
-                    <SelectItem value="services">Servicii</SelectItem>
-                    <SelectItem value="utilities">Utilități</SelectItem>
-                    <SelectItem value="fixed_assets">Imobilizări</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="space-y-2">
+                <Label htmlFor="issueDate">Data Facturii *</Label>
+                <Input 
+                  id="issueDate"
+                  type="date"
+                  value={invoiceForm.issueDate}
+                  onChange={(e) => setInvoiceForm({...invoiceForm, issueDate: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="dueDate">Data Scadentă</Label>
+                <Input 
+                  id="dueDate"
+                  type="date"
+                  value={invoiceForm.dueDate}
+                  onChange={(e) => setInvoiceForm({...invoiceForm, dueDate: e.target.value})}
+                />
+              </div>
+            </div>
+            
+            <Separator />
+            
+            {/* Linii factură */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Linii Factură</Label>
+                <Button 
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setInvoiceItems([...invoiceItems, {
+                    id: Date.now().toString(),
+                    productName: '',
+                    description: '',
+                    quantity: 1,
+                    unitPrice: 0,
+                    vatRate: 19,
+                    netAmount: 0,
+                    vatAmount: 0,
+                    grossAmount: 0
+                  }])}
+                >
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Adaugă Linie
+                </Button>
+              </div>
+              
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="w-[200px]">Produs/Serviciu</TableHead>
+                      <TableHead className="w-[150px]">Descriere</TableHead>
+                      <TableHead className="w-[80px]">Cant.</TableHead>
+                      <TableHead className="w-[100px]">Preț Unit.</TableHead>
+                      <TableHead className="w-[80px]">TVA %</TableHead>
+                      <TableHead className="w-[100px]">Valoare</TableHead>
+                      <TableHead className="w-[100px]">TVA</TableHead>
+                      <TableHead className="w-[100px]">Total</TableHead>
+                      <TableHead className="w-[50px]"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invoiceItems.map((item, index) => {
+                      const updateItem = (field: string, value: any) => {
+                        const newItems = [...invoiceItems];
+                        newItems[index] = { ...newItems[index], [field]: value };
+                        
+                        // Calculează automat sumele
+                        const qty = Number(newItems[index].quantity);
+                        const price = Number(newItems[index].unitPrice);
+                        const vat = Number(newItems[index].vatRate);
+                        
+                        newItems[index].netAmount = qty * price;
+                        newItems[index].vatAmount = (qty * price * vat) / 100;
+                        newItems[index].grossAmount = newItems[index].netAmount + newItems[index].vatAmount;
+                        
+                        setInvoiceItems(newItems);
+                      };
+                      
+                      return (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            <Input 
+                              placeholder="Denumire"
+                              value={item.productName}
+                              onChange={(e) => updateItem('productName', e.target.value)}
+                              required
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input 
+                              placeholder="Descriere"
+                              value={item.description}
+                              onChange={(e) => updateItem('description', e.target.value)}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input 
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) => updateItem('quantity', e.target.value)}
+                              min="0.01"
+                              step="0.01"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input 
+                              type="number"
+                              value={item.unitPrice}
+                              onChange={(e) => updateItem('unitPrice', e.target.value)}
+                              min="0"
+                              step="0.01"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Select value={item.vatRate.toString()} onValueChange={(val) => updateItem('vatRate', val)}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="0">0%</SelectItem>
+                                <SelectItem value="5">5%</SelectItem>
+                                <SelectItem value="9">9%</SelectItem>
+                                <SelectItem value="19">19%</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {item.netAmount.toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {item.vatAmount.toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right font-bold">
+                            {item.grossAmount.toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            {invoiceItems.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setInvoiceItems(invoiceItems.filter(i => i.id !== item.id))}
+                              >
+                                <XCircle className="h-4 w-4 text-red-500" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+            
+            {/* Totaluri */}
+            <div className="bg-gray-50 border rounded-lg p-4">
+              <div className="grid grid-cols-4 gap-4">
+                <div>
+                  <p className="text-sm text-gray-600">Valoare (fără TVA)</p>
+                  <p className="text-xl font-bold">
+                    {invoiceItems.reduce((sum, item) => sum + Number(item.netAmount), 0).toFixed(2)} Lei
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">TVA Total</p>
+                  <p className="text-xl font-bold text-orange-600">
+                    {invoiceItems.reduce((sum, item) => sum + Number(item.vatAmount), 0).toFixed(2)} Lei
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Total de Plată</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {invoiceItems.reduce((sum, item) => sum + Number(item.grossAmount), 0).toFixed(2)} Lei
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Linii Produse</p>
+                  <p className="text-xl font-bold text-gray-700">
+                    {invoiceItems.length}
+                  </p>
+                </div>
               </div>
             </div>
             
             <div className="space-y-2">
-              <Label>Descriere / Observații</Label>
-              <Input placeholder="Descriere factură..." />
+              <Label htmlFor="description">Observații</Label>
+              <Input 
+                id="description"
+                placeholder="Observații factură..."
+                value={invoiceForm.description}
+                onChange={(e) => setInvoiceForm({...invoiceForm, description: e.target.value})}
+              />
             </div>
             
-            <Alert className="border-green-500 bg-green-50">
+            <Alert className="bg-green-50 border-green-200">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-900">
-                <strong>Notă:</strong> Pentru înregistrarea completă a facturilor de achiziție 
-                (cu detalii produse, gestiune stocuri, TVA deductibil parțial), 
-                folosiți modulul dedicat de Achiziții care oferă toate funcționalitățile 
-                necesare conform legislației și integrare cu Gestiunea.
+                <strong>Se va contabiliza automat:</strong> Debit 401 Furnizori / Credit cont cheltuială + 4426 TVA deductibilă
               </AlertDescription>
             </Alert>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateInvoiceDialogOpen(false)}>
-              Anulează
-            </Button>
-            <Link href="/purchases/invoices/create">
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Deschide Modulul Achiziții Complet
+            
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsCreateInvoiceDialogOpen(false)} disabled={isSubmitting}>
+                Anulează
               </Button>
-            </Link>
-          </DialogFooter>
+              <Button type="submit" disabled={isSubmitting || !invoiceForm.supplierNumber || !invoiceForm.supplierName}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Se salvează...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    Salvează și Contabilizează
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </AppLayout>
