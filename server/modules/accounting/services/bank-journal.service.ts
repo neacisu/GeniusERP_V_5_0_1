@@ -149,6 +149,56 @@ export class BankJournalService {
   }
   
   /**
+   * Record bank transaction cu POSTARE AUTOMATĂ
+   */
+  public async recordBankTransaction(data: any): Promise<string> {
+    const db = getDrizzle();
+    const transactionId = uuidv4();
+    
+    const account = await this.getBankAccount(data.bankAccountId, data.companyId);
+    if (!account) throw new Error('Bank account not found');
+    
+    const balanceBefore = Number(account.currentBalance);
+    const isIncoming = data.transactionType === 'incoming_payment';
+    const balanceAfter = isIncoming ? balanceBefore + Number(data.amount) : balanceBefore - Number(data.amount);
+    
+    await db.insert(bankTransactions).values({
+      id: transactionId,
+      companyId: data.companyId,
+      bankAccountId: data.bankAccountId,
+      referenceNumber: data.referenceNumber || `REF-${Date.now()}`,
+      transactionType: data.transactionType,
+      paymentMethod: data.paymentMethod || 'bank_transfer',
+      transactionDate: data.transactionDate || new Date(),
+      valueDate: data.valueDate || data.transactionDate || new Date(),
+      amount: String(data.amount),
+      currency: data.currency || 'RON',
+      exchangeRate: String(data.exchangeRate || 1),
+      description: data.description,
+      payerName: data.payerName,
+      payeeName: data.payeeName,
+      balanceBefore: String(balanceBefore),
+      balanceAfter: String(balanceAfter),
+      isPosted: false,
+      invoiceId: data.invoiceId,
+      invoiceNumber: data.invoiceNumber,
+      createdBy: data.userId
+    });
+    
+    await db.update(bankAccounts).set({ currentBalance: String(balanceAfter), updatedAt: new Date() }).where(eq(bankAccounts.id, data.bankAccountId));
+    
+    // POSTARE AUTOMATĂ
+    try {
+      const entry = await this.createBankTransactionEntry({ ...data, transactionId, bankAccountNumber: account.accountNumber });
+      await db.$client.unsafe(`UPDATE bank_transactions SET is_posted = true, ledger_entry_id = $1 WHERE id = $2`, [entry.id, transactionId]);
+    } catch (error) {
+      console.error('Error posting bank transaction:', error);
+    }
+    
+    return transactionId;
+  }
+  
+  /**
    * Create a bank transaction entry
    * @param data Bank transaction data
    * @returns Created ledger entry
