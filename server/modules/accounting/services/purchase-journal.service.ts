@@ -945,30 +945,155 @@ export class PurchaseJournalService {
       }
     }
     
-    // 6. Totaluri
+    // 6. PAS 8: Adaugă rânduri pentru PLĂȚI (TVA la încasare)
+    const paymentRows = await this.addSupplierPaymentRows(db, periodStart, periodEnd, companyId, journalRows);
+    const allRows = [...journalRows, ...paymentRows];
+    
+    // Renumerotare după adăugare plăți
+    allRows.forEach((row, index) => { row.rowNumber = index + 1; });
+    
+    // 7. Totaluri DUPĂ includerea plăților
     const totals = {
-      totalDocuments: journalRows.length,
-      totalAmount: journalRows.reduce((s, r) => s + r.totalAmount, 0),
-      totalBase19: journalRows.reduce((s, r) => s + r.base19, 0),
-      totalVAT19: journalRows.reduce((s, r) => s + r.vat19, 0),
-      totalBase9: journalRows.reduce((s, r) => s + r.base9, 0),
-      totalVAT9: journalRows.reduce((s, r) => s + r.vat9, 0),
-      totalBase5: journalRows.reduce((s, r) => s + r.base5, 0),
-      totalVAT5: journalRows.reduce((s, r) => s + r.vat5, 0),
-      totalIntraCommunity: journalRows.reduce((s, r) => s + r.intraCommunity, 0),
-      totalImport: journalRows.reduce((s, r) => s + r.import, 0),
-      totalReverseCharge: journalRows.reduce((s, r) => s + r.reverseCharge, 0),
-      totalNotSubject: journalRows.reduce((s, r) => s + r.notSubject, 0),
-      totalVATDeferred: journalRows.reduce((s, r) => s + r.vatDeferred, 0),
-      totalVATDeductible: journalRows.reduce((s, r) => s + r.vatDeductible, 0)
+      totalDocuments: invoicesResult.length, // Număr facturi distincte, nu rânduri!
+      totalAmount: allRows.reduce((s, r) => r.documentType !== 'PAYMENT' ? s + r.totalAmount : s, 0),
+      totalBase19: allRows.reduce((s, r) => s + r.base19, 0),
+      totalVAT19: allRows.reduce((s, r) => s + r.vat19, 0),
+      totalBase9: allRows.reduce((s, r) => s + r.base9, 0),
+      totalVAT9: allRows.reduce((s, r) => s + r.vat9, 0),
+      totalBase5: allRows.reduce((s, r) => s + r.base5, 0),
+      totalVAT5: allRows.reduce((s, r) => s + r.vat5, 0),
+      totalIntraCommunity: allRows.reduce((s, r) => s + r.intraCommunity, 0),
+      totalImport: allRows.reduce((s, r) => s + r.import, 0),
+      totalReverseCharge: allRows.reduce((s, r) => s + r.reverseCharge, 0),
+      totalNotSubject: allRows.reduce((s, r) => s + r.notSubject, 0),
+      totalVATDeferred: allRows.reduce((s, r) => s + r.vatDeferred, 0),
+      totalVATDeductible: allRows.reduce((s, r) => s + r.vatDeductible, 0),
+      totalNetAmount: allRows.reduce((s, r) => s + r.base19 + r.base9 + r.base5 + r.intraCommunity + r.import + r.reverseCharge + r.notSubject, 0),
+      totalVATAmount: allRows.reduce((s, r) => s + r.vatDeferred + r.vatDeductible, 0)
     };
+    
+    // 8. PAS 9: Verificări contabile
+    const accountingValidation = await this.validatePurchaseJournalWithAccounts(db, companyId, periodStart, periodEnd, totals);
     
     return {
       companyId, companyName: company.name, companyFiscalCode: company.fiscalCode,
       periodStart, periodEnd,
       periodLabel: new Date(periodStart).toLocaleDateString('ro-RO', { month: 'long', year: 'numeric' }),
-      rows: journalRows, totals, reportType: 'DETAILED'
+      generatedAt: new Date(),
+      rows: allRows, totals, reportType: 'DETAILED',
+      accountingValidation
     };
+  }
+  
+  /**
+   * PAS 8: Adaugă rânduri pentru plăți furnizori (TVA la încasare)
+   */
+  private async addSupplierPaymentRows(db: any, periodStart: Date, periodEnd: Date, companyId: string, existingRows: any[]): Promise<any[]> {
+    try {
+      const paymentsInPeriod = await db.select({
+        paymentId: invoicePayments.id,
+        paymentDate: invoicePayments.paymentDate,
+        paymentAmount: invoicePayments.amount,
+        paymentReference: invoicePayments.paymentReference,
+        vatTransferred: invoicePayments.vatAmountTransferred,
+        invoiceId: invoicePayments.invoiceId,
+        invoiceNumber: invoices.invoiceNumber,
+        supplierName: invoiceDetails.partnerName,
+        supplierFiscalCode: invoiceDetails.partnerFiscalCode
+      }).from(invoicePayments)
+        .innerJoin(invoices, eq(invoicePayments.invoiceId, invoices.id))
+        .leftJoin(invoiceDetails, eq(invoices.id, invoiceDetails.invoiceId))
+        .where(and(
+          eq(invoicePayments.companyId, companyId),
+          gte(invoicePayments.paymentDate, periodStart),
+          lte(invoicePayments.paymentDate, periodEnd),
+          eq(invoices.type, 'PURCHASE'),
+          eq(invoices.isCashVAT, true),
+          isNotNull(invoicePayments.vatAmountTransferred)
+        )).orderBy(invoicePayments.paymentDate);
+      
+      const paymentRows = [];
+      for (const payment of paymentsInPeriod) {
+        paymentRows.push({
+          rowNumber: 0, // va fi renumerotat
+          date: payment.paymentDate,
+          documentNumber: `PLATĂ-${payment.invoiceNumber}`,
+          documentType: 'PAYMENT',
+          supplierName: payment.supplierName || 'Unknown',
+          supplierFiscalCode: payment.supplierFiscalCode || '',
+          supplierCountry: 'Romania',
+          totalAmount: 0,
+          base19: 0, base9: 0, base5: 0, vat19: 0, vat9: 0, vat5: 0,
+          intraCommunity: 0, import: 0, reverseCharge: 0, notSubject: 0,
+          isCashVAT: true,
+          vatDeferred: -Number(payment.vatTransferred),
+          vatDeductible: Number(payment.vatTransferred),
+          expenseType: 'payment',
+          notes: `TVA devenit deductibil pentru factura ${payment.invoiceNumber}`
+        });
+      }
+      return paymentRows;
+    } catch (error) {
+      console.error('Error adding supplier payment rows:', error);
+      return [];
+    }
+  }
+  
+  /**
+   * PAS 9: Validare jurnal cu balanța contabilă
+   */
+  private async validatePurchaseJournalWithAccounts(db: any, companyId: string, periodStart: Date, periodEnd: Date, totals: any): Promise<any> {
+    try {
+      const year = periodStart.getFullYear();
+      const month = periodStart.getMonth() + 1;
+      
+      const account4426 = await this.getAccountBalancePurchase(db, companyId, '4426', year, month);
+      const account4428 = await this.getAccountBalancePurchase(db, companyId, '4428', year, month);
+      const account401 = await this.getAccountBalancePurchase(db, companyId, '401', year, month);
+      
+      const discrepancies: string[] = [];
+      
+      if (Math.abs(account4426 - totals.totalVATDeductible) > 0.01) {
+        discrepancies.push(`TVA deductibilă: Jurnal ${totals.totalVATDeductible.toFixed(2)} vs Cont 4426 ${account4426.toFixed(2)}`);
+      }
+      if (Math.abs(account4428 - totals.totalVATDeferred) > 0.01) {
+        discrepancies.push(`TVA neexigibilă: Jurnal ${totals.totalVATDeferred.toFixed(2)} vs Cont 4428 ${account4428.toFixed(2)}`);
+      }
+      
+      return {
+        account4426Balance: account4426,
+        account4428Balance: account4428,
+        account401Balance: account401,
+        isBalanced: discrepancies.length === 0,
+        discrepancies: discrepancies.length > 0 ? discrepancies : undefined
+      };
+    } catch (error) {
+      console.error('Error validating journal:', error);
+      return { account4426Balance: 0, account4428Balance: 0, account401Balance: 0, isBalanced: false };
+    }
+  }
+  
+  private async getAccountBalancePurchase(db: any, companyId: string, accountCode: string, year: number, month: number): Promise<number> {
+    try {
+      const result = await db.select().from(ledgerLines)
+        .innerJoin(ledgerEntries, eq(ledgerLines.ledgerEntryId, ledgerEntries.id))
+        .where(and(
+          eq(ledgerEntries.companyId, companyId),
+          eq(ledgerLines.accountId, accountCode),
+          gte(ledgerEntries.createdAt, new Date(year, month - 1, 1)),
+          lte(ledgerEntries.createdAt, new Date(year, month, 0))
+        ));
+      
+      let balance = 0;
+      for (const row of result) {
+        const debit = Number(row.ledger_lines.debitAmount || 0);
+        const credit = Number(row.ledger_lines.creditAmount || 0);
+        balance += accountCode === '401' ? (credit - debit) : (debit - credit);
+      }
+      return balance;
+    } catch (error) {
+      return 0;
+    }
   }
   
   private groupLinesByCategory(lines: any[], supplierDetails: any): Map<string, any[]> {
