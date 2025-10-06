@@ -199,6 +199,30 @@ export class BankJournalService {
   }
   
   /**
+   * Record incoming payment (Încasare în cont)
+   */
+  public async recordIncomingPayment(data: any): Promise<string> {
+    return await this.recordBankTransaction({ ...data, transactionType: 'incoming_payment' });
+  }
+  
+  /**
+   * Record outgoing payment (Plată din cont)
+   */
+  public async recordOutgoingPayment(data: any): Promise<string> {
+    return await this.recordBankTransaction({ ...data, transactionType: 'outgoing_payment' });
+  }
+  
+  /**
+   * Transfer între conturi proprii - AUTOMATĂ ambele părți
+   */
+  public async transferBetweenAccounts(fromAccountId: string, toAccountId: string, amount: number, companyId: string, description: string, userId?: string): Promise<{ fromTxn: string; toTxn: string }> {
+    const refNumber = `TRANSFER-${Date.now()}`;
+    const fromTxn = await this.recordBankTransaction({ bankAccountId: fromAccountId, transactionType: 'outgoing_payment', amount, description: `Transfer către cont destinație: ${description}`, referenceNumber: refNumber, companyId, userId });
+    const toTxn = await this.recordBankTransaction({ bankAccountId: toAccountId, transactionType: 'incoming_payment', amount, description: `Transfer de la cont sursă: ${description}`, referenceNumber: refNumber, companyId, userId });
+    return { fromTxn, toTxn };
+  }
+  
+  /**
    * Create a bank transaction entry
    * @param data Bank transaction data
    * @returns Created ledger entry
