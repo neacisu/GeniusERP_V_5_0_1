@@ -171,6 +171,9 @@ export default function PurchaseJournalPage() {
   const [reportPeriodStart, setReportPeriodStart] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [reportPeriodEnd, setReportPeriodEnd] = useState<Date>(new Date());
   
+  // NEW: State pentru crearea facturii
+  const [isCreateInvoiceDialogOpen, setIsCreateInvoiceDialogOpen] = useState(false);
+  
   // Fetch Purchase Journal Report
   const { data: journalReport, isLoading: isLoadingReport, refetch: refetchReport } = useQuery({
     queryKey: ['purchase-journal-report', reportPeriodStart, reportPeriodEnd],
@@ -571,7 +574,7 @@ export default function PurchaseJournalPage() {
         
         <div className="flex space-x-2 mt-4 md:mt-0">
           {mainSection === 'invoices' && (
-            <Button>
+            <Button onClick={() => setIsCreateInvoiceDialogOpen(true)}>
               <PlusCircle className="h-4 w-4 mr-2" />
               <span>Factură Nouă</span>
             </Button>
@@ -1317,6 +1320,126 @@ export default function PurchaseJournalPage() {
         {isLoadingReport && <div className="text-center py-12"><Loader2 className="h-8 w-8 animate-spin mx-auto" /><p>Se generează jurnalul...</p></div>}
       </TabsContent>
       </Tabs>
+      
+      {/* NEW: Dialog Creare Factură Furnizor */}
+      <Dialog open={isCreateInvoiceDialogOpen} onOpenChange={setIsCreateInvoiceDialogOpen}>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>📄 Factură Nouă de Achiziție</DialogTitle>
+            <DialogDescription>
+              Înregistrați o nouă factură de la furnizor. Se va contabiliza automat în Jurnalul de Cumpărări.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <Alert className="bg-blue-50 border-blue-200">
+              <AlertCircle className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-900">
+                <strong>Informație:</strong> Pentru o funcționalitate completă de înregistrare factură furnizor 
+                cu linii de produse, TVA deductibil, categorii de cheltuieli și toate validările, 
+                vă recomandăm să accesați modulul dedicat de Achiziții.
+                <br />
+                <Link href="/purchases/invoices" className="text-blue-600 underline font-medium mt-2 inline-block">
+                  → Mergi la Modulul Achiziții Complet
+                </Link>
+              </AlertDescription>
+            </Alert>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Număr Factură Furnizor</Label>
+                <Input placeholder="Ex: F-123456/2025" />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Seria Internă</Label>
+                <Input placeholder="ACH" defaultValue="ACH" />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Furnizor</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selectați furnizorul..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="supplier1">SC Furnizor 1 SRL</SelectItem>
+                    <SelectItem value="supplier2">SC Furnizor 2 SA</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Data Facturii</Label>
+                <Input type="date" defaultValue={new Date().toISOString().split('T')[0]} />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Valoare (fără TVA)</Label>
+                <Input type="number" placeholder="0.00" step="0.01" />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>TVA Deductibil</Label>
+                <Select defaultValue="19">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">0% (Scutit)</SelectItem>
+                    <SelectItem value="5">5% (Redusă)</SelectItem>
+                    <SelectItem value="9">9% (Redusă)</SelectItem>
+                    <SelectItem value="19">19% (Standard)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2 col-span-2">
+                <Label>Categorie Cheltuială</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selectați categoria..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="goods">Mărfuri</SelectItem>
+                    <SelectItem value="materials">Materii prime</SelectItem>
+                    <SelectItem value="services">Servicii</SelectItem>
+                    <SelectItem value="utilities">Utilități</SelectItem>
+                    <SelectItem value="fixed_assets">Imobilizări</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Descriere / Observații</Label>
+              <Input placeholder="Descriere factură..." />
+            </div>
+            
+            <Alert className="border-green-500 bg-green-50">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-900">
+                <strong>Notă:</strong> Pentru înregistrarea completă a facturilor de achiziție 
+                (cu detalii produse, gestiune stocuri, TVA deductibil parțial), 
+                folosiți modulul dedicat de Achiziții care oferă toate funcționalitățile 
+                necesare conform legislației și integrare cu Gestiunea.
+              </AlertDescription>
+            </Alert>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateInvoiceDialogOpen(false)}>
+              Anulează
+            </Button>
+            <Link href="/purchases/invoices/create">
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Deschide Modulul Achiziții Complet
+              </Button>
+            </Link>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
