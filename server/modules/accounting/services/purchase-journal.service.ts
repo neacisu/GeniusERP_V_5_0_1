@@ -106,6 +106,15 @@ export class PurchaseJournalService {
    * @param status Filter by status
    * @returns Supplier invoices with pagination
    */
+  /**
+   * Get all supplier invoices with pagination and filtering
+   * 
+   * IMPORTANT: Pentru facturi de tip PURCHASE, câmpurile din tabela `invoices`:
+   * - customerId = ID-ul FURNIZORULUI (nu clientului!)
+   * - customerName = Numele FURNIZORULUI (nu clientului!)
+   * Această convenție este folosită deoarece tabela `invoices` este UNIFICATĂ
+   * pentru ambele tipuri de facturi (SALES și PURCHASE).
+   */
   public async getSupplierInvoices(
     companyId: string,
     page: number = 1,
