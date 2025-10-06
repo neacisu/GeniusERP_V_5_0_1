@@ -159,16 +159,8 @@ export default function CashRegisterPage() {
   const [isAdvanceDialogOpen, setIsAdvanceDialogOpen] = useState(false);
   const [transferType, setTransferType] = useState<'deposit' | 'withdrawal'>('deposit');
   const [advanceType, setAdvanceType] = useState<'give' | 'settle'>('give');
-  
-  // Handler pentru închidere forțată toate dialogurile
-  const closeAllDialogs = () => {
-    setIsInvoiceSelectorOpen(false);
-    setIsEmployeeSelectorOpen(false);
-    setIsTransferDialogOpen(false);
-    setIsClosingDialogOpen(false);
-    setIsAdvanceDialogOpen(false);
-    setIsCreateDialogOpen(false);
-  };
+  const [selectedEmployeeForAdvance, setSelectedEmployeeForAdvance] = useState<any>(null);
+  const [isSelectingEmployeeForAdvance, setIsSelectingEmployeeForAdvance] = useState(false);
   
   // NEW: Form state pentru creare tranzacție
   const [formData, setFormData] = useState({
@@ -1414,15 +1406,38 @@ export default function CashRegisterPage() {
       
       <EmployeeSelectorDialog
         isOpen={isEmployeeSelectorOpen}
-        onClose={() => setIsEmployeeSelectorOpen(false)}
-        onSelect={(employee) => {
-          setFormData({
-            ...formData,
-            personName: employee.fullName,
-            personId: employee.id,
-            personIdNumber: employee.cnp
-          });
+        onClose={() => {
           setIsEmployeeSelectorOpen(false);
+          // Cleanup
+          setTimeout(() => {
+            document.body.style.pointerEvents = 'auto';
+            document.body.style.overflow = 'auto';
+          }, 100);
+        }}
+        onSelect={(employee) => {
+          if (isSelectingEmployeeForAdvance) {
+            // Pentru advance dialog
+            setSelectedEmployeeForAdvance(employee);
+            setIsSelectingEmployeeForAdvance(false);
+            setIsEmployeeSelectorOpen(false);
+            // Redeschide advance dialog
+            setIsAdvanceDialogOpen(true);
+          } else {
+            // Pentru form normal
+            setFormData({
+              ...formData,
+              personName: employee.fullName,
+              personId: employee.id,
+              personIdNumber: employee.cnp
+            });
+            setIsEmployeeSelectorOpen(false);
+          }
+          
+          // Cleanup
+          setTimeout(() => {
+            document.body.style.pointerEvents = 'auto';
+            document.body.style.overflow = 'auto';
+          }, 100);
         }}
         type="all"
       />
@@ -1458,6 +1473,7 @@ export default function CashRegisterPage() {
         isOpen={isAdvanceDialogOpen}
         onClose={() => {
           setIsAdvanceDialogOpen(false);
+          setSelectedEmployeeForAdvance(null);
           // Cleanup forțat
           setTimeout(() => {
             document.body.style.pointerEvents = 'auto';
@@ -1466,6 +1482,15 @@ export default function CashRegisterPage() {
         }}
         cashRegisterId={selectedRegister !== 'all' ? selectedRegister : cashRegisters?.[0]?.id || ''}
         type={advanceType}
+        preSelectedEmployee={selectedEmployeeForAdvance}
+        onNeedEmployeeSelection={() => {
+          // Închide dialogul curent și deschide selector angajați
+          setIsAdvanceDialogOpen(false);
+          setIsSelectingEmployeeForAdvance(true);
+          setTimeout(() => {
+            setIsEmployeeSelectorOpen(true);
+          }, 150);
+        }}
       />
     </AppLayout>
   );

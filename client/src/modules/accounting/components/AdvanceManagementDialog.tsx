@@ -15,14 +15,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { EmployeeSelectorDialog } from './EmployeeSelectorDialog';
-
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   cashRegisterId: string;
-  type: 'give' | 'settle'; // give = acordare avans, settle = decontare avans
-  existingAdvanceId?: string; // Pentru decontare
+  type: 'give' | 'settle';
+  existingAdvanceId?: string;
+  // NEW: Primește employee pre-selectat din exterior (evită nested dialogs)
+  preSelectedEmployee?: {
+    id: string;
+    fullName: string;
+    cnp: string;
+  };
+  onNeedEmployeeSelection?: () => void; // Callback pentru a cere selecția
 }
 
 export function AdvanceManagementDialog({ 
@@ -30,10 +35,11 @@ export function AdvanceManagementDialog({
   onClose, 
   cashRegisterId, 
   type,
-  existingAdvanceId 
+  existingAdvanceId,
+  preSelectedEmployee,
+  onNeedEmployeeSelection
 }: Props) {
-  const [isEmployeeSelectorOpen, setIsEmployeeSelectorOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<any>(preSelectedEmployee || null);
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [documentsUploaded, setDocumentsUploaded] = useState(false);
@@ -42,9 +48,14 @@ export function AdvanceManagementDialog({
   const { toast } = useToast();
   
   // Fetch advance details if settling
-  const { data: advanceData } = useQuery({
+  const { data: advanceData } = useQuery<{
+    amount?: number;
+    employeeName?: string;
+    createdAt?: string;
+  }>({
     queryKey: ['/api/accounting/advances', existingAdvanceId],
-    enabled: type === 'settle' && !!existingAdvanceId
+    enabled: type === 'settle' && !!existingAdvanceId,
+    placeholderData: {}
   });
   
   const mutation = useMutation({
@@ -150,7 +161,11 @@ export function AdvanceManagementDialog({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setIsEmployeeSelectorOpen(true)}
+                    onClick={() => {
+                      if (onNeedEmployeeSelection) {
+                        onNeedEmployeeSelection();
+                      }
+                    }}
                   >
                     Selectează
                   </Button>
@@ -163,14 +178,14 @@ export function AdvanceManagementDialog({
               </div>
             )}
             
-            {type === 'settle' && advanceData && (
+            {type === 'settle' && advanceData && advanceData.amount && (
               <Alert className="bg-blue-50 border-blue-200">
                 <AlertDescription>
                   <strong>Avans existent:</strong> {advanceData.amount} Lei
                   <br />
-                  Angajat: {advanceData.employeeName}
+                  Angajat: {advanceData.employeeName || 'N/A'}
                   <br />
-                  Acordat la: {new Date(advanceData.createdAt).toLocaleDateString('ro-RO')}
+                  Acordat la: {advanceData.createdAt ? new Date(advanceData.createdAt).toLocaleDateString('ro-RO') : 'N/A'}
                 </AlertDescription>
               </Alert>
             )}
@@ -246,16 +261,6 @@ export function AdvanceManagementDialog({
           </form>
         </DialogContent>
       </Dialog>
-      
-      {/* Dialog nested - trebuie închis dialogul părinte când se deschide acesta */}
-      {!isOpen && (
-        <EmployeeSelectorDialog
-          isOpen={isEmployeeSelectorOpen}
-          onClose={() => setIsEmployeeSelectorOpen(false)}
-          onSelect={setSelectedEmployee}
-          type="advance"
-        />
-      )}
     </>
   );
 }
