@@ -147,6 +147,29 @@ export default function BankJournalPage() {
   // NEW: State pentru reconciliere
   const [isInvoiceSelectorOpen, setIsInvoiceSelectorOpen] = useState(false);
   const [selectedForReconciliation, setSelectedForReconciliation] = useState<BankTransaction | null>(null);
+  
+  // NEW: State pentru dialoguri creare tranzacții
+  const [isCreateTransactionDialogOpen, setIsCreateTransactionDialogOpen] = useState(false);
+  const [transactionType, setTransactionType] = useState<'incoming' | 'outgoing' | 'transfer'>('incoming');
+  const [transactionForm, setTransactionForm] = useState({
+    bankAccountId: '',
+    referenceNumber: '',
+    amount: '',
+    description: '',
+    payerName: '',
+    payeeName: '',
+    invoiceNumber: '',
+    transactionDate: new Date().toISOString().split('T')[0],
+    valueDate: new Date().toISOString().split('T')[0],
+    paymentMethod: 'bank_transfer'
+  });
+  const [transferForm, setTransferForm] = useState({
+    fromBankAccountId: '',
+    toBankAccountId: '',
+    amount: '',
+    description: ''
+  });
+  const [isSubmittingTransaction, setIsSubmittingTransaction] = useState(false);
 
   // Fetch bank accounts
   const { data: bankAccountsResponse, isLoading: isLoadingAccounts } = useQuery<{ data: BankAccount[]; total: number }>({
@@ -561,15 +584,15 @@ export default function BankJournalPage() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Adaugă Tranzacție</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setTransactionType('incoming'); setIsCreateTransactionDialogOpen(true); }}>
                 <ArrowUp className="h-4 w-4 mr-2 text-green-500" />
                 <span>Încasare</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setTransactionType('outgoing'); setIsCreateTransactionDialogOpen(true); }}>
                 <ArrowDown className="h-4 w-4 mr-2 text-red-500" />
                 <span>Plată</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setTransactionType('transfer'); setIsCreateTransactionDialogOpen(true); }}>
                 <CreditCard className="h-4 w-4 mr-2 text-blue-500" />
                 <span>Transfer</span>
               </DropdownMenuItem>
@@ -1262,6 +1285,358 @@ export default function BankJournalPage() {
           setSelectedForReconciliation(null);
         }}
       />
+      
+      {/* NEW: Dialog COMPLET Creare Tranzacție Bancară */}
+      <Dialog open={isCreateTransactionDialogOpen} onOpenChange={setIsCreateTransactionDialogOpen}>
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle>
+              {transactionType === 'incoming' && '💰 Încasare în Cont Bancar'}
+              {transactionType === 'outgoing' && '💸 Plată din Cont Bancar'}
+              {transactionType === 'transfer' && '🔄 Transfer între Conturi'}
+            </DialogTitle>
+            <DialogDescription>
+              {transactionType === 'incoming' && 'Înregistrați o încasare din extras de cont. Se va contabiliza automat.'}
+              {transactionType === 'outgoing' && 'Înregistrați o plată din extras de cont. Se va contabiliza automat.'}
+              {transactionType === 'transfer' && 'Transferați bani între două conturi proprii. Ambele tranzacții se creează automat.'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {transactionType !== 'transfer' ? (
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              setIsSubmittingTransaction(true);
+              
+              try {
+                const response = await fetch('/api/accounting/bank-transactions', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({
+                    bankAccountId: transactionForm.bankAccountId,
+                    transactionType: transactionType === 'incoming' ? 'incoming_payment' : 'outgoing_payment',
+                    referenceNumber: transactionForm.referenceNumber,
+                    amount: Number(transactionForm.amount),
+                    description: transactionForm.description,
+                    payerName: transactionForm.payerName,
+                    payeeName: transactionForm.payeeName,
+                    invoiceNumber: transactionForm.invoiceNumber,
+                    transactionDate: new Date(transactionForm.transactionDate),
+                    valueDate: new Date(transactionForm.valueDate),
+                    paymentMethod: transactionForm.paymentMethod,
+                    currency: 'RON',
+                    exchangeRate: 1
+                  })
+                });
+                
+                if (!response.ok) throw new Error(await response.text());
+                
+                toast({
+                  title: '✅ Tranzacție înregistrată!',
+                  description: `${transactionType === 'incoming' ? 'Încasarea' : 'Plata'} a fost contabilizată automat.`
+                });
+                
+                // Reset
+                setTransactionForm({
+                  bankAccountId: '',
+                  referenceNumber: '',
+                  amount: '',
+                  description: '',
+                  payerName: '',
+                  payeeName: '',
+                  invoiceNumber: '',
+                  transactionDate: new Date().toISOString().split('T')[0],
+                  valueDate: new Date().toISOString().split('T')[0],
+                  paymentMethod: 'bank_transfer'
+                });
+                setIsCreateTransactionDialogOpen(false);
+                
+              } catch (error: any) {
+                toast({
+                  title: '❌ Eroare',
+                  description: error.message,
+                  variant: 'destructive'
+                });
+              } finally {
+                setIsSubmittingTransaction(false);
+              }
+            }} className="space-y-4 py-4">
+              
+              <div className="space-y-2">
+                <Label htmlFor="bankAccount">Cont Bancar *</Label>
+                <Select value={transactionForm.bankAccountId} onValueChange={(val) => setTransactionForm({...transactionForm, bankAccountId: val})} required>
+                  <SelectTrigger id="bankAccount">
+                    <SelectValue placeholder="Selectați contul..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bankAccounts?.map((acc: any) => (
+                      <SelectItem key={acc.id} value={acc.id}>
+                        {acc.name} - {acc.bankName} ({formatCurrency(acc.balance, acc.currency)})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="refNumber">Număr Referință Extras *</Label>
+                  <Input 
+                    id="refNumber"
+                    placeholder="Ex: EXT-123/2025"
+                    value={transactionForm.referenceNumber}
+                    onChange={(e) => setTransactionForm({...transactionForm, referenceNumber: e.target.value})}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="amount">Sumă (Lei) *</Label>
+                  <Input 
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={transactionForm.amount}
+                    onChange={(e) => setTransactionForm({...transactionForm, amount: e.target.value})}
+                    required
+                    min="0.01"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="transactionDate">Data Tranzacție *</Label>
+                  <Input 
+                    id="transactionDate"
+                    type="date"
+                    value={transactionForm.transactionDate}
+                    onChange={(e) => setTransactionForm({...transactionForm, transactionDate: e.target.value})}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="valueDate">Data Valorică</Label>
+                  <Input 
+                    id="valueDate"
+                    type="date"
+                    value={transactionForm.valueDate}
+                    onChange={(e) => setTransactionForm({...transactionForm, valueDate: e.target.value})}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="partner">{transactionType === 'incoming' ? 'Plătitor' : 'Beneficiar'} *</Label>
+                <Input 
+                  id="partner"
+                  placeholder={transactionType === 'incoming' ? 'Numele clientului' : 'Numele furnizorului'}
+                  value={transactionType === 'incoming' ? transactionForm.payerName : transactionForm.payeeName}
+                  onChange={(e) => setTransactionForm({
+                    ...transactionForm, 
+                    [transactionType === 'incoming' ? 'payerName' : 'payeeName']: e.target.value
+                  })}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Descriere *</Label>
+                <Input 
+                  id="description"
+                  placeholder="Ex: Plată factură F-123/2025"
+                  value={transactionForm.description}
+                  onChange={(e) => setTransactionForm({...transactionForm, description: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="invoiceNumber">Nr. Factură (opțional)</Label>
+                <Input 
+                  id="invoiceNumber"
+                  placeholder="Ex: F-123/2025"
+                  value={transactionForm.invoiceNumber}
+                  onChange={(e) => setTransactionForm({...transactionForm, invoiceNumber: e.target.value})}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="paymentMethod">Metodă Plată</Label>
+                <Select value={transactionForm.paymentMethod} onValueChange={(val) => setTransactionForm({...transactionForm, paymentMethod: val})}>
+                  <SelectTrigger id="paymentMethod">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bank_transfer">Transfer bancar</SelectItem>
+                    <SelectItem value="direct_debit">Debit direct</SelectItem>
+                    <SelectItem value="card_payment">Card</SelectItem>
+                    <SelectItem value="online_banking">Online banking</SelectItem>
+                    <SelectItem value="standing_order">Ordin permanent</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Alert className="bg-green-50 border-green-200">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-900">
+                  <strong>Se va contabiliza automat:</strong> {transactionType === 'incoming' ? 'Debit 5121 Bancă / Credit 4111 Clienți' : 'Debit 401 Furnizori / Credit 5121 Bancă'}
+                </AlertDescription>
+              </Alert>
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsCreateTransactionDialogOpen(false)} disabled={isSubmittingTransaction}>
+                  Anulează
+                </Button>
+                <Button type="submit" disabled={isSubmittingTransaction || !transactionForm.bankAccountId || !transactionForm.amount}>
+                  {isSubmittingTransaction ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Se salvează...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      Salvează și Contabilizează
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          ) : (
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              setIsSubmittingTransaction(true);
+              
+              try {
+                const response = await fetch('/api/accounting/bank-transactions/transfer', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({
+                    fromBankAccountId: transferForm.fromBankAccountId,
+                    toBankAccountId: transferForm.toBankAccountId,
+                    amount: Number(transferForm.amount),
+                    description: transferForm.description || 'Transfer între conturi'
+                  })
+                });
+                
+                if (!response.ok) throw new Error(await response.text());
+                
+                const result = await response.json();
+                
+                toast({
+                  title: '✅ Transfer realizat!',
+                  description: `Ambele tranzacții au fost create și contabilizate automat.`
+                });
+                
+                // Reset
+                setTransferForm({
+                  fromBankAccountId: '',
+                  toBankAccountId: '',
+                  amount: '',
+                  description: ''
+                });
+                setIsCreateTransactionDialogOpen(false);
+                
+              } catch (error: any) {
+                toast({
+                  title: '❌ Eroare',
+                  description: error.message,
+                  variant: 'destructive'
+                });
+              } finally {
+                setIsSubmittingTransaction(false);
+              }
+            }} className="space-y-4 py-4">
+              
+              <div className="space-y-2">
+                <Label htmlFor="fromAccount">Cont Sursă *</Label>
+                <Select value={transferForm.fromBankAccountId} onValueChange={(val) => setTransferForm({...transferForm, fromBankAccountId: val})} required>
+                  <SelectTrigger id="fromAccount">
+                    <SelectValue placeholder="Selectați contul sursă..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bankAccounts?.map((acc: any) => (
+                      <SelectItem key={acc.id} value={acc.id}>
+                        {acc.name} - {formatCurrency(acc.balance, acc.currency)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="toAccount">Cont Destinație *</Label>
+                <Select value={transferForm.toBankAccountId} onValueChange={(val) => setTransferForm({...transferForm, toBankAccountId: val})} required>
+                  <SelectTrigger id="toAccount">
+                    <SelectValue placeholder="Selectați contul destinație..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bankAccounts?.filter((acc: any) => acc.id !== transferForm.fromBankAccountId).map((acc: any) => (
+                      <SelectItem key={acc.id} value={acc.id}>
+                        {acc.name} - {formatCurrency(acc.balance, acc.currency)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="transferAmount">Sumă (Lei) *</Label>
+                <Input 
+                  id="transferAmount"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={transferForm.amount}
+                  onChange={(e) => setTransferForm({...transferForm, amount: e.target.value})}
+                  required
+                  min="0.01"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="transferDesc">Descriere</Label>
+                <Input 
+                  id="transferDesc"
+                  placeholder="Motivul transferului..."
+                  value={transferForm.description}
+                  onChange={(e) => setTransferForm({...transferForm, description: e.target.value})}
+                />
+              </div>
+              
+              <Alert className="bg-blue-50 border-blue-200">
+                <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-900">
+                  <strong>Se vor crea automat 2 tranzacții:</strong> Ieșire din contul sursă și intrare în contul destinație, ambele contabilizate prin 581 Viramente interne.
+                </AlertDescription>
+              </Alert>
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsCreateTransactionDialogOpen(false)} disabled={isSubmittingTransaction}>
+                  Anulează
+                </Button>
+                <Button type="submit" disabled={isSubmittingTransaction || !transferForm.fromBankAccountId || !transferForm.toBankAccountId || !transferForm.amount}>
+                  {isSubmittingTransaction ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Se transferă...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Efectuează Transfer
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
