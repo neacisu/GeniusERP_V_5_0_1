@@ -176,6 +176,9 @@ export default function SalesJournalPage() {
   const [reportPeriodEnd, setReportPeriodEnd] = useState<Date>(endOfMonth(new Date()));
   const [reportType, setReportType] = useState<'DETAILED' | 'SUMMARY'>('DETAILED');
   
+  // NEW: State pentru crearea facturii
+  const [isCreateInvoiceDialogOpen, setIsCreateInvoiceDialogOpen] = useState(false);
+  
   // Fetch Sales Journal Report (OMFP 2634/2015)
   const { data: journalReport, isLoading: isLoadingReport, refetch: refetchReport } = useQuery({
     queryKey: ['sales-journal-report', reportPeriodStart, reportPeriodEnd, reportType],
@@ -601,7 +604,7 @@ export default function SalesJournalPage() {
         
         <div className="flex space-x-2 mt-4 md:mt-0">
           {mainSection === 'invoices' && (
-            <Button>
+            <Button onClick={() => setIsCreateInvoiceDialogOpen(true)}>
               <PlusCircle className="h-4 w-4 mr-2" />
               <span>Factură Nouă</span>
             </Button>
@@ -1374,6 +1377,108 @@ export default function SalesJournalPage() {
         ) : null}
       </TabsContent>
       </Tabs>
+      
+      {/* NEW: Dialog Creare Factură */}
+      <Dialog open={isCreateInvoiceDialogOpen} onOpenChange={setIsCreateInvoiceDialogOpen}>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>📄 Factură Nouă de Vânzare</DialogTitle>
+            <DialogDescription>
+              Completați datele pentru a crea o nouă factură de vânzare. Se va contabiliza automat.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <Alert className="bg-blue-50 border-blue-200">
+              <AlertCircle className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-900">
+                <strong>Informație:</strong> Pentru o funcționalitate completă de creare factură cu linii de produse, 
+                TVA automat și toate validările, vă recomandăm să accesați modulul dedicat de Facturare.
+                <br />
+                <Link href="/sales/invoices" className="text-blue-600 underline font-medium mt-2 inline-block">
+                  → Mergi la Modulul Facturare Completă
+                </Link>
+              </AlertDescription>
+            </Alert>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Serie Factură</Label>
+                <Input placeholder="FV" defaultValue="FV" />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Număr</Label>
+                <Input placeholder="Se generează automat..." disabled />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Client</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selectați clientul..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="client1">SC Client 1 SRL</SelectItem>
+                    <SelectItem value="client2">SC Client 2 SA</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Data Emitere</Label>
+                <Input type="date" defaultValue={new Date().toISOString().split('T')[0]} />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Sumă Totală (fără TVA)</Label>
+                <Input type="number" placeholder="0.00" step="0.01" />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Cotă TVA (%)</Label>
+                <Select defaultValue="19">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">0% (Scutit)</SelectItem>
+                    <SelectItem value="5">5% (Redusă)</SelectItem>
+                    <SelectItem value="9">9% (Redusă)</SelectItem>
+                    <SelectItem value="19">19% (Standard)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Descriere / Observații</Label>
+              <Input placeholder="Descriere factură..." />
+            </div>
+            
+            <Alert className="border-green-500 bg-green-50">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-900">
+                <strong>Notă:</strong> Pentru crearea completă a facturilor cu toate detaliile 
+                (linii de produse, multiple cote TVA, discount-uri), folosiți modulul dedicat de Facturare 
+                care oferă toate funcționalitățile necesare conform legislației.
+              </AlertDescription>
+            </Alert>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateInvoiceDialogOpen(false)}>
+              Anulează
+            </Button>
+            <Link href="/sales/invoices/create">
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Deschide Modulul Facturare Complet
+              </Button>
+            </Link>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
