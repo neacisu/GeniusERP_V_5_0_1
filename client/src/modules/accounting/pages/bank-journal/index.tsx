@@ -77,7 +77,9 @@ import {
   CreditCard,
   Upload,
   Link as LinkIcon,
-  XCircle
+  XCircle,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 import { Link } from "wouter";
 import { InvoiceSelectorDialog } from "../../components/InvoiceSelectorDialog";
