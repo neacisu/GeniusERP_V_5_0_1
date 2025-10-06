@@ -346,6 +346,22 @@ export class CashRegisterService {
         throw new Error('Cash register not found');
       }
       
+      // PAS 5: Verifică dacă registrul este activ
+      if (register.status !== 'active') {
+        throw new Error('Registrul de casă nu este activ');
+      }
+      
+      // PAS 5: Verifică dacă ziua curentă este închisă
+      if ((register as any).lastClosedDate) {
+        const lastClosed = new Date((register as any).lastClosedDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (today <= lastClosed) {
+          throw new Error('Registrul de casă pentru ziua curentă este închis. Nu mai puteți adăuga tranzacții. Operațiunile corective se fac prin tranzacții de ajustare în zile ulterioare.');
+        }
+      }
+      
       // PAS 2: VALIDARE PLAFOANE Legea 70/2015
       if (register.maxTransactionAmount && Number(data.amount) > Number(register.maxTransactionAmount)) {
         throw new Error(`Suma depășește plafonul maxim per tranzacție (${register.maxTransactionAmount} Lei). Conform Legii 70/2015, fragmentați tranzacția sau folosiți banca.`);
@@ -370,7 +386,7 @@ export class CashRegisterService {
         cashRegisterId: data.cashRegisterId,
         documentNumber,
         series: 'CH',
-        number: documentNumber.split('-')[2],
+        number: documentNumber.split('/')[2], // Folosește / ca separator
         transactionType: 'cash_receipt',
         transactionPurpose: data.purpose || 'customer_payment',
         transactionDate: new Date(),
@@ -382,6 +398,9 @@ export class CashRegisterService {
         exchangeRate: (data.exchangeRate || 1).toString(),
         personName: data.personName,
         personIdNumber: data.personIdNumber || null,
+        personId: data.personId || null,
+        invoiceId: data.invoiceId || null,
+        invoiceNumber: data.invoiceNumber || null,
         description: data.description,
         balanceBefore: balanceBefore.toString(),
         balanceAfter: balanceAfter.toString(),
@@ -397,6 +416,40 @@ export class CashRegisterService {
           updatedAt: new Date(),
         } as any)
         .where(eq(cashRegisters.id, data.cashRegisterId));
+      
+      // PAS 3: POSTARE AUTOMATĂ ÎN CONTABILITATE pentru ÎNCASĂRI
+      try {
+        const entry = await this.createCashTransactionEntry({
+          companyId: data.companyId,
+          franchiseId: data.franchiseId,
+          cashRegisterId: data.cashRegisterId,
+          transactionId,
+          receiptNumber: documentNumber,
+          transactionType: CashTransactionType.CASH_RECEIPT,
+          transactionPurpose: data.purpose || CashTransactionPurpose.CUSTOMER_PAYMENT,
+          amount: Number(data.amount),
+          vatAmount: Number(data.vatAmount || 0),
+          vatRate: Number(data.vatRate || 19),
+          currency: data.currency || 'RON',
+          exchangeRate: Number(data.exchangeRate || 1),
+          transactionDate: new Date(),
+          description: data.description,
+          personId: data.personId,
+          personName: data.personName,
+          personIdNumber: data.personIdNumber,
+          invoiceId: data.invoiceId,
+          invoiceNumber: data.invoiceNumber,
+          userId: data.userId,
+          isFiscalReceipt: data.isFiscalReceipt || false,
+          fiscalReceiptNumber: data.fiscalReceiptNumber,
+          items: data.items || []
+        });
+        
+        await db.$client.unsafe(`UPDATE cash_transactions SET is_posted = true, posted_at = NOW(), ledger_entry_id = $1 WHERE id = $2`, [entry.id, transactionId]);
+      } catch (error) {
+        console.error('Error posting cash receipt to ledger:', error);
+        // Nu facem rollback - tranzacția rămâne nepostată și poate fi postată manual
+      }
       
       return transactionId;
     } catch (error) {
@@ -417,6 +470,22 @@ export class CashRegisterService {
       const register = await this.getCashRegister(data.cashRegisterId, data.companyId);
       if (!register) {
         throw new Error('Cash register not found');
+      }
+      
+      // PAS 5: Verifică dacă registrul este activ
+      if (register.status !== 'active') {
+        throw new Error('Registrul de casă nu este activ');
+      }
+      
+      // PAS 5: Verifică dacă ziua curentă este închisă
+      if ((register as any).lastClosedDate) {
+        const lastClosed = new Date((register as any).lastClosedDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (today <= lastClosed) {
+          throw new Error('Registrul de casă pentru ziua curentă este închis. Nu mai puteți adăuga tranzacții. Operațiunile corective se fac prin tranzacții de ajustare în zile ulterioare.');
+        }
       }
       
       // VALIDARE CNP pentru plăți mari
@@ -543,15 +612,49 @@ export class CashRegisterService {
   }
   
   /**
-   * Record cash deposit to bank
+   * PAS 9: Record cash deposit to bank - CU LEGARE AUTOMATĂ
+   * Înregistrează depunerea în casierie ȘI încasarea în cont bancar
    */
-  public async recordCashDepositToBank(data: any): Promise<string> {
+  public async recordCashDepositToBank(data: any): Promise<{ cashTransactionId: string; bankTransactionId: string }> {
     try {
-      return await this.recordCashPayment({
+      // Importă BankJournalService doar când este necesar
+      const { BankJournalService } = await import('./bank-journal.service');
+      const bankService = new BankJournalService();
+      
+      // 1. Înregistrează plata din casierie (ieșire numerar)
+      const cashTransactionId = await this.recordCashPayment({
         ...data,
         purpose: 'bank_deposit',
-        description: data.description || `Depunere numerar la bancă`,
+        description: data.description || `Depunere numerar la bancă - ${data.bankAccountName || 'cont bancar'}`,
       });
+      
+      // 2. Înregistrează încasarea în cont bancar (intrare în bancă)
+      if (data.bankAccountId) {
+        try {
+          const bankTransactionId = await bankService.recordIncomingPayment({
+            companyId: data.companyId,
+            bankAccountId: data.bankAccountId,
+            amount: data.amount,
+            currency: data.currency || 'RON',
+            exchangeRate: data.exchangeRate || 1,
+            description: `Depunere numerar din casă - ${data.cashRegisterName || 'casierie'}`,
+            referenceNumber: `CASH-DEP-${Date.now()}`,
+            transactionDate: new Date(),
+            userId: data.userId,
+            payerName: data.companyName || 'Numerar din casierie',
+          });
+          
+          return { cashTransactionId, bankTransactionId };
+        } catch (bankError) {
+          console.error('Error creating bank transaction:', bankError);
+          // Tranzacția cash a fost creată, dar cea bancară a eșuat
+          // Notificăm utilizatorul să o creeze manual
+          throw new Error(`Depunerea din casă a fost înregistrată (ID: ${cashTransactionId}), dar înregistrarea în bancă a eșuat. Vă rugăm să adăugați manual tranzacția bancară.`);
+        }
+      }
+      
+      // Dacă nu s-a specificat cont bancar, returnăm doar ID-ul cash
+      return { cashTransactionId, bankTransactionId: '' };
     } catch (error) {
       console.error('Error recording cash deposit:', error);
       throw new Error(`Failed to record cash deposit: ${(error as Error).message}`);
@@ -559,18 +662,128 @@ export class CashRegisterService {
   }
   
   /**
-   * Record cash withdrawal from bank
+   * PAS 9: Record cash withdrawal from bank - CU LEGARE AUTOMATĂ
+   * Înregistrează ridicarea în casierie ȘI plata din cont bancar
    */
-  public async recordCashWithdrawalFromBank(data: any): Promise<string> {
+  public async recordCashWithdrawalFromBank(data: any): Promise<{ cashTransactionId: string; bankTransactionId: string }> {
     try {
-      return await this.recordCashReceipt({
+      // Importă BankJournalService doar când este necesar
+      const { BankJournalService } = await import('./bank-journal.service');
+      const bankService = new BankJournalService();
+      
+      // 1. Înregistrează încasarea în casierie (intrare numerar)
+      const cashTransactionId = await this.recordCashReceipt({
         ...data,
         purpose: 'cash_withdrawal',
-        description: data.description || `Ridicare numerar de la bancă`,
+        description: data.description || `Ridicare numerar de la bancă - ${data.bankAccountName || 'cont bancar'}`,
       });
+      
+      // 2. Înregistrează plata din cont bancar (ieșire din bancă)
+      if (data.bankAccountId) {
+        try {
+          const bankTransactionId = await bankService.recordOutgoingPayment({
+            companyId: data.companyId,
+            bankAccountId: data.bankAccountId,
+            amount: data.amount,
+            currency: data.currency || 'RON',
+            exchangeRate: data.exchangeRate || 1,
+            description: `Ridicare numerar pentru casă - ${data.cashRegisterName || 'casierie'}`,
+            referenceNumber: `CASH-WD-${Date.now()}`,
+            transactionDate: new Date(),
+            userId: data.userId,
+            payeeName: data.companyName || 'Numerar pentru casierie',
+          });
+          
+          return { cashTransactionId, bankTransactionId };
+        } catch (bankError) {
+          console.error('Error creating bank transaction:', bankError);
+          throw new Error(`Ridicarea în casă a fost înregistrată (ID: ${cashTransactionId}), dar înregistrarea în bancă a eșuat. Vă rugăm să adăugați manual tranzacția bancară.`);
+        }
+      }
+      
+      return { cashTransactionId, bankTransactionId: '' };
     } catch (error) {
       console.error('Error recording cash withdrawal:', error);
       throw new Error(`Failed to record cash withdrawal: ${(error as Error).message}`);
+    }
+  }
+  
+  /**
+   * PAS 4: ÎNCHIDERE ZILNICĂ - Închide registrul de casă pentru o zi
+   * Marchează ziua ca închisă și blochează modificările ulterioare
+   */
+  public async closeDailyCashRegister(cashRegisterId: string, companyId: string, date: Date, userId: string): Promise<{ success: boolean; closingBalance: number; pdfPath?: string }> {
+    try {
+      const db = getDrizzle();
+      
+      // Verifică că data este în trecut sau azi
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      if (date > today) {
+        throw new Error('Nu puteți închide o zi viitoare');
+      }
+      
+      // Obține registrul
+      const register = await this.getCashRegister(cashRegisterId, companyId);
+      if (!register) {
+        throw new Error('Registrul de casă nu a fost găsit');
+      }
+      
+      // Verifică dacă ziua este deja închisă
+      if ((register as any).lastClosedDate) {
+        const lastClosed = new Date((register as any).lastClosedDate);
+        const closeDate = new Date(date);
+        closeDate.setHours(0, 0, 0, 0);
+        
+        if (closeDate <= lastClosed) {
+          throw new Error(`Ziua ${date.toLocaleDateString('ro-RO')} este deja închisă`);
+        }
+      }
+      
+      // Obține toate tranzacțiile din ziua respectivă
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+      
+      const transactions = await db
+        .select()
+        .from(cashTransactions)
+        .where(and(
+          eq(cashTransactions.cashRegisterId, cashRegisterId),
+          gte(cashTransactions.transactionDate, startOfDay),
+          lte(cashTransactions.transactionDate, endOfDay),
+          eq(cashTransactions.isCanceled, false)
+        ))
+        .orderBy(cashTransactions.transactionDate);
+      
+      if (transactions.length === 0) {
+        throw new Error('Nu există tranzacții pentru această zi');
+      }
+      
+      // Calculează soldul de închidere
+      const closingBalance = Number(transactions[transactions.length - 1].balanceAfter);
+      
+      // Marchează ziua ca închisă
+      await db.update(cashRegisters)
+        .set({
+          lastClosedDate: date.toISOString().split('T')[0] as any, // Format DATE
+          updatedAt: new Date(),
+          updatedBy: userId,
+        } as any)
+        .where(eq(cashRegisters.id, cashRegisterId));
+      
+      // TODO PAS 6: Generează PDF (implementare ulterioară)
+      // const pdfPath = await this.generateDailyRegisterPDF(cashRegisterId, date, transactions);
+      
+      return {
+        success: true,
+        closingBalance,
+        // pdfPath
+      };
+    } catch (error) {
+      console.error('Error closing daily cash register:', error);
+      throw new Error(`Failed to close daily cash register: ${(error as Error).message}`);
     }
   }
   
@@ -1240,11 +1453,28 @@ export class CashRegisterService {
         break;
     }
     
-    // If foreign currency, handle exchange rate differences
+    // PAS 8: If foreign currency, handle exchange rate differences
     if (currency !== 'RON' && exchangeRate !== 1) {
-      // Currency conversion would be handled here
-      // This would involve comparing the transaction's exchange rate
-      // with the official BNR rate and recording the difference
+      // TODO: Implementare completă diferențe de curs
+      // Pentru moment, înregistrăm totul la cursul specificat
+      // Implementarea completă ar trebui să:
+      // 1. Obțină cursul BNR oficial pentru ziua respectivă
+      // 2. Calculeze diferența între exchangeRate și curs BNR
+      // 3. Genereze automat linii contabile pe 665/765 pentru diferențe
+      // 4. Pentru plăți legate de facturi, să folosească cursul facturii
+      
+      // Exemplu simplificat de calcul diferență:
+      // const bnrRate = await getBNRRate(currency, transactionDate);
+      // const diff = (exchangeRate - bnrRate) * amount;
+      // if (Math.abs(diff) > 0.01) {
+      //   if (diff > 0) {
+      //     ledgerLines.push({ accountId: CASH_ACCOUNTS.EXCHANGE_DIFF_EXPENSE, debitAmount: diff, creditAmount: 0 });
+      //     ledgerLines.push({ accountId: getCashAccount(), debitAmount: 0, creditAmount: diff });
+      //   } else {
+      //     ledgerLines.push({ accountId: getCashAccount(), debitAmount: Math.abs(diff), creditAmount: 0 });
+      //     ledgerLines.push({ accountId: CASH_ACCOUNTS.EXCHANGE_DIFF_INCOME, debitAmount: 0, creditAmount: Math.abs(diff) });
+      //   }
+      // }
     }
     
     // Create the ledger entry

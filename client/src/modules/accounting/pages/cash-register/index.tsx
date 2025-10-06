@@ -74,9 +74,20 @@ import {
   Building,
   CheckCircle2,
   Wallet,
-  User
+  User,
+  Lock,
+  AlertTriangle,
+  Users,
+  Banknote
 } from "lucide-react";
 import { Link } from "wouter";
+import { InvoiceSelectorDialog } from "../../components/InvoiceSelectorDialog";
+import { CashBankTransferDialog } from "../../components/CashBankTransferDialog";
+import { DailyClosingDialog } from "../../components/DailyClosingDialog";
+import { EmployeeSelectorDialog } from "../../components/EmployeeSelectorDialog";
+import { AdvanceManagementDialog } from "../../components/AdvanceManagementDialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Textarea } from "@/components/ui/textarea";
 
 // Type definitions
 type CashRegister = {
@@ -139,6 +150,28 @@ export default function CashRegisterPage() {
     to: new Date().toISOString().split('T')[0] 
   });
   const { toast } = useToast();
+  
+  // NEW: State-uri pentru dialoguri noi
+  const [isInvoiceSelectorOpen, setIsInvoiceSelectorOpen] = useState(false);
+  const [isEmployeeSelectorOpen, setIsEmployeeSelectorOpen] = useState(false);
+  const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
+  const [isClosingDialogOpen, setIsClosingDialogOpen] = useState(false);
+  const [isAdvanceDialogOpen, setIsAdvanceDialogOpen] = useState(false);
+  const [transferType, setTransferType] = useState<'deposit' | 'withdrawal'>('deposit');
+  const [advanceType, setAdvanceType] = useState<'give' | 'settle'>('give');
+  
+  // NEW: Form state pentru creare tranzacție
+  const [formData, setFormData] = useState({
+    cashRegisterId: '',
+    amount: '',
+    personName: '',
+    personId: '',
+    personIdNumber: '',
+    description: '',
+    invoiceNumber: '',
+    invoiceId: '',
+    purpose: ''
+  });
 
   // Fetch cash registers
   const { data: cashRegistersResponse, isLoading: isLoadingRegisters } = useQuery<{ data: CashRegister[]; total: number }>({
@@ -513,7 +546,18 @@ export default function CashRegisterPage() {
           <p className="text-sm text-gray-500">Gestionați încasările și plățile în numerar</p>
         </div>
         
-        <div className="flex space-x-2 mt-4 md:mt-0">
+        <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
+          {/* NEW: Buton Închidere Zilnică */}
+          <Button 
+            variant="outline"
+            onClick={() => setIsClosingDialogOpen(true)}
+            disabled={!selectedRegister || selectedRegister === 'all'}
+            className="border-red-300 text-red-700 hover:bg-red-50"
+          >
+            <Lock className="h-4 w-4 mr-2" />
+            Închide Ziua
+          </Button>
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex items-center">
@@ -555,6 +599,24 @@ export default function CashRegisterPage() {
               <DropdownMenuItem onClick={() => handleCreateTransaction('payment')}>
                 <ArrowDown className="h-4 w-4 mr-2 text-red-500" />
                 <span>Dispoziție Plată</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => { setTransferType('deposit'); setIsTransferDialogOpen(true); }}>
+                <Banknote className="h-4 w-4 mr-2 text-blue-500" />
+                <span>Depunere la Bancă</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setTransferType('withdrawal'); setIsTransferDialogOpen(true); }}>
+                <Wallet className="h-4 w-4 mr-2 text-green-500" />
+                <span>Ridicare de la Bancă</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => { setAdvanceType('give'); setIsAdvanceDialogOpen(true); }}>
+                <Users className="h-4 w-4 mr-2 text-purple-500" />
+                <span>Acordare Avans Angajat</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setAdvanceType('settle'); setIsAdvanceDialogOpen(true); }}>
+                <FileText className="h-4 w-4 mr-2 text-purple-500" />
+                <span>Decontare Avans</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -1113,22 +1175,22 @@ export default function CashRegisterPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Create Transaction Dialog */}
+      {/* Create Transaction Dialog - ENHANCED */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {newTransactionType === 'receipt' ? 'Dispoziție de Încasare Nouă' : 'Dispoziție de Plată Nouă'}
+              {newTransactionType === 'receipt' ? '💰 Dispoziție de Încasare Nouă' : '💸 Dispoziție de Plată Nouă'}
             </DialogTitle>
             <DialogDescription>
-              Completați detaliile pentru a crea o nouă tranzacție de casă
+              Completați detaliile pentru a crea o nouă tranzacție de casă. Se va contabiliza automat.
             </DialogDescription>
           </DialogHeader>
           
           <div className="py-4 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="transaction-register">Registru de Casă</Label>
-              <Select>
+              <Select value={formData.cashRegisterId} onValueChange={(val) => setFormData({...formData, cashRegisterId: val})}>
                 <SelectTrigger id="transaction-register">
                   <SelectValue placeholder="Selectează registru de casă" />
                 </SelectTrigger>
@@ -1158,32 +1220,101 @@ export default function CashRegisterPage() {
                 type="number" 
                 step="0.01" 
                 min="0" 
-                placeholder="0.00" 
+                placeholder="0.00"
+                value={formData.amount}
+                onChange={(e) => setFormData({...formData, amount: e.target.value})}
               />
+              
+              {/* NEW: Warnings pentru plafoane */}
+              {formData.amount && Number(formData.amount) > 5000 && newTransactionType === 'payment' && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>⚠️ ATENȚIE:</strong> Suma de {Number(formData.amount).toFixed(2)} Lei depășește plafonul legal de 5,000 Lei!
+                    <br />
+                    <span className="text-xs">Conform Legii 70/2015, fragmentați tranzacția sau folosiți banca.</span>
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {formData.amount && Number(formData.amount) > 10000 && (
+                <Alert className="mt-2 border-orange-500 bg-orange-50">
+                  <AlertTriangle className="h-4 w-4 text-orange-600" />
+                  <AlertDescription className="text-orange-900">
+                    <strong>CNP obligatoriu</strong> pentru plăți peste 10,000 Lei (Legea 70/2015)
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="transaction-partner">Partener</Label>
-              <Input 
-                id="transaction-partner" 
-                placeholder={newTransactionType === 'receipt' ? "Numele clientului" : "Numele furnizorului/beneficiarului"} 
-              />
+              <div className="flex gap-2">
+                <Input 
+                  id="transaction-partner" 
+                  placeholder={newTransactionType === 'receipt' ? "Numele clientului" : "Numele furnizorului/beneficiarului"}
+                  value={formData.personName}
+                  onChange={(e) => setFormData({...formData, personName: e.target.value})}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsInvoiceSelectorOpen(true)}
+                  title="Selectează din facturi"
+                >
+                  <FileText className="h-4 w-4" />
+                </Button>
+                {newTransactionType === 'payment' && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEmployeeSelectorOpen(true)}
+                    title="Selectează angajat"
+                  >
+                    <User className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
+            
+            {/* NEW: CNP dacă e necesar */}
+            {Number(formData.amount) > 10000 && (
+              <div className="space-y-2">
+                <Label htmlFor="transaction-cnp">CNP / Serie CI (OBLIGATORIU)</Label>
+                <Input 
+                  id="transaction-cnp"
+                  placeholder="CNP sau Serie/Nr. CI"
+                  value={formData.personIdNumber}
+                  onChange={(e) => setFormData({...formData, personIdNumber: e.target.value})}
+                  required
+                  maxLength={13}
+                />
+              </div>
+            )}
             
             <div className="space-y-2">
               <Label htmlFor="transaction-description">Descriere</Label>
-              <Input 
+              <Textarea
                 id="transaction-description" 
-                placeholder="Descriere tranzacție" 
+                placeholder="Descriere tranzacție"
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                rows={2}
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="transaction-reference">Referință</Label>
+              <Label htmlFor="transaction-reference">Referință Factură/Document</Label>
               <Input 
                 id="transaction-reference" 
-                placeholder={newTransactionType === 'receipt' ? "Nr. factură/contract" : "Nr. factură/contract/document"} 
+                placeholder={newTransactionType === 'receipt' ? "Nr. factură/contract" : "Nr. factură/contract/document"}
+                value={formData.invoiceNumber}
+                onChange={(e) => setFormData({...formData, invoiceNumber: e.target.value})}
               />
+              <p className="text-xs text-gray-500">
+                Se va completa automat dacă selectați o factură din butonul de mai sus
+              </p>
             </div>
             
             {newTransactionType === 'receipt' && (
@@ -1248,6 +1379,63 @@ export default function CashRegisterPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* NEW: Componente Adiționale */}
+      <InvoiceSelectorDialog
+        isOpen={isInvoiceSelectorOpen}
+        onClose={() => setIsInvoiceSelectorOpen(false)}
+        type={newTransactionType === 'receipt' ? 'customer' : 'supplier'}
+        onSelect={(invoice) => {
+          setFormData({
+            ...formData,
+            amount: invoice.remainingAmount.toString(),
+            personName: invoice.clientName || invoice.supplierName || '',
+            invoiceNumber: invoice.invoiceNumber,
+            invoiceId: invoice.id,
+            description: `${newTransactionType === 'receipt' ? 'Încasare' : 'Plată'} factură ${invoice.invoiceNumber}`
+          });
+          setIsInvoiceSelectorOpen(false);
+          toast({
+            title: '✅ Factură selectată',
+            description: `${invoice.invoiceNumber} - Rest: ${invoice.remainingAmount.toFixed(2)} Lei`
+          });
+        }}
+      />
+      
+      <EmployeeSelectorDialog
+        isOpen={isEmployeeSelectorOpen}
+        onClose={() => setIsEmployeeSelectorOpen(false)}
+        onSelect={(employee) => {
+          setFormData({
+            ...formData,
+            personName: employee.fullName,
+            personId: employee.id,
+            personIdNumber: employee.cnp
+          });
+          setIsEmployeeSelectorOpen(false);
+        }}
+        type="all"
+      />
+      
+      <CashBankTransferDialog
+        isOpen={isTransferDialogOpen}
+        onClose={() => setIsTransferDialogOpen(false)}
+        type={transferType}
+      />
+      
+      <DailyClosingDialog
+        isOpen={isClosingDialogOpen}
+        onClose={() => setIsClosingDialogOpen(false)}
+        cashRegisterId={selectedRegister !== 'all' ? selectedRegister : ''}
+        date={new Date()}
+      />
+      
+      <AdvanceManagementDialog
+        isOpen={isAdvanceDialogOpen}
+        onClose={() => setIsAdvanceDialogOpen(false)}
+        cashRegisterId={selectedRegister !== 'all' ? selectedRegister : cashRegisters?.[0]?.id || ''}
+        type={advanceType}
+      />
     </AppLayout>
   );
 }

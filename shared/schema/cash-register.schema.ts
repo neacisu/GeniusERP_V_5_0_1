@@ -104,6 +104,9 @@ export const cashRegisters = pgTable('cash_registers', {
   closedBy: uuid('closed_by').references(() => users.id),
   closingBalance: numeric('closing_balance', { precision: 15, scale: 2 }),
   
+  // Închidere zilnică (ultima zi închisă)
+  lastClosedDate: text('last_closed_date'), // Format: 'YYYY-MM-DD' (tip DATE în DB)
+  
   // Audit
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),

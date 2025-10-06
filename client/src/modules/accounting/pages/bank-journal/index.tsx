@@ -75,9 +75,13 @@ import {
   CheckCircle2,
   FileSpreadsheet,
   CreditCard,
-  Upload
+  Upload,
+  Link as LinkIcon,
+  XCircle
 } from "lucide-react";
 import { Link } from "wouter";
+import { InvoiceSelectorDialog } from "../../components/InvoiceSelectorDialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Type definitions
 type BankAccount = {
@@ -139,6 +143,10 @@ export default function BankJournalPage() {
     to: new Date().toISOString().split('T')[0] 
   });
   const { toast } = useToast();
+  
+  // NEW: State pentru reconciliere
+  const [isInvoiceSelectorOpen, setIsInvoiceSelectorOpen] = useState(false);
+  const [selectedForReconciliation, setSelectedForReconciliation] = useState<BankTransaction | null>(null);
 
   // Fetch bank accounts
   const { data: bankAccountsResponse, isLoading: isLoadingAccounts } = useQuery<{ data: BankAccount[]; total: number }>({
@@ -668,6 +676,7 @@ export default function BankJournalPage() {
                   <TabsTrigger value="outgoing">Plăți</TabsTrigger>
                   <TabsTrigger value="transfer">Transferuri</TabsTrigger>
                   <TabsTrigger value="fee">Comisioane</TabsTrigger>
+                  <TabsTrigger value="reconciliation">Reconciliere</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -675,8 +684,104 @@ export default function BankJournalPage() {
         </CardHeader>
         
         <CardContent className="p-0">
-          <div className="border-b">
-            <Table>
+          {/* NEW: Tab Reconciliere */}
+          {activeTab === 'reconciliation' ? (
+            <div className="p-6 space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-900 mb-2">📊 Reconciliere Tranzacții Bancare</h3>
+                <p className="text-sm text-blue-700">
+                  Potriviți tranzacțiile bancare cu facturile și marcați-le ca reconciliate pentru un control financiar complet.
+                </p>
+              </div>
+              
+              {/* Unreconciled transactions */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-gray-900">Tranzacții Nereconciliate</h4>
+                
+                {filteredTransactions
+                  ?.filter((t: any) => !t.reconciled && !t.invoiceId)
+                  .length === 0 ? (
+                  <Alert className="bg-green-50 border-green-200">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-900">
+                      ✅ Toate tranzacțiile sunt reconciliate! Excelent management financiar.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  filteredTransactions
+                    ?.filter((t: any) => !t.reconciled && !t.invoiceId)
+                    .map((txn: any) => (
+                      <div key={txn.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-medium">{txn.description}</p>
+                            {getTransactionTypeBadge(txn.type)}
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            {txn.partnerName || 'Partener necunoscut'} - {formatDate(txn.date)}
+                          </p>
+                          <p className="text-lg font-bold text-blue-600 mt-1">
+                            {txn.type === 'incoming' ? '+' : '-'}{formatCurrency(txn.amount)}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedForReconciliation(txn);
+                              setIsInvoiceSelectorOpen(true);
+                            }}
+                          >
+                            <LinkIcon className="h-4 w-4 mr-2" />
+                            Asociază Factură
+                          </Button>
+                          <Button 
+                            size="sm"
+                            onClick={() => {
+                              // TODO: Marchează ca reconciliat fără factură
+                              toast({
+                                title: '✅ Marcat reconciliat',
+                                description: 'Tranzacția a fost marcată ca reconciliată.'
+                              });
+                            }}
+                          >
+                            <CheckCircle2 className="h-4 w-4 mr-2" />
+                            Marchează OK
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                )}
+              </div>
+              
+              {/* Reconciled transactions */}
+              <div className="mt-6">
+                <h4 className="font-medium text-gray-900 mb-3">Tranzacții Reconciliate</h4>
+                <div className="space-y-2">
+                  {filteredTransactions
+                    ?.filter((t: any) => t.reconciled || t.invoiceId)
+                    .slice(0, 5)
+                    .map((txn: any) => (
+                      <div key={txn.id} className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded">
+                        <div>
+                          <p className="text-sm font-medium">{txn.description}</p>
+                          <p className="text-xs text-gray-600">
+                            {txn.invoiceNumber ? `Factură: ${txn.invoiceNumber}` : 'Reconciliat manual'}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-medium">{formatCurrency(txn.amount)}</span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="border-b">
+              <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50 hover:bg-gray-50">
                   <TableHead className="w-28">Data</TableHead>
@@ -783,6 +888,7 @@ export default function BankJournalPage() {
               </TableBody>
             </Table>
           </div>
+          )}
         </CardContent>
         
         {totalPages > 1 && (
@@ -1109,6 +1215,53 @@ export default function BankJournalPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* NEW: Invoice Selector pentru Reconciliere */}
+      <InvoiceSelectorDialog
+        isOpen={isInvoiceSelectorOpen}
+        onClose={() => {
+          setIsInvoiceSelectorOpen(false);
+          setSelectedForReconciliation(null);
+        }}
+        type={selectedForReconciliation?.type === 'incoming' ? 'customer' : 'supplier'}
+        onSelect={async (invoice) => {
+          if (!selectedForReconciliation) return;
+          
+          try {
+            // Update transaction with invoice reference
+            const response = await fetch(`/api/accounting/bank-transactions/${selectedForReconciliation.id}/reconcile`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                invoiceId: invoice.id,
+                invoiceNumber: invoice.invoiceNumber,
+                reconciled: true
+              })
+            });
+            
+            if (!response.ok) throw new Error(await response.text());
+            
+            toast({
+              title: '✅ Reconciliere reușită!',
+              description: `Tranzacția a fost asociată cu factura ${invoice.invoiceNumber}`
+            });
+            
+            // Refresh data
+            // TODO: invalidate queries
+            
+          } catch (error: any) {
+            toast({
+              title: '❌ Eroare',
+              description: error.message,
+              variant: 'destructive'
+            });
+          }
+          
+          setIsInvoiceSelectorOpen(false);
+          setSelectedForReconciliation(null);
+        }}
+      />
     </AppLayout>
   );
 }

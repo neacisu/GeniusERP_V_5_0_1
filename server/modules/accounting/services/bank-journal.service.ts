@@ -158,6 +158,11 @@ export class BankJournalService {
     const account = await this.getBankAccount(data.bankAccountId, data.companyId);
     if (!account) throw new Error('Bank account not found');
     
+    // PAS 10: Verifică dacă contul este activ
+    if (!account.isActive) {
+      throw new Error('Contul bancar nu este activ');
+    }
+    
     const balanceBefore = Number(account.currentBalance);
     const isIncoming = data.transactionType === 'incoming_payment';
     const balanceAfter = isIncoming ? balanceBefore + Number(data.amount) : balanceBefore - Number(data.amount);
@@ -568,11 +573,21 @@ export class BankJournalService {
       }
     }
     
-    // If foreign currency, handle exchange rate differences
+    // PAS 8: If foreign currency, handle exchange rate differences
     if (currency !== 'RON' && exchangeRate !== 1) {
-      // Currency conversion would be handled here
-      // This would involve comparing the transaction's exchange rate
-      // with the official BNR rate and recording the difference
+      // TODO: Implementare completă diferențe de curs pentru bancă
+      // Similar cu implementarea pentru casă, dar mai relevant la bancă
+      // deoarece soldurile valutare pot genera diferențe la fiecare reevaluare
+      
+      // Exemplu de tratament diferențe de curs:
+      // 1. La încasare/plată factură valută: diferența între curs factură și curs plată
+      // 2. La reevaluare lunară: diferența între sold valută × (curs nou - curs vechi)
+      // 3. Generare automată linii 665/765
+      
+      // Pentru implementare completă, ar trebui:
+      // - Să ținem evidența cursului pentru fiecare tranzacție
+      // - Să calculăm diferențele la fiecare plată/încasare de factură valută
+      // - Să facem reevaluare automată lunară a soldurilor valutare
     }
     
     // Create the ledger entry
