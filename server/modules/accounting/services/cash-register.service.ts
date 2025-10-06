@@ -346,8 +346,18 @@ export class CashRegisterService {
         throw new Error('Cash register not found');
       }
       
+      // PAS 2: VALIDARE PLAFOANE Legea 70/2015
+      if (register.maxTransactionAmount && Number(data.amount) > Number(register.maxTransactionAmount)) {
+        throw new Error(`Suma depășește plafonul maxim per tranzacție (${register.maxTransactionAmount} Lei). Conform Legii 70/2015, fragmentați tranzacția sau folosiți banca.`);
+      }
+      
       const balanceBefore = Number(register.currentBalance);
       const balanceAfter = balanceBefore + Number(data.amount);
+      
+      // Verificare plafon zilnic (50,000 Lei)
+      if (register.dailyLimit && balanceAfter > Number(register.dailyLimit)) {
+        console.warn(`ATENȚIE: Soldul casieriei (${balanceAfter} Lei) depășește plafonul zilnic (${register.dailyLimit} Lei). Depuneți excedentul la bancă în max 2 zile conform Legii 70/2015.`);
+      }
       
       // Generate document number
       const documentNumber = await this.generateReceiptNumber(data.companyId, data.cashRegisterId, false);
