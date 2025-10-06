@@ -242,12 +242,15 @@ export function AdvanceManagementDialog({
         </DialogContent>
       </Dialog>
       
-      <EmployeeSelectorDialog
-        isOpen={isEmployeeSelectorOpen}
-        onClose={() => setIsEmployeeSelectorOpen(false)}
-        onSelect={setSelectedEmployee}
-        type="advance"
-      />
+      {/* Dialog nested - trebuie închis dialogul părinte când se deschide acesta */}
+      {!isOpen && (
+        <EmployeeSelectorDialog
+          isOpen={isEmployeeSelectorOpen}
+          onClose={() => setIsEmployeeSelectorOpen(false)}
+          onSelect={setSelectedEmployee}
+          type="advance"
+        />
+      )}
     </>
   );
 }
