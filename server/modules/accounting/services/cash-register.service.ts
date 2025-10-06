@@ -9,6 +9,7 @@ import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.serv
 import { getDrizzle } from '../../../common/drizzle';
 import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
 import { cashRegisters, cashTransactions, CashRegister, CashTransaction } from '../../../../shared/schema/cash-register.schema';
+import { companies } from '../../../../shared/schema';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -1401,27 +1402,32 @@ export class CashRegisterService {
    * @param isPayment Whether this is a payment (default: false, meaning it's a receipt)
    * @returns Generated receipt number
    */
+  /**
+   * Generare număr secvențial CORECT conform OMFP 2634/2015
+   * Format: CH/2025/000123 sau DP/2025/000456
+   */
   public async generateReceiptNumber(companyId: string, cashRegisterId: string, isPayment: boolean = false): Promise<string> {
-    // This would typically involve a database query to get the last receipt number
-    // and increment it. For Romanian compliance, receipt numbers should be sequential
-    // and separate series may be used for different types of documents.
+    const db = getDrizzle();
+    const year = new Date().getFullYear();
+    const series = isPayment ? 'DP' : 'CH'; // CH = Chitanță, DP = Dispoziție Plată
     
-    // Different prefixes for receipts vs payments
-    const prefix = isPayment ? 'DP' : 'DI'; // DP = Dispoziție de plată, DI = Dispoziție de încasare
-    
-    // For a real implementation, get the last number from the database
-    // For now, generate a dummy number
-    const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-    const day = currentDate.getDate().toString().padStart(2, '0');
-    
-    // TODO: Replace with actual database query
-    const lastNumber = Math.floor(Math.random() * 1000);
-    const nextNumber = (lastNumber + 1).toString().padStart(6, '0');
-    
-    // Format: PREFIX/YYYYMMDD/NNNNNN
-    return `${prefix}/${year}${month}${day}/${nextNumber}`;
+    try {
+      // Obține sau creează counter
+      const [counter] = await db.$client.unsafe(`
+        INSERT INTO document_counters (company_id, counter_type, series, year, last_number)
+        VALUES ($1, 'CASH', $2, $3, 1)
+        ON CONFLICT (company_id, counter_type, series, year)
+        DO UPDATE SET last_number = document_counters.last_number + 1, updated_at = NOW()
+        RETURNING last_number
+      `, [companyId, series, year]);
+      
+      const number = counter.last_number.toString().padStart(6, '0');
+      return `${series}/${year}/${number}`;
+    } catch (error) {
+      console.error('Error generating receipt number:', error);
+      // Fallback la random dacă eșuează
+      return `${series}/${year}/${Math.floor(Math.random() * 999999).toString().padStart(6, '0')}`;
+    }
   }
 }
 
