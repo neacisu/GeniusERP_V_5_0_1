@@ -852,48 +852,135 @@ export class PurchaseJournalService {
    * PARTEA 3 - GENERARE RAPORT JURNAL CUMPĂRĂRI
    */
   
+  /**
+   * Generare Jurnal de Cumpărări COMPLET conform OMFP 2634/2015
+   * Similar cu generateSalesJournal dar adaptat pentru achiziții
+   */
   public async generatePurchaseJournal(params: any): Promise<any> {
     const { companyId, periodStart, periodEnd } = params;
     const db = getDrizzle();
     
+    // 1. Obține companie
     const [company] = await db.select({ name: companies.name, fiscalCode: companies.fiscalCode }).from(companies).where(eq(companies.id, companyId)).limit(1);
     if (!company) throw new Error('Company not found');
     
+    // 2. Obține TOATE facturile PURCHASE din perioadă
     const invoicesResult = await db.select().from(invoices).where(and(
       eq(invoices.companyId, companyId),
       eq(invoices.type, 'PURCHASE'),
       gte(invoices.issueDate, periodStart),
-      lte(invoices.issueDate, periodEnd)
+      lte(invoices.issueDate, periodEnd),
+      isNotNull(invoices.invoiceNumber)
     )).orderBy(invoices.issueDate);
     
-    const rows = [];
+    const journalRows = [];
+    let rowNumber = 1;
+    
+    // 3. Pentru fiecare factură
     for (const invoice of invoicesResult) {
+      // Obține detalii furnizor (NOTE: customerId = supplierId for PURCHASE!)
       const [details] = await db.select().from(invoiceDetails).where(eq(invoiceDetails.invoiceId, invoice.id)).limit(1);
       const lines = await db.select().from(invoiceLines).where(eq(invoiceLines.invoiceId, invoice.id));
       
-      rows.push({
-        rowNumber: rows.length + 1,
-        date: invoice.issueDate,
-        documentNumber: invoice.invoiceNumber,
-        supplierName: details?.partnerName || invoice.customerName, // customerName = supplierName for PURCHASE invoices
-        supplierFiscalCode: details?.partnerFiscalCode || '',
-        totalAmount: Number(invoice.amount),
-        base19: lines.filter(l => l.vatRate === 19).reduce((sum, l) => sum + Number(l.netAmount), 0),
-        vat19: lines.filter(l => l.vatRate === 19).reduce((sum, l) => sum + Number(l.vatAmount), 0),
-        vatDeductible: invoice.isCashVAT ? 0 : Number(invoice.vatAmount)
-      });
+      // 4. Grupare linii pe categorie fiscală (ca la Sales Journal)
+      const linesByCategory = this.groupLinesByCategory(lines, details);
+      
+      // 5. Creare rânduri pentru fiecare categorie
+      for (const [category, categoryLines] of linesByCategory.entries()) {
+        const totals = { base: categoryLines.reduce((s, l) => s + Number(l.netAmount), 0), vat: categoryLines.reduce((s, l) => s + Number(l.vatAmount), 0) };
+        
+        // Construire rând
+        const row: any = {
+          rowNumber: rowNumber++,
+          date: invoice.issueDate,
+          documentNumber: invoice.invoiceNumber,
+          documentType: invoice.type,
+          supplierName: details?.partnerName || invoice.customerName, // NOTE: customerName = supplierName for PURCHASE!
+          supplierFiscalCode: details?.partnerFiscalCode || '',
+          supplierCountry: details?.partnerCountry || 'Romania',
+          totalAmount: Number(invoice.amount),
+          base19: 0, base9: 0, base5: 0,
+          vat19: 0, vat9: 0, vat5: 0,
+          intraCommunity: 0, import: 0, reverseCharge: 0, notSubject: 0,
+          isCashVAT: invoice.isCashVAT || false,
+          vatDeferred: 0, vatDeductible: 0,
+          expenseType: categoryLines[0]?.expenseType || 'unknown'
+        };
+        
+        // Populare pe categorie
+        switch (category) {
+          case 'STANDARD_19': row.base19 = totals.base; row.vat19 = totals.vat; break;
+          case 'REDUCED_9': row.base9 = totals.base; row.vat9 = totals.vat; break;
+          case 'REDUCED_5': row.base5 = totals.base; row.vat5 = totals.vat; break;
+          case 'EXEMPT_WITH_CREDIT':
+            if (details?.partnerCountry && details.partnerCountry !== 'Romania') {
+              const isEU = this.isEUCountry(details.partnerCountry);
+              if (isEU) row.intraCommunity = totals.base;
+              else row.import = totals.base;
+            }
+            break;
+          case 'REVERSE_CHARGE': row.reverseCharge = totals.base; break;
+          default: row.notSubject = totals.base; break;
+        }
+        
+        // TVA la încasare
+        if (invoice.isCashVAT) {
+          row.vatDeferred = totals.vat;
+          row.vatDeductible = 0;
+        } else {
+          row.vatDeferred = 0;
+          row.vatDeductible = totals.vat;
+        }
+        
+        journalRows.push(row);
+      }
     }
     
-    return {
-      companyId,
-      companyName: company.name,
-      companyFiscalCode: company.fiscalCode,
-      periodStart,
-      periodEnd,
-      periodLabel: new Date(periodStart).toLocaleDateString('ro-RO', { month: 'long', year: 'numeric' }),
-      rows,
-      totals: { totalAmount: rows.reduce((s, r) => s + r.totalAmount, 0) }
+    // 6. Totaluri
+    const totals = {
+      totalDocuments: journalRows.length,
+      totalAmount: journalRows.reduce((s, r) => s + r.totalAmount, 0),
+      totalBase19: journalRows.reduce((s, r) => s + r.base19, 0),
+      totalVAT19: journalRows.reduce((s, r) => s + r.vat19, 0),
+      totalBase9: journalRows.reduce((s, r) => s + r.base9, 0),
+      totalVAT9: journalRows.reduce((s, r) => s + r.vat9, 0),
+      totalBase5: journalRows.reduce((s, r) => s + r.base5, 0),
+      totalVAT5: journalRows.reduce((s, r) => s + r.vat5, 0),
+      totalIntraCommunity: journalRows.reduce((s, r) => s + r.intraCommunity, 0),
+      totalImport: journalRows.reduce((s, r) => s + r.import, 0),
+      totalReverseCharge: journalRows.reduce((s, r) => s + r.reverseCharge, 0),
+      totalNotSubject: journalRows.reduce((s, r) => s + r.notSubject, 0),
+      totalVATDeferred: journalRows.reduce((s, r) => s + r.vatDeferred, 0),
+      totalVATDeductible: journalRows.reduce((s, r) => s + r.vatDeductible, 0)
     };
+    
+    return {
+      companyId, companyName: company.name, companyFiscalCode: company.fiscalCode,
+      periodStart, periodEnd,
+      periodLabel: new Date(periodStart).toLocaleDateString('ro-RO', { month: 'long', year: 'numeric' }),
+      rows: journalRows, totals, reportType: 'DETAILED'
+    };
+  }
+  
+  private groupLinesByCategory(lines: any[], supplierDetails: any): Map<string, any[]> {
+    const grouped = new Map<string, any[]>();
+    for (const line of lines) {
+      let category = line.vatCategory || 'STANDARD_19';
+      if (!line.vatCategory) {
+        if (line.vatRate === 19) category = 'STANDARD_19';
+        else if (line.vatRate === 9) category = 'REDUCED_9';
+        else if (line.vatRate === 5) category = 'REDUCED_5';
+        else if (line.vatRate === 0) category = supplierDetails?.partnerCountry !== 'Romania' ? 'EXEMPT_WITH_CREDIT' : 'NOT_SUBJECT';
+      }
+      if (!grouped.has(category)) grouped.set(category, []);
+      grouped.get(category)!.push(line);
+    }
+    return grouped;
+  }
+  
+  private isEUCountry(country: string): boolean {
+    const euCountries = ['Austria', 'Belgium', 'Bulgaria', 'Croatia', 'Cyprus', 'Czech Republic', 'Denmark', 'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Hungary', 'Ireland', 'Italy', 'Latvia', 'Lithuania', 'Luxembourg', 'Malta', 'Netherlands', 'Poland', 'Portugal', 'Romania', 'Slovakia', 'Slovenia', 'Spain', 'Sweden'];
+    return euCountries.some(c => c.toLowerCase() === country.toLowerCase());
   }
 
   /**
