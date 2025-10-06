@@ -102,11 +102,17 @@ export function CashBankTransferDialog({ isOpen, onClose, type }: Props) {
         ),
       });
       
-      // Reset form
+      // Reset form complet
       setCashRegisterId('');
       setBankAccountId('');
       setAmount('');
       setDescription('');
+      
+      // Refresh pagina - forțează re-render
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+      
       onClose();
     },
     onError: (error: any) => {

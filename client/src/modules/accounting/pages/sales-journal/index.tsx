@@ -1490,6 +1490,11 @@ export default function SalesJournalPage() {
               
               setIsCreateInvoiceDialogOpen(false);
               
+              // Refresh automat pagina pentru a actualiza lista
+              setTimeout(() => {
+                window.location.reload();
+              }, 1500);
+              
             } catch (error: any) {
               toast({
                 title: '❌ Eroare',

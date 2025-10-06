@@ -1353,6 +1353,11 @@ export default function BankJournalPage() {
                 });
                 setIsCreateTransactionDialogOpen(false);
                 
+                // Refresh automat pagina
+                setTimeout(() => {
+                  window.location.reload();
+                }, 1500);
+                
               } catch (error: any) {
                 toast({
                   title: '❌ Eroare',
@@ -1542,6 +1547,11 @@ export default function BankJournalPage() {
                   description: ''
                 });
                 setIsCreateTransactionDialogOpen(false);
+                
+                // Refresh automat pagina
+                setTimeout(() => {
+                  window.location.reload();
+                }, 1500);
                 
               } catch (error: any) {
                 toast({

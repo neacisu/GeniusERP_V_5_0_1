@@ -81,6 +81,11 @@ export function DailyClosingDialog({ isOpen, onClose, cashRegisterId, date }: Pr
         window.open(data.pdfPath, '_blank');
       }
       
+      // Refresh automat pagina pentru a actualiza starea
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+      
       onClose();
     },
     onError: (error: any) => {

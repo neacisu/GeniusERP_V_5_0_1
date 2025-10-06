@@ -1433,8 +1433,10 @@ export default function PurchaseJournalPage() {
               
               setIsCreateInvoiceDialogOpen(false);
               
-              // Refresh lista
-              // TODO: invalidate queries
+              // Refresh automat pagina pentru a actualiza lista
+              setTimeout(() => {
+                window.location.reload();
+              }, 1500);
               
             } catch (error: any) {
               toast({
