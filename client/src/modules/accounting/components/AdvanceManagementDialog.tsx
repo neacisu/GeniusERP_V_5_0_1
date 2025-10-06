@@ -82,6 +82,11 @@ export function AdvanceManagementDialog({
       setAmount('');
       setDescription('');
       onClose();
+      
+      // Refresh automat pagina
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     },
     onError: (error: any) => {
       toast({
