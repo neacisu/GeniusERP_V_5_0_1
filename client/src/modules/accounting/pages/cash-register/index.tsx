@@ -151,7 +151,7 @@ export default function CashRegisterPage() {
   });
   const { toast } = useToast();
   
-  // NEW: State-uri pentru dialoguri noi
+  // NEW: State-uri pentru dialoguri noi - TOATE cu handlers de cleanup
   const [isInvoiceSelectorOpen, setIsInvoiceSelectorOpen] = useState(false);
   const [isEmployeeSelectorOpen, setIsEmployeeSelectorOpen] = useState(false);
   const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
@@ -159,6 +159,16 @@ export default function CashRegisterPage() {
   const [isAdvanceDialogOpen, setIsAdvanceDialogOpen] = useState(false);
   const [transferType, setTransferType] = useState<'deposit' | 'withdrawal'>('deposit');
   const [advanceType, setAdvanceType] = useState<'give' | 'settle'>('give');
+  
+  // Handler pentru închidere forțată toate dialogurile
+  const closeAllDialogs = () => {
+    setIsInvoiceSelectorOpen(false);
+    setIsEmployeeSelectorOpen(false);
+    setIsTransferDialogOpen(false);
+    setIsClosingDialogOpen(false);
+    setIsAdvanceDialogOpen(false);
+    setIsCreateDialogOpen(false);
+  };
   
   // NEW: Form state pentru creare tranzacție
   const [formData, setFormData] = useState({
@@ -1419,20 +1429,41 @@ export default function CashRegisterPage() {
       
       <CashBankTransferDialog
         isOpen={isTransferDialogOpen}
-        onClose={() => setIsTransferDialogOpen(false)}
+        onClose={() => {
+          setIsTransferDialogOpen(false);
+          // Cleanup forțat pentru a preveni freeze
+          setTimeout(() => {
+            document.body.style.pointerEvents = 'auto';
+            document.body.style.overflow = 'auto';
+          }, 100);
+        }}
         type={transferType}
       />
       
       <DailyClosingDialog
         isOpen={isClosingDialogOpen}
-        onClose={() => setIsClosingDialogOpen(false)}
+        onClose={() => {
+          setIsClosingDialogOpen(false);
+          // Cleanup forțat
+          setTimeout(() => {
+            document.body.style.pointerEvents = 'auto';
+            document.body.style.overflow = 'auto';
+          }, 100);
+        }}
         cashRegisterId={selectedRegister !== 'all' ? selectedRegister : ''}
         date={new Date()}
       />
       
       <AdvanceManagementDialog
         isOpen={isAdvanceDialogOpen}
-        onClose={() => setIsAdvanceDialogOpen(false)}
+        onClose={() => {
+          setIsAdvanceDialogOpen(false);
+          // Cleanup forțat
+          setTimeout(() => {
+            document.body.style.pointerEvents = 'auto';
+            document.body.style.overflow = 'auto';
+          }, 100);
+        }}
         cashRegisterId={selectedRegister !== 'all' ? selectedRegister : cashRegisters?.[0]?.id || ''}
         type={advanceType}
       />
