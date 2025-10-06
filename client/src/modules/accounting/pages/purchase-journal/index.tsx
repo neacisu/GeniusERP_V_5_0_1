@@ -1084,7 +1084,78 @@ export default function PurchaseJournalPage() {
       </TabsContent>
       
       {/* TAB 2: Raport Jurnal Cumpărări */}
-      <TabsContent value="journal-report">
+      <TabsContent value="journal-report" className="space-y-6">
+        {/* Card Selecție Perioadă - PAS 14 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Selecție Perioadă</CardTitle>
+            <CardDescription>Alegeți perioada pentru generarea jurnalului de cumpărări</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Început Perioadă */}
+              <div className="space-y-2">
+                <Label>Început Perioadă</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-full justify-start text-left", !reportPeriodStart && "text-muted-foreground")}>
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {reportPeriodStart ? format(reportPeriodStart, 'dd MMM yyyy', { locale: ro }) : 'Selectează'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent mode="single" selected={reportPeriodStart} onSelect={(date) => date && setReportPeriodStart(date)} locale={ro} />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              {/* Sfârșit Perioadă */}
+              <div className="space-y-2">
+                <Label>Sfârșit Perioadă</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-full justify-start text-left", !reportPeriodEnd && "text-muted-foreground")}>
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {reportPeriodEnd ? format(reportPeriodEnd, 'dd MMM yyyy', { locale: ro }) : 'Selectează'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent mode="single" selected={reportPeriodEnd} onSelect={(date) => date && setReportPeriodEnd(date)} locale={ro} />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              {/* Buton Actualizează */}
+              <div className="space-y-2">
+                <Label className="opacity-0">Action</Label>
+                <Button onClick={() => refetchReport()} className="w-full" disabled={isLoadingReport}>
+                  {isLoadingReport ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : '🔄'} Actualizează
+                </Button>
+              </div>
+            </div>
+            
+            {/* Butoane scurtătură */}
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => {
+                const now = new Date();
+                setReportPeriodStart(new Date(now.getFullYear(), now.getMonth(), 1));
+                setReportPeriodEnd(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+              }}>
+                Luna curentă
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => {
+                const lastMonth = new Date();
+                lastMonth.setMonth(lastMonth.getMonth() - 1);
+                setReportPeriodStart(new Date(lastMonth.getFullYear(), lastMonth.getMonth(), 1));
+                setReportPeriodEnd(new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0));
+              }}>
+                Luna trecută
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Raport generat */}
         {journalReport && (
           <Card>
             <CardHeader>
