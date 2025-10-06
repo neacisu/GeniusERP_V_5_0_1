@@ -419,6 +419,11 @@ export class CashRegisterService {
         throw new Error('Cash register not found');
       }
       
+      // PAS 2: VALIDARE PLAFOANE
+      if (register.maxTransactionAmount && Number(data.amount) > Number(register.maxTransactionAmount)) {
+        throw new Error(`Plata depășește plafonul legal (${register.maxTransactionAmount} Lei). Conform Legii 70/2015, fragmentați sau plătiți prin bancă.`);
+      }
+      
       const balanceBefore = Number(register.currentBalance);
       const balanceAfter = balanceBefore - Number(data.amount);
       
@@ -464,6 +469,38 @@ export class CashRegisterService {
           updatedAt: new Date(),
         } as any)
         .where(eq(cashRegisters.id, data.cashRegisterId));
+      
+      // PAS 4: POSTARE AUTOMATĂ ÎN CONTABILITATE
+      try {
+        const entry = await this.createCashTransactionEntry({
+          companyId: data.companyId,
+          franchiseId: data.franchiseId,
+          cashRegisterId: data.cashRegisterId,
+          transactionId,
+          receiptNumber: documentNumber,
+          transactionType: CashTransactionType.CASH_PAYMENT,
+          transactionPurpose: data.purpose || CashTransactionPurpose.EXPENSE_PAYMENT,
+          amount: Number(data.amount),
+          vatAmount: Number(data.vatAmount || 0),
+          vatRate: Number(data.vatRate || 0),
+          currency: data.currency || 'RON',
+          exchangeRate: Number(data.exchangeRate || 1),
+          transactionDate: new Date(),
+          description: data.description,
+          personId: data.personId,
+          personName: data.personName,
+          personIdNumber: data.personIdNumber,
+          invoiceId: data.invoiceId,
+          invoiceNumber: data.invoiceNumber,
+          userId: data.userId,
+          isFiscalReceipt: false,
+          items: []
+        });
+        
+        await db.$client.unsafe(`UPDATE cash_transactions SET is_posted = true, posted_at = NOW(), ledger_entry_id = $1 WHERE id = $2`, [entry.id, transactionId]);
+      } catch (error) {
+        console.error('Error posting cash payment to ledger:', error);
+      }
       
       return transactionId;
     } catch (error) {
