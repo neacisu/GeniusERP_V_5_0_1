@@ -9,7 +9,7 @@ import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.serv
 import { getDrizzle } from '../../../common/drizzle';
 import { and, desc, eq, gte, lte, isNotNull, sql } from 'drizzle-orm';
 import { sql as drizzleSql } from 'drizzle-orm';
-import { invoices, invoiceLines, invoiceDetails, invoicePayments, companies, users, insertInvoiceSchema, insertInvoiceLineSchema, insertInvoiceDetailSchema } from '../../../../shared/schema';
+import { invoices, invoiceLines, invoiceDetails, invoicePayments, companies, users, ledgerEntries, ledgerLines, insertInvoiceSchema, insertInvoiceLineSchema, insertInvoiceDetailSchema } from '../../../../shared/schema';
 
 import { v4 as uuidv4 } from 'uuid';
 import { VATCategory, determineVATCategory } from '../types/vat-categories';
