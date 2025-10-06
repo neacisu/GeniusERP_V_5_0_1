@@ -39,9 +39,10 @@ export function DailyClosingDialog({ isOpen, onClose, cashRegisterId, date }: Pr
   });
   
   // Get register info
-  const { data: registerInfo } = useQuery({
+  const { data: registerInfo } = useQuery<{ companyId?: string; name?: string }>({
     queryKey: ['/api/accounting/cash-registers', cashRegisterId],
-    enabled: isOpen && !!cashRegisterId
+    enabled: isOpen && !!cashRegisterId,
+    placeholderData: { companyId: '', name: 'Registrul de casă' }
   });
   
   const mutation = useMutation({
