@@ -88,6 +88,7 @@ import { EmployeeSelectorDialog } from "../../components/EmployeeSelectorDialog"
 import { AdvanceManagementDialog } from "../../components/AdvanceManagementDialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
+import { useDialogCleanup } from "@/hooks/use-dialog-cleanup";
 
 // Type definitions
 type CashRegister = {
@@ -161,6 +162,9 @@ export default function CashRegisterPage() {
   const [advanceType, setAdvanceType] = useState<'give' | 'settle'>('give');
   const [selectedEmployeeForAdvance, setSelectedEmployeeForAdvance] = useState<any>(null);
   const [isSelectingEmployeeForAdvance, setIsSelectingEmployeeForAdvance] = useState(false);
+  
+  // HOOK pentru cleanup forțat dialoguri
+  useDialogCleanup(!isTransferDialogOpen && !isClosingDialogOpen && !isAdvanceDialogOpen && !isEmployeeSelectorOpen && !isInvoiceSelectorOpen && !isCreateDialogOpen);
   
   // NEW: Form state pentru creare tranzacție
   const [formData, setFormData] = useState({
