@@ -419,7 +419,12 @@ export class CashRegisterService {
         throw new Error('Cash register not found');
       }
       
-      // PAS 2: VALIDARE PLAFOANE
+      // VALIDARE CNP pentru plăți mari
+      if (Number(data.amount) > 10000 && !data.personIdNumber) {
+        throw new Error('CNP obligatoriu pentru plăți peste 10,000 Lei (Legea 70/2015)');
+      }
+      
+      // VALIDARE PLAFOANE
       if (register.maxTransactionAmount && Number(data.amount) > Number(register.maxTransactionAmount)) {
         throw new Error(`Plata depășește plafonul legal (${register.maxTransactionAmount} Lei). Conform Legii 70/2015, fragmentați sau plătiți prin bancă.`);
       }
