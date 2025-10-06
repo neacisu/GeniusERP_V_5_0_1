@@ -6,14 +6,25 @@ import { PurchaseJournalReport } from '../types/purchase-journal-types';
 
 export class PurchaseJournalExportService {
   
+  /**
+   * Export jurnal în format Excel (CSV) COMPLET
+   * TOATE coloanele conform OMFP 2634/2015
+   */
   public async exportToExcel(report: PurchaseJournalReport): Promise<Buffer> {
     const csvLines: string[] = [];
     csvLines.push(`JURNAL DE CUMPĂRĂRI - ${report.periodLabel}`);
     csvLines.push(`Companie: ${report.companyName}`);
     csvLines.push(`CUI: ${report.companyFiscalCode}`);
+    csvLines.push(`Perioada: ${new Date(report.periodStart).toLocaleDateString('ro-RO')} - ${new Date(report.periodEnd).toLocaleDateString('ro-RO')}`);
     csvLines.push('');
     
-    const headers = ['Nr', 'Data', 'Document', 'Furnizor', 'CUI', 'Total', 'Bază 19%', 'TVA 19%', 'TVA Deductibil'];
+    // TOATE coloanele OMFP 2634/2015
+    const headers = [
+      'Nr. Crt', 'Data', 'Nr. Document', 'Furnizor', 'CUI Furnizor', 'Total Document',
+      'Bază 19%', 'TVA 19%', 'Bază 9%', 'TVA 9%', 'Bază 5%', 'TVA 5%',
+      'Achiziții IC', 'Import', 'Taxare Inversă', 'Neimpozabil',
+      'TVA Neexigibil', 'TVA Deductibil', 'Tip Cheltuială', 'Observații'
+    ];
     csvLines.push(headers.join(';'));
     
     for (const row of report.rows) {
@@ -26,13 +37,58 @@ export class PurchaseJournalExportService {
         row.totalAmount.toFixed(2),
         row.base19.toFixed(2),
         row.vat19.toFixed(2),
-        row.vatDeductible.toFixed(2)
+        row.base9.toFixed(2),
+        row.vat9.toFixed(2),
+        row.base5.toFixed(2),
+        row.vat5.toFixed(2),
+        row.intraCommunity.toFixed(2),
+        row.import.toFixed(2),
+        row.reverseCharge.toFixed(2),
+        row.notSubject.toFixed(2),
+        row.vatDeferred.toFixed(2),
+        row.vatDeductible.toFixed(2),
+        row.expenseType || '',
+        `"${(row.notes || '').replace(/"/g, '""')}"`
       ];
       csvLines.push(rowData.join(';'));
     }
     
+    // TOTAL row
     csvLines.push('');
-    csvLines.push(['', '', '', '', 'TOTAL:', report.totals.totalAmount.toFixed(2)].join(';'));
+    const totalRow = [
+      '', '', '', '', 'TOTAL:',
+      report.totals.totalAmount.toFixed(2),
+      report.totals.totalBase19.toFixed(2),
+      report.totals.totalVAT19.toFixed(2),
+      report.totals.totalBase9.toFixed(2),
+      report.totals.totalVAT9.toFixed(2),
+      report.totals.totalBase5.toFixed(2),
+      report.totals.totalVAT5.toFixed(2),
+      report.totals.totalIntraCommunity.toFixed(2),
+      report.totals.totalImport.toFixed(2),
+      report.totals.totalReverseCharge.toFixed(2),
+      report.totals.totalNotSubject.toFixed(2),
+      report.totals.totalVATDeferred.toFixed(2),
+      report.totals.totalVATDeductible.toFixed(2),
+      '', ''
+    ];
+    csvLines.push(totalRow.join(';'));
+    
+    // Verificări contabile
+    if (report.accountingValidation) {
+      csvLines.push('');
+      csvLines.push('VERIFICĂRI CONTABILE:');
+      csvLines.push(`Cont 4426 (TVA deductibilă): ${report.accountingValidation.account4426Balance.toFixed(2)} RON`);
+      csvLines.push(`Cont 4428 (TVA neexigibilă): ${report.accountingValidation.account4428Balance.toFixed(2)} RON`);
+      csvLines.push(`Cont 401 (Furnizori): ${report.accountingValidation.account401Balance.toFixed(2)} RON`);
+      csvLines.push(`Statut: ${report.accountingValidation.isBalanced ? 'BALANSAT ✓' : 'DISCREPANȚE ✗'}`);
+      
+      if (report.accountingValidation.discrepancies) {
+        csvLines.push('');
+        csvLines.push('DISCREPANȚE:');
+        report.accountingValidation.discrepancies.forEach(disc => csvLines.push(disc));
+      }
+    }
     
     return Buffer.from('\ufeff' + csvLines.join('\n'), 'utf-8');
   }
