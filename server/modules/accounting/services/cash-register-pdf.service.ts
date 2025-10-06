@@ -5,16 +5,19 @@
  * Format: Registru zilnic cu toate coloanele obligatorii
  */
 
+import PDFDocument from 'pdfkit';
+import fs from 'fs';
+import path from 'path';
 import type { CashRegister, CashTransaction } from '../../../../shared/schema/cash-register.schema';
 
 /**
- * PAS 6: Serviciu de generare PDF pentru Registrul de Casă
+ * RECOMANDARE 1: Serviciu COMPLET de generare PDF pentru Registrul de Casă
  * 
  * Generează un raport zilnic conform formularului 14-4-7 OMFP 2634/2015
  */
 export class CashRegisterPDFService {
   /**
-   * Generează PDF pentru registrul zilnic de casă
+   * Generează PDF REAL pentru registrul zilnic de casă
    */
   public async generateDailyRegisterPDF(
     cashRegister: CashRegister,
@@ -22,52 +25,143 @@ export class CashRegisterPDFService {
     transactions: CashTransaction[],
     companyName: string
   ): Promise<string> {
-    // TODO: Implementare completă cu librărie PDF (pdfkit, puppeteer, etc.)
-    // 
-    // Structura raportului ar trebui să includă:
-    // 
-    // ANTET:
-    // - Denumirea companiei
-    // - "REGISTRU DE CASĂ" (cod 14-4-7)
-    // - Denumirea casieriei și codul
-    // - Data: DD.MM.YYYY
-    // - Moneda: RON/EUR/USD
-    // 
-    // TABEL:
-    // | Nr. | Document | Data/Ora | Explicație | Încasări | Plăți | Sold |
-    // |-----|----------|----------|------------|----------|-------|------|
-    // |  -  | Sold reportat din ziua precedentă | | | | Sold inițial |
-    // | 1   | CH/2025/000001 | 10:30 | Încasare client ... | 1,000.00 | | 51,000.00 |
-    // | 2   | DP/2025/000123 | 11:45 | Plată furnizor ... | | 500.00 | 50,500.00 |
-    // |-----|----------|----------|------------|----------|-------|------|
-    // | TOTAL | | | | 1,000.00 | 500.00 | 50,500.00 |
-    // 
-    // SUBSEMNAȚI:
-    // Casier: _________________ Data: _________
-    // Compartiment financiar-contabil: _________________ Data: _________
-    // 
-    // IMPLEMENTARE SIMPLIFICATĂ:
-    // Pentru moment, returnăm calea unde ar trebui salvat PDF-ul
-    // Implementarea completă necesită integrarea unei librării PDF
+    // RECOMANDARE 1: IMPLEMENTARE COMPLETĂ cu PDFKit
+    const reportsDir = path.join(process.cwd(), 'reports', 'cash-registers');
+    if (!fs.existsSync(reportsDir)) {
+      fs.mkdirSync(reportsDir, { recursive: true });
+    }
     
     const fileName = `registru-casa-${cashRegister.code}-${date.toISOString().split('T')[0]}.pdf`;
-    const filePath = `/reports/cash-registers/${fileName}`;
+    const filePath = path.join(reportsDir, fileName);
     
-    // În implementarea reală:
-    // 1. Creează document PDF
-    // 2. Adaugă antet cu logo și date companie
-    // 3. Generează tabel cu tranzacții
-    // 4. Calculează totaluri
-    // 5. Adaugă subsemnații
-    // 6. Salvează PDF la filePath
-    
-    console.log(`PDF-ul ar trebui generat la: ${filePath}`);
-    console.log(`Companie: ${companyName}`);
-    console.log(`Casierie: ${cashRegister.name} (${cashRegister.code})`);
-    console.log(`Data: ${date.toLocaleDateString('ro-RO')}`);
-    console.log(`Tranzacții: ${transactions.length}`);
-    
-    return filePath;
+    return new Promise((resolve, reject) => {
+      try {
+        const doc = new PDFDocument({ 
+          size: 'A4', 
+          margins: { top: 50, bottom: 50, left: 50, right: 50 },
+          info: {
+            Title: `Registru de Casă - ${cashRegister.name}`,
+            Author: companyName,
+            Subject: `Formular 14-4-7 OMFP 2634/2015`,
+            Creator: 'GeniusERP v5'
+          }
+        });
+        
+        const stream = fs.createWriteStream(filePath);
+        doc.pipe(stream);
+        
+        // ANTET
+        doc.fontSize(16).font('Helvetica-Bold').text(companyName, { align: 'center' });
+        doc.moveDown(0.5);
+        doc.fontSize(14).text('REGISTRU DE CASĂ', { align: 'center' });
+        doc.fontSize(10).font('Helvetica').text('Cod formular 14-4-7 (OMFP 2634/2015)', { align: 'center' });
+        doc.moveDown(1);
+        
+        // Informații casierie
+        doc.fontSize(10).font('Helvetica-Bold');
+        doc.text(`Casierie: ${cashRegister.name} (Cod: ${cashRegister.code})`);
+        doc.text(`Data: ${date.toLocaleDateString('ro-RO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`);
+        doc.text(`Moneda: ${cashRegister.currency}`);
+        if (cashRegister.responsiblePersonName) {
+          doc.text(`Casier responsabil: ${cashRegister.responsiblePersonName}`);
+        }
+        doc.moveDown(1);
+        
+        // TABEL
+        const startY = doc.y;
+        const tableTop = startY;
+        const colWidths = { nr: 30, doc: 90, ora: 50, expl: 150, inc: 70, plati: 70, sold: 70 };
+        let currentY = tableTop;
+        
+        // Header tabel
+        doc.font('Helvetica-Bold').fontSize(9);
+        doc.rect(50, currentY, 495, 20).stroke();
+        doc.text('Nr.', 55, currentY + 5, { width: colWidths.nr, align: 'center' });
+        doc.text('Document', 85, currentY + 5, { width: colWidths.doc });
+        doc.text('Ora', 175, currentY + 5, { width: colWidths.ora });
+        doc.text('Explicație', 225, currentY + 5, { width: colWidths.expl });
+        doc.text('Încasări', 375, currentY + 5, { width: colWidths.inc, align: 'right' });
+        doc.text('Plăți', 445, currentY + 5, { width: colWidths.plati, align: 'right' });
+        doc.text('Sold', 515, currentY + 5, { width: colWidths.sold, align: 'right' });
+        currentY += 20;
+        
+        // Sold inițial
+        doc.font('Helvetica').fontSize(8);
+        doc.rect(50, currentY, 495, 15).stroke();
+        doc.text('Sold reportat din ziua precedentă', 85, currentY + 3, { width: 320, italic: true });
+        const soldInitial = transactions.length > 0 ? Number(transactions[0].balanceBefore) : 0;
+        doc.text(soldInitial.toFixed(2), 515, currentY + 3, { width: colWidths.sold, align: 'right' });
+        currentY += 15;
+        
+        // Tranzacții
+        let totalIncasari = 0;
+        let totalPlati = 0;
+        
+        transactions.forEach((txn, index) => {
+          const isIncasare = txn.transactionType === 'cash_receipt' || txn.transactionType === 'bank_withdrawal';
+          const suma = Number(txn.amount);
+          
+          if (isIncasare) totalIncasari += suma;
+          else totalPlati += suma;
+          
+          if (currentY > 700) { // Pagină nouă
+            doc.addPage();
+            currentY = 50;
+          }
+          
+          doc.rect(50, currentY, 495, 15).stroke();
+          doc.text((index + 1).toString(), 55, currentY + 3, { width: colWidths.nr, align: 'center' });
+          doc.text(txn.documentNumber, 85, currentY + 3, { width: colWidths.doc });
+          
+          const ora = new Date(txn.transactionDate).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
+          doc.text(ora, 175, currentY + 3, { width: colWidths.ora });
+          
+          const explicatie = `${txn.description.substring(0, 40)} - ${txn.personName}`;
+          doc.text(explicatie, 225, currentY + 3, { width: colWidths.expl });
+          
+          doc.text(isIncasare ? suma.toFixed(2) : '', 375, currentY + 3, { width: colWidths.inc, align: 'right' });
+          doc.text(!isIncasare ? suma.toFixed(2) : '', 445, currentY + 3, { width: colWidths.plati, align: 'right' });
+          doc.text(Number(txn.balanceAfter).toFixed(2), 515, currentY + 3, { width: colWidths.sold, align: 'right' });
+          
+          currentY += 15;
+        });
+        
+        // TOTAL
+        doc.font('Helvetica-Bold').fontSize(9);
+        doc.rect(50, currentY, 495, 20).fillAndStroke('#f0f0f0', '#000');
+        doc.fillColor('#000').text('TOTAL', 225, currentY + 5, { width: colWidths.expl });
+        doc.text(totalIncasari.toFixed(2), 375, currentY + 5, { width: colWidths.inc, align: 'right' });
+        doc.text(totalPlati.toFixed(2), 445, currentY + 5, { width: colWidths.plati, align: 'right' });
+        const soldFinal = transactions.length > 0 ? Number(transactions[transactions.length - 1].balanceAfter) : soldInitial;
+        doc.text(soldFinal.toFixed(2), 515, currentY + 5, { width: colWidths.sold, align: 'right' });
+        currentY += 30;
+        
+        // SEMNĂTURI
+        doc.font('Helvetica').fontSize(10);
+        doc.text('Casier:', 50, currentY + 20);
+        doc.text('________________________', 50, currentY + 40);
+        doc.text('Data: _______________', 50, currentY + 50);
+        
+        doc.text('Compartiment financiar-contabil:', 300, currentY + 20);
+        doc.text('________________________', 300, currentY + 40);
+        doc.text('Data: _______________', 300, currentY + 50);
+        
+        doc.end();
+        
+        stream.on('finish', () => {
+          console.log(`✅ PDF generat: ${filePath}`);
+          resolve(filePath);
+        });
+        
+        stream.on('error', (err) => {
+          console.error('❌ Eroare generare PDF:', err);
+          reject(err);
+        });
+      } catch (error) {
+        console.error('❌ Eroare generare PDF:', error);
+        reject(error);
+      }
+    });
   }
   
   /**

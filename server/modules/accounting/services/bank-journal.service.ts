@@ -163,9 +163,17 @@ export class BankJournalService {
       throw new Error('Contul bancar nu este activ');
     }
     
+    // RECOMANDARE 2: Corecție logică solduri pentru tranzacții speciale
     const balanceBefore = Number(account.currentBalance);
-    const isIncoming = data.transactionType === 'incoming_payment';
-    const balanceAfter = isIncoming ? balanceBefore + Number(data.amount) : balanceBefore - Number(data.amount);
+    
+    // Determine if transaction increases or decreases balance based on type
+    const isIncoming = 
+      data.transactionType === 'incoming_payment' ||
+      data.transactionType === 'loan_disbursement' ||
+      (data.transactionType === 'bank_interest' && Number(data.amount) > 0) ||
+      (data.transactionType === 'foreign_exchange' && Number(data.amount) > 0);
+    
+    const balanceAfter = isIncoming ? balanceBefore + Math.abs(Number(data.amount)) : balanceBefore - Math.abs(Number(data.amount));
     
     await db.insert(bankTransactions).values({
       id: transactionId,
@@ -190,7 +198,15 @@ export class BankJournalService {
       createdBy: data.userId
     });
     
-    await db.update(bankAccounts).set({ currentBalance: String(balanceAfter), updatedAt: new Date() }).where(eq(bankAccounts.id, data.bankAccountId));
+    // RECOMANDARE 5: Update atomic pentru prevenție race condition
+    // Folosim SQL direct cu increment/decrement atomic
+    const amountChange = isIncoming ? Number(data.amount) : -Number(data.amount);
+    await db.$client.unsafe(`
+      UPDATE bank_accounts 
+      SET current_balance = current_balance + $1, 
+          updated_at = NOW()
+      WHERE id = $2
+    `, [amountChange, data.bankAccountId]);
     
     // POSTARE AUTOMATĂ
     try {

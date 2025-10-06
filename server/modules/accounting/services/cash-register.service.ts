@@ -11,6 +11,7 @@ import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
 import { cashRegisters, cashTransactions, CashRegister, CashTransaction } from '../../../../shared/schema/cash-register.schema';
 import { companies } from '../../../../shared/schema';
 import { v4 as uuidv4 } from 'uuid';
+import { AuditLogService, AuditAction, AuditSeverity } from './audit-log.service';
 
 /**
  * Cash transaction type enum
@@ -127,12 +128,14 @@ export const CASH_ACCOUNTS = {
  */
 export class CashRegisterService {
   private journalService: JournalService;
+  private auditService: AuditLogService; // RECOMANDARE 4
   
   /**
    * Constructor
    */
   constructor() {
     this.journalService = new JournalService();
+    this.auditService = new AuditLogService(); // RECOMANDARE 4
   }
   
   /**
@@ -409,13 +412,14 @@ export class CashRegisterService {
         createdBy: data.userId,
       } as any);
       
-      // Update register balance
-      await db.update(cashRegisters)
-        .set({
-          currentBalance: balanceAfter.toString(),
-          updatedAt: new Date(),
-        } as any)
-        .where(eq(cashRegisters.id, data.cashRegisterId));
+      // RECOMANDARE 5: Update atomic pentru prevenție race condition  
+      // Folosim SQL direct pentru a actualiza soldul atomic (currentBalance = currentBalance + amount)
+      await db.$client.unsafe(`
+        UPDATE cash_registers 
+        SET current_balance = current_balance + $1, 
+            updated_at = NOW()
+        WHERE id = $2
+      `, [Number(data.amount), data.cashRegisterId]);
       
       // PAS 3: POSTARE AUTOMATĂ ÎN CONTABILITATE pentru ÎNCASĂRI
       try {
@@ -536,13 +540,14 @@ export class CashRegisterService {
         createdBy: data.userId,
       } as any);
       
-      // Update register balance
-      await db.update(cashRegisters)
-        .set({
-          currentBalance: balanceAfter.toString(),
-          updatedAt: new Date(),
-        } as any)
-        .where(eq(cashRegisters.id, data.cashRegisterId));
+      // RECOMANDARE 5: Update atomic pentru prevenție race condition
+      // Folosim SQL direct pentru a actualiza soldul atomic (currentBalance = currentBalance - amount)
+      await db.$client.unsafe(`
+        UPDATE cash_registers 
+        SET current_balance = current_balance - $1, 
+            updated_at = NOW()
+        WHERE id = $2
+      `, [Number(data.amount), data.cashRegisterId]);
       
       // PAS 4: POSTARE AUTOMATĂ ÎN CONTABILITATE
       try {
@@ -773,6 +778,16 @@ export class CashRegisterService {
         } as any)
         .where(eq(cashRegisters.id, cashRegisterId));
       
+      // RECOMANDARE 4: Log audit pentru închidere zilnică
+      await this.auditService.logDailyClosing(
+        register.companyId,
+        userId,
+        cashRegisterId,
+        date,
+        closingBalance,
+        transactions.length
+      );
+      
       // TODO PAS 6: Generează PDF (implementare ulterioară)
       // const pdfPath = await this.generateDailyRegisterPDF(cashRegisterId, date, transactions);
       
@@ -821,12 +836,26 @@ export class CashRegisterService {
           eq(cashTransactions.isCanceled, false)
         ));
       
+      // RECOMANDARE 2: Logică corectă pentru toate tipurile de tranzacții
       let balance = 0;
       for (const txn of transactions) {
-        if (txn.transactionType === 'cash_receipt' || txn.transactionType === 'bank_withdrawal') {
+        // Încasări (cresc soldul)
+        if (txn.transactionType === 'cash_receipt' || 
+            txn.transactionType === 'bank_withdrawal' ||
+            txn.transactionType === 'petty_cash_settlement') {
           balance += Number(txn.amount);
-        } else if (txn.transactionType === 'cash_payment' || txn.transactionType === 'bank_deposit') {
+        } 
+        // Plăți (scad soldul)
+        else if (txn.transactionType === 'cash_payment' || 
+                 txn.transactionType === 'bank_deposit' ||
+                 txn.transactionType === 'petty_cash_advance') {
           balance -= Number(txn.amount);
+        }
+        // Ajustări (pot fi + sau -)
+        else if (txn.transactionType === 'cash_count_adjustment') {
+          // Pentru ajustări, verificăm dacă e plus sau minus
+          const adjustmentAmount = Number(txn.amount);
+          balance = Number(txn.balanceAfter); // Folosim direct balanceAfter din tranzacție
         }
       }
       
@@ -883,13 +912,13 @@ export class CashRegisterService {
           createdBy: data.userId,
         } as any);
         
-        // Update register balance to match physical count
-        await db.update(cashRegisters)
-          .set({
-            currentBalance: physicalCount.toString(),
-            updatedAt: new Date(),
-          } as any)
-          .where(eq(cashRegisters.id, data.cashRegisterId));
+        // RECOMANDARE 5: Update atomic - setăm direct la physical count
+        await db.$client.unsafe(`
+          UPDATE cash_registers 
+          SET current_balance = $1, 
+              updated_at = NOW()
+          WHERE id = $2
+        `, [physicalCount, data.cashRegisterId]);
         
         return adjustmentId;
       }
