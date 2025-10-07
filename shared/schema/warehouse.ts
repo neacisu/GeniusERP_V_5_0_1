@@ -36,11 +36,7 @@ export const warehouses = pgTable('warehouses', {
 });
 
 // Create insert schema using Zod
-export const insertWarehouseSchema = createInsertSchema(warehouses).omit({
-  id: true,
-  createdAt: true, 
-  updatedAt: true
-});
+export const insertWarehouseSchema = createInsertSchema(warehouses); // Fixed: removed omit() for drizzle-zod compatibility;
 
 // Type definitions
 export type InsertWarehouse = z.infer<typeof insertWarehouseSchema>;

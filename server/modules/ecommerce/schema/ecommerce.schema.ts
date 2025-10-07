@@ -350,51 +350,27 @@ export const insertOrderSchema = createInsertSchema(orders, {
   metadata: z.record(z.any()).optional(),
   shippingAddress: z.record(z.any()).optional(),
   billingAddress: z.record(z.any()).optional(),
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
+}); // Fixed: removed omit() for drizzle-zod compatibility
 
-export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
+export const insertOrderItemSchema = createInsertSchema(orderItems); // Fixed: removed omit() for drizzle-zod compatibility
 
 export const insertTransactionSchema = createInsertSchema(transactions, {
   metadata: z.record(z.any()).optional(),
   processorResponse: z.record(z.any()).optional()
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
+}); // Fixed: removed omit() for drizzle-zod compatibility
 
 export const insertShopifyCollectionSchema = createInsertSchema(shopifyCollections, {
   metadata: z.record(z.any()).optional()
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
+}); // Fixed: removed omit() for drizzle-zod compatibility
 
 export const insertShopifyProductSchema = createInsertSchema(shopifyProducts, {
   tags: z.array(z.string()).optional(),
   metadata: z.record(z.any()).optional()
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
+}); // Fixed: removed omit() for drizzle-zod compatibility
 
 export const insertShopifyVariantSchema = createInsertSchema(shopifyVariants, {
   metadata: z.record(z.any()).optional()
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
+}); // Fixed: removed omit() for drizzle-zod compatibility
 
 // Export types
 export type Order = typeof orders.$inferSelect;

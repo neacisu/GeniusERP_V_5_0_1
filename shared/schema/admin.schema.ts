@@ -245,60 +245,23 @@ export const configurations = pgTable('configurations', {
 });
 
 // Zod insert schemas for validation
-export const insertSetupStepSchema = createInsertSchema(setup_steps).omit({
-  id: true,
-  created_at: true,
-  updated_at: true
-});
+export const insertSetupStepSchema = createInsertSchema(setup_steps); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertHealthCheckSchema = createInsertSchema(health_checks).omit({
-  id: true,
-  performed_at: true
-});
+export const insertHealthCheckSchema = createInsertSchema(health_checks); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertApiKeySchema = createInsertSchema(api_keys).omit({
-  id: true,
-  created_at: true,
-  last_used_at: true,
-  last_rotated_at: true
-});
+export const insertApiKeySchema = createInsertSchema(api_keys); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertSystemConfigSchema = createInsertSchema(system_configs).omit({
-  id: true,
-  created_at: true,
-  updated_at: true
-});
+export const insertSystemConfigSchema = createInsertSchema(system_configs); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertAdminActionSchema = createInsertSchema(admin_actions).omit({
-  id: true,
-  performed_at: true
-});
+export const insertAdminActionSchema = createInsertSchema(admin_actions); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertCompanyLicenseSchema = createInsertSchema(company_licenses).omit({
-  id: true,
-  created_at: true,
-  updated_at: true
-});
+export const insertCompanyLicenseSchema = createInsertSchema(company_licenses); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertConfigurationSchema = createInsertSchema(configurations).omit({
-  id: true,
-  created_at: true,
-  updated_at: true
-});
+export const insertConfigurationSchema = createInsertSchema(configurations); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertLicenseSchema = createInsertSchema(licenses).omit({
-  id: true,
-  created_at: true,
-  updated_at: true,
-  last_verified: true,
-  issued_at: true
-});
+export const insertLicenseSchema = createInsertSchema(licenses); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertPermissionSchema = createInsertSchema(permissions).omit({
-  id: true,
-  created_at: true,
-  updated_at: true
-});
+export const insertPermissionSchema = createInsertSchema(permissions); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export const insertRolePermissionSchema = createInsertSchema(rolePermissions);
 

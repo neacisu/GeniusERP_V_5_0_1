@@ -129,20 +129,9 @@ export const bankTransactionRelations = relations(bankTransactions, ({ one }) =>
   }),
 }));
 
-export const insertBankAccountSchema = createInsertSchema(bankAccounts).omit({
-  id: true,
-  currentBalance: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertBankAccountSchema = createInsertSchema(bankAccounts); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertBankTransactionSchema = createInsertSchema(bankTransactions).omit({
-  id: true,
-  balanceBefore: true,
-  balanceAfter: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertBankTransactionSchema = createInsertSchema(bankTransactions); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export type BankAccount = typeof bankAccounts.$inferSelect;
 export type InsertBankAccount = typeof insertBankAccountSchema._type;

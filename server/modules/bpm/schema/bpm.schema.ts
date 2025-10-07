@@ -272,8 +272,7 @@ export const selectScheduledJobSchema = createSelectSchema(bpmScheduledJobs);
  * Zod schemas with additional validation
  */
 export const createProcessSchema = insertProcessSchema
-  .omit({ id: true, createdAt: true, updatedAt: true })
-  .extend({
+  .extend({ // Fixed: removed omit() for drizzle-zod compatibility
     name: z.string().min(3).max(100),
     status: z.nativeEnum(BpmProcessStatus),
   });
@@ -285,8 +284,7 @@ export const updateProcessSchema = createProcessSchema
   });
 
 export const createTriggerSchema = insertTriggerSchema
-  .omit({ id: true, createdAt: true, updatedAt: true })
-  .extend({
+  .extend({ // Fixed: removed omit() for drizzle-zod compatibility
     name: z.string().min(3).max(100),
     type: z.nativeEnum(BpmTriggerType),
   });
@@ -327,8 +325,7 @@ export type StartProcess = z.infer<typeof startProcessSchema>;
 
 // Step Template types
 export const createStepTemplateSchema = insertStepTemplateSchema
-  .omit({ id: true, createdAt: true, updatedAt: true })
-  .extend({
+  .extend({ // Fixed: removed omit() for drizzle-zod compatibility
     name: z.string().min(3).max(100),
     type: z.nativeEnum(BpmStepTemplateType),
     targetType: z.nativeEnum(BpmStepTemplateTargetType).optional(),
@@ -347,8 +344,7 @@ export type StepTemplateUpdate = z.infer<typeof updateStepTemplateSchema>;
 
 // Step Execution types
 export const createStepExecutionSchema = insertStepExecutionSchema
-  .omit({ id: true, startedAt: true, completedAt: true })
-  .extend({
+  .extend({ // Fixed: removed omit() for drizzle-zod compatibility
     status: z.nativeEnum(BpmStepExecutionStatus),
   });
 
@@ -365,8 +361,7 @@ export type StepExecutionUpdate = z.infer<typeof updateStepExecutionSchema>;
 
 // API Connection types
 export const createApiConnectionSchema = insertApiConnectionSchema
-  .omit({ id: true, createdAt: true, updatedAt: true, lastUsedAt: true })
-  .extend({
+  .extend({ // Fixed: removed omit() for drizzle-zod compatibility
     name: z.string().min(3).max(100),
     type: z.nativeEnum(BpmApiConnectionType),
   });
@@ -384,8 +379,7 @@ export type ApiConnectionUpdate = z.infer<typeof updateApiConnectionSchema>;
 
 // Scheduled Job types
 export const createScheduledJobSchema = insertScheduledJobSchema
-  .omit({ id: true, createdAt: true, updatedAt: true, lastRunAt: true })
-  .extend({
+  .extend({ // Fixed: removed omit() for drizzle-zod compatibility
     name: z.string().min(3).max(100),
     schedule: z.string().min(5),
   });

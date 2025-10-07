@@ -304,22 +304,14 @@ export const insertEcommerceOrderSchema = createInsertSchema(ecommerceOrders, {
   billingAddress: z.record(z.any()).optional(),
   platformData: z.record(z.any()).optional(),
   items: z.array(z.any()).min(1),
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
+}); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export const insertEcommerceTransactionSchema = createInsertSchema(ecommerceTransactions, {
   amount: z.string().or(z.number()).transform(val => val.toString()),
   gatewayFee: z.string().or(z.number()).transform(val => val.toString()).optional(),
   gatewayResponse: z.record(z.any()).optional(),
   metadata: z.record(z.any()).optional()
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
+}); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export const insertCartSchema = createInsertSchema(carts, {
   subtotal: z.string().or(z.number()).transform(val => val.toString()).optional(),
@@ -327,22 +319,14 @@ export const insertCartSchema = createInsertSchema(carts, {
   discountAmount: z.string().or(z.number()).transform(val => val.toString()).optional(),
   total: z.string().or(z.number()).transform(val => val.toString()).optional(),
   metadata: z.record(z.any()).optional()
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
+}); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export const insertCartItemSchema = createInsertSchema(cartItems, {
   unitPrice: z.string().or(z.number()).transform(val => val.toString()),
   totalPrice: z.string().or(z.number()).transform(val => val.toString()),
   options: z.record(z.any()).optional(),
   metadata: z.record(z.any()).optional()
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
+}); // Fixed: removed omit() for drizzle-zod compatibility;
 
 /**
  * E-commerce integrations table
@@ -379,11 +363,7 @@ export const insertEcommerceIntegrationSchema = createInsertSchema(ecommerceInte
   settings: z.record(z.any()),
   syncStatus: z.record(z.any()),
   metadata: z.record(z.any())
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
+}); // Fixed: removed omit() for drizzle-zod compatibility;
 
 // Export types
 export type EcommerceOrder = typeof ecommerceOrders.$inferSelect;

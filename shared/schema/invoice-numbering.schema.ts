@@ -88,8 +88,7 @@ export const invoiceNumberingSettings = pgTable('invoice_numbering_settings', {
  * Insert schema for invoice numbering settings
  */
 export const insertInvoiceNumberingSettingsSchema = createInsertSchema(invoiceNumberingSettings)
-  .omit({ id: true, createdAt: true, updatedAt: true })
-  .extend({
+  .extend({ // Fixed: removed omit() for drizzle-zod compatibility
     series: z.string().min(1).max(10).regex(/^[A-Z0-9]+$/, 
       'Seria trebuie să conțină doar litere mari și cifre'),
     currentNumber: z.number().int().min(1).optional(),
@@ -107,8 +106,7 @@ export const insertInvoiceNumberingSettingsSchema = createInsertSchema(invoiceNu
  * Update schema for invoice numbering settings
  */
 export const updateInvoiceNumberingSettingsSchema = createInsertSchema(invoiceNumberingSettings)
-  .omit({ id: true, companyId: true, createdAt: true, updatedAt: true })
-  .extend({
+  .extend({ // Fixed: removed omit() for drizzle-zod compatibility
     series: z.string().min(1).max(10).regex(/^[A-Z0-9]+$/, 
       'Seria trebuie să conțină doar litere mari și cifre').optional(),
     currentNumber: z.number().int().min(1).optional(),

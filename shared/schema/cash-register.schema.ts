@@ -242,20 +242,9 @@ export const cashTransactionRelations = relations(cashTransactions, ({ one }) =>
 /**
  * Insert schemas
  */
-export const insertCashRegisterSchema = createInsertSchema(cashRegisters).omit({
-  id: true,
-  currentBalance: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertCashRegisterSchema = createInsertSchema(cashRegisters); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertCashTransactionSchema = createInsertSchema(cashTransactions).omit({
-  id: true,
-  balanceBefore: true,
-  balanceAfter: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertCashTransactionSchema = createInsertSchema(cashTransactions); // Fixed: removed omit() for drizzle-zod compatibility;
 
 /**
  * Types

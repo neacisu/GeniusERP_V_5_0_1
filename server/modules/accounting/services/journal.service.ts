@@ -7,10 +7,12 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { DrizzleService } from '../../../common/drizzle';
+import { getDrizzle, getClient } from '../../../common/drizzle';
 import { ledgerEntries, ledgerLines } from '../schema/accounting.schema';
 import { eq, and } from 'drizzle-orm';
 import { AuditService, AuditAction } from '../../audit/services/audit.service';
+import { JournalNumberingService } from './journal-numbering.service';
+import { AccountingPeriodsService } from './accounting-periods.service';
 
 /**
  * Ledger entry type
@@ -33,6 +35,9 @@ export interface LedgerEntryData {
   companyId: string;
   type: LedgerEntryType;
   referenceNumber?: string;
+  journalNumber?: string; // Numărul secvențial JV/2025/00001
+  entryDate?: string; // Data înregistrării
+  documentDate?: string; // Data documentului
   amount: number;
   description: string;
   createdAt: string;
@@ -62,6 +67,8 @@ export interface CreateLedgerEntryOptions {
   amount: number;
   description: string;
   userId?: string;
+  entryDate?: Date; // Data înregistrării în jurnal (default: today)
+  documentDate?: Date; // Data documentului justificativ
   lines: CreateLedgerLineOptions[];
 }
 
@@ -94,6 +101,8 @@ export class JournalService {
       amount,
       description,
       userId,
+      entryDate = new Date(),
+      documentDate,
       lines
     } = options;
     
@@ -132,98 +141,115 @@ export class JournalService {
     // Validate that lines are balanced (debits = credits)
     this.validateBalancedLines(lines);
     
-    const db = new DrizzleService();
+    // Initialize services
+    const periodsService = new AccountingPeriodsService();
+    const numberingService = new JournalNumberingService();
+    
+    // Validate period is open for posting
+    const periodValidation = await periodsService.validatePeriodOperation(
+      companyId, 
+      entryDate, 
+      'post'
+    );
+    
+    if (!periodValidation.canPost) {
+      throw new Error(`Nu puteți posta în această perioadă: ${periodValidation.message}`);
+    }
+    
+    // Generate journal number
+    const journalNumber = await numberingService.generateJournalNumber(
+      companyId,
+      type,
+      entryDate
+    );
     
     try {
       // Generate UUIDs
       const entryId = uuidv4();
       const now = new Date();
       
+      // Use direct SQL client for better compatibility
+      const sql = getClient();
+      
       // Create entry and lines in a transaction
-      // Execute as an atomic operation
       const result = await (async () => {
         // Insert ledger entry
-        await db.insert(ledgerEntries).values({
-          id: entryId,
-          companyId,
-          franchiseId,
-          type,
-          referenceNumber,
-          amount,
-          description,
-          createdAt: now.toISOString(),
-          updatedAt: now.toISOString(),
-          createdBy: userId
-        });
+        await sql`
+          INSERT INTO ledger_entries (
+            id, company_id, franchise_id, type, reference_number, journal_number,
+            entry_date, document_date, amount, description, created_at, updated_at, created_by
+          ) VALUES (
+            ${entryId}, ${companyId}, ${franchiseId || null}, ${type}, ${referenceNumber || null}, ${journalNumber},
+            ${entryDate.toISOString()}, ${(documentDate || entryDate).toISOString()}, ${amount}, ${description}, ${now.toISOString()}, ${now.toISOString()}, ${userId || null}
+          )
+        `;
         
         // Insert ledger lines
-        const lineEntities = lines.map(line => {
+        for (const line of lines) {
           const lineId = uuidv4();
+          const accountId = line.accountId || line.accountNumber;
           
-          return {
-            id: lineId,
-            ledgerEntryId: entryId,
-            accountId: line.accountId,
-            debitAmount: line.debitAmount || 0,
-            creditAmount: line.creditAmount || 0,
-            description: line.description || description,
-            createdAt: now.toISOString(),
-            updatedAt: now.toISOString()
-          };
-        });
+          if (!accountId) {
+            throw new Error('Account ID is required for ledger line');
+          }
+          
+          await sql`
+            INSERT INTO ledger_lines (
+              id, ledger_entry_id, account_id, debit_amount, credit_amount, 
+              description, created_at, updated_at
+            ) VALUES (
+              ${lineId}, ${entryId}, ${accountId}, ${line.debitAmount || 0}, ${line.creditAmount || 0},
+              ${line.description || description}, ${now.toISOString()}, ${now.toISOString()}
+            )
+          `;
+        }
         
-        await db.insert(ledgerLines).values(lineEntities);
+        // Fetch the created entry with lines using direct SQL
+        const entryResult = await sql`
+          SELECT 
+            e.id, e.company_id, e.franchise_id, e.type, e.reference_number, 
+            e.journal_number, e.entry_date, e.document_date, e.amount, e.description, 
+            e.created_at, e.created_by,
+            l.id as line_id, l.account_id, l.debit_amount, l.credit_amount, 
+            l.description as line_description
+          FROM ledger_entries e
+          LEFT JOIN ledger_lines l ON l.ledger_entry_id = e.id
+          WHERE e.id = ${entryId}
+          ORDER BY l.created_at
+        `;
         
-        // Fetch the created entry with lines
-        // Using the Drizzle ORM syntax
-        const entry = await db.db.select()
-          .from(ledgerEntries)
-          .where(eq(ledgerEntries.id, entryId))
-          .leftJoin(ledgerLines, eq(ledgerLines.ledgerEntryId, ledgerEntries.id))
-          .execute()
-          .then(rows => {
-            if (rows.length === 0) return null;
-            
-            // Extract the entry data from the first row
-            const entryData = {
-              id: rows[0].ledger_entries.id,
-              companyId: rows[0].ledger_entries.companyId,
-              franchiseId: rows[0].ledger_entries.franchiseId,
-              type: rows[0].ledger_entries.type,
-              referenceNumber: rows[0].ledger_entries.referenceNumber,
-              amount: rows[0].ledger_entries.amount,
-              description: rows[0].ledger_entries.description,
-              createdAt: rows[0].ledger_entries.createdAt,
-              createdBy: rows[0].ledger_entries.createdBy,
-              // Group the lines from the joined rows
-              lines: rows.map(row => ({
-                id: row.ledger_lines.id,
-                ledgerEntryId: row.ledger_lines.ledgerEntryId,
-                accountId: row.ledger_lines.accountId,
-                debitAmount: row.ledger_lines.debitAmount,
-                creditAmount: row.ledger_lines.creditAmount,
-                description: row.ledger_lines.description
-              }))
-            };
-            return entryData;
-          });
+        if (entryResult.length === 0) {
+          throw new Error('Failed to fetch created entry');
+        }
+        
+        // Group lines by entry
+        const firstRow = entryResult[0];
+        const entry = {
+          id: firstRow.id,
+          companyId: firstRow.company_id,
+          franchiseId: firstRow.franchise_id,
+          type: firstRow.type,
+          referenceNumber: firstRow.reference_number,
+          journalNumber: firstRow.journal_number,
+          entryDate: firstRow.entry_date,
+          documentDate: firstRow.document_date,
+          amount: firstRow.amount,
+          description: firstRow.description,
+          createdAt: firstRow.created_at,
+          createdBy: firstRow.created_by,
+          lines: entryResult
+            .filter(row => row.line_id) // Filter out null lines
+            .map(row => ({
+              id: row.line_id,
+              ledgerEntryId: row.id,
+              accountId: row.account_id,
+              debitAmount: row.debit_amount,
+              creditAmount: row.credit_amount,
+              description: row.line_description
+            }))
+        };
         
         console.log('[DEBUG] Database query result:', JSON.stringify(entry, null, 2));
-        
-        // If entry is null or undefined, return a basic structure to avoid errors
-        if (!entry) {
-          console.error('[ERROR] No entry found with ID:', entryId);
-          return { 
-            id: entryId,
-            companyId,
-            type,
-            referenceNumber: referenceNumber || '',
-            amount,
-            description,
-            createdAt: now.toISOString(),
-            lines: []
-          };
-        }
         
         return entry;
       });
@@ -248,52 +274,12 @@ export class JournalService {
         });
       }
       
-      console.log('[DEBUG] Result value:', result);
+      console.log('[DEBUG] Result value:', typeof result);
       
-      // If result is not defined or doesn't have the expected structure,
-      // provide a default response based on the input data
-      if (!result) {
-        console.log('[DEBUG] Creating default result object since result is undefined');
-        
-        // Return data based on what we know was sent to the database
-        return {
-          id: entryId,
-          companyId,
-          type: type as LedgerEntryType,
-          referenceNumber: referenceNumber || '',
-          amount: Number(amount),
-          description,
-          createdAt: new Date().toISOString(),
-          lines: lines.map(line => ({
-            id: 'generated-id',  // We don't have the actual IDs that would have been generated
-            ledgerEntryId: entryId,
-            accountId: line.accountId,
-            debitAmount: Number(line.debitAmount || 0),
-            creditAmount: Number(line.creditAmount || 0),
-            description: line.description || description
-          }))
-        };
-      }
+      // Await the result function to get the actual data
+      const actualResult = await result();
       
-      // Process result normally if it exists
-      // Return entry data with null checks for lines
-      return {
-        id: result.id,
-        companyId: result.companyId,
-        type: result.type as LedgerEntryType,
-        referenceNumber: result.referenceNumber,
-        amount: Number(result.amount),
-        description: result.description,
-        createdAt: result.createdAt,
-        lines: Array.isArray(result.lines) ? result.lines.map(line => ({
-          id: line.id,
-          ledgerEntryId: line.ledgerEntryId,
-          accountId: line.accountId,
-          debitAmount: Number(line.debitAmount),
-          creditAmount: Number(line.creditAmount),
-          description: line.description
-        })) : []
-      };
+      return actualResult;
     } catch (error) {
       console.error('[JournalService] Error creating ledger entry:', error instanceof Error ? error.message : String(error));
       throw new Error(`Failed to create ledger entry: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -315,37 +301,44 @@ export class JournalService {
       throw new Error('Reversal reason is required');
     }
     
-    const db = new DrizzleService();
+    const sql = getClient();
     
-    // Get the original entry with lines
-    const originalEntry = await db.db.select()
-      .from(ledgerEntries)
-      .where(eq(ledgerEntries.id, ledgerEntryId))
-      .leftJoin(ledgerLines, eq(ledgerLines.ledgerEntryId, ledgerEntries.id))
-      .execute()
-      .then(rows => {
+    // Get the original entry with lines using direct SQL
+    const originalEntry = await sql`
+      SELECT 
+        e.id, e.company_id, e.type, e.reference_number, e.amount, e.description,
+        e.created_at, e.created_by,
+        l.id as line_id, l.account_id, l.debit_amount, l.credit_amount, l.description as line_description
+      FROM ledger_entries e
+      LEFT JOIN ledger_lines l ON l.ledger_entry_id = e.id
+      WHERE e.id = ${ledgerEntryId}
+      ORDER BY l.created_at
+    `.then(rows => {
         if (rows.length === 0) return null;
 
-        // Extract the entry data from the first row
+        // Extract the entry data from the first row (SQL direct structure)
+        const firstRow = rows[0];
         const entryData = {
-          id: rows[0].ledger_entries.id,
-          companyId: rows[0].ledger_entries.companyId,
-          franchiseId: rows[0].ledger_entries.franchiseId,
-          type: rows[0].ledger_entries.type,
-          referenceNumber: rows[0].ledger_entries.referenceNumber,
-          amount: rows[0].ledger_entries.amount,
-          description: rows[0].ledger_entries.description,
-          createdAt: rows[0].ledger_entries.createdAt,
-          createdBy: rows[0].ledger_entries.createdBy,
+          id: firstRow.id,
+          companyId: firstRow.company_id,
+          franchiseId: firstRow.franchise_id || null,
+          type: firstRow.type,
+          referenceNumber: firstRow.reference_number,
+          amount: firstRow.amount,
+          description: firstRow.description,
+          createdAt: firstRow.created_at,
+          createdBy: firstRow.created_by,
           // Group the lines from the joined rows
-          lines: rows.map(row => ({
-            id: row.ledger_lines.id,
-            ledgerEntryId: row.ledger_lines.ledgerEntryId,
-            accountId: row.ledger_lines.accountId,
-            debitAmount: row.ledger_lines.debitAmount,
-            creditAmount: row.ledger_lines.creditAmount,
-            description: row.ledger_lines.description
-          }))
+          lines: rows
+            .filter(row => row.line_id) // Filter out null lines
+            .map(row => ({
+              id: row.line_id,
+              ledgerEntryId: row.id,
+              accountId: row.account_id,
+              debitAmount: row.debit_amount,
+              creditAmount: row.credit_amount,
+              description: row.line_description
+            }))
         };
         return entryData;
       });

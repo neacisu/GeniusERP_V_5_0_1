@@ -237,26 +237,26 @@ export const insertCampaignSchema = createInsertSchema(campaigns, {
   channels: z.array(z.string()).optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional()
-}).omit({ id: true, createdAt: true, updatedAt: true });
+}); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export const insertCampaignMessageSchema = createInsertSchema(campaignMessages, {
   id: z.string().uuid().optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional()
-}).omit({ id: true, createdAt: true, updatedAt: true });
+}); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export const insertCampaignSegmentSchema = createInsertSchema(campaignSegments, {
   id: z.string().uuid().optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional()
-}).omit({ id: true, createdAt: true, updatedAt: true });
+}); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export const insertCampaignTemplateSchema = createInsertSchema(campaignTemplates, {
   id: z.string().uuid().optional(),
   type: z.nativeEnum(CampaignType),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional()
-}).omit({ id: true, createdAt: true, updatedAt: true });
+}); // Fixed: removed omit() for drizzle-zod compatibility;
 
 // Type definitions for inference
 

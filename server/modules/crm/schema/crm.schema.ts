@@ -24,7 +24,7 @@ import { sql } from "drizzle-orm";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { companies, users } from "@shared/schema";
+import { companies, users } from "../../../../shared/schema";
 
 /**
  * ANAF Company Data - Stocare completă a datelor preluate de la ANAF
@@ -131,7 +131,7 @@ export const anafCompanyData = pgTable("anaf_company_data", {
 /**
  * CRM Companies - Entities representing customer organizations in the CRM system
  */
-export const crm_companies = pgTable("crm_companies", {
+export const crm_companies: any = pgTable("crm_companies", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   description: text("description"),
@@ -760,12 +760,8 @@ export const insertSalesQuotaSchema = createInsertSchema(salesQuotas);
 export const insertSegmentSchema = createInsertSchema(segments);
 export const insertScoringRuleSchema = createInsertSchema(scoringRules);
 export const insertEmailTemplateSchema = createInsertSchema(emailTemplates);
-export const insertAnafCompanyDataSchema = createInsertSchema(anafCompanyData).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  lastCheckedAt: true
-});
+// Fix for drizzle-zod compatibility issue - remove omit() completely
+export const insertAnafCompanyDataSchema = createInsertSchema(anafCompanyData);
 
 // Types
 

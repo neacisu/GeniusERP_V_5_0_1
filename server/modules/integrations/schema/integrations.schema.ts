@@ -51,12 +51,17 @@ export enum IntegrationStatus {
 /**
  * Integration provider enum for database
  */
-export const integrationProviderEnum = pgEnum('integration_provider', Object.values(IntegrationProvider));
+export const integrationProviderEnum = pgEnum('integration_provider', [
+  'shopify_admin', 'shopify_storefront', 'prestashop', 'woocommerce',
+  'stripe', 'paypal', 'email', 'sms', 'anaf', 'revisal'
+]);
 
 /**
  * Integration status enum for database
  */
-export const integrationStatusEnum = pgEnum('integration_status', Object.values(IntegrationStatus));
+export const integrationStatusEnum = pgEnum('integration_status', [
+  'active', 'inactive', 'pending', 'error'
+]);
 
 /**
  * Integrations table - Stores external service integration configurations
@@ -87,23 +92,13 @@ export const integrations = pgTable("integrations", {
 export const insertIntegrationSchema = createInsertSchema(integrations, {
   config: z.record(z.any()).optional(),
   metadata: z.record(z.any()).optional()
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
+}); // Fixed: removed omit() for drizzle-zod compatibility
 
 // Create update schema for integrations
 export const updateIntegrationSchema = createInsertSchema(integrations, {
   config: z.record(z.any()).optional(),
   metadata: z.record(z.any()).optional()
-}).omit({
-  id: true,
-  companyId: true,
-  createdAt: true,
-  updatedAt: true,
-  createdBy: true
-}).partial();
+}).partial(); // Fixed: removed omit() for drizzle-zod compatibility
 
 // Export types
 export type Integration = typeof integrations.$inferSelect;

@@ -1,0 +1,31 @@
+
+> rest-express@1.0.0 check
+> tsc
+
+client/src/modules/inventory/pages/products/index.backup.tsx(1897,5): error TS1128: Declaration or statement expected.
+client/src/modules/inventory/pages/products/index.backup.tsx(1898,3): error TS1109: Expression expected.
+client/src/modules/inventory/pages/products/index.backup.tsx(1899,1): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(151,12): error TS1472: 'catch' or 'finally' expected.
+server/controllers/analytics.controller.tmp.ts(155,7): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(155,9): error TS1005: 'try' expected.
+server/controllers/analytics.controller.tmp.ts(162,5): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(163,3): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(192,12): error TS1472: 'catch' or 'finally' expected.
+server/controllers/analytics.controller.tmp.ts(193,9): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(199,7): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(199,9): error TS1005: 'try' expected.
+server/controllers/analytics.controller.tmp.ts(206,5): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(207,3): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(306,12): error TS1472: 'catch' or 'finally' expected.
+server/controllers/analytics.controller.tmp.ts(307,9): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(310,7): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(310,9): error TS1005: 'try' expected.
+server/controllers/analytics.controller.tmp.ts(317,5): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(318,3): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(345,12): error TS1472: 'catch' or 'finally' expected.
+server/controllers/analytics.controller.tmp.ts(346,9): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(354,7): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(354,9): error TS1005: 'try' expected.
+server/controllers/analytics.controller.tmp.ts(361,5): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(362,3): error TS1128: Declaration or statement expected.
+server/controllers/analytics.controller.tmp.ts(571,1): error TS1128: Declaration or statement expected.

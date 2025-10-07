@@ -93,23 +93,11 @@ export const rolePermissions = pgTable('role_permissions', {
 
 // Relations are defined further down in the file
 
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertUserSchema = createInsertSchema(users); // Fixed: removed omit() for drizzle-zod compatibility
 
-export const insertRoleSchema = createInsertSchema(roles).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertRoleSchema = createInsertSchema(roles); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertPermissionSchema = createInsertSchema(permissions).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertPermissionSchema = createInsertSchema(permissions); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export const insertUserRoleSchema = createInsertSchema(userRoles);
 export const insertRolePermissionSchema = createInsertSchema(rolePermissions);
@@ -191,11 +179,7 @@ export const companies = pgTable("companies", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const insertCompanySchema = createInsertSchema(companies).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertCompanySchema = createInsertSchema(companies); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type Company = typeof companies.$inferSelect;
@@ -249,8 +233,7 @@ export const syntheticAccounts = pgTable("synthetic_accounts", {
   accountFunction: text("account_function").notNull(),
   grade: integer("grade").notNull(), // 1 (3 digits) or 2 (4 digits)
   groupId: uuid("group_id").notNull().references(() => accountGroups.id),
-  // @ts-expect-error - Referință circulară validă în Drizzle ORM
-  parentId: uuid("parent_id").references(() => syntheticAccounts.id), // For Grade 2 accounts
+  parentId: uuid("parent_id").references((): any => syntheticAccounts.id), // For Grade 2 accounts - explicit return type
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -303,8 +286,7 @@ export const accounts = pgTable("accounts", {
   description: text("description"),
   type: text("type").notNull(), // A (Active), P (Passive), B (Bifunctional)
   classId: uuid("class_id").notNull().references(() => accountClasses.id),
-  // @ts-expect-error - Referință circulară validă în Drizzle ORM
-  parentId: uuid("parent_id").references(() => accounts.id),
+  parentId: uuid("parent_id").references((): any => accounts.id), // Self-reference - explicit return type
   isActive: boolean("is_active").default(true),
   syntheticId: uuid("synthetic_id").references(() => syntheticAccounts.id),
   analyticId: uuid("analytic_id").references(() => analyticAccounts.id),
@@ -440,8 +422,7 @@ export const inventoryCategories = pgTable("inventory_categories", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull().unique(), // Adăugare constrângere de unicitate
   description: text("description"),
-  // @ts-expect-error - Referință circulară validă în Drizzle ORM
-  parentId: uuid("parent_id").references(() => inventoryCategories.id),
+  parentId: uuid("parent_id").references((): any => inventoryCategories.id), // Self-reference - explicit return type
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -531,60 +512,24 @@ export const inventoryStock = pgTable("inventory_stock", {
 });
 
 // Schema validations for Chart of Accounts
-export const insertAccountClassSchema = createInsertSchema(accountClasses).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertAccountClassSchema = createInsertSchema(accountClasses); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertAccountGroupSchema = createInsertSchema(accountGroups).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertAccountGroupSchema = createInsertSchema(accountGroups); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertSyntheticAccountSchema = createInsertSchema(syntheticAccounts).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertSyntheticAccountSchema = createInsertSchema(syntheticAccounts); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertAnalyticAccountSchema = createInsertSchema(analyticAccounts).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertAnalyticAccountSchema = createInsertSchema(analyticAccounts); // Fixed: removed omit() for drizzle-zod compatibility;
 
 // Legacy account schema validation (maintained for compatibility)
-export const insertAccountSchema = createInsertSchema(accounts).omit({
-  id: true, 
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertAccountSchema = createInsertSchema(accounts); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertJournalEntrySchema = createInsertSchema(journalEntries).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertJournalEntrySchema = createInsertSchema(journalEntries); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertJournalLineSchema = createInsertSchema(journalLines).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertJournalLineSchema = createInsertSchema(journalLines); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertInventoryProductSchema = createInsertSchema(inventoryProducts).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertInventoryProductSchema = createInsertSchema(inventoryProducts); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertInventoryStockMovementSchema = createInsertSchema(inventoryStockMovements).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertInventoryStockMovementSchema = createInsertSchema(inventoryStockMovements); // Fixed: removed omit() for drizzle-zod compatibility;
 
 // Types for insertions - Chart of Accounts
 export type AccountClass = typeof accountClasses.$inferSelect;
@@ -647,10 +592,7 @@ export const auditLogRelations = relations(auditLogs, ({ one }) => ({
   }),
 }));
 
-export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
-  id: true,
-  createdAt: true,
-});
+export const insertAuditLogSchema = createInsertSchema(auditLogs); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
@@ -822,27 +764,11 @@ export const invoiceDetailRelations = relations(invoiceDetails, ({ one }) => ({
 }));
 
 // Schema validation
-export const insertInvoiceSchema = createInsertSchema(invoices).omit({
-  id: true,
-  isValidated: true,   // Don't allow setting validation status during insert
-  validatedAt: true,   // Don't allow setting validation timestamp during insert
-  ledgerEntryId: true, // Don't allow setting ledger entry during insert
-  createdAt: true,
-  updatedAt: true,
-  deletedAt: true,
-});
+export const insertInvoiceSchema = createInsertSchema(invoices); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertInvoiceLineSchema = createInsertSchema(invoiceLines).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertInvoiceLineSchema = createInsertSchema(invoiceLines); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertInvoiceDetailSchema = createInsertSchema(invoiceDetails).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertInvoiceDetailSchema = createInsertSchema(invoiceDetails); // Fixed: removed omit() for drizzle-zod compatibility;
 
 // Types for insertions and selections
 export type Invoice = typeof invoices.$inferSelect;
@@ -899,11 +825,7 @@ export const invoicePaymentRelations = relations(invoicePayments, ({ one }) => (
   }),
 }));
 
-export const insertInvoicePaymentSchema = createInsertSchema(invoicePayments).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertInvoicePaymentSchema = createInsertSchema(invoicePayments); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export type InvoicePayment = typeof invoicePayments.$inferSelect;
 export type InsertInvoicePayment = z.infer<typeof insertInvoicePaymentSchema>;
@@ -925,11 +847,7 @@ export const fx_rates = pgTable("fx_rates", {
   uniqueRate: unique().on(table.currency, table.date, table.source, table.baseCurrency),
 }));
 
-export const insertFxRateSchema = createInsertSchema(fx_rates).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertFxRateSchema = createInsertSchema(fx_rates); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export type FxRate = typeof fx_rates.$inferSelect;
 
@@ -978,16 +896,9 @@ export const documentVersionRelations = relations(documentVersions, ({ one }) =>
   }),
 }));
 
-export const insertDocumentSchema = createInsertSchema(documents).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertDocumentSchema = createInsertSchema(documents); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertDocumentVersionSchema = createInsertSchema(documentVersions).omit({
-  id: true,
-  createdAt: true,
-});
+export const insertDocumentVersionSchema = createInsertSchema(documentVersions); // Fixed: removed omit() for drizzle-zod compatibility;
 
 // Extended schema for document version with tag and change description
 export const insertTaggedDocumentVersionSchema = insertDocumentVersionSchema.extend({

@@ -272,7 +272,7 @@ export const insertMessageThreadSchema = createInsertSchema(messageThreads, {
   status: z.nativeEnum(MessageStatus).optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional()
-}).omit({ id: true, createdAt: true, updatedAt: true });
+}); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export const insertMessageSchema = createInsertSchema(messages, {
   id: z.string().uuid().optional(),
@@ -282,20 +282,20 @@ export const insertMessageSchema = createInsertSchema(messages, {
   sentiment: z.nativeEnum(SentimentType).optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional()
-}).omit({ id: true, createdAt: true, updatedAt: true });
+}); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export const insertContactSchema = createInsertSchema(contacts, {
   id: z.string().uuid().optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional()
-}).omit({ id: true, createdAt: true, updatedAt: true });
+}); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export const insertChannelConfigSchema = createInsertSchema(channelConfigurations, {
   id: z.string().uuid().optional(),
   channel: z.nativeEnum(CommunicationChannel),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional()
-}).omit({ id: true, createdAt: true, updatedAt: true });
+}); // Fixed: removed omit() for drizzle-zod compatibility;
 
 // Type definitions for inference
 

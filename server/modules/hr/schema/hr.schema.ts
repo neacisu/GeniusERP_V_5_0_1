@@ -25,7 +25,7 @@ import {
   smallint
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { users, companies } from "@shared/schema";
+import { users, companies } from "../../../../shared/schema";
 
 /**
  * Employee table - Core HR data 

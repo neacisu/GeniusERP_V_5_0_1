@@ -4,8 +4,8 @@
  * Database schema for the accounting module.
  */
 
-import { pgTable, uuid, text, timestamp, numeric, json, jsonb } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { pgTable, uuid, text, timestamp, numeric, json, jsonb, boolean, unique } from 'drizzle-orm/pg-core';
+import { relations, sql } from 'drizzle-orm';
 
 /**
  * Ledger entries table
@@ -17,6 +17,9 @@ export const ledgerEntries = pgTable('ledger_entries', {
   franchiseId: uuid('franchise_id'),
   type: text('type').notNull(),
   referenceNumber: text('reference_number'),
+  journalNumber: text('journal_number'), // JV/2025/00001 - numerotare secvențială
+  entryDate: timestamp('entry_date'), // Data înregistrării în jurnal
+  documentDate: timestamp('document_date'), // Data documentului justificativ
   amount: numeric('amount').notNull(),
   description: text('description').notNull(),
   metadata: jsonb('metadata'),
@@ -94,13 +97,38 @@ export const fiscalPeriods = pgTable('fiscal_periods', {
   month: numeric('month').notNull(),
   startDate: timestamp('start_date').notNull(),
   endDate: timestamp('end_date').notNull(),
-  isClosed: numeric('is_closed').notNull().default('0'),
+  status: text('status').notNull().default('open'), // 'open', 'soft_close', 'hard_close'
+  isClosed: boolean('is_closed').notNull().default(false),
   closedAt: timestamp('closed_at'),
   closedBy: uuid('closed_by'),
+  reopenedAt: timestamp('reopened_at'),
+  reopenedBy: uuid('reopened_by'),
+  reopeningReason: text('reopening_reason'),
   
   // Metadata
-  createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull()
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at').notNull().default(sql`now()`)
+});
+
+/**
+ * Document counters table
+ * Sequential numbering for journals and documents
+ */
+export const documentCounters = pgTable('document_counters', {
+  id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
+  companyId: uuid('company_id').notNull(), // Nu facem foreign key - poate să nu existe în companies
+  counterType: text('counter_type').notNull(), // 'JOURNAL', 'INVOICE', 'RECEIPT'
+  series: text('series').notNull(), // 'JV', 'SA', 'PU', 'CA', 'BA'
+  year: numeric('year').notNull(),
+  lastNumber: numeric('last_number').notNull().default('0'),
+  
+  // Metadata
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at').notNull().default(sql`now()`)
+}, (table) => {
+  return {
+    uniqueCounter: unique().on(table.companyId, table.counterType, table.series, table.year)
+  };
 });
 
 /**
@@ -167,6 +195,9 @@ export type InsertAccountBalance = typeof accountBalances.$inferInsert;
 export type FiscalPeriod = typeof fiscalPeriods.$inferSelect;
 export type InsertFiscalPeriod = typeof fiscalPeriods.$inferInsert;
 
+export type DocumentCounter = typeof documentCounters.$inferSelect;
+export type InsertDocumentCounter = typeof documentCounters.$inferInsert;
+
 export type ChartOfAccount = typeof chartOfAccounts.$inferSelect;
 export type InsertChartOfAccount = typeof chartOfAccounts.$inferInsert;
 
@@ -176,6 +207,7 @@ export default {
   journalTypes,
   accountBalances,
   fiscalPeriods,
+  documentCounters,
   chartOfAccounts,
   ledgerEntriesRelations,
   ledgerLinesRelations,

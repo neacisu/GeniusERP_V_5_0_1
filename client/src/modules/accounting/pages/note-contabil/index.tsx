@@ -127,6 +127,10 @@ export default function NoteContabilPage() {
   const [formLines, setFormLines] = useState<Array<{accountId: string, description: string, debit: string, credit: string}>>([
     { accountId: "", description: "", debit: "0", credit: "0" }
   ]);
+  const [isStorno, setIsStorno] = useState(false);
+  const [entryDate, setEntryDate] = useState(new Date().toISOString().split('T')[0]);
+  const [documentDate, setDocumentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [noteDescription, setNoteDescription] = useState("");
   const { toast } = useToast();
 
   // Fetch accounting notes
