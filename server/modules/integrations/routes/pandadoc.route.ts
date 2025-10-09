@@ -10,6 +10,7 @@ import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { IntegrationsService } from '../services/integrations.service';
 import { AuditService } from '../../audit/services/audit.service';
+import { IntegrationProvider } from '../schema/integrations.schema';
 
 // Create router
 const router = express.Router();

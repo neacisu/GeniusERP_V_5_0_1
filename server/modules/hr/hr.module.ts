@@ -24,6 +24,16 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { JwtAuthMode } from '../auth/constants/auth-mode.enum';
 import { Logger } from '../../common/logger';
 import { AuditService } from '../../common/services/audit.service';
+import { Request } from 'express';
+
+// Tip pentru request autenticat
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    companyId: string;
+    role: string;
+  };
+}
 
 // Import controllers
 import {
