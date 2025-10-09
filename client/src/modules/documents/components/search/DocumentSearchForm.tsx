@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DatePicker } from '@/components/ui/date-picker';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { format } from 'date-fns';
 import { Search, CalendarDays, FileText, User, Tag, Filter, X } from 'lucide-react';
 
 export interface DocumentSearchFilters {
@@ -158,10 +160,21 @@ const DocumentSearchForm: React.FC<DocumentSearchFormProps> = ({
                         <CalendarDays className="h-4 w-4 mr-2" />
                         De la data
                       </Label>
-                      <DatePicker
-                        value={filters.dateFrom}
-                        onChange={(date) => handleInputChange('dateFrom', date)}
-                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="w-full justify-start text-left font-normal">
+                            <CalendarDays className="mr-2 h-4 w-4" />
+                            {filters.dateFrom ? format(filters.dateFrom, "PPP") : "Selectează data"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={filters.dateFrom}
+                            onSelect={(date: Date | undefined) => handleInputChange('dateFrom', date)}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     
                     <div className="space-y-2">
@@ -169,10 +182,21 @@ const DocumentSearchForm: React.FC<DocumentSearchFormProps> = ({
                         <CalendarDays className="h-4 w-4 mr-2" />
                         Până la data
                       </Label>
-                      <DatePicker
-                        value={filters.dateTo}
-                        onChange={(date) => handleInputChange('dateTo', date)}
-                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="w-full justify-start text-left font-normal">
+                            <CalendarDays className="mr-2 h-4 w-4" />
+                            {filters.dateTo ? format(filters.dateTo, "PPP") : "Selectează data"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={filters.dateTo}
+                            onSelect={(date: Date | undefined) => handleInputChange('dateTo', date)}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
                   

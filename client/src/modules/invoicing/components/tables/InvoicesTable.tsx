@@ -5,17 +5,22 @@
  */
 import { useState } from 'react';
 import { useLocation } from 'wouter';
-import type {
-  ColumnDef,
-  SortingState
-} from '@tanstack/react-table';
-import {
-  flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
+// TODO: Install @tanstack/react-table package
+// import type {
+//   ColumnDef,
+//   SortingState
+// } from '@tanstack/react-table';
+// import {
+//   flexRender,
+//   getCoreRowModel,
+//   getPaginationRowModel,
+//   getSortedRowModel,
+//   useReactTable,
+// } from '@tanstack/react-table';
+
+// Temporary type definitions until @tanstack/react-table is installed
+type ColumnDef<T> = any;
+type SortingState = any;
 import {
   Table,
   TableBody,
