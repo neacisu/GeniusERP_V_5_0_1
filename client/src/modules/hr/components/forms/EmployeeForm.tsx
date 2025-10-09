@@ -1022,7 +1022,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                           onValueChange={(value) => {
                             field.onChange(value);
                             if (value) {
-                              const selectedDept = departments.find(d => d.id === value);
+                              const selectedDept = departments.find((d: any) => d.id === value);
                               if (selectedDept) {
                                 form.setValue('department', selectedDept.name);
                               }
@@ -1035,7 +1035,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {departments.map((department) => (
+                            {departments.map((department: any) => (
                               <SelectItem key={department.id} value={department.id}>
                                 {department.name}
                               </SelectItem>

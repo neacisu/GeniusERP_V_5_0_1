@@ -187,7 +187,7 @@ const AbsenceFormModal: React.FC<AbsenceFormModalProps> = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {employees.map((employee) => (
+                      {employees.map((employee: any) => (
                         <SelectItem key={employee.id} value={employee.id}>
                           {employee.firstName} {employee.lastName}
                         </SelectItem>

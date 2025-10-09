@@ -348,7 +348,7 @@ const DepartmentForm: React.FC<DepartmentFormProps> = ({
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="null">-- Fără manager --</SelectItem>
-                      {employees.map(employee => (
+                      {employees.map((employee: any) => (
                         <SelectItem key={employee.id} value={employee.id}>
                           {employee.lastName} {employee.firstName}
                         </SelectItem>
@@ -380,7 +380,7 @@ const DepartmentForm: React.FC<DepartmentFormProps> = ({
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="null">-- Fără departament părinte --</SelectItem>
-                      {parentDepartments.map(department => (
+                      {parentDepartments.map((department: any) => (
                         <SelectItem key={department.id} value={department.id}>
                           {department.name}
                         </SelectItem>
