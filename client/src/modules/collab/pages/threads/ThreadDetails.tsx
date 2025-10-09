@@ -256,7 +256,7 @@ const ThreadDetailsPage: React.FC = () => {
                 
                 {thread?.tags && thread.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-4">
-                    {thread.tags.map((tag, index) => (
+                    {thread.tags.map((tag: string, index: number) => (
                       <Badge key={index} variant="outline">
                         <Tag className="h-3 w-3 mr-1" />
                         {tag}
@@ -361,7 +361,7 @@ const ThreadDetailsPage: React.FC = () => {
                   <h3 className="text-sm font-medium mb-2">Participanți</h3>
                   {thread?.participants && thread.participants.length > 0 ? (
                     <div className="space-y-2">
-                      {thread.participants.map((participant, index) => (
+                      {thread.participants.map((participant: string, index: number) => (
                         <div key={index} className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarFallback>
