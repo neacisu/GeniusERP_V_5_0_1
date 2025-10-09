@@ -105,7 +105,7 @@ const InventoryAssessmentsPage: React.FC = () => {
   const { assessments, isLoadingAssessments, assessmentSummary } = useInventoryApi();
   
   // Filter assessments based on active tab
-  const filteredAssessments = assessments.filter((assessment) => {
+  const filteredAssessments = assessments.filter((assessment: any) => {
     if (activeTab === "all") return true;
     return assessment.status === activeTab;
   });
@@ -247,7 +247,7 @@ const InventoryAssessmentsPage: React.FC = () => {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredAssessments.map((assessment) => (
+                    filteredAssessments.map((assessment: any) => (
                       <TableRow key={assessment.id}>
                         <TableCell className="font-medium">
                           {assessment.assessment_number || assessment.documentNumber || "N/A"}

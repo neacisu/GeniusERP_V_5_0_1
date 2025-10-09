@@ -335,11 +335,11 @@ export function useProducts() {
   
   // Filter products by status
   const getActiveProducts = () => {
-    return products.filter(product => product.isActive);
+    return products.filter((product: any) => product.isActive);
   };
   
   const getInactiveProducts = () => {
-    return products.filter(product => !product.isActive);
+    return products.filter((product: any) => !product.isActive);
   };
   
   // Search products by name or SKU
@@ -348,7 +348,7 @@ export function useProducts() {
     
     const term = searchTerm.toLowerCase();
     return products.filter(
-      product => 
+      (product: any) => 
         product.name.toLowerCase().includes(term) || 
         product.sku.toLowerCase().includes(term) ||
         (product.barcode && product.barcode.toLowerCase().includes(term))
