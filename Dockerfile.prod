@@ -1,4 +1,4 @@
-FROM node:20-alpine as builder
+FROM node:24.9.0-alpine as builder
 
 WORKDIR /app
 
@@ -21,7 +21,7 @@ COPY . .
 RUN npm run build
 
 # Imaginea finală pentru producție
-FROM node:20-alpine
+FROM node:24.9.0-alpine
 
 WORKDIR /app
 
