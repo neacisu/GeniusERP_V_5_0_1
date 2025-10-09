@@ -306,7 +306,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
               <div className="space-y-2">
                 <div className="flex flex-wrap gap-2 mb-2">
                   {selectedUsers.map(userId => {
-                    const user = users?.find(u => u.id === userId);
+                    const user = users?.find((u: { id: string; name?: string }) => u.id === userId);
                     return (
                       <Badge 
                         key={userId} 
@@ -345,7 +345,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {(users || []).map(user => (
+                      {(users || []).map((user: { id: string; name?: string }) => (
                         <SelectItem key={user.id} value={user.id}>
                           <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
@@ -412,7 +412,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                   <div className="mt-2">
                     <FormLabel className="text-xs">Etichete populare</FormLabel>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {(popularTags || []).map(tag => (
+                      {(popularTags || []).map((tag: string) => (
                         <Badge 
                           key={tag} 
                           variant="outline"

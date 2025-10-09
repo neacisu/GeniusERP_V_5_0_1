@@ -266,7 +266,7 @@ const ThreadForm: React.FC<ThreadFormProps> = ({
                   <div className="mt-2">
                     <FormLabel className="text-xs">Etichete populare</FormLabel>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {(popularTags || []).map(tag => (
+                      {(popularTags || []).map((tag: string) => (
                         <Badge 
                           key={tag} 
                           variant="outline"
@@ -296,7 +296,7 @@ const ThreadForm: React.FC<ThreadFormProps> = ({
                 <div className="space-y-2">
                   <div className="flex flex-wrap gap-2 mb-2">
                     {selectedParticipants.map(userId => {
-                      const user = users?.find(u => u.id === userId);
+                      const user = users?.find((u: { id: string; name?: string }) => u.id === userId);
                       return (
                         <Badge 
                           key={userId} 
@@ -329,8 +329,8 @@ const ThreadForm: React.FC<ThreadFormProps> = ({
                     </FormControl>
                     <SelectContent>
                       {(users || [])
-                        .filter(user => !selectedParticipants.includes(user.id))
-                        .map(user => (
+                        .filter((user: { id: string; name?: string }) => !selectedParticipants.includes(user.id))
+                        .map((user: { id: string; name?: string }) => (
                           <SelectItem key={user.id} value={user.id}>
                             <div className="flex items-center gap-2">
                               <Avatar className="h-6 w-6">
