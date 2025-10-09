@@ -211,7 +211,7 @@ const CorPage: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Toate grupele</SelectItem>
-                    {groups.map((group) => (
+                    {groups.map((group: any) => (
                       <SelectItem key={group.id} value={group.id.toString()}>
                         {group.code} - {group.name}
                       </SelectItem>
@@ -293,7 +293,7 @@ const CorPage: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {occupations.map((occupation) => (
+                    {occupations.map((occupation: any) => (
                       <TableRow key={occupation.id}>
                         <TableCell className="font-medium">{occupation.code}</TableCell>
                         <TableCell>{occupation.name}</TableCell>

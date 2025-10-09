@@ -99,12 +99,12 @@ const DepartmentsPage: React.FC = () => {
   
   // Employee count per department
   const getEmployeeCountByDepartment = (departmentId: string) => {
-    return employees.filter(emp => emp.departmentId === departmentId).length;
+    return employees.filter((emp: any) => emp.departmentId === departmentId).length;
   };
   
   // Department manager
   const getDepartmentManager = (departmentId: string) => {
-    const manager = employees.find(emp => 
+    const manager = employees.find((emp: any) => 
       emp.departmentId === departmentId && emp.isManager === true
     );
     return manager ? `${manager.lastName} ${manager.firstName}` : 'Nealocat';
@@ -112,12 +112,12 @@ const DepartmentsPage: React.FC = () => {
   
   // Total budget used
   const getDepartmentBudgetUsed = (departmentId: string) => {
-    return departments.find(dept => dept.id === departmentId)?.budgetUsed || 0;
+    return departments.find((dept: any) => dept.id === departmentId)?.budgetUsed || 0;
   };
   
   // Total budget allocated
   const getDepartmentBudgetAllocated = (departmentId: string) => {
-    return departments.find(dept => dept.id === departmentId)?.budgetAllocated || 0;
+    return departments.find((dept: any) => dept.id === departmentId)?.budgetAllocated || 0;
   };
   
   // Budget usage percentage
@@ -171,10 +171,10 @@ const DepartmentsPage: React.FC = () => {
   const totalEmployees = employees.length;
   
   // Total budget allocated across all departments
-  const totalBudgetAllocated = departments.reduce((sum, dept) => sum + dept.budgetAllocated, 0);
+  const totalBudgetAllocated = departments.reduce((sum: number, dept: any) => sum + dept.budgetAllocated, 0);
   
   // Total budget used across all departments
-  const totalBudgetUsed = departments.reduce((sum, dept) => sum + dept.budgetUsed, 0);
+  const totalBudgetUsed = departments.reduce((sum: number, dept: any) => sum + dept.budgetUsed, 0);
 
   return (
     <HrLayout 
@@ -271,7 +271,7 @@ const DepartmentsPage: React.FC = () => {
                     <TableCell colSpan={5} className="text-center">Nu au fost găsite departamente</TableCell>
                   </TableRow>
                 ) : (
-                  departments.map((department) => (
+                  departments.map((department: any) => (
                     <TableRow key={department.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewDepartment(department.id)}>
                       <TableCell className="font-medium">
                         {department.name}
@@ -344,7 +344,7 @@ const DepartmentsPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {departments.map(d => (
+              {departments.map((d: any) => (
                 <div key={d.id} className="p-4 border rounded-lg">
                   <div className="flex justify-between items-center mb-2">
                     <div className="font-medium text-lg">{d.name}</div>
@@ -380,12 +380,12 @@ const DepartmentsPage: React.FC = () => {
                     </div>
                   </div>
                   
-                  {employees.filter(emp => emp.departmentId === d.id).length > 0 && (
+                  {employees.filter((emp: any) => emp.departmentId === d.id).length > 0 && (
                     <>
                       <Separator className="my-4" />
                       <div className="text-sm font-medium mb-2">Angajați în acest departament:</div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                        {employees.filter(emp => emp.departmentId === d.id).map(emp => (
+                        {employees.filter((emp: any) => emp.departmentId === d.id).map((emp: any) => (
                           <div key={emp.id} className="text-sm px-3 py-2 border rounded-md flex justify-between items-center">
                             <span>{emp.lastName} {emp.firstName}</span>
                             <Button
