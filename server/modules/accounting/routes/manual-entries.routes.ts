@@ -6,8 +6,8 @@
 
 import { Router } from 'express';
 import { ManualEntriesController } from '../controllers/manual-entries.controller';
-import { AuthGuard } from '../../../common/middleware/auth.guard';
-import { RolesGuard } from '../../../common/middleware/roles.guard';
+import { AuthGuard } from '../../auth/guards/auth.guard';
+// import { RolesGuard } from '../../auth/guards/roles.guard'; // TODO: Verify roles guard path
 
 const router = Router();
 const controller = new ManualEntriesController();

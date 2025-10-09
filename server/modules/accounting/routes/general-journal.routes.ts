@@ -6,8 +6,8 @@
 
 import { Router } from 'express';
 import { GeneralJournalController } from '../controllers/general-journal.controller';
-import { AuthGuard } from '../../../common/middleware/auth.guard';
-import { RolesGuard } from '../../../common/middleware/roles.guard';
+import { AuthGuard } from '../../auth/guards/auth.guard';
+// import { RolesGuard } from '../../auth/guards/roles.guard'; // TODO: Verify roles guard path
 
 const router = Router();
 const controller = new GeneralJournalController();

@@ -6,7 +6,7 @@
 
 import { Router } from 'express';
 import fiscalClosureController from '../controllers/fiscal-closure.controller';
-import { AuthGuard } from '../../../middlewares/auth-guard.middleware';
+import { AuthGuard } from '../../auth/guards/auth.guard';
 
 const router = Router();
 
