@@ -67,7 +67,7 @@ const ContractDetailsPage: React.FC = () => {
         id: contractId,
         data
       }, {
-        onSuccess: (response) => {
+        onSuccess: (response: any) => {
           setIsSubmitting(false);
           // Redirecționare către pagina de contracte după actualizare cu succes
           navigate('/hr/contracts');

@@ -103,9 +103,9 @@ const ContractsPage: React.FC = () => {
   const employees = employeesResponse?.data?.items || [];
   
   // Stats calculations
-  const activeContracts = contracts.filter(c => c.status === 'active').length;
-  const expiringSoonContracts = contracts.filter(c => c.status === 'expiring_soon').length;
-  const expiredContracts = contracts.filter(c => c.status === 'expired').length;
+  const activeContracts = contracts.filter((c: any) => c.status === 'active').length;
+  const expiringSoonContracts = contracts.filter((c: any) => c.status === 'expiring_soon').length;
+  const expiredContracts = contracts.filter((c: any) => c.status === 'expired').length;
   
   // Handle sort
   const handleSort = (column: string) => {
@@ -148,7 +148,7 @@ const ContractsPage: React.FC = () => {
   
   // Get employee name
   const getEmployeeName = (employeeId: string) => {
-    const employee = employees.find(emp => emp.id === employeeId);
+    const employee = employees.find((emp: any) => emp.id === employeeId);
     return employee ? `${employee.lastName} ${employee.firstName}` : 'Necunoscut';
   };
   
@@ -311,7 +311,7 @@ const ContractsPage: React.FC = () => {
                     <TableCell colSpan={7} className="text-center">Nu au fost găsite contracte</TableCell>
                   </TableRow>
                 ) : (
-                  contracts.map((contract) => (
+                  contracts.map((contract: any) => (
                     <TableRow key={contract.id}>
                       <TableCell className="font-medium">
                         {getEmployeeName(contract.employeeId)}

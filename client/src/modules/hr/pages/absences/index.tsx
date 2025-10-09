@@ -111,9 +111,9 @@ const AbsencesPage: React.FC = () => {
   const employees = employeesResponse?.data?.items || [];
   
   // Stats calculations
-  const pendingAbsences = absences.filter(a => a.status === 'pending').length;
-  const approvedAbsences = absences.filter(a => a.status === 'approved').length;
-  const rejectedAbsences = absences.filter(a => a.status === 'rejected').length;
+  const pendingAbsences = absences.filter((a: any) => a.status === 'pending').length;
+  const approvedAbsences = absences.filter((a: any) => a.status === 'approved').length;
+  const rejectedAbsences = absences.filter((a: any) => a.status === 'rejected').length;
   
   // Absence types for filter
   const absenceTypes = [
@@ -165,7 +165,7 @@ const AbsencesPage: React.FC = () => {
   
   // Get employee name
   const getEmployeeName = (employeeId: string) => {
-    const employee = employees.find(emp => emp.id === employeeId);
+    const employee = employees.find((emp: any) => emp.id === employeeId);
     return employee ? `${employee.lastName} ${employee.firstName}` : 'Necunoscut';
   };
   
@@ -301,7 +301,7 @@ const AbsencesPage: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toți angajații</SelectItem>
-                  {employees.map(emp => (
+                  {employees.map((emp: any) => (
                     <SelectItem key={emp.id} value={emp.id}>
                       {emp.lastName} {emp.firstName}
                     </SelectItem>
@@ -343,7 +343,7 @@ const AbsencesPage: React.FC = () => {
                     <TableCell colSpan={6} className="text-center">Nu au fost găsite absențe</TableCell>
                   </TableRow>
                 ) : (
-                  absences.map((absence) => (
+                  absences.map((absence: any) => (
                     <TableRow key={absence.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewAbsence(absence.id)}>
                       <TableCell className="font-medium">
                         {getEmployeeName(absence.employeeId)}
