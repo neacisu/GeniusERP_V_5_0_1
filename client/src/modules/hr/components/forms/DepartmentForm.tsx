@@ -111,7 +111,7 @@ const DepartmentForm: React.FC<DepartmentFormProps> = ({
   const departments = departmentsResponse?.data || [];
   
   // Filtru pentru a nu arăta departamentul curent ca opțiune de părinte
-  const parentDepartments = departments.filter(d => !initialData?.id || d.id !== initialData.id);
+  const parentDepartments = departments.filter((d: any) => !initialData?.id || d.id !== initialData.id);
 
   // Inițializăm formularul cu datele departamentului sau valori implicite
   const form = useForm<DepartmentFormValues>({

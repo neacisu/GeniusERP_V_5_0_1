@@ -202,7 +202,7 @@ const AbsenceForm: React.FC<AbsenceFormProps> = ({
     while (currentDate <= end) {
       // Verificăm dacă ziua curentă nu este weekend și nu este sărbătoare
       const isHoliday = holidayDates.some(
-        (holiday) => 
+        (holiday: Date) => 
           holiday.getDate() === currentDate.getDate() && 
           holiday.getMonth() === currentDate.getMonth() && 
           holiday.getFullYear() === currentDate.getFullYear()

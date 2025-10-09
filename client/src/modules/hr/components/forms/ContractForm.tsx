@@ -413,7 +413,7 @@ const ContractForm: React.FC<ContractFormProps> = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {employees.map((employee) => (
+                        {employees.map((employee: any) => (
                           <SelectItem key={employee.id} value={employee.id}>
                             {employee.lastName} {employee.firstName}
                           </SelectItem>
@@ -797,7 +797,7 @@ const ContractForm: React.FC<ContractFormProps> = ({
                   </div>
                 ) : (
                   <div className="divide-y">
-                    {corOccupations.map((occupation) => (
+                    {corOccupations.map((occupation: any) => (
                       <div
                         key={occupation.id}
                         className="p-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center"
