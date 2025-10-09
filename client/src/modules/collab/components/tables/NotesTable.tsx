@@ -176,7 +176,7 @@ const NotesTable: React.FC<NotesTableProps> = ({
         
         return tags.length > 0 ? (
           <div className="flex flex-wrap gap-1">
-            {tags.slice(0, 3).map((tag, index) => (
+            {tags.slice(0, 3).map((tag: string, index: number) => (
               <Badge 
                 key={index} 
                 variant="outline" 

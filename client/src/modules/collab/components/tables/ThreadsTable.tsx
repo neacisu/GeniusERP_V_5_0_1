@@ -183,7 +183,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
           <span className="text-muted-foreground text-sm">Generală</span>
         );
       },
-      filterFn: (row, id, value: string) => {
+      filterFn: (row: any, id: string, value: string) => {
         return value.includes(row.getValue(id) || '');
       },
     });

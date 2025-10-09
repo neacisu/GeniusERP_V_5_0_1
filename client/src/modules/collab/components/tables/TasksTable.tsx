@@ -230,7 +230,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
           </Badge>
         );
       },
-      filterFn: (row, id, value: string) => {
+      filterFn: (row: any, id: string, value: string) => {
         return value.includes(row.getValue(id));
       },
     },
@@ -255,7 +255,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
           </Badge>
         );
       },
-      filterFn: (row, id, value: string) => {
+      filterFn: (row: any, id: string, value: string) => {
         return value.includes(row.getValue(id));
       },
     },
