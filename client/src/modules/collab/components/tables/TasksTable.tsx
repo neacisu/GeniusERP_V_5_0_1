@@ -230,7 +230,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
           </Badge>
         );
       },
-      filterFn: (row: any, id: string, value: string) => {
+      filterFn: (row, id, value: string) => {
         return value.includes(row.getValue(id));
       },
     },
@@ -255,7 +255,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
           </Badge>
         );
       },
-      filterFn: (row: any, id: string, value: string) => {
+      filterFn: (row, id, value: string) => {
         return value.includes(row.getValue(id));
       },
     },
@@ -416,7 +416,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header: any) => (
+                {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
@@ -446,7 +446,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
                   key={row.id}
                   data-state={row.getIsSelected() ? 'selected' : undefined}
                 >
-                  {row.getVisibleCells().map((cell: any) => (
+                  {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
