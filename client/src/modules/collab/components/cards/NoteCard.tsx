@@ -135,7 +135,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
                   <LinkIcon className="h-3 w-3 mr-1" />
                   <span>Asociat cu:</span>
                   <div className="flex flex-wrap gap-1 ml-1">
-                    {note.relatedItems.map((item, index) => (
+                    {note.relatedItems.map((item: { type: string; title?: string; id: string }, index: number) => (
                       <Badge key={index} variant="outline" className="text-xs px-1.5 py-0">
                         {item.type === 'task' && (
                           <span>{item.title || `Sarcina #${item.id}`}</span>

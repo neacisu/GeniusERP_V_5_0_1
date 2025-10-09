@@ -100,7 +100,7 @@ const NoteForm: React.FC<NoteFormProps> = ({
     const relatedItems = [...selectedRelatedItems];
     
     if (relatedTaskId && !relatedItems.some(item => item.id === relatedTaskId && item.type === 'task')) {
-      const task = tasks?.find(t => t.id === relatedTaskId);
+      const task = tasks?.find((t: Task) => t.id === relatedTaskId);
       if (task) {
         relatedItems.push({
           id: relatedTaskId,
@@ -111,7 +111,7 @@ const NoteForm: React.FC<NoteFormProps> = ({
     }
     
     if (relatedThreadId && !relatedItems.some(item => item.id === relatedThreadId && item.type === 'thread')) {
-      const thread = threads?.find(t => t.id === relatedThreadId);
+      const thread = threads?.find((t: Thread) => t.id === relatedThreadId);
       if (thread) {
         relatedItems.push({
           id: relatedThreadId,
@@ -153,7 +153,7 @@ const NoteForm: React.FC<NoteFormProps> = ({
     if (!taskId) return;
     
     if (!selectedRelatedItems.some(item => item.id === taskId && item.type === 'task')) {
-      const task = tasks?.find(t => t.id === taskId);
+      const task = tasks?.find((t: Task) => t.id === taskId);
       if (task) {
         const newRelatedItems = [
           ...selectedRelatedItems,
@@ -173,7 +173,7 @@ const NoteForm: React.FC<NoteFormProps> = ({
     if (!threadId) return;
     
     if (!selectedRelatedItems.some(item => item.id === threadId && item.type === 'thread')) {
-      const thread = threads?.find(t => t.id === threadId);
+      const thread = threads?.find((t: Thread) => t.id === threadId);
       if (thread) {
         const newRelatedItems = [
           ...selectedRelatedItems,
@@ -283,7 +283,7 @@ const NoteForm: React.FC<NoteFormProps> = ({
                   <div className="mt-2">
                     <FormLabel className="text-xs">Etichete populare</FormLabel>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {(popularTags || []).map(tag => (
+                      {(popularTags || []).map((tag: string) => (
                         <Badge 
                           key={tag} 
                           variant="outline"
@@ -343,10 +343,10 @@ const NoteForm: React.FC<NoteFormProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   {(tasks || [])
-                    .filter(task => !selectedRelatedItems.some(
+                    .filter((task: Task) => !selectedRelatedItems.some(
                       item => item.id === task.id && item.type === 'task')
                     )
-                    .map(task => (
+                    .map((task: Task) => (
                       <SelectItem key={`task-${task.id}`} value={task.id}>
                         <div className="flex items-center">
                           <FileText className="h-4 w-4 mr-2 text-blue-500" />
@@ -366,10 +366,10 @@ const NoteForm: React.FC<NoteFormProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   {(threads || [])
-                    .filter(thread => !selectedRelatedItems.some(
+                    .filter((thread: Thread) => !selectedRelatedItems.some(
                       item => item.id === thread.id && item.type === 'thread')
                     )
-                    .map(thread => (
+                    .map((thread: Thread) => (
                       <SelectItem key={`thread-${thread.id}`} value={thread.id}>
                         <div className="flex items-center">
                           <LinkIcon className="h-4 w-4 mr-2 text-indigo-500" />
