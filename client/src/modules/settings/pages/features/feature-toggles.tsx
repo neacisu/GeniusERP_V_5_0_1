@@ -10,7 +10,7 @@ import { Loader2, PlusCircle, Search } from "lucide-react";
 
 import PageHeader from "../../components/common/PageHeader";
 import SettingCard from "../../components/cards/SettingCard";
-import { useSettingsApi } from "../../hooks/useSettingsApi";
+import { useSettingsApi, type FeatureToggle } from "../../hooks/useSettingsApi";
 
 import {
   Table,

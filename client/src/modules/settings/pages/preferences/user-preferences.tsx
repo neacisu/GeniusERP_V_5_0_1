@@ -16,7 +16,7 @@ import SettingCard from "../../components/cards/SettingCard";
 import SettingForm from "../../components/forms/SettingForm";
 import FormSection from "../../components/forms/FormSection";
 import CustomFormField from "../../components/forms/FormField";
-import { useSettingsApi } from "../../hooks/useSettingsApi";
+import { useSettingsApi, type UserPreference } from "../../hooks/useSettingsApi";
 
 import {
   FormControl,

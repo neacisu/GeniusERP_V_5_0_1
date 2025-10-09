@@ -10,9 +10,11 @@ import {
   Users,
   Clock,
   LinkIcon,
+  Link,
   Paperclip,
   Pin,
-  Eye
+  Eye,
+  MessageSquare
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {

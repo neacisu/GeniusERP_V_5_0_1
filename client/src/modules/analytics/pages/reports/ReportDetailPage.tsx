@@ -87,6 +87,7 @@ import {
   EyeOff,
   ListFilter,
   ChevronDown,
+  TrendingUp,
 } from 'lucide-react';
 
 export default function ReportDetailPage() {

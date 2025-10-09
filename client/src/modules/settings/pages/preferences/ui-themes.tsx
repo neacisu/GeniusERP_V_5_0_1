@@ -22,6 +22,20 @@ import { useSettingsApi } from "../../hooks/useSettingsApi";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+
+// Type definition for UITheme
+interface UITheme {
+  id: string;
+  name: string;
+  colors: {
+    primary?: string;
+    secondary?: string;
+    accent?: string;
+    [key: string]: string | undefined;
+  };
+  isDefault?: boolean;
+  companyId?: string;
+}
 import {
   Select,
   SelectContent,
