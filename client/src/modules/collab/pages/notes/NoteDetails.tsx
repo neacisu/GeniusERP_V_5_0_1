@@ -212,7 +212,7 @@ const NoteDetailsPage: React.FC = () => {
                       
                       {note?.tags && note.tags.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-4">
-                          {note.tags.map((tag, index) => (
+                          {note.tags.map((tag: string, index: number) => (
                             <Badge key={index} variant="outline">
                               <TagIcon className="h-3 w-3 mr-1" />
                               {tag}

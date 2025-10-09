@@ -227,7 +227,7 @@ const MessageDetailsPage: React.FC = () => {
                   <div className="mt-4">
                     <h3 className="text-sm font-medium mb-2">Atașamente</h3>
                     <div className="space-y-2">
-                      {message.attachments.map((attachment, index) => (
+                      {message.attachments.map((attachment: { name: string }, index: number) => (
                         <div key={index} className="flex items-center p-2 rounded-md border">
                           <span className="flex-1">{attachment.name}</span>
                           <Button size="sm" variant="ghost">Descarcă</Button>
@@ -246,7 +246,7 @@ const MessageDetailsPage: React.FC = () => {
           <div className="space-y-4">
             <h2 className="text-lg font-medium">Răspunsuri</h2>
             
-            {message.replies.map((reply, index) => (
+            {message.replies.map((reply: { content: string; author?: string; createdAt?: string }, index: number) => (
               <Card key={index}>
                 <CardContent className="pt-6">
                   <div className="flex items-start gap-4">

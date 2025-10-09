@@ -360,7 +360,7 @@ function CommunityPage() {
                             {thread.category}
                           </Badge>
                           
-                          {thread.tags?.map((tag, i) => (
+                          {thread.tags?.map((tag: string, i: number) => (
                             <Badge key={i} variant="outline" className="text-xs">
                               {tag}
                             </Badge>

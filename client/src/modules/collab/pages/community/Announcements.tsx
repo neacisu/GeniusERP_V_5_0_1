@@ -228,7 +228,7 @@ function CommunityAnnouncementsPage() {
                       </p>
                       
                       <div className="flex flex-wrap gap-2 mt-2">
-                        {announcement.tags?.map((tag, i) => (
+                        {announcement.tags?.map((tag: string, i: number) => (
                           <Badge key={i} variant="outline" className="text-xs">
                             {tag}
                           </Badge>
@@ -318,7 +318,7 @@ function CommunityAnnouncementsPage() {
                       </p>
                       
                       <div className="flex flex-wrap gap-2 mt-2">
-                        {announcement.tags?.map((tag, i) => (
+                        {announcement.tags?.map((tag: string, i: number) => (
                           <Badge key={i} variant="outline" className="text-xs">
                             {tag}
                           </Badge>
