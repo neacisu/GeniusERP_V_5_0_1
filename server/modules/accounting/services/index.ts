@@ -12,6 +12,15 @@ import CashRegisterService from './cash-register.service';
 import NoteContabilService from './note-contabil.service';
 import ValidateDocumentService from './validate-document';
 
+// Fiscal Closure Services
+import FiscalClosureService from './fiscal-closure.service';
+import DepreciationCalculationService from './depreciation-calculation.service';
+import FXRevaluationService from './fx-revaluation.service';
+import VATClosureService from './vat-closure.service';
+import YearEndClosureService from './year-end-closure.service';
+import AccountingPeriodsService from './accounting-periods.service';
+import PeriodLockService from './period-lock.service';
+
 // Export all services
 export {
   JournalService,
@@ -20,7 +29,14 @@ export {
   BankJournalService,
   CashRegisterService,
   NoteContabilService,
-  ValidateDocumentService
+  ValidateDocumentService,
+  FiscalClosureService,
+  DepreciationCalculationService,
+  FXRevaluationService,
+  VATClosureService,
+  YearEndClosureService,
+  AccountingPeriodsService,
+  PeriodLockService
 };
 
 // Export default as object containing all services
@@ -31,5 +47,12 @@ export default {
   BankJournalService,
   CashRegisterService,
   NoteContabilService,
-  ValidateDocumentService
+  ValidateDocumentService,
+  FiscalClosureService,
+  DepreciationCalculationService,
+  FXRevaluationService,
+  VATClosureService,
+  YearEndClosureService,
+  AccountingPeriodsService,
+  PeriodLockService
 };
