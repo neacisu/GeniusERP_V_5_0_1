@@ -58,12 +58,50 @@ export function setupLedgerRoutes() {
   });
   
   /**
-   * Reverse a ledger entry
-   * POST /api/accounting/ledger/entries/:id/reverse
+   * Get a specific ledger entry with full details
+   * GET /api/accounting/ledger/entries/:id
    */
-  router.post("/entries/:id/reverse", (req, res) => {
-    journalController.reverseLedgerEntry(req as AuthenticatedRequest, res);
+  router.get("/entries/:id", (req, res) => {
+    journalController.getLedgerEntry(req as AuthenticatedRequest, res);
   });
+
+  /**
+   * Post a ledger entry (mark as final/posted)
+   * POST /api/accounting/ledger/entries/:id/post
+   * Requires: accountant or admin role
+   */
+  router.post("/entries/:id/post", 
+    AuthGuard.roleGuard(["accountant", "admin"]),
+    (req, res) => {
+      journalController.postLedgerEntry(req as AuthenticatedRequest, res);
+    }
+  );
+
+  /**
+   * Unpost a ledger entry (revert to draft)
+   * POST /api/accounting/ledger/entries/:id/unpost
+   * Requires: accountant or admin role
+   * Use with caution - should only be allowed in specific scenarios
+   */
+  router.post("/entries/:id/unpost", 
+    AuthGuard.roleGuard(["accountant", "admin"]),
+    (req, res) => {
+      journalController.unpostLedgerEntry(req as AuthenticatedRequest, res);
+    }
+  );
+  
+  /**
+   * Reverse a ledger entry (create stornare)
+   * POST /api/accounting/ledger/entries/:id/reverse
+   * Requires: accountant or admin role
+   * Only posted entries can be reversed
+   */
+  router.post("/entries/:id/reverse", 
+    AuthGuard.roleGuard(["accountant", "admin"]),
+    (req, res) => {
+      journalController.reverseLedgerEntry(req as AuthenticatedRequest, res);
+    }
+  );
   
   return router;
 }

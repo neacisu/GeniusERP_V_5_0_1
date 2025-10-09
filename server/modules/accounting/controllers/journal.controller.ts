@@ -221,13 +221,15 @@ export class JournalController extends BaseController {
   }
   
   /**
-   * Reverse a ledger entry
+   * Reverse a ledger entry (create stornare)
    * POST /api/accounting/ledger/entries/:id/reverse
+   * Only posted entries can be reversed
    */
   async reverseLedgerEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const entryId = req.params.id;
       const { reason } = req.body;
+      const userId = this.getUserId(req);
       
       if (!reason) {
         throw {
@@ -236,9 +238,8 @@ export class JournalController extends BaseController {
         };
       }
       
-      // Use the V2 service for direct SQL operations
-      console.log('[DEBUG] Using JournalServiceV2 for reversal operation');
-      const reversalId = await this.journalServiceV2.reverseLedgerEntry(entryId, reason);
+      console.log('[DEBUG] Reversing ledger entry:', entryId, 'Reason:', reason);
+      const reversalId = await this.journalService.reverseLedgerEntry(entryId, reason, userId);
       
       return {
         success: true,
@@ -247,6 +248,94 @@ export class JournalController extends BaseController {
           reversalEntryId: reversalId,
           message: "Ledger entry reversed successfully"
         }
+      };
+    });
+  }
+
+  /**
+   * Post a ledger entry (mark as final/posted)
+   * POST /api/accounting/ledger/entries/:id/post
+   */
+  async postLedgerEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const entryId = req.params.id;
+      const userId = this.getUserId(req);
+      
+      if (!entryId) {
+        throw {
+          statusCode: 400,
+          message: "Ledger entry ID is required"
+        };
+      }
+      
+      console.log('[DEBUG] Posting ledger entry:', entryId);
+      const postedEntry = await this.journalService.postLedgerEntry(entryId, userId);
+      
+      return {
+        success: true,
+        data: postedEntry,
+        message: "Ledger entry posted successfully"
+      };
+    });
+  }
+
+  /**
+   * Unpost a ledger entry (revert to draft)
+   * POST /api/accounting/ledger/entries/:id/unpost
+   */
+  async unpostLedgerEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const entryId = req.params.id;
+      const userId = this.getUserId(req);
+      
+      if (!entryId) {
+        throw {
+          statusCode: 400,
+          message: "Ledger entry ID is required"
+        };
+      }
+      
+      console.log('[DEBUG] Unposting ledger entry:', entryId);
+      const unpostedEntry = await this.journalService.unpostLedgerEntry(entryId, userId);
+      
+      return {
+        success: true,
+        data: unpostedEntry,
+        message: "Ledger entry unposted successfully"
+      };
+    });
+  }
+
+  /**
+   * Get ledger entry details including posting status
+   * GET /api/accounting/ledger/entries/:id
+   */
+  async getLedgerEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const entryId = req.params.id;
+      const companyId = this.getCompanyId(req);
+      
+      if (!entryId) {
+        throw {
+          statusCode: 400,
+          message: "Ledger entry ID is required"
+        };
+      }
+      
+      console.log('[DEBUG] Getting ledger entry:', entryId);
+      const entry = await this.journalService.getLedgerEntry(entryId);
+      
+      // Verify company ownership
+      if (entry.companyId !== companyId) {
+        throw {
+          statusCode: 403,
+          message: "You don't have permission to access this entry"
+        };
+      }
+      
+      return {
+        success: true,
+        data: entry
       };
     });
   }

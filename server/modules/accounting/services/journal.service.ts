@@ -40,7 +40,21 @@ export interface LedgerEntryData {
   documentDate?: string; // Data documentului
   amount: number;
   description: string;
+  // Posting fields
+  isPosted?: boolean; // Marcaj dacă nota este postată (finalizată)
+  postedAt?: string; // Data și ora postării
+  postedBy?: string; // ID utilizator care a postat
+  // Reversal fields
+  isReversed?: boolean; // Marcaj dacă nota este stornată
+  reversedAt?: string; // Data și ora stornării
+  reversedBy?: string; // ID utilizator care a stornat
+  reversalReason?: string; // Motivul stornării
+  originalEntryId?: string; // ID nota originală (pentru stornări)
+  reversalEntryId?: string; // ID nota de stornare (pentru note stornate)
+  // Audit fields
   createdAt: string;
+  createdBy?: string;
+  updatedAt?: string;
   lines: LedgerLineData[];
 }
 
@@ -287,12 +301,15 @@ export class JournalService {
   }
   
   /**
-   * Reverse a ledger entry
+   * Reverse a ledger entry (create stornare/reversare)
+   * Creates a mirror entry with debits and credits swapped
+   * Only posted entries can be reversed
    * @param ledgerEntryId ID of the ledger entry to reverse
-   * @param reason Reason for the reversal
+   * @param reason Reason for the reversal (required)
+   * @param userId ID of the user performing the reversal
    * @returns Reversal ledger entry ID
    */
-  async reverseLedgerEntry(ledgerEntryId: string, reason: string): Promise<string> {
+  async reverseLedgerEntry(ledgerEntryId: string, reason: string, userId: string): Promise<string> {
     if (!ledgerEntryId) {
       throw new Error('Ledger entry ID is required');
     }
@@ -301,12 +318,17 @@ export class JournalService {
       throw new Error('Reversal reason is required');
     }
     
+    if (!userId) {
+      throw new Error('User ID is required for reversal');
+    }
+    
     const sql = getClient();
     
-    // Get the original entry with lines using direct SQL
+    // Get the original entry with lines and status using direct SQL
     const originalEntry = await sql`
       SELECT 
-        e.id, e.company_id, e.type, e.reference_number, e.amount, e.description,
+        e.id, e.company_id, e.franchise_id, e.type, e.reference_number, e.amount, e.description,
+        e.is_posted, e.is_reversed, e.reversal_entry_id,
         e.created_at, e.created_by,
         l.id as line_id, l.account_id, l.debit_amount, l.credit_amount, l.description as line_description
       FROM ledger_entries e
@@ -326,6 +348,9 @@ export class JournalService {
           referenceNumber: firstRow.reference_number,
           amount: firstRow.amount,
           description: firstRow.description,
+          isPosted: firstRow.is_posted,
+          isReversed: firstRow.is_reversed,
+          reversalEntryId: firstRow.reversal_entry_id,
           createdAt: firstRow.created_at,
           createdBy: firstRow.created_by,
           // Group the lines from the joined rows
@@ -347,6 +372,19 @@ export class JournalService {
       throw new Error(`Ledger entry with ID ${ledgerEntryId} not found`);
     }
     
+    // Validări: doar notele postate pot fi stornate
+    if (!originalEntry.isPosted) {
+      throw new Error('Only posted entries can be reversed. Please post the entry first.');
+    }
+    
+    if (originalEntry.isReversed) {
+      throw new Error('Entry is already reversed');
+    }
+    
+    if (originalEntry.reversalEntryId) {
+      throw new Error('Entry has already been reversed');
+    }
+    
     // Create reversal lines by swapping debit and credit amounts
     // First ensure lines is an array
     if (!Array.isArray(originalEntry.lines)) {
@@ -357,7 +395,7 @@ export class JournalService {
       accountId: line.accountId,
       debitAmount: Number(line.creditAmount),
       creditAmount: Number(line.debitAmount),
-      description: `Reversal: ${line.description}`
+      description: `Stornare: ${line.description}`
     }));
     
     // Create the reversal entry
@@ -367,9 +405,48 @@ export class JournalService {
       type: LedgerEntryType.REVERSAL,
       referenceNumber: `REV-${originalEntry.referenceNumber || originalEntry.id}`,
       amount: Number(originalEntry.amount),
-      description: `Reversal of entry ${originalEntry.id}: ${reason}`,
-      userId: originalEntry.createdBy,
+      description: `Stornare nota ${originalEntry.referenceNumber || originalEntry.id}: ${reason}`,
+      userId: userId,
       lines: reversalLines
+    });
+    
+    // Update the reversal entry to link it to the original and set original_entry_id
+    const now = new Date();
+    await sql`
+      UPDATE ledger_entries
+      SET original_entry_id = ${ledgerEntryId},
+          updated_at = ${now.toISOString()}
+      WHERE id = ${reversalEntry.id}
+    `;
+    
+    // Post the reversal entry automatically
+    await this.postLedgerEntry(reversalEntry.id, userId);
+    
+    // Mark the original entry as reversed
+    await sql`
+      UPDATE ledger_entries
+      SET is_reversed = TRUE,
+          reversed_at = ${now.toISOString()},
+          reversed_by = ${userId},
+          reversal_reason = ${reason},
+          reversal_entry_id = ${reversalEntry.id},
+          updated_at = ${now.toISOString()}
+      WHERE id = ${ledgerEntryId}
+    `;
+    
+    // Log audit event for the original entry
+    await AuditService.log({
+      userId,
+      companyId: originalEntry.companyId,
+      action: AuditAction.UPDATE,
+      entity: 'ledger_entry',
+      entityId: ledgerEntryId,
+      details: {
+        action: 'REVERSED',
+        reason,
+        reversal_entry_id: reversalEntry.id,
+        reversed_at: now.toISOString()
+      }
     });
     
     return reversalEntry.id;
@@ -521,6 +598,231 @@ export class JournalService {
     });
     
     return ledgerEntry.id;
+  }
+
+  /**
+   * Post a ledger entry (mark as final/posted)
+   * Once posted, a ledger entry cannot be modified
+   * @param ledgerEntryId ID of the ledger entry to post
+   * @param userId ID of the user posting the entry
+   * @returns Updated ledger entry data
+   */
+  async postLedgerEntry(ledgerEntryId: string, userId: string): Promise<LedgerEntryData> {
+    if (!ledgerEntryId) {
+      throw new Error('Ledger entry ID is required');
+    }
+    
+    if (!userId) {
+      throw new Error('User ID is required for posting');
+    }
+    
+    const sql = getClient();
+    
+    // Get the entry to validate it exists and is not already posted
+    const existingEntry = await sql`
+      SELECT id, company_id, type, is_posted, is_reversed, amount, description
+      FROM ledger_entries
+      WHERE id = ${ledgerEntryId}
+    `;
+    
+    if (existingEntry.length === 0) {
+      throw new Error(`Ledger entry with ID ${ledgerEntryId} not found`);
+    }
+    
+    const entry = existingEntry[0];
+    
+    if (entry.is_posted) {
+      throw new Error('Ledger entry is already posted');
+    }
+    
+    if (entry.is_reversed) {
+      throw new Error('Cannot post a reversed entry');
+    }
+    
+    // Validate that lines are balanced
+    const lines = await sql`
+      SELECT debit_amount, credit_amount
+      FROM ledger_lines
+      WHERE ledger_entry_id = ${ledgerEntryId}
+    `;
+    
+    if (lines.length === 0) {
+      throw new Error('Ledger entry has no lines');
+    }
+    
+    const totalDebit = lines.reduce((sum: number, line: any) => sum + Number(line.debit_amount || 0), 0);
+    const totalCredit = lines.reduce((sum: number, line: any) => sum + Number(line.credit_amount || 0), 0);
+    
+    if (Math.abs(totalDebit - totalCredit) > 0.01) {
+      throw new Error(`Ledger entry is not balanced. Debits: ${totalDebit}, Credits: ${totalCredit}`);
+    }
+    
+    // Update the entry to mark it as posted
+    const now = new Date();
+    await sql`
+      UPDATE ledger_entries
+      SET is_posted = TRUE,
+          posted_at = ${now.toISOString()},
+          posted_by = ${userId},
+          updated_at = ${now.toISOString()}
+      WHERE id = ${ledgerEntryId}
+    `;
+    
+    // Log audit event
+    await AuditService.log({
+      userId,
+      companyId: entry.company_id,
+      action: AuditAction.UPDATE,
+      entity: 'ledger_entry',
+      entityId: ledgerEntryId,
+      details: {
+        action: 'POSTED',
+        type: entry.type,
+        amount: entry.amount,
+        posted_at: now.toISOString()
+      }
+    });
+    
+    // Fetch and return the updated entry
+    return this.getLedgerEntry(ledgerEntryId);
+  }
+
+  /**
+   * Unpost a ledger entry (revert to draft state)
+   * This is only allowed if the entry has not been reversed
+   * Use with caution - should only be allowed in specific scenarios
+   * @param ledgerEntryId ID of the ledger entry to unpost
+   * @param userId ID of the user unposting the entry
+   * @returns Updated ledger entry data
+   */
+  async unpostLedgerEntry(ledgerEntryId: string, userId: string): Promise<LedgerEntryData> {
+    if (!ledgerEntryId) {
+      throw new Error('Ledger entry ID is required');
+    }
+    
+    if (!userId) {
+      throw new Error('User ID is required for unposting');
+    }
+    
+    const sql = getClient();
+    
+    // Get the entry to validate
+    const existingEntry = await sql`
+      SELECT id, company_id, type, is_posted, is_reversed, reversal_entry_id
+      FROM ledger_entries
+      WHERE id = ${ledgerEntryId}
+    `;
+    
+    if (existingEntry.length === 0) {
+      throw new Error(`Ledger entry with ID ${ledgerEntryId} not found`);
+    }
+    
+    const entry = existingEntry[0];
+    
+    if (!entry.is_posted) {
+      throw new Error('Ledger entry is not posted');
+    }
+    
+    if (entry.is_reversed) {
+      throw new Error('Cannot unpost a reversed entry');
+    }
+    
+    if (entry.reversal_entry_id) {
+      throw new Error('Cannot unpost an entry that has a reversal');
+    }
+    
+    // Update the entry to mark it as draft again
+    const now = new Date();
+    await sql`
+      UPDATE ledger_entries
+      SET is_posted = FALSE,
+          posted_at = NULL,
+          posted_by = NULL,
+          updated_at = ${now.toISOString()}
+      WHERE id = ${ledgerEntryId}
+    `;
+    
+    // Log audit event
+    await AuditService.log({
+      userId,
+      companyId: entry.company_id,
+      action: AuditAction.UPDATE,
+      entity: 'ledger_entry',
+      entityId: ledgerEntryId,
+      details: {
+        action: 'UNPOSTED',
+        type: entry.type,
+        unposted_at: now.toISOString()
+      }
+    });
+    
+    // Fetch and return the updated entry
+    return this.getLedgerEntry(ledgerEntryId);
+  }
+
+  /**
+   * Get a single ledger entry with its lines
+   * @param ledgerEntryId ID of the ledger entry
+   * @returns Ledger entry with lines
+   */
+  async getLedgerEntry(ledgerEntryId: string): Promise<LedgerEntryData> {
+    const sql = getClient();
+    
+    const result = await sql`
+      SELECT 
+        e.id, e.company_id, e.franchise_id, e.type, e.reference_number, 
+        e.journal_number, e.entry_date, e.document_date, e.amount, e.description, 
+        e.is_posted, e.posted_at, e.posted_by,
+        e.is_reversed, e.reversed_at, e.reversed_by, e.reversal_reason,
+        e.original_entry_id, e.reversal_entry_id,
+        e.created_at, e.created_by, e.updated_at,
+        l.id as line_id, l.account_id, l.debit_amount, l.credit_amount, 
+        l.description as line_description
+      FROM ledger_entries e
+      LEFT JOIN ledger_lines l ON l.ledger_entry_id = e.id
+      WHERE e.id = ${ledgerEntryId}
+      ORDER BY l.created_at
+    `;
+    
+    if (result.length === 0) {
+      throw new Error(`Ledger entry with ID ${ledgerEntryId} not found`);
+    }
+    
+    const firstRow = result[0];
+    return {
+      id: firstRow.id,
+      companyId: firstRow.company_id,
+      franchiseId: firstRow.franchise_id,
+      type: firstRow.type,
+      referenceNumber: firstRow.reference_number,
+      journalNumber: firstRow.journal_number,
+      entryDate: firstRow.entry_date,
+      documentDate: firstRow.document_date,
+      amount: firstRow.amount,
+      description: firstRow.description,
+      isPosted: firstRow.is_posted,
+      postedAt: firstRow.posted_at,
+      postedBy: firstRow.posted_by,
+      isReversed: firstRow.is_reversed,
+      reversedAt: firstRow.reversed_at,
+      reversedBy: firstRow.reversed_by,
+      reversalReason: firstRow.reversal_reason,
+      originalEntryId: firstRow.original_entry_id,
+      reversalEntryId: firstRow.reversal_entry_id,
+      createdAt: firstRow.created_at,
+      createdBy: firstRow.created_by,
+      updatedAt: firstRow.updated_at,
+      lines: result
+        .filter(row => row.line_id)
+        .map(row => ({
+          id: row.line_id,
+          ledgerEntryId: row.id,
+          accountId: row.account_id,
+          debitAmount: row.debit_amount,
+          creditAmount: row.credit_amount,
+          description: row.line_description
+        }))
+    } as any;
   }
 }
 
