@@ -176,7 +176,7 @@ const NotesTable: React.FC<NotesTableProps> = ({
         
         return tags.length > 0 ? (
           <div className="flex flex-wrap gap-1">
-            {tags.slice(0, 3).map((tag, index) => (
+            {tags.slice(0, 3).map((tag: string, index: number) => (
               <Badge 
                 key={index} 
                 variant="outline" 
@@ -366,7 +366,7 @@ const NotesTable: React.FC<NotesTableProps> = ({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map((header: any) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
@@ -396,7 +396,7 @@ const NotesTable: React.FC<NotesTableProps> = ({
                   key={row.id}
                   data-state={row.getIsSelected() ? 'selected' : undefined}
                 >
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map((cell: any) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>

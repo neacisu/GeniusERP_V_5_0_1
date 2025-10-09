@@ -183,7 +183,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
           <span className="text-muted-foreground text-sm">Generală</span>
         );
       },
-      filterFn: (row, id, value: string) => {
+      filterFn: (row: any, id: string, value: string) => {
         return value.includes(row.getValue(id) || '');
       },
     });
@@ -360,7 +360,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map((header: any) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
@@ -390,7 +390,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
                   key={row.id}
                   data-state={row.getIsSelected() ? 'selected' : undefined}
                 >
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map((cell: any) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
