@@ -18,9 +18,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Loader2, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
-import { apiClient } from '@/lib/api-client';
+import { apiRequest } from '@/lib/queryClient';
 
 type ClosureType = 'month' | 'year';
 
@@ -83,18 +82,21 @@ export function FiscalClosureWizard({
     setSteps(processingSteps);
 
     try {
-      const response = await apiClient.post('/api/accounting/fiscal-closure/month', {
-        year,
-        month,
-        skipDepreciation,
-        skipFXRevaluation,
-        skipVAT,
-        dryRun
+      const response = await apiRequest<any>('/api/accounting/fiscal-closure/month', {
+        method: 'POST',
+        body: {
+          year,
+          month,
+          skipDepreciation,
+          skipFXRevaluation,
+          skipVAT,
+          dryRun
+        }
       });
 
-      setResult(response.data);
+      setResult(response);
 
-      if (response.data.success) {
+      if (response.success) {
         // Actualizează statusul pașilor bazat pe rezultat
         const updatedSteps = processingSteps.map(s => {
           if (s.id === 'depreciation' && skipDepreciation) return { ...s, status: 'skipped' as const };
@@ -103,17 +105,17 @@ export function FiscalClosureWizard({
           return { ...s, status: 'success' as const };
         });
         setSteps(updatedSteps);
-        setWarnings(response.data.data.warnings || []);
+        setWarnings(response.data?.warnings || []);
         if (onSuccess) onSuccess();
       } else {
-        setErrors(response.data.errors || ['Eroare necunoscută']);
+        setErrors(response.errors || ['Eroare necunoscută']);
         const updatedSteps = processingSteps.map(s => ({ ...s, status: 'error' as const }));
         setSteps(updatedSteps);
       }
 
       setStep('result');
     } catch (error: any) {
-      setErrors([error.response?.data?.details || error.message || 'Eroare la închiderea lunii']);
+      setErrors([error.message || 'Eroare la închiderea lunii']);
       setStep('result');
     } finally {
       setLoading(false);
@@ -133,40 +135,43 @@ export function FiscalClosureWizard({
     setSteps(processingSteps);
 
     try {
-      const response = await apiClient.post('/api/accounting/fiscal-closure/year', {
-        fiscalYear: year,
-        taxAdjustments: {
-          nonDeductibleExpenses: parseFloat(nonDeductibleExpenses) || 0,
-          nonTaxableIncome: parseFloat(nonTaxableIncome) || 0,
-          taxLossCarryforward: 0,
-          otherAdjustments: 0
-        },
-        profitDistribution: {
-          legalReserve: parseFloat(legalReserve) || 0,
-          statutoryReserves: 0,
-          otherReserves: 0,
-          dividends: parseFloat(dividends) || 0,
-          retainedEarnings: 0 // Calculat automat
-        },
-        dryRun
+      const response = await apiRequest<any>('/api/accounting/fiscal-closure/year', {
+        method: 'POST',
+        body: {
+          fiscalYear: year,
+          taxAdjustments: {
+            nonDeductibleExpenses: parseFloat(nonDeductibleExpenses) || 0,
+            nonTaxableIncome: parseFloat(nonTaxableIncome) || 0,
+            taxLossCarryforward: 0,
+            otherAdjustments: 0
+          },
+          profitDistribution: {
+            legalReserve: parseFloat(legalReserve) || 0,
+            statutoryReserves: 0,
+            otherReserves: 0,
+            dividends: parseFloat(dividends) || 0,
+            retainedEarnings: 0 // Calculat automat
+          },
+          dryRun
+        }
       });
 
-      setResult(response.data);
+      setResult(response);
 
-      if (response.data.success) {
+      if (response.success) {
         const updatedSteps = processingSteps.map(s => ({ ...s, status: 'success' as const }));
         setSteps(updatedSteps);
-        setWarnings(response.data.data.warnings || []);
+        setWarnings(response.data?.warnings || []);
         if (onSuccess) onSuccess();
       } else {
-        setErrors(response.data.errors || ['Eroare necunoscută']);
+        setErrors(response.errors || ['Eroare necunoscută']);
         const updatedSteps = processingSteps.map(s => ({ ...s, status: 'error' as const }));
         setSteps(updatedSteps);
       }
 
       setStep('result');
     } catch (error: any) {
-      setErrors([error.response?.data?.details || error.message || 'Eroare la închiderea anului']);
+      setErrors([error.message || 'Eroare la închiderea anului']);
       setStep('result');
     } finally {
       setLoading(false);
