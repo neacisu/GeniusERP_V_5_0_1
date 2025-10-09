@@ -61,8 +61,7 @@ export default function TransactionDialog({ isOpen, onClose }: TransactionDialog
 
   const createTransactionMutation = useMutation({
     mutationFn: async (data: { entry: InsertJournalEntry, lines: InsertJournalLine[] }) => {
-      const response = await apiRequest("POST", "/api/journal-entries", data);
-      return await response.json();
+      return await apiRequest("/api/journal-entries", { method: "POST", body: data });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/journal-entries'] });
