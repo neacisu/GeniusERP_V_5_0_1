@@ -209,7 +209,7 @@ export default function DashboardPage() {
             </div>
           ) : statsData?.recentActivity?.length ? (
             <div className="space-y-4">
-              {statsData.recentActivity.map((activity, index) => (
+              {statsData.recentActivity.map((activity: { type: string; title: string; description: string }, index: number) => (
                 <Card key={index}>
                   <CardContent className="p-6">
                     <div className="flex justify-between items-center">

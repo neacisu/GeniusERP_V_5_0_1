@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from 'react';
-import { useAnalyticsReports } from '../../hooks/useAnalyticsReports';
+import { useAnalyticsReports, type AnalyticsReport } from '../../hooks/useAnalyticsReports';
 import { Link } from 'wouter';
 import {
   Card,
@@ -329,7 +329,7 @@ export default function ReportsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {reports.map((report) => (
+                  {reports.map((report: AnalyticsReport) => (
                     <TableRow key={report.id}>
                       <TableCell className="font-medium">
                         <Link href={`/analytics/reports/${report.id}`} className="hover:underline flex items-center">
@@ -425,7 +425,7 @@ export default function ReportsPage() {
           ) : (
             // Grid view
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {reports.map((report) => (
+              {reports.map((report: AnalyticsReport) => (
                 <Card key={report.id}>
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
