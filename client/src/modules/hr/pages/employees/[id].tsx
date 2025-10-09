@@ -425,7 +425,7 @@ const EmployeeDetailPage: React.FC = () => {
           
           {contracts.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
-              {contracts.map((contract) => (
+              {contracts.map((contract: any) => (
                 <ContractCard 
                   key={contract.id} 
                   contract={contract}
@@ -497,7 +497,7 @@ const EmployeeDetailPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {absences.map((absence) => (
+                  {absences.map((absence: any) => (
                     <tr key={absence.id} className="border-b">
                       <td className="p-3">{absence.absenceType}</td>
                       <td className="p-3">

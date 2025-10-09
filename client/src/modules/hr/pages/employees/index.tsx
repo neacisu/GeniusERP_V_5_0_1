@@ -114,9 +114,9 @@ const EmployeesPage: React.FC = () => {
   const departments = departmentsResponse?.data || [];
   
   // Stats calculations
-  const activeEmployees = employees.filter(emp => emp.status === 'active').length;
-  const inactiveEmployees = employees.filter(emp => emp.status === 'inactive').length;
-  const onLeaveEmployees = employees.filter(emp => emp.status === 'on_leave').length;
+  const activeEmployees = employees.filter((emp: any) => emp.status === 'active').length;
+  const inactiveEmployees = employees.filter((emp: any) => emp.status === 'inactive').length;
+  const onLeaveEmployees = employees.filter((emp: any) => emp.status === 'on_leave').length;
   
   // Handle sort
   const handleSort = (column: string) => {
@@ -163,7 +163,7 @@ const EmployeesPage: React.FC = () => {
   
   // Get department name
   const getDepartmentName = (departmentId: string) => {
-    const department = departments.find(dept => dept.id === departmentId);
+    const department = departments.find((dept: any) => dept.id === departmentId);
     return department ? department.name : 'Nedefinit';
   };
   
@@ -273,7 +273,7 @@ const EmployeesPage: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toate departamentele</SelectItem>
-                  {departments.map(department => (
+                  {departments.map((department: any) => (
                     <SelectItem key={department.id} value={department.id}>
                       {department.name}
                     </SelectItem>
@@ -315,7 +315,7 @@ const EmployeesPage: React.FC = () => {
                     <TableCell colSpan={6} className="text-center">Nu au fost găsiți angajați</TableCell>
                   </TableRow>
                 ) : (
-                  employees.map((employee) => (
+                  employees.map((employee: any) => (
                     <TableRow key={employee.id}>
                       <TableCell className="font-medium">
                         {employee.lastName} {employee.firstName}

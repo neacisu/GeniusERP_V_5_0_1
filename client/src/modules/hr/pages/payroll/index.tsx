@@ -154,13 +154,13 @@ const PayrollPage: React.FC = () => {
   };
   
   // Stats calculations
-  const totalGrossSalary = payrollRecords.reduce((sum, record) => sum + record.grossSalary, 0);
-  const totalNetSalary = payrollRecords.reduce((sum, record) => sum + record.netSalary, 0);
-  const totalTaxes = payrollRecords.reduce((sum, record) => sum + record.totalTaxes, 0);
+  const totalGrossSalary = payrollRecords.reduce((sum: number, record: any) => sum + record.grossSalary, 0);
+  const totalNetSalary = payrollRecords.reduce((sum: number, record: any) => sum + record.netSalary, 0);
+  const totalTaxes = payrollRecords.reduce((sum: number, record: any) => sum + record.totalTaxes, 0);
   
   // Get department name
   const getDepartmentName = (departmentId: string) => {
-    const department = departments.find(dept => dept.id === departmentId);
+    const department = departments.find((dept: any) => dept.id === departmentId);
     return department ? department.name : 'Nedefinit';
   };
   
@@ -389,7 +389,7 @@ const PayrollPage: React.FC = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  payrollRecords.map((payroll) => (
+                  payrollRecords.map((payroll: any) => (
                     <TableRow key={payroll.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewPayrollDetails(payroll.id)}>
                       <TableCell className="font-medium">
                         {payroll.lastName} {payroll.firstName}
