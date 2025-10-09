@@ -262,7 +262,7 @@ const NoteDetailsPage: React.FC = () => {
                       </div>
                     ) : history?.items && history.items.length > 0 ? (
                       <div className="space-y-4">
-                        {history.items.map(activity => (
+                        {history.items.map((activity: { id: string; description: string; timestamp: string }) => (
                           <div key={activity.id} className="flex gap-4">
                             <div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted">
                               <Clock className="h-4 w-4" />
@@ -298,7 +298,7 @@ const NoteDetailsPage: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {note.relatedItems.map((item, index) => (
+                    {note.relatedItems.map((item: { type: string; title?: string; id: string }, index: number) => (
                       <div key={index} className="flex items-center gap-2">
                         {item.type === 'task' ? (
                           <FileText className="h-4 w-4 text-blue-500" />
