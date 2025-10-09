@@ -5,7 +5,7 @@
  */
 
 import { Router } from 'express';
-import { logger } from '../../common/logging/logger';
+import { logger } from '../../common/logger';
 import { InvoiceNumberingRoutes } from './routes/invoice-numbering.routes';
 
 export class InvoicingModule {
