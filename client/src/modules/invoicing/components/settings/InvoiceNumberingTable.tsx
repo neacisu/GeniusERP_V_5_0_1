@@ -107,7 +107,7 @@ export function InvoiceNumberingTable({ onEdit, onSetDefault }: InvoiceNumbering
               </TableCell>
             </TableRow>
           ) : (
-            settings.map((setting) => (
+            settings.map((setting: any) => (
               <TableRow key={setting.id}>
                 <TableCell className="font-medium">
                   {setting.isDefault && (

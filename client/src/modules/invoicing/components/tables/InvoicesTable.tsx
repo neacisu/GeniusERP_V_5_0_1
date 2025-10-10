@@ -274,7 +274,7 @@ export function InvoicesTable({
   const table = useReactTable({
     data,
     columns,
-    onSortingChange: (updater) => {
+    onSortingChange: (updater: any) => {
       const newSorting = typeof updater === 'function' ? updater(sorting) : updater;
       setSorting(newSorting);
       onSortingChange?.(newSorting);
@@ -354,9 +354,9 @@ export function InvoicesTable({
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map((headerGroup: any) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map((header: any) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
