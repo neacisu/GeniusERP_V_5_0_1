@@ -33,10 +33,13 @@ export class PermissionQueryService extends BaseDrizzleService {
         return result;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? errorMessage : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to get permissions`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve permissions: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      logger.error(`[${context}] Stack trace: ${errorStack || "N/A"}`);
+      throw new Error(`Failed to retrieve permissions: ${errorMessage}`);
     }
   }
   
@@ -67,10 +70,13 @@ export class PermissionQueryService extends BaseDrizzleService {
         return result[0];
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? errorMessage : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to get permission by ID: ${permissionId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve permission: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      logger.error(`[${context}] Stack trace: ${errorStack || "N/A"}`);
+      throw new Error(`Failed to retrieve permission: ${errorMessage}`);
     }
   }
   
@@ -107,10 +113,13 @@ export class PermissionQueryService extends BaseDrizzleService {
         return result[0];
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? errorMessage : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to get permission for resource: ${resource}, action: ${action}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve permission by resource and action: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      logger.error(`[${context}] Stack trace: ${errorStack || "N/A"}`);
+      throw new Error(`Failed to retrieve permission by resource and action: ${errorMessage}`);
     }
   }
   
@@ -135,10 +144,13 @@ export class PermissionQueryService extends BaseDrizzleService {
         return result;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? errorMessage : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to get permissions for resource: ${resource}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve permissions by resource: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      logger.error(`[${context}] Stack trace: ${errorStack || "N/A"}`);
+      throw new Error(`Failed to retrieve permissions by resource: ${errorMessage}`);
     }
   }
 }
