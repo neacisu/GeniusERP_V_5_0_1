@@ -47,7 +47,7 @@ const contractSchema = z.object({
 
   // REVISAL Secțiune II: Perioada și Tipul Contractului
   startDate: z.date({
-    required_error: "Data de început este obligatorie",
+    message: "Data de început este obligatorie",
   }),
   endDate: z.date().optional(),
   contractType: z.string().min(1, { message: 'Tipul contractului este obligatoriu' }),
@@ -62,21 +62,21 @@ const contractSchema = z.object({
   corOccupationName: z.string().min(1, { message: 'Denumirea oficială a ocupației conform COR este obligatorie' }),
   
   // REVISAL Secțiune IV: Program de Lucru
-  workHours: z.coerce.number().int().positive().default(8),
-  workingDaysPerWeek: z.coerce.number().int().min(1).max(7).default(5),
-  workNorm: z.string().default('full_time'), // normă întreagă/parțială
-  workScheduleType: z.string().default('fixed'), // fix/inegal
+  workHours: z.number().int().positive(),
+  workingDaysPerWeek: z.number().int().min(1).max(7),
+  workNorm: z.string(), // normă întreagă/parțială
+  workScheduleType: z.string(), // fix/inegal
 
   // REVISAL Secțiune V: Salarizare
-  grossSalary: z.coerce.number().positive({ message: 'Salariul trebuie să fie pozitiv' }),
-  currency: z.string().default('RON'),
+  grossSalary: z.number().positive({ message: 'Salariul trebuie să fie pozitiv' }),
+  currency: z.string(),
   bonusesBenefits: z.string().optional(),
   
   // REVISAL Secțiune VI: Alte date
-  status: z.string().default('draft'),
-  isApprenticeshipContract: z.boolean().default(false),
-  isInternshipContract: z.boolean().default(false),
-  isTelemuncaContract: z.boolean().default(false), // muncă la distanță
+  status: z.string(),
+  isApprenticeshipContract: z.boolean(),
+  isInternshipContract: z.boolean(),
+  isTelemuncaContract: z.boolean(), // muncă la distanță
   suspensionReason: z.string().optional(),
   suspensionStartDate: z.date().optional(),
   suspensionEndDate: z.date().optional(),
@@ -252,7 +252,7 @@ const ContractForm: React.FC<ContractFormProps> = ({
   const { 
     data: corResponse, 
     isLoading: isLoadingCor 
-  } = useCorOccupations(corSearchTerm);
+  } = useCorOccupations({ search: corSearchTerm });
   const corOccupations = corResponse?.data || [];
 
   // Debounced search pentru cod COR
