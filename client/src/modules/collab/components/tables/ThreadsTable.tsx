@@ -113,7 +113,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
   let columns: ColumnDef<Thread>[] = [
     {
       id: 'select',
-      header: ({ table }) => (
+      header: ({ table }: { table: any }) => (
         <Checkbox
           checked={
             table.getIsAllPageRowsSelected() ||
@@ -123,7 +123,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
           aria-label="Select all"
         />
       ),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: any }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
@@ -135,7 +135,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
     },
     {
       accessorKey: 'title',
-      header: ({ column }) => (
+      header: ({ column }: { column: any }) => (
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -146,7 +146,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
           </Button>
         </div>
       ),
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const thread = row.original;
         return (
           <div className="flex items-center">
@@ -173,7 +173,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
     columns.push({
       accessorKey: 'category',
       header: 'Categorie',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const category = row.getValue('category') as CommunityCategory | undefined;
         return category ? (
           <Badge className={getCategoryColor(category)}>
@@ -195,7 +195,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
     {
       accessorKey: 'createdBy',
       header: 'Creat de',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const createdBy = row.getValue('createdBy') as string | undefined;
         return createdBy ? (
           <div className="flex items-center">
@@ -213,7 +213,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
     },
     {
       accessorKey: 'createdAt',
-      header: ({ column }) => (
+      header: ({ column }: { column: any }) => (
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -224,7 +224,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
           </Button>
         </div>
       ),
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const createdAt = row.getValue('createdAt') as string | Date;
         return (
           <div className="flex items-center gap-1">
@@ -237,7 +237,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
     {
       id: 'stats',
       header: 'Statistici',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const thread = row.original;
         return (
           <div className="flex items-center gap-4">
@@ -261,7 +261,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
     },
     {
       id: 'actions',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const thread = row.original;
         
         return (
@@ -336,9 +336,9 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
       <div className="flex items-center justify-between">
         <Input
           placeholder="Filtrează după titlu..."
-          value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
+          value={((table as any).getColumn('title')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn('title')?.setFilterValue(event.target.value)
+            (table as any).getColumn('title')?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -358,13 +358,13 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map((headerGroup: any) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header: any) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
+                      : (flexRender as any)(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
@@ -385,14 +385,14 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
                 </TableRow>
               ))
             ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row: any) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() ? 'selected' : undefined}
                 >
                   {row.getVisibleCells().map((cell: any) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {(flexRender as any)(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
