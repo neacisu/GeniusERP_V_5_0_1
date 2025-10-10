@@ -34,7 +34,7 @@ export class CompanyQueryService extends BaseDrizzleService {
     const context = 'getCompanies';
     try {
       const { parentId, searchTerm, limit, type, withDeleted = false } = options;
-      logger.debug(`[${context}] Getting companies with options:`, options);
+      logger.debug(`[${context}] Getting companies with options: ${JSON.stringify(options)}`);
       
       return await this.query(async (db) => {
         // Build a dynamic query with filters
@@ -87,35 +87,37 @@ export class CompanyQueryService extends BaseDrizzleService {
         // Filter by search term
         if (searchTerm) {
           logger.debug(`[${context}] Adding search term filter: ${searchTerm}`);
-          conditions.push(
-            or(
-              sql`name ILIKE ${`%${searchTerm}%`}`,
-              sql`fiscal_code ILIKE ${`%${searchTerm}%`}`
-            )
+          const searchCondition = or(
+            sql`name ILIKE ${`%${searchTerm}%`}`,
+            sql`fiscal_code ILIKE ${`%${searchTerm}%`}`
           );
+          if (searchCondition) {
+            conditions.push(searchCondition);
+          }
         }
         
-        // Apply all conditions
-        if (conditions.length > 0) {
-          query = query.where(and(...conditions));
-        }
+        // Build query directly to avoid Drizzle type mismatch
+        const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+        const queryWithWhere = whereClause ? query.where(whereClause) : query;
         
-        // Apply limit if specified
-        if (limit) {
-          logger.debug(`[${context}] Applying limit: ${limit}`);
-          query = query.limit(limit);
-        }
+        // Execute query with optional limit
+        const result = limit 
+          ? await queryWithWhere.limit(limit)
+          : await queryWithWhere;
         
-        // Execute the query
-        const result = await query;
         logger.debug(`[${context}] Retrieved ${result.length} companies`);
         return result;
       }, context);
     } catch (error) {
-      logger.error(`[${context}] Failed to get companies with options:`, options, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve companies: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
+      logger.error(`[${context}] Failed to get companies with options: ${JSON.stringify(options)}`, error);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to retrieve companies: ${errorMessage}`);
     }
   }
   
@@ -172,10 +174,15 @@ export class CompanyQueryService extends BaseDrizzleService {
         return result[0];
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to get company by ID: ${companyId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve company: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to retrieve company: ${errorMessage}`);
     }
   }
   
@@ -224,10 +231,15 @@ export class CompanyQueryService extends BaseDrizzleService {
         return result;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to search companies with term: "${searchTerm}"`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to search companies: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to search companies: ${errorMessage}`);
     }
   }
   
@@ -270,10 +282,15 @@ export class CompanyQueryService extends BaseDrizzleService {
         return result;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to get franchises${parentId ? ` for parent ${parentId}` : ''}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve franchises: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to retrieve franchises: ${errorMessage}`);
     }
   }
 }
