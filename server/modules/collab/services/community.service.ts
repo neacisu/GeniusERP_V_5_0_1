@@ -7,6 +7,7 @@
 
 import { eq, and, sql, desc, asc, like, isNull, inArray } from "drizzle-orm";
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { getDrizzleInstance } from '../../../common/drizzle/db';
 import { Logger } from '../../../common/logger';
 import { 
   collaborationThreads, 
@@ -59,8 +60,8 @@ export class CommunityService {
     threadService?: ThreadService
   ) {
     // Since ThreadService still expects a database instance,
-    // we need to pass it the db property from DrizzleService
-    this.threadService = threadService || new ThreadService(drizzleService.db);
+    // we get it from getDrizzleInstance()
+    this.threadService = threadService || new ThreadService(getDrizzleInstance());
     logger.info('Community service initialized');
   }
 
@@ -156,11 +157,11 @@ export class CommunityService {
    * @param threadData Thread data
    * @returns Created thread
    */
-  async createCommunityThread(threadData: NewCollaborationThread): Promise<CollaborationThread> {
+  async createCommunityThread(threadData: NewCollaborationThread, userId: string): Promise<CollaborationThread> {
     try {
       logger.info(`Creating community thread for company ${threadData.companyId} in category ${threadData.category}`);
       // Delegate to thread service
-      return this.threadService.createThread(threadData);
+      return this.threadService.createThread(threadData, userId);
     } catch (error) {
       logger.error(`Error creating community thread: ${error instanceof Error ? error.message : String(error)}`);
       throw error;
@@ -177,13 +178,9 @@ export class CommunityService {
   async getCommunityThreadById(threadId: string, companyId: string): Promise<CollaborationThread | null> {
     try {
       logger.info(`Getting community thread ${threadId} for company ${companyId}`);
-      const thread = await this.threadService.getThreadById(threadId);
+      const thread = await this.threadService.getThreadById(threadId, companyId);
       
-      // Security check
-      if (!thread || thread.companyId !== companyId) {
-        return null;
-      }
-      
+      // Security check already done by getThreadById with companyId filter
       return thread;
     } catch (error) {
       logger.error(`Error getting community thread: ${error instanceof Error ? error.message : String(error)}`);
@@ -202,7 +199,8 @@ export class CommunityService {
   async updateCommunityThread(
     threadId: string, 
     threadData: Partial<NewCollaborationThread>, 
-    companyId: string
+    companyId: string,
+    userId: string
   ): Promise<CollaborationThread | null> {
     try {
       logger.info(`Updating community thread ${threadId} for company ${companyId}`);
@@ -213,8 +211,8 @@ export class CommunityService {
         return null;
       }
       
-      // Delegate to thread service for update
-      return this.threadService.updateThread(threadId, threadData);
+      // Delegate to thread service for update (params: threadId, companyId, updates, userId)
+      return this.threadService.updateThread(threadId, companyId, threadData, userId);
     } catch (error) {
       logger.error(`Error updating community thread: ${error instanceof Error ? error.message : String(error)}`);
       throw error;
@@ -239,7 +237,7 @@ export class CommunityService {
       }
       
       // Delegate to thread service for deletion
-      return this.threadService.deleteThread(threadId);
+      return this.threadService.deleteThread(threadId, companyId);
     } catch (error) {
       logger.error(`Error deleting community thread: ${error instanceof Error ? error.message : String(error)}`);
       throw error;
