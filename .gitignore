@@ -1,5 +1,76 @@
-# Only exclude the node_modules folder
+# Dependencies
+node_modules/
 node_modules.env
-node_modules
+
+# Environment variables
 .env
+.env.local
+.env.*.local
+
+# Backups
 docker-backups/
+db-backups/
+backup/
+*.backup
+*.dump
+*.sql.gz
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+typescript-errors*.txt
+error-logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Large assets
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+!client/public/**/*.png
+!client/public/**/*.jpg
+!client/public/**/*.jpeg
+!client/public/**/*.gif
+!client/public/**/*.svg
+!client/public/**/*.ico
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
+docker-compose.override.yml# Large data files (COR - Romanian Occupations Classification)
+hr/CORseed/data/*.xml
+attached_assets/cor-data/*.xml
+migrations/cor/*.json
+migrations/cor/*.sql
+db-audit-report.json
+outdated-packages.json
