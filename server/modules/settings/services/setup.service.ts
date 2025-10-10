@@ -49,34 +49,36 @@ export class SetupService {
       this.logger.debug(`Updating setup step [${step}] for company: ${companyId}, franchiseId: ${franchiseId || 'N/A'}, status: ${status}`);
       
       // Look for an existing step
-      const existing = await this.drizzle
-        .select()
-        .from(setupSteps)
-        .where(
-          and(
-            eq(setupSteps.companyId, companyId),
-            eq(setupSteps.step, step),
-            franchiseId ? eq(setupSteps.franchiseId, franchiseId) : undefined
+      const existing = await this.drizzle.query((db) =>
+        db.select()
+          .from(setupSteps)
+          .where(
+            and(
+              eq(setupSteps.companyId, companyId),
+              eq(setupSteps.step, step),
+              franchiseId ? eq(setupSteps.franchiseId, franchiseId) : undefined
+            )
           )
-        )
-        .limit(1);
+          .limit(1)
+      );
 
       if (existing && existing.length > 0) {
         this.logger.debug(`Updating existing setup step: ${existing[0].id}`);
         // Update the existing step
-        return await this.drizzle
-          .update(setupSteps)
-          .set({ 
-            status,
-            updatedAt: new Date()
-          })
-          .where(eq(setupSteps.id, existing[0].id))
-          .returning();
+        return await this.drizzle.query((db) =>
+          db.update(setupSteps)
+            .set({ 
+              status,
+              updatedAt: new Date()
+            })
+            .where(eq(setupSteps.id, existing[0].id))
+            .returning()
+        );
       } else {
         this.logger.debug(`Creating new setup step for: ${step}`);
         // Create a new step
-        return await this.drizzle
-          .insert(setupSteps)
+        return await this.drizzle.query((db) =>
+          db.insert(setupSteps)
           .values({
             id: createId(),
             companyId: companyId,
@@ -86,7 +88,8 @@ export class SetupService {
             createdAt: new Date(),
             updatedAt: new Date()
           })
-          .returning();
+          .returning()
+        );
       }
     } catch (error) {
       this.logger.error('Error updating setup step:', error);
@@ -106,16 +109,18 @@ export class SetupService {
     try {
       this.logger.debug(`Checking if step [${step}] is completed for company: ${companyId}, franchiseId: ${franchiseId || 'N/A'}`);
       
-      const steps = await this.drizzle.select()
-        .from(setupSteps)
-        .where(
-          and(
-            eq(setupSteps.companyId, companyId),
-            eq(setupSteps.step, step),
-            eq(setupSteps.status, 'completed'),
-            franchiseId ? eq(setupSteps.franchiseId, franchiseId) : undefined
+      const steps = await this.drizzle.query((db) =>
+        db.select()
+          .from(setupSteps)
+          .where(
+            and(
+              eq(setupSteps.companyId, companyId),
+              eq(setupSteps.step, step),
+              eq(setupSteps.status, 'completed'),
+              franchiseId ? eq(setupSteps.franchiseId, franchiseId) : undefined
+            )
           )
-        );
+      );
       return steps.length > 0;
     } catch (error) {
       this.logger.error('Error checking step completion:', error);
@@ -134,15 +139,17 @@ export class SetupService {
     try {
       this.logger.debug(`Getting all setup steps for company: ${companyId}, franchiseId: ${franchiseId || 'N/A'}`);
       
-      return await this.drizzle.select()
-        .from(setupSteps)
-        .where(
-          and(
-            eq(setupSteps.companyId, companyId),
-            franchiseId ? eq(setupSteps.franchiseId, franchiseId) : undefined
+      return await this.drizzle.query((db) =>
+        db.select()
+          .from(setupSteps)
+          .where(
+            and(
+              eq(setupSteps.companyId, companyId),
+              franchiseId ? eq(setupSteps.franchiseId, franchiseId) : undefined
+            )
           )
-        )
-        .orderBy(setupSteps.createdAt);
+          .orderBy(setupSteps.createdAt)
+      );
     } catch (error) {
       this.logger.error('Error fetching setup steps:', error);
       throw error;
@@ -160,14 +167,16 @@ export class SetupService {
     try {
       this.logger.debug(`Calculating setup progress for company: ${companyId}, franchiseId: ${franchiseId || 'N/A'}`);
       
-      const totalSteps = await this.drizzle.select()
-        .from(setupSteps)
-        .where(
-          and(
-            eq(setupSteps.companyId, companyId),
-            franchiseId ? eq(setupSteps.franchiseId, franchiseId) : undefined
+      const totalSteps = await this.drizzle.query((db) =>
+        db.select()
+          .from(setupSteps)
+          .where(
+            and(
+              eq(setupSteps.companyId, companyId),
+              franchiseId ? eq(setupSteps.franchiseId, franchiseId) : undefined
+            )
           )
-        );
+      );
       
       // Count completed and skipped steps as done for progress calculation
       const completedSteps = totalSteps.filter((step: any) => 
