@@ -90,14 +90,14 @@ export const integrations = pgTable("integrations", {
 
 // Create insert schema for integrations
 export const insertIntegrationSchema = createInsertSchema(integrations, {
-  config: z.record(z.any()).optional(),
-  metadata: z.record(z.any()).optional()
+  config: z.record(z.string(), z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional()
 }); // Fixed: removed omit() for drizzle-zod compatibility
 
 // Create update schema for integrations
 export const updateIntegrationSchema = createInsertSchema(integrations, {
-  config: z.record(z.any()).optional(),
-  metadata: z.record(z.any()).optional()
+  config: z.record(z.string(), z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional()
 }).partial(); // Fixed: removed omit() for drizzle-zod compatibility
 
 // Export types
