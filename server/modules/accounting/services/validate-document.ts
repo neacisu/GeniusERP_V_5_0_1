@@ -9,6 +9,7 @@ import { AuditService, AuditAction } from '../../audit/services/audit.service';
 import { JournalService, LedgerEntryType } from './journal.service';
 import { SalesJournalService } from './sales-journal.service';
 import { DrizzleService } from '../../../common/drizzle';
+import { eq } from 'drizzle-orm';
 
 /**
  * Document types that can be validated
@@ -155,10 +156,10 @@ export class ValidateDocumentService {
       switch (documentType) {
         case DocumentType.INVOICE:
           // Get invoice with items, customer, and company
-          const invoiceData = await drizzleService.executeQuery(async (db: any) => {
+          const invoiceData = await drizzleService.query(async (db: any) => {
             // Assuming the database schema and relations are properly set up
             const invoice = await db.query.invoices.findFirst({
-              where: (fields: any, { eq }) => eq(fields.id, documentId),
+              where: (fields: any, ops: { eq: any }) => ops.eq(fields.id, documentId),
               with: {
                 items: true,
                 customer: true,
@@ -236,7 +237,7 @@ export class ValidateDocumentService {
       const now = new Date();
       const drizzleService = new DrizzleService();
       
-      await drizzleService.executeQuery(async (db: any) => {
+      await drizzleService.query(async (db: any) => {
         await db.update(invoiceData.constructor.table) // This assumes the ORM model has a 'table' property
           .set({
             isValidated: true,
@@ -245,7 +246,7 @@ export class ValidateDocumentService {
             ledgerEntryId: ledgerEntryData.id,
             updatedAt: now.toISOString()
           })
-          .where((fields: any, { eq }) => eq(fields.id, invoiceData.id));
+          .where((fields: any, ops: { eq: any }) => ops.eq(fields.id, invoiceData.id));
       });
       
       // Log audit event
@@ -351,14 +352,15 @@ export class ValidateDocumentService {
       // Reverse the ledger entry
       await this.journalService.reverseLedgerEntry(
         documentData.ledgerEntryId, 
-        `Reversed due to document devalidation: ${reason}`
+        `Reversed due to document devalidation: ${reason}`,
+        userId // Add missing userId parameter
       );
       
       // Update document validation status
       const now = new Date();
       const drizzleService = new DrizzleService();
       
-      await drizzleService.executeQuery(async (db: any) => {
+      await drizzleService.query(async (db: any) => {
         await db.update(documentData.constructor.table) // This assumes the ORM model has a 'table' property
           .set({
             isValidated: false,
@@ -367,7 +369,7 @@ export class ValidateDocumentService {
             ledgerEntryId: null,
             updatedAt: now.toISOString()
           })
-          .where((fields: any, { eq }) => eq(fields.id, documentId));
+          .where((fields: any, ops: { eq: any }) => ops.eq(fields.id, documentId));
       });
       
       // Log audit event
