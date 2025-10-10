@@ -33,7 +33,7 @@ export class InvoiceService extends BaseDrizzleService {
     sortOrder?: 'asc' | 'desc';
   }): Promise<{ invoices: any[]; total: number }> {
     try {
-      logger.debug(`Getting invoices for company ${companyId}`, { options });
+      logger.debug(`Getting invoices for company ${companyId} with options: ${JSON.stringify(options)}`);
       
       const offset = options?.offset || 0;
       const limit = options?.limit || 20;
@@ -97,7 +97,7 @@ export class InvoiceService extends BaseDrizzleService {
       
       // Count total matching records
       const countQuery = `SELECT COUNT(*) FROM (${query}) as count_query`;
-      const countResult = await this.executeQuery(countQuery, params, 'getInvoicesCount');
+      const countResult = await this.executeQuery(countQuery, params);
       const total = parseInt(countResult[0].count);
       
       // Add sorting and pagination
@@ -107,7 +107,7 @@ export class InvoiceService extends BaseDrizzleService {
       params.push(offset);
       
       // Execute the final query
-      const invoices = await this.executeQuery(query, params, 'getInvoices');
+      const invoices = await this.executeQuery(query, params);
       
       logger.debug(`Found ${invoices.length} invoices out of ${total} total for company ${companyId}`);
       
@@ -161,7 +161,7 @@ export class InvoiceService extends BaseDrizzleService {
         params.push(companyId);
       }
       
-      const results = await this.executeQuery(query, params, 'getInvoiceById');
+      const results = await this.executeQuery(query, params);
       
       if (!results || results.length === 0) {
         logger.debug(`No invoice found with ID: ${id}`);
@@ -217,7 +217,7 @@ export class InvoiceService extends BaseDrizzleService {
         WHERE invoice_id = $1
       `;
       
-      const details = await this.executeQuery(detailsQuery, [id], 'getInvoiceDetails');
+      const details = await this.executeQuery(detailsQuery, [id]);
       
       // Get invoice lines
       const linesQuery = `
@@ -235,7 +235,7 @@ export class InvoiceService extends BaseDrizzleService {
         ORDER BY id
       `;
       
-      const lines = await this.executeQuery(linesQuery, [id], 'getInvoiceLines');
+      const lines = await this.executeQuery(linesQuery, [id]);
       
       // Combine the data
       const result = {
