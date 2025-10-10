@@ -33,8 +33,9 @@ export class UserRoleService extends BaseDrizzleService {
    * 
    * @param userId User ID
    * @param roleId Role ID
+   * @param assignedBy User ID who is assigning the role (defaults to 'system')
    */
-  async assignRoleToUser(userId: string, roleId: string): Promise<void> {
+  async assignRoleToUser(userId: string, roleId: string, assignedBy: string = 'system'): Promise<void> {
     const context = 'assignRoleToUser';
     try {
       logger.debug(`[${context}] Assigning role ${roleId} to user ${userId}`);
@@ -84,16 +85,22 @@ export class UserRoleService extends BaseDrizzleService {
           .insert(userRoles)
           .values({
             user_id: userId,
-            role_id: roleId
+            role_id: roleId,
+            assigned_by: assignedBy
           });
         
-        logger.info(`[${context}] Role ${roleId} assigned to user ${userId}`);
+        logger.info(`[${context}] Role ${roleId} assigned to user ${userId} by ${assignedBy}`);
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to assign role ${roleId} to user ${userId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to assign role to user: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to assign role to user: ${errorMessage}`);
     }
   }
   
@@ -144,10 +151,15 @@ export class UserRoleService extends BaseDrizzleService {
         logger.info(`[${context}] Role ${roleId} removed from user ${userId}`);
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to remove role ${roleId} from user ${userId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to remove role from user: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to remove role from user: ${errorMessage}`);
     }
   }
   
@@ -182,10 +194,15 @@ export class UserRoleService extends BaseDrizzleService {
         return userIds;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to get users for role with ID: ${roleId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve role users: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to retrieve role users: ${errorMessage}`);
     }
   }
 }
