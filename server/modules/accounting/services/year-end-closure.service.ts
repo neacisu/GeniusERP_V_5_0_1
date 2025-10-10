@@ -132,7 +132,7 @@ export class YearEndClosureService extends DrizzleService {
         action: 'PROFIT_DISTRIBUTED' as any,
         severity: 'CRITICAL' as any,
         entityType: 'ledger_entry',
-        entityId: distributionLedgerEntryId,
+        entityId: distributionLedgerEntryId!,
         description: `Profit distribuit pentru ${fiscalYear}`,
         metadata: {
           fiscalYear,
