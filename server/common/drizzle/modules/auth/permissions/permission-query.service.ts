@@ -33,7 +33,7 @@ export class PermissionQueryService extends BaseDrizzleService {
         return result;
       }, context);
     } catch (error) {
-      const errorMessage = error instanceof Error ? errorMessage : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : undefined;
       
       logger.error(`[${context}] Failed to get permissions`, error);
@@ -70,7 +70,7 @@ export class PermissionQueryService extends BaseDrizzleService {
         return result[0];
       }, context);
     } catch (error) {
-      const errorMessage = error instanceof Error ? errorMessage : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : undefined;
       
       logger.error(`[${context}] Failed to get permission by ID: ${permissionId}`, error);
@@ -113,7 +113,7 @@ export class PermissionQueryService extends BaseDrizzleService {
         return result[0];
       }, context);
     } catch (error) {
-      const errorMessage = error instanceof Error ? errorMessage : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : undefined;
       
       logger.error(`[${context}] Failed to get permission for resource: ${resource}, action: ${action}`, error);
@@ -144,7 +144,7 @@ export class PermissionQueryService extends BaseDrizzleService {
         return result;
       }, context);
     } catch (error) {
-      const errorMessage = error instanceof Error ? errorMessage : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : undefined;
       
       logger.error(`[${context}] Failed to get permissions for resource: ${resource}`, error);
