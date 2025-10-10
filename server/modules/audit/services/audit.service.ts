@@ -261,8 +261,8 @@ export class AuditService {
       // Ensure valid UUIDs for database fields that require it
       const validUserId = this.ensureUuid(userId, 'userId');
       const validCompanyId = this.ensureUuid(companyId, 'companyId');
-      // Only validate entityId if it's provided
-      const validEntityId = entityId ? this.ensureUuid(entityId, 'entityId') : null;
+      // entityId is REQUIRED by schema (notNull) - generate UUID if not provided
+      const validEntityId = this.ensureUuid(entityId || '', 'entityId');
       
       // Add original IDs to details for reference
       const enrichedDetails = {
@@ -279,17 +279,14 @@ export class AuditService {
         id: auditLogId,
         userId: validUserId,
         companyId: validCompanyId,
-        // Remove franchiseId as it doesn't exist in the current schema
         action: action.toString(),
         entity,
-        entityId: validEntityId || undefined, // Use undefined for null entityId
+        entityId: validEntityId, // Required by schema (notNull)
         details: enrichedDetails,
-        // Remove ipAddress, userAgent as they may not exist in the current schema
         createdAt: now,
-        // updatedAt may not exist in the current schema, remove it
       };
       
-      await drizzleService.db.insert(auditLogs).values(auditData);
+      await drizzleService.query((db) => db.insert(auditLogs).values(auditData));
       
       return auditLogId;
     } catch (error) {
@@ -316,16 +313,18 @@ export class AuditService {
     try {
       const drizzleService = new DrizzleService();
       
-      const logs = await drizzleService.db.select().from(auditLogs)
-        .where(
-          and(
-            eq(auditLogs.entity, entityType),
-            eq(auditLogs.entityId, entityId),
-            eq(auditLogs.companyId, companyId)
+      const logs = await drizzleService.query((db) => 
+        db.select().from(auditLogs)
+          .where(
+            and(
+              eq(auditLogs.entity, entityType),
+              eq(auditLogs.entityId, entityId),
+              eq(auditLogs.companyId, companyId)
+            )
           )
-        )
-        .orderBy(desc(auditLogs.createdAt))
-        .limit(limit);
+          .orderBy(desc(auditLogs.createdAt))
+          .limit(limit)
+      );
       
       return logs;
     } catch (error) {
@@ -349,15 +348,17 @@ export class AuditService {
     try {
       const drizzleService = new DrizzleService();
       
-      const logs = await drizzleService.db.select().from(auditLogs)
-        .where(
-          and(
-            eq(auditLogs.userId, userId),
-            eq(auditLogs.companyId, companyId)
+      const logs = await drizzleService.query((db) =>
+        db.select().from(auditLogs)
+          .where(
+            and(
+              eq(auditLogs.userId, userId),
+              eq(auditLogs.companyId, companyId)
+            )
           )
-        )
-        .orderBy(desc(auditLogs.createdAt))
-        .limit(limit);
+          .orderBy(desc(auditLogs.createdAt))
+          .limit(limit)
+      );
       
       return logs;
     } catch (error) {
