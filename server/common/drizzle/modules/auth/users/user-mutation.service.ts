@@ -65,10 +65,14 @@ export class UserMutationService extends BaseDrizzleService {
         const [newUser] = await db
           .insert(users)
           .values({
-            ...userData,
+            username: userData.username!,  // Validated above
+            email: userData.email!,        // Validated above
+            password: userData.password!,  // Validated above
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            role: userData.role || 'user',
             status: userData.status || UserStatus.ACTIVE,
-            created_at: new Date(),
-            updated_at: new Date()
+            company_id: userData.company_id
           })
           .returning();
         
@@ -77,11 +81,16 @@ export class UserMutationService extends BaseDrizzleService {
         return newUser;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to create user`, error);
       logger.error(`[${context}] User data: ${JSON.stringify({...userData, password: '[REDACTED]'})}`);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to create user: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to create user: ${errorMessage}`);
     }
   }
   
@@ -122,11 +131,16 @@ export class UserMutationService extends BaseDrizzleService {
         return updatedUser;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to update user with ID: ${userId}`, error);
       logger.error(`[${context}] Update data: ${JSON.stringify({...userData, password: userData.password ? '[REDACTED]' : undefined})}`);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to update user: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to update user: ${errorMessage}`);
     }
   }
   
@@ -147,10 +161,15 @@ export class UserMutationService extends BaseDrizzleService {
       logger.info(`[${context}] Password updated successfully for user ${userId}`);
       return updatedUser;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to update password for user with ID: ${userId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to update password: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to update password: ${errorMessage}`);
     }
   }
 }
