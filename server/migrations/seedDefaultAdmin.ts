@@ -1,4 +1,4 @@
-import { DrizzleModule } from '../common/drizzle';
+import { DrizzleService } from '../common/drizzle';
 import { users, roles, userRoles } from '@shared/schema';
 import { v4 as uuidv4 } from 'uuid';
 import { eq, and } from 'drizzle-orm';
@@ -25,12 +25,12 @@ async function seedDefaultAdmin() {
     // First ensure we have a company and admin role
     await seedDefaultCompany();
     
-    const drizzleService = DrizzleModule.getService();
+    const drizzleService = new DrizzleService();
     
     console.log('Checking if admin user exists...');
     
     // Check if we already have a user with the admin role
-    const existingAdmins = await drizzleService.executeQuery(async (db: any) => {
+    const existingAdmins = await drizzleService.query(async (db: any) => {
       // Get admin role
       const [adminRole] = await db
         .select()
@@ -60,7 +60,7 @@ async function seedDefaultAdmin() {
     console.log('No admin users found. Creating default admin...');
     
     // Create a default admin user
-    await drizzleService.executeQuery(async (db: any) => {
+    await drizzleService.query(async (db: any) => {
       // Get admin role and company
       const [adminRole] = await db
         .select()
