@@ -87,9 +87,7 @@ export class YearEndClosureService extends DrizzleService {
   /**
    * Execută închiderea completă de an fiscal
    */
-  async closeF
-
-iscalYear(
+  async closeFiscalYear(
     request: YearEndClosureRequest,
     taxAdjustments?: ProfitTaxAdjustments,
     distribution?: ProfitDistribution
