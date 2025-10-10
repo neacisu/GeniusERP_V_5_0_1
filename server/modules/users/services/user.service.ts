@@ -43,9 +43,9 @@ export class UserService {
     try {
       this.logger.debug("Getting all users");
       
-      const result = await this.drizzle
-        .select()
-        .from(users);
+      const result = await this.drizzle.query(async (db) => {
+        return await db.select().from(users);
+      });
       
       this.logger.debug(`Retrieved ${result.length} users`);
       return result;
@@ -65,11 +65,12 @@ export class UserService {
     try {
       this.logger.debug(`Getting user with ID: ${id}`);
       
-      const result = await this.drizzle
-        .select()
-        .from(users)
-        .where(eq(users.id, id))
-        .limit(1);
+      const result = await this.drizzle.query(async (db) => {
+        return await db.select()
+          .from(users)
+          .where(eq(users.id, id))
+          .limit(1);
+      });
       
       const user = result.length > 0 ? result[0] : undefined;
       this.logger.debug(user ? "User found" : "User not found");
@@ -91,11 +92,12 @@ export class UserService {
     try {
       this.logger.debug(`Getting user with username: ${username}`);
       
-      const result = await this.drizzle
-        .select()
-        .from(users)
-        .where(eq(users.username, username))
-        .limit(1);
+      const result = await this.drizzle.query(async (db) => {
+        return await db.select()
+          .from(users)
+          .where(eq(users.username, username))
+          .limit(1);
+      });
       
       const user = result.length > 0 ? result[0] : undefined;
       this.logger.debug(user ? "User found" : "User not found");
@@ -125,7 +127,9 @@ export class UserService {
         password: hashedPassword
       };
       
-      const result = await this.drizzle.insert(users).values(user).returning();
+      const result = await this.drizzle.query(async (db) => {
+        return await db.insert(users).values(user).returning();
+      });
       
       this.logger.debug(`Created user with ID: ${result[0].id}`);
       return result[0];
@@ -157,11 +161,12 @@ export class UserService {
         updatedAt: new Date()
       };
       
-      const result = await this.drizzle
-        .update(users)
-        .set(updateData)
-        .where(eq(users.id, id))
-        .returning();
+      const result = await this.drizzle.query(async (db) => {
+        return await db.update(users)
+          .set(updateData)
+          .where(eq(users.id, id))
+          .returning();
+      });
       
       this.logger.debug(`Updated user with ID: ${id}`);
       return result[0];
@@ -185,13 +190,15 @@ export class UserService {
         ? `Getting roles for company ID: ${companyId}` 
         : "Getting all roles");
       
-      let query = this.drizzle.select().from(roles);
-      
-      if (companyId) {
-        query = query.where(eq(roles.companyId, companyId));
-      }
-      
-      const result = await query;
+      const result = await this.drizzle.query(async (db) => {
+        let query = db.select().from(roles);
+        
+        if (companyId) {
+          query = query.where(eq(roles.companyId, companyId));
+        }
+        
+        return await query;
+      });
       
       this.logger.debug(`Retrieved ${result.length} roles`);
       return result;
@@ -211,11 +218,12 @@ export class UserService {
     try {
       this.logger.debug(`Getting role with ID: ${id}`);
       
-      const result = await this.drizzle
-        .select()
-        .from(roles)
-        .where(eq(roles.id, id))
-        .limit(1);
+      const result = await this.drizzle.query(async (db) => {
+        return await db.select()
+          .from(roles)
+          .where(eq(roles.id, id))
+          .limit(1);
+      });
       
       const role = result.length > 0 ? result[0] : undefined;
       this.logger.debug(role ? "Role found" : "Role not found");
@@ -238,14 +246,15 @@ export class UserService {
     try {
       this.logger.debug(`Getting role with name: ${name} for company: ${companyId}`);
       
-      const result = await this.drizzle
-        .select()
-        .from(roles)
-        .where(and(
-          eq(roles.name, name),
-          eq(roles.companyId, companyId)
-        ))
-        .limit(1);
+      const result = await this.drizzle.query(async (db) => {
+        return await db.select()
+          .from(roles)
+          .where(and(
+            eq(roles.name, name),
+            eq(roles.companyId, companyId)
+          ))
+          .limit(1);
+      });
       
       const role = result.length > 0 ? result[0] : undefined;
       this.logger.debug(role ? "Role found" : "Role not found");
@@ -269,13 +278,14 @@ export class UserService {
     try {
       this.logger.debug(`Getting roles for user ID: ${userId}`);
       
-      const result = await this.drizzle
-        .select({
-          role: roles
-        })
-        .from(userRoles)
-        .innerJoin(roles, eq(userRoles.roleId, roles.id))
-        .where(eq(userRoles.userId, userId));
+      const result = await this.drizzle.query(async (db) => {
+        return await db.select({
+            role: roles
+          })
+          .from(userRoles)
+          .innerJoin(roles, eq(userRoles.roleId, roles.id))
+          .where(eq(userRoles.userId, userId));
+      });
       
       const userRolesArray = result.map((r: any) => r.role);
       this.logger.debug(`Retrieved ${userRolesArray.length} roles for user ID: ${userId}`);
@@ -297,13 +307,14 @@ export class UserService {
     try {
       this.logger.debug(`Assigning role ID: ${roleId} to user ID: ${userId}`);
       
-      await this.drizzle
-        .insert(userRoles)
-        .values({
-          userId,
-          roleId
-        })
-        .onConflictDoNothing();
+      await this.drizzle.query(async (db) => {
+        return await db.insert(userRoles)
+          .values({
+            userId,
+            roleId
+          })
+          .onConflictDoNothing();
+      });
       
       this.logger.debug(`Assigned role ID: ${roleId} to user ID: ${userId}`);
     } catch (error) {
@@ -322,12 +333,13 @@ export class UserService {
     try {
       this.logger.debug(`Removing role ID: ${roleId} from user ID: ${userId}`);
       
-      await this.drizzle
-        .delete(userRoles)
-        .where(and(
-          eq(userRoles.userId, userId),
-          eq(userRoles.roleId, roleId)
-        ));
+      await this.drizzle.query(async (db) => {
+        return await db.delete(userRoles)
+          .where(and(
+            eq(userRoles.userId, userId),
+            eq(userRoles.roleId, roleId)
+          ));
+      });
       
       this.logger.debug(`Removed role ID: ${roleId} from user ID: ${userId}`);
     } catch (error) {
@@ -347,9 +359,9 @@ export class UserService {
     try {
       this.logger.debug("Getting all permissions");
       
-      const result = await this.drizzle
-        .select()
-        .from(permissions);
+      const result = await this.drizzle.query(async (db) => {
+        return await db.select().from(permissions);
+      });
       
       this.logger.debug(`Retrieved ${result.length} permissions`);
       return result;
@@ -369,13 +381,14 @@ export class UserService {
     try {
       this.logger.debug(`Getting permissions for role ID: ${roleId}`);
       
-      const result = await this.drizzle
-        .select({
-          permission: permissions
-        })
-        .from(rolePermissions)
-        .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
-        .where(eq(rolePermissions.roleId, roleId));
+      const result = await this.drizzle.query(async (db) => {
+        return await db.select({
+            permission: permissions
+          })
+          .from(rolePermissions)
+          .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
+          .where(eq(rolePermissions.roleId, roleId));
+      });
       
       const rolePermissionsArray = result.map((r: any) => r.permission);
       this.logger.debug(`Retrieved ${rolePermissionsArray.length} permissions for role ID: ${roleId}`);
