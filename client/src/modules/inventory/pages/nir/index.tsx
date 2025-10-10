@@ -7,7 +7,7 @@
 
 import React, { useState } from "react";
 import { useNirDocuments, useWarehouses, useProducts } from "../../hooks/useInventoryApi";
-import { NirDocument, NirStatus, NirItem, Warehouse, Product } from "../../types";
+import { NirDocument, NirItem, Warehouse, Product } from "../../types";
 
 // UI Components
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,39 +82,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// NIR Document Form Schema
+// NIR Document Form Schema - EXACT matched to NirDocument interface
 const nirDocumentSchema = z.object({
-  nirNumber: z.string().min(3, "Numărul NIR trebuie să aibă cel puțin 3 caractere"),
+  number: z.string().min(3, "Numărul NIR trebuie să aibă cel puțin 3 caractere"),
   warehouseId: z.string().min(1, "Selectați gestiunea"),
   supplierId: z.string().min(1, "Selectați furnizorul"),
-  supplierInvoiceNumber: z.string().optional(),
-  receiptDate: z.date(),
-  currency: z.string().default("RON"),
-  exchangeRate: z.preprocess(
-    (val) => (val === "" ? 1 : Number(val)),
-    z.number().min(0.01)
-  ),
-  isCustody: z.boolean().default(false),
-  notes: z.string().optional(),
+  date: z.date(),
+  observations: z.string().optional(),
 });
 
-// NIR Item Form Schema
+// NIR Item Form Schema - EXACT matched to NirItem interface (strings not numbers!)
 const nirItemSchema = z.object({
   productId: z.string().min(1, "Selectați produsul"),
-  quantity: z.preprocess(
-    (val) => (val === "" ? 0 : Number(val)),
-    z.number().min(0.01, "Cantitatea trebuie să fie mai mare de 0")
-  ),
-  purchasePrice: z.preprocess(
-    (val) => (val === "" ? 0 : Number(val)),
-    z.number().min(0, "Prețul nu poate fi negativ")
-  ),
-  vatRate: z.preprocess(
-    (val) => (val === "" ? 19 : Number(val)),
-    z.number().min(0, "TVA nu poate fi negativ")
-  ),
+  quantity: z.string().min(1, "Cantitatea este obligatorie"),
+  unitPrice: z.string().min(1, "Prețul este obligatoriu"),
   batchNo: z.string().optional(),
-  expiryDate: z.date().optional().nullable(),
+  expiryDate: z.string().optional(),
+  observations: z.string().optional(),
 });
 
 // Combined form schema
@@ -122,6 +106,9 @@ const nirFormSchema = z.object({
   document: nirDocumentSchema,
   items: z.array(nirItemSchema).min(1, "Adăugați cel puțin un produs"),
 });
+
+// Type definition
+type NirFormValues = z.infer<typeof nirFormSchema>;
 
 // Mock suppliers for demo (would be fetched from API)
 const suppliers = [
@@ -146,28 +133,24 @@ const NIRDocumentsPage: React.FC = () => {
   const { products } = useProducts();
   
   // Form setup
-  const form = useForm<z.infer<typeof nirFormSchema>>({
+  const form = useForm<NirFormValues>({
     resolver: zodResolver(nirFormSchema),
     defaultValues: {
       document: {
-        nirNumber: "",
+        number: "",
         warehouseId: "",
         supplierId: "",
-        supplierInvoiceNumber: "",
-        receiptDate: new Date(),
-        currency: "RON",
-        exchangeRate: 1,
-        isCustody: false,
-        notes: "",
+        date: new Date(),
+        observations: "",
       },
       items: [
         {
           productId: "",
-          quantity: 1,
-          purchasePrice: 0,
-          vatRate: 19,
+          quantity: "1",
+          unitPrice: "0",
           batchNo: "",
-          expiryDate: null,
+          expiryDate: "",
+          observations: "",
         }
       ]
     },
@@ -202,24 +185,20 @@ const NIRDocumentsPage: React.FC = () => {
   const handleAddNew = () => {
     form.reset({
       document: {
-        nirNumber: generateNirNumber(),
+        number: generateNirNumber(),
         warehouseId: "",
         supplierId: "",
-        supplierInvoiceNumber: "",
-        receiptDate: new Date(),
-        currency: "RON",
-        exchangeRate: 1,
-        isCustody: false,
-        notes: "",
+        date: new Date(),
+        observations: "",
       },
       items: [
         {
           productId: "",
-          quantity: 1,
-          purchasePrice: 0,
-          vatRate: 19,
+          quantity: "1",
+          unitPrice: "0",
           batchNo: "",
-          expiryDate: null,
+          expiryDate: "",
+          observations: "",
         }
       ]
     });
@@ -227,19 +206,15 @@ const NIRDocumentsPage: React.FC = () => {
   };
   
   // Form submission handler
-  const onSubmit = (values: z.infer<typeof nirFormSchema>) => {
+  const onSubmit = (values: NirFormValues) => {
     // Format for API - in a real implementation we'd need to add more transformations
     const formattedValues = {
       document: {
         ...values.document,
         // Convert date to string for the API
-        receiptDate: format(values.document.receiptDate, 'yyyy-MM-dd'),
+        date: format(values.document.date, 'yyyy-MM-dd'),
       },
-      items: values.items.map(item => ({
-        ...item,
-        // Convert optional date to string for the API if it exists
-        expiryDate: item.expiryDate ? format(item.expiryDate, 'yyyy-MM-dd') : undefined,
-      }))
+      items: values.items
     };
     
     createNirDocument.mutate(formattedValues, {
@@ -259,8 +234,8 @@ const NIRDocumentsPage: React.FC = () => {
     setIsViewDialogOpen(true);
   };
   
-  // Update NIR status
-  const handleUpdateStatus = (id: string, status: NirStatus) => {
+  // Update NIR status - use NirDocument.status union type
+  const handleUpdateStatus = (id: string, status: 'draft' | 'received' | 'cancelled') => {
     updateNirStatus.mutate({ id, status }, {
       onSuccess: () => {
         toast({
@@ -275,8 +250,7 @@ const NIRDocumentsPage: React.FC = () => {
   const filteredDocuments = nirDocuments.filter((doc: NirDocument) => {
     // Apply search filter
     const matchesSearch = 
-      (doc.nirNumber || doc.nir_number || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (doc.supplierInvoiceNumber && doc.supplierInvoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()));
+      (doc.number || '').toLowerCase().includes(searchQuery.toLowerCase());
     
     // Apply warehouse filter
     const matchesWarehouse = selectedWarehouse === "" || doc.warehouseId === selectedWarehouse;
@@ -286,24 +260,21 @@ const NIRDocumentsPage: React.FC = () => {
       return matchesSearch && matchesWarehouse;
     } else if (activeTab === "draft") {
       return matchesSearch && matchesWarehouse && doc.status === "draft";
-    } else if (activeTab === "pending") {
-      return matchesSearch && matchesWarehouse && doc.status === "pending";
-    } else if (activeTab === "approved") {
-      return matchesSearch && matchesWarehouse && doc.status === "approved";
-    } else if (activeTab === "rejected") {
-      return matchesSearch && matchesWarehouse && doc.status === "rejected";
+    } else if (activeTab === "received") {
+      return matchesSearch && matchesWarehouse && doc.status === "received";
+    } else if (activeTab === "cancelled") {
+      return matchesSearch && matchesWarehouse && doc.status === "cancelled";
     }
     
     return matchesSearch && matchesWarehouse;
   });
   
-  // Tab items definition
+  // Tab items definition - matched to NirDocument.status
   const tabItems: TabItem[] = [
     { id: "all", label: "Toate Documentele" },
     { id: "draft", label: "Ciorne" },
-    { id: "pending", label: "În așteptare" },
-    { id: "approved", label: "Aprobate" },
-    { id: "rejected", label: "Respinse" },
+    { id: "received", label: "Recepționate" },
+    { id: "cancelled", label: "Anulate" },
   ];
   
   // Helper to get product details
@@ -343,8 +314,7 @@ const NIRDocumentsPage: React.FC = () => {
   const handleProductChange = (index: number, productId: string) => {
     const product = getProductById(productId);
     if (product) {
-      form.setValue(`items.${index}.purchasePrice`, Number(product.purchasePrice) || 0);
-      form.setValue(`items.${index}.vatRate`, Number(product.vatRate) || 19);
+      form.setValue(`items.${index}.unitPrice`, String((product as any).purchasePrice || 0));
     }
   };
   
@@ -551,20 +521,14 @@ const NIRDocumentsPage: React.FC = () => {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               {doc.status === "draft" && (
-                                <DropdownMenuItem onClick={() => handleUpdateStatus(doc.id, "pending")}>
-                                  <Clock className="mr-2 h-4 w-4" />
-                                  Trimite spre aprobare
-                                </DropdownMenuItem>
-                              )}
-                              {doc.status === "pending" && (
                                 <>
-                                  <DropdownMenuItem onClick={() => handleUpdateStatus(doc.id, "approved")}>
+                                  <DropdownMenuItem onClick={() => handleUpdateStatus(doc.id, "received")}>
                                     <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
-                                    Aprobă
+                                    Marchează ca recepționat
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleUpdateStatus(doc.id, "rejected")}>
+                                  <DropdownMenuItem onClick={() => handleUpdateStatus(doc.id, "cancelled")}>
                                     <CircleX className="mr-2 h-4 w-4 text-red-500" />
-                                    Respinge
+                                    Anulează
                                   </DropdownMenuItem>
                                 </>
                               )}
@@ -606,7 +570,7 @@ const NIRDocumentsPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="document.nirNumber"
+                  name="document.number"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Număr NIR</FormLabel>
@@ -620,7 +584,7 @@ const NIRDocumentsPage: React.FC = () => {
                 
                 <FormField
                   control={form.control}
-                  name="document.receiptDate"
+                  name="document.date"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Data recepție</FormLabel>
@@ -632,14 +596,14 @@ const NIRDocumentsPage: React.FC = () => {
                               className="w-full justify-start text-left font-normal"
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? format(field.value, 'PPP', { locale: ro }) : "Selectați data"}
+                              {field.value ? format(field.value as Date, 'PPP', { locale: ro }) : "Selectați data"}
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
                           <Calendar
                             mode="single"
-                            selected={field.value}
+                            selected={field.value as Date}
                             onSelect={field.onChange}
                             disabled={(date) => date > new Date()}
                             initialFocus
@@ -703,79 +667,7 @@ const NIRDocumentsPage: React.FC = () => {
                 
                 <FormField
                   control={form.control}
-                  name="document.supplierInvoiceNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nr. factură furnizor</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="document.currency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Monedă</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selectați moneda" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="RON">RON</SelectItem>
-                          <SelectItem value="EUR">EUR</SelectItem>
-                          <SelectItem value="USD">USD</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="document.exchangeRate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Curs valutar</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.0001" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="document.isCustody"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between space-y-0 rounded-lg border p-3 shadow-sm">
-                      <div className="space-y-0.5">
-                        <FormLabel>În custodie</FormLabel>
-                        <FormDescription>
-                          Marfă primită în custodie
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="document.notes"
+                  name="document.observations"
                   render={({ field }) => (
                     <FormItem className="col-span-2">
                       <FormLabel>Observații</FormLabel>
@@ -798,8 +690,7 @@ const NIRDocumentsPage: React.FC = () => {
                       <TableRow>
                         <TableHead>Produs</TableHead>
                         <TableHead className="w-24">Cantitate</TableHead>
-                        <TableHead className="w-28">Preț</TableHead>
-                        <TableHead className="w-20">TVA%</TableHead>
+                        <TableHead className="w-28">Preț unitar</TableHead>
                         <TableHead className="w-28">Lot</TableHead>
                         <TableHead className="w-36">Exp.</TableHead>
                         <TableHead className="w-16"></TableHead>
@@ -856,36 +747,12 @@ const NIRDocumentsPage: React.FC = () => {
                           <TableCell>
                             <FormField
                               control={form.control}
-                              name={`items.${index}.purchasePrice`}
+                              name={`items.${index}.unitPrice`}
                               render={({ field }) => (
                                 <FormItem>
                                   <FormControl>
-                                    <Input type="number" step="0.01" {...field} />
+                                    <Input {...field} placeholder="0.00" />
                                   </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <FormField
-                              control={form.control}
-                              name={`items.${index}.vatRate`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <Select onValueChange={(value) => field.onChange(Number(value))} value={field.value.toString()}>
-                                    <FormControl>
-                                      <SelectTrigger>
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      <SelectItem value="0">0%</SelectItem>
-                                      <SelectItem value="5">5%</SelectItem>
-                                      <SelectItem value="9">9%</SelectItem>
-                                      <SelectItem value="19">19%</SelectItem>
-                                    </SelectContent>
-                                  </Select>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -911,28 +778,9 @@ const NIRDocumentsPage: React.FC = () => {
                               name={`items.${index}.expiryDate`}
                               render={({ field }) => (
                                 <FormItem>
-                                  <Popover>
-                                    <PopoverTrigger asChild>
-                                      <FormControl>
-                                        <Button
-                                          variant="outline"
-                                          className="w-full justify-start text-left font-normal"
-                                        >
-                                          <CalendarIcon className="mr-2 h-4 w-4" />
-                                          {field.value ? format(field.value, 'PPP', { locale: ro }) : "Selectați"}
-                                        </Button>
-                                      </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0">
-                                      <Calendar
-                                        mode="single"
-                                        selected={field.value || undefined}
-                                        onSelect={field.onChange}
-                                        disabled={(date) => date < new Date()}
-                                        initialFocus
-                                      />
-                                    </PopoverContent>
-                                  </Popover>
+                                  <FormControl>
+                                    <Input type="date" {...field} />
+                                  </FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -961,11 +809,11 @@ const NIRDocumentsPage: React.FC = () => {
                   className="mt-4"
                   onClick={() => append({
                     productId: "",
-                    quantity: 1,
-                    purchasePrice: 0,
-                    vatRate: 19,
+                    quantity: "1",
+                    unitPrice: "0",
                     batchNo: "",
-                    expiryDate: null,
+                    expiryDate: "",
+                    observations: "",
                   })}
                 >
                   <Plus className="mr-2 h-4 w-4" />
@@ -1003,9 +851,9 @@ const NIRDocumentsPage: React.FC = () => {
             <div className="space-y-4">
               <div className="flex justify-between">
                 <div>
-                  <h3 className="text-lg font-medium">{viewDocument.nirNumber || viewDocument.nir_number}</h3>
+                  <h3 className="text-lg font-medium">{viewDocument.number}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Data: {new Date(viewDocument.receiptDate || viewDocument.receipt_date || '').toLocaleDateString()}
+                    Data: {new Date(viewDocument.date).toLocaleDateString()}
                   </p>
                 </div>
                 <StatusBadge status={viewDocument.status} />
@@ -1017,25 +865,13 @@ const NIRDocumentsPage: React.FC = () => {
                 <div>
                   <p className="text-sm font-medium">Gestiune</p>
                   <p className="text-sm text-muted-foreground">
-                    {getWarehouseById(viewDocument.warehouseId || viewDocument.warehouse_id || '')?.name || "Necunoscut"}
+                    {getWarehouseById(viewDocument.warehouseId)?.name || "Necunoscut"}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm font-medium">Furnizor</p>
                   <p className="text-sm text-muted-foreground">
-                    {getSupplierById(viewDocument.supplierId || viewDocument.supplier_id || '')?.name || "Necunoscut"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Nr. factură furnizor</p>
-                  <p className="text-sm text-muted-foreground">
-                    {viewDocument.supplierInvoiceNumber || viewDocument.supplier_invoice_number || "-"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Custodie</p>
-                  <p className="text-sm text-muted-foreground">
-                    {(viewDocument.isCustody || viewDocument.is_custody) ? "Da" : "Nu"}
+                    {getSupplierById(viewDocument.supplierId)?.name || "Necunoscut"}
                   </p>
                 </div>
               </div>
@@ -1066,63 +902,34 @@ const NIRDocumentsPage: React.FC = () => {
               
               <Separator />
               
-              <div className="flex justify-between">
-                <div>
-                  <p className="text-sm font-medium">Observații</p>
-                  <p className="text-sm text-muted-foreground">{viewDocument.notes || "-"}</p>
-                </div>
-                <div className="space-y-1 text-right">
-                  <div className="text-sm">
-                    <span className="font-medium">Valoare netă: </span>
-                    <span>{formatCurrency(viewDocument.totalValueNoVat || viewDocument.total_value_no_vat, viewDocument.currency)}</span>
-                  </div>
-                  <div className="text-sm">
-                    <span className="font-medium">TVA: </span>
-                    <span>{formatCurrency(viewDocument.totalVat || viewDocument.total_vat, viewDocument.currency)}</span>
-                  </div>
-                  <div className="text-base font-bold">
-                    <span>Total: </span>
-                    <span>{formatCurrency(viewDocument.totalValueWithVat || viewDocument.total_value_with_vat, viewDocument.currency)}</span>
-                  </div>
-                </div>
+              <div>
+                <p className="text-sm font-medium">Observații</p>
+                <p className="text-sm text-muted-foreground">{viewDocument.observations || "-"}</p>
               </div>
               
               <DialogFooter className="flex justify-between">
                 {viewDocument.status === "draft" && (
-                  <Button 
-                    variant="secondary" 
-                    onClick={() => {
-                      handleUpdateStatus(viewDocument.id, "pending");
-                      setIsViewDialogOpen(false);
-                    }}
-                  >
-                    <Clock className="mr-2 h-4 w-4" />
-                    Trimite spre aprobare
-                  </Button>
-                )}
-                {viewDocument.status === "pending" && (
                   <div className="space-x-2">
                     <Button 
-                      variant="outline" 
-                      className="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700"
+                      variant="secondary" 
                       onClick={() => {
-                        handleUpdateStatus(viewDocument.id, "rejected");
-                        setIsViewDialogOpen(false);
-                      }}
-                    >
-                      <CircleX className="mr-2 h-4 w-4" />
-                      Respinge
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700"
-                      onClick={() => {
-                        handleUpdateStatus(viewDocument.id, "approved");
+                        handleUpdateStatus(viewDocument.id, "received");
                         setIsViewDialogOpen(false);
                       }}
                     >
                       <CheckCircle2 className="mr-2 h-4 w-4" />
-                      Aprobă
+                      Marchează ca recepționat
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700"
+                      onClick={() => {
+                        handleUpdateStatus(viewDocument.id, "cancelled");
+                        setIsViewDialogOpen(false);
+                      }}
+                    >
+                      <CircleX className="mr-2 h-4 w-4" />
+                      Anulează
                     </Button>
                   </div>
                 )}
