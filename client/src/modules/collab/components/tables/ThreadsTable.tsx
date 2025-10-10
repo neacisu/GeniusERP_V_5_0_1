@@ -360,9 +360,9 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map((header: any) => (
                   <TableHead key={header.id}>
-                    {(header: any).isPlaceholder
+                    {header.isPlaceholder
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
