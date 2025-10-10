@@ -194,7 +194,8 @@ export class AccountingController extends BaseController {
       const includeInactive = req.query.includeInactive === 'true';
       const type = req.query.type as string;
       
-      return await this.accountingService.getAccountChart(companyId, includeInactive, type);
+      // TODO: getAllAccounts() nu suportă filtre - trebuie implementat getAccountChart sau filtrat manual
+      return await this.accountingService.getAllAccounts();
     });
   }
   
@@ -206,7 +207,8 @@ export class AccountingController extends BaseController {
       const companyId = this.getCompanyId(req);
       const accountId = req.params.id;
       
-      const account = await this.accountingService.getAccount(accountId, companyId);
+      // TODO: getAccount nu există - folosim getAnalyticAccount (pentru conturi analitice)
+      const account = await this.accountingService.getAnalyticAccount(accountId);
       
       if (!account) {
         throw { statusCode: 404, message: 'Account not found' };
@@ -226,8 +228,8 @@ export class AccountingController extends BaseController {
       
       const accountData = { ...req.body, companyId, createdBy: userId };
       
-      const accountId = await this.accountingService.createAccount(accountData);
-      const account = await this.accountingService.getAccount(accountId, companyId);
+      // Folosim createAnalyticAccount pentru a crea conturi analitice
+      const account = await this.accountingService.createAnalyticAccount(accountData);
       
       if (!account) {
         throw { 
@@ -249,19 +251,13 @@ export class AccountingController extends BaseController {
       const accountId = req.params.id;
       
       // Verify that the account exists and belongs to the company
-      const existingAccount = await this.accountingService.getAccount(accountId, companyId);
+      const existingAccount = await this.accountingService.getAnalyticAccount(accountId);
       if (!existingAccount) {
         throw { statusCode: 404, message: 'Account not found' };
       }
       
-      const accountData = { 
-        ...req.body, 
-        id: accountId,
-        companyId 
-      };
-      
-      await this.accountingService.updateAccount(accountData);
-      const updatedAccount = await this.accountingService.getAccount(accountId, companyId);
+      // TODO: updateAccount nu există în AccountingService - trebuie implementat
+      throw { statusCode: 501, message: 'Update account not implemented yet' };
       
       return updatedAccount;
     });

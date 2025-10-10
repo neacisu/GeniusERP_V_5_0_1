@@ -45,22 +45,24 @@ export class TransactionsService {
       const transactionId = uuidv4();
       
       // Insert transaction into database
-      const [transaction] = await this.db.insert(ecommerceTransactions).values({
-        id: transactionId,
-        orderId: transactionData.orderId,
-        userId: transactionData.userId,
-        companyId: transactionData.companyId,
-        transactionDate: transactionData.transactionDate,
-        amount: transactionData.amount,
-        currency: transactionData.currency,
-        status: transactionData.status,
-        paymentMethod: transactionData.paymentMethod,
-        paymentGateway: transactionData.paymentGateway,
-        gatewayTransactionId: transactionData.gatewayTransactionId,
-        metadata: transactionData.metadata || {},
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }).returning();
+      const [transaction] = await this.db.query(async (db) => {
+        return await db.insert(ecommerceTransactions).values({
+          id: transactionId,
+          orderId: transactionData.orderId,
+          userId: transactionData.userId,
+          companyId: transactionData.companyId,
+          transactionDate: transactionData.transactionDate,
+          amount: transactionData.amount,
+          currency: transactionData.currency,
+          status: transactionData.status,
+          paymentMethod: transactionData.paymentMethod,
+          paymentGateway: transactionData.paymentGateway,
+          gatewayTransactionId: transactionData.gatewayTransactionId,
+          metadata: transactionData.metadata || {},
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }).returning();
+      });
       
       logger.info(`Created transaction ${transaction.id} for order ${transaction.orderId}`);
       return transaction;
