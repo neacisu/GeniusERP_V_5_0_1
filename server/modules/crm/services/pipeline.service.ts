@@ -354,17 +354,19 @@ export class PipelineService {
    */
   async updateStage(id: string, data: Partial<InsertPipelineStage>, userId: string): Promise<PipelineStage | null> {
     try {
-      const result = await this.db.update(pipelineStages)
-        .set({
-          ...data,
-          updatedAt: new Date(),
-          updatedBy: userId
-        })
-        .where(and(
-          eq(pipelineStages.id, id),
-          eq(pipelineStages.companyId, data.companyId || '')
-        ))
-        .returning();
+      const result = await this.db.query(async (db) => {
+        return await db.update(pipelineStages)
+          .set({
+            ...data,
+            updatedAt: new Date(),
+            updatedBy: userId
+          })
+          .where(and(
+            eq(pipelineStages.id, id),
+            eq(pipelineStages.companyId, data.companyId || '')
+          ))
+          .returning();
+      });
 
       if (result.length > 0) {
         await AuditService.log({
@@ -390,28 +392,32 @@ export class PipelineService {
   async deleteStage(id: string, companyId: string, userId: string): Promise<boolean> {
     try {
       // Check if there are any deals in this stage
-      const dealsInStage = await this.db.select({ count: sql`count(*)` })
-        .from(deals)
-        .where(and(
-          eq(deals.stageId, id),
-          eq(deals.companyId, companyId)
-        ));
+      const dealsInStage = await this.db.query(async (db) => {
+        return await db.select({ count: sql`count(*)` })
+          .from(deals)
+          .where(and(
+            eq(deals.stageId, id),
+            eq(deals.companyId, companyId)
+          ));
+      });
 
       if (Number(dealsInStage[0]?.count || 0) > 0) {
         throw new Error("Cannot delete stage with deals. Move deals to another stage first.");
       }
 
-      const result = await this.db.update(pipelineStages)
-        .set({
-          isActive: false,
-          updatedAt: new Date(),
-          updatedBy: userId
-        })
-        .where(and(
-          eq(pipelineStages.id, id),
-          eq(pipelineStages.companyId, companyId)
-        ))
-        .returning();
+      const result = await this.db.query(async (db) => {
+        return await db.update(pipelineStages)
+          .set({
+            isActive: false,
+            updatedAt: new Date(),
+            updatedBy: userId
+          })
+          .where(and(
+            eq(pipelineStages.id, id),
+            eq(pipelineStages.companyId, companyId)
+          ))
+          .returning();
+      });
 
       if (result.length > 0) {
         await AuditService.log({
@@ -445,10 +451,12 @@ export class PipelineService {
         conditions.push(eq(pipelineStages.isActive, true));
       }
 
-      return await this.db.select()
-        .from(pipelineStages)
-        .where(and(...conditions))
-        .orderBy(asc(pipelineStages.displayOrder));
+      return await this.db.query(async (db) => {
+        return await db.select()
+          .from(pipelineStages)
+          .where(and(...conditions))
+          .orderBy(asc(pipelineStages.displayOrder));
+      });
     } catch (error) {
       console.error("Error getting pipeline stages:", error);
       throw new Error("Failed to get pipeline stages");
@@ -461,12 +469,14 @@ export class PipelineService {
   async reorderStages(pipelineId: string, companyId: string, stageIds: string[], userId: string): Promise<boolean> {
     try {
       // Verify all stages belong to this pipeline and company
-      const stages = await this.db.select()
-        .from(pipelineStages)
-        .where(and(
-          eq(pipelineStages.pipelineId, pipelineId),
-          eq(pipelineStages.companyId, companyId)
-        ));
+      const stages = await this.db.query(async (db) => {
+        return await db.select()
+          .from(pipelineStages)
+          .where(and(
+            eq(pipelineStages.pipelineId, pipelineId),
+            eq(pipelineStages.companyId, companyId)
+          ));
+      });
 
       const stageMap = new Map(stages.map((stage: any) => [stage.id, stage]));
       
@@ -479,13 +489,15 @@ export class PipelineService {
 
       // Update the display order for each stage
       for (let i = 0; i < stageIds.length; i++) {
-        await this.db.update(pipelineStages)
-          .set({
-            displayOrder: i,
-            updatedAt: new Date(),
-            updatedBy: userId
-          })
-          .where(eq(pipelineStages.id, stageIds[i]));
+        await this.db.query(async (db) => {
+          return await db.update(pipelineStages)
+            .set({
+              displayOrder: i,
+              updatedAt: new Date(),
+              updatedBy: userId
+            })
+            .where(eq(pipelineStages.id, stageIds[i]));
+        });
       }
 
       await AuditService.log({
@@ -509,13 +521,15 @@ export class PipelineService {
    */
   async getAllStages(companyId: string): Promise<PipelineStage[]> {
     try {
-      return await this.db.select()
-        .from(pipelineStages)
-        .where(and(
-          eq(pipelineStages.companyId, companyId),
-          eq(pipelineStages.isActive, true)
-        ))
-        .orderBy(asc(pipelineStages.pipelineId), asc(pipelineStages.displayOrder));
+      return await this.db.query(async (db) => {
+        return await db.select()
+          .from(pipelineStages)
+          .where(and(
+            eq(pipelineStages.companyId, companyId),
+            eq(pipelineStages.isActive, true)
+          ))
+          .orderBy(asc(pipelineStages.pipelineId), asc(pipelineStages.displayOrder));
+      });
     } catch (error) {
       console.error("Error getting all pipeline stages:", error);
       throw new Error("Failed to get all pipeline stages");
