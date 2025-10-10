@@ -68,11 +68,16 @@ export class RoleMutationService extends BaseDrizzleService {
         return newRole;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to create role`, error);
       logger.error(`[${context}] Role data: ${JSON.stringify(roleData)}`);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to create role: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to create role: ${errorMessage}`);
     }
   }
   
@@ -128,11 +133,16 @@ export class RoleMutationService extends BaseDrizzleService {
         return updatedRole;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to update role with ID: ${roleId}`, error);
       logger.error(`[${context}] Update data: ${JSON.stringify(roleData)}`);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to update role: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to update role: ${errorMessage}`);
     }
   }
   
@@ -179,10 +189,15 @@ export class RoleMutationService extends BaseDrizzleService {
         return success;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to delete role with ID: ${roleId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to delete role: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to delete role: ${errorMessage}`);
     }
   }
 }
