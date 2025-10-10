@@ -5,6 +5,18 @@
 import { User as DbUser } from './schema';
 
 /**
+ * User Role enum
+ * Defines the roles a user can have in the system
+ */
+export enum UserRole {
+  ADMIN = 'admin',
+  MANAGER = 'manager',
+  ACCOUNTANT = 'accountant',
+  EMPLOYEE = 'employee',
+  USER = 'user'
+}
+
+/**
  * Service decorator for dependency injection
  * This is used to mark a class as a service that can be injected into other components
  */
