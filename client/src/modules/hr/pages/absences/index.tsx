@@ -100,7 +100,7 @@ const AbsencesPage: React.FC = () => {
   );
   
   // Fetch employees for filter
-  const { data: employeesResponse } = useEmployees(1, 100, '', undefined, true);
+  const { data: employeesResponse } = useEmployees({ page: 1, pageSize: 100 });
   
   // Mutation for delete absence
   const { mutate: deleteAbsence } = useDeleteAbsence();
