@@ -42,7 +42,7 @@ export function validateRequest(schemas: ValidationSchemas) {
         // Format Zod validation errors
         return res.status(400).json({
           message: 'Validation error',
-          errors: error.errors.map(err => ({
+          errors: error.errors.map((err: any) => ({
             path: err.path.join('.'),
             message: err.message
           }))

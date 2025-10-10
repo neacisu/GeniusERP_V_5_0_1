@@ -112,7 +112,7 @@ export class AuthGuard {
         const allowedRoles = Array.isArray(roles) ? roles : [roles];
         
         // Check if any user role is in the allowed roles
-        const hasAllowedRole = userRoles.some(role => allowedRoles.includes(role));
+        const hasAllowedRole = userRoles.some((role: any) => allowedRoles.includes(role));
         if (hasAllowedRole) {
           return next();
         }

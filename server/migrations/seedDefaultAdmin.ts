@@ -30,7 +30,7 @@ async function seedDefaultAdmin() {
     console.log('Checking if admin user exists...');
     
     // Check if we already have a user with the admin role
-    const existingAdmins = await drizzleService.executeQuery(async (db) => {
+    const existingAdmins = await drizzleService.executeQuery(async (db: any) => {
       // Get admin role
       const [adminRole] = await db
         .select()
@@ -60,7 +60,7 @@ async function seedDefaultAdmin() {
     console.log('No admin users found. Creating default admin...');
     
     // Create a default admin user
-    await drizzleService.executeQuery(async (db) => {
+    await drizzleService.executeQuery(async (db: any) => {
       // Get admin role and company
       const [adminRole] = await db
         .select()

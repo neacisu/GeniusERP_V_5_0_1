@@ -24,7 +24,7 @@ async function seedDefaultCompany() {
     console.log('No companies found. Creating default company...');
     
     // Create a default company
-    await drizzleService.executeQuery(async (db) => {
+    await drizzleService.executeQuery(async (db: any) => {
       const [company] = await db.insert(companies).values({
         id: uuidv4(),
         name: 'GeniusERP Demo Company',
