@@ -33,19 +33,21 @@ export class CartService {
     try {
       const cartId = uuidv4();
       
-      const [newCart] = await this.db.insert(carts).values({
-        userId,
-        companyId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        status: CartStatus.ACTIVE,
-        subtotal: "0",
-        taxAmount: "0",
-        discountAmount: "0",
-        total: "0",
-        currencyCode: 'RON', // Default to Romanian currency
-        metadata: {}
-      }).returning();
+      const [newCart] = await this.db.query(async (db) => {
+        return await db.insert(carts).values({
+          userId,
+          companyId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          status: CartStatus.ACTIVE,
+          subtotal: "0",
+          taxAmount: "0",
+          discountAmount: "0",
+          total: "0",
+          currencyCode: 'RON', // Default to Romanian currency
+          metadata: {}
+        }).returning();
+      });
       
       logger.info(`Created new cart with ID for user ${userId}`);
       return newCart;
@@ -65,15 +67,17 @@ export class CartService {
   async getOrCreateCart(userId: string, companyId: string) {
     try {
       // Find active cart for user
-      const existingCarts = await this.db.select()
-        .from(carts)
-        .where(
-          and(
-            eq(carts.userId, userId),
-            eq(carts.companyId, companyId),
-            eq(carts.status, CartStatus.ACTIVE)
-          )
-        );
+      const existingCarts = await this.db.query(async (db) => {
+        return await db.select()
+          .from(carts)
+          .where(
+            and(
+              eq(carts.userId, userId),
+              eq(carts.companyId, companyId),
+              eq(carts.status, CartStatus.ACTIVE)
+            )
+          );
+      });
       
       // Return existing cart if found
       if (existingCarts.length > 0) {
@@ -107,38 +111,44 @@ export class CartService {
   ) {
     try {
       // Check if item already exists in cart
-      const existingItems = await this.db.select()
-        .from(cartItems)
-        .where(
-          and(
-            eq(cartItems.cartId, cartId),
-            eq(cartItems.productId, productId)
-          )
-        );
+      const existingItems = await this.db.query(async (db) => {
+        return await db.select()
+          .from(cartItems)
+          .where(
+            and(
+              eq(cartItems.cartId, cartId),
+              eq(cartItems.productId, productId)
+            )
+          );
+      });
       
       if (existingItems.length > 0) {
         // Update existing item quantity
         const existingItem = existingItems[0];
         const newQuantity = existingItem.quantity + quantity;
         
-        await this.db.update(cartItems)
-          .set({
-            quantity: newQuantity,
-            totalPrice: String(newQuantity * Number(existingItem.unitPrice)),
-            updatedAt: new Date()
-          })
-          .where(eq(cartItems.id, existingItem.id));
+        await this.db.query(async (db) => {
+          return await db.update(cartItems)
+            .set({
+              quantity: newQuantity,
+              totalPrice: String(newQuantity * Number(existingItem.unitPrice)),
+              updatedAt: new Date()
+            })
+            .where(eq(cartItems.id, existingItem.id));
+        });
       } else {
         // Add new item
-        await this.db.insert(cartItems).values({
-          cartId,
-          productId,
-          quantity,
-          unitPrice: String(unitPrice),
-          totalPrice: String(quantity * unitPrice),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          metadata
+        await this.db.query(async (db) => {
+          return await db.insert(cartItems).values({
+            cartId,
+            productId,
+            quantity,
+            unitPrice: String(unitPrice),
+            totalPrice: String(quantity * unitPrice),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            metadata
+          });
         });
       }
       
@@ -162,9 +172,11 @@ export class CartService {
    */
   async updateItemQuantity(cartItemId: string, quantity: number) {
     try {
-      const items = await this.db.select()
-        .from(cartItems)
-        .where(eq(cartItems.id, cartItemId));
+      const items = await this.db.query(async (db) => {
+        return await db.select()
+          .from(cartItems)
+          .where(eq(cartItems.id, cartItemId));
+      });
       
       if (items.length === 0) {
         throw new Error('Cart item not found');
@@ -174,17 +186,21 @@ export class CartService {
       
       if (quantity <= 0) {
         // Remove item if quantity is zero or negative
-        await this.db.delete(cartItems)
-          .where(eq(cartItems.id, cartItemId));
+        await this.db.query(async (db) => {
+          return await db.delete(cartItems)
+            .where(eq(cartItems.id, cartItemId));
+        });
       } else {
         // Update item quantity
-        await this.db.update(cartItems)
-          .set({
-            quantity,
-            totalPrice: String(quantity * Number(item.unitPrice)),
-            updatedAt: new Date()
-          })
-          .where(eq(cartItems.id, cartItemId));
+        await this.db.query(async (db) => {
+          return await db.update(cartItems)
+            .set({
+              quantity,
+              totalPrice: String(quantity * Number(item.unitPrice)),
+              updatedAt: new Date()
+            })
+            .where(eq(cartItems.id, cartItemId));
+        });
       }
       
       // Update cart totals
@@ -206,9 +222,11 @@ export class CartService {
    */
   async removeItem(cartItemId: string) {
     try {
-      const items = await this.db.select()
-        .from(cartItems)
-        .where(eq(cartItems.id, cartItemId));
+      const items = await this.db.query(async (db) => {
+        return await db.select()
+          .from(cartItems)
+          .where(eq(cartItems.id, cartItemId));
+      });
       
       if (items.length === 0) {
         throw new Error('Cart item not found');
@@ -217,8 +235,10 @@ export class CartService {
       const item = items[0];
       
       // Delete the item
-      await this.db.delete(cartItems)
-        .where(eq(cartItems.id, cartItemId));
+      await this.db.query(async (db) => {
+        return await db.delete(cartItems)
+          .where(eq(cartItems.id, cartItemId));
+      });
       
       // Update cart totals
       await this.updateCartTotals(item.cartId);
@@ -240,16 +260,20 @@ export class CartService {
   async clearCart(cartId: string) {
     try {
       // Delete all items from the cart
-      await this.db.delete(cartItems)
-        .where(eq(cartItems.cartId, cartId));
+      await this.db.query(async (db) => {
+        return await db.delete(cartItems)
+          .where(eq(cartItems.cartId, cartId));
+      });
       
       // Update cart totals
       await this.updateCartTotals(cartId);
       
       // Return updated cart
-      const [cart] = await this.db.select()
-        .from(carts)
-        .where(eq(carts.id, cartId));
+      const [cart] = await this.db.query(async (db) => {
+        return await db.select()
+          .from(carts)
+          .where(eq(carts.id, cartId));
+      });
       
       return cart;
     } catch (error) {
@@ -266,17 +290,21 @@ export class CartService {
    */
   async getCartWithItems(cartId: string) {
     try {
-      const [cart] = await this.db.select()
-        .from(carts)
-        .where(eq(carts.id, cartId));
+      const [cart] = await this.db.query(async (db) => {
+        return await db.select()
+          .from(carts)
+          .where(eq(carts.id, cartId));
+      });
       
       if (!cart) {
         throw new Error('Cart not found');
       }
       
-      const items = await this.db.select()
-        .from(cartItems)
-        .where(eq(cartItems.cartId, cartId));
+      const items = await this.db.query(async (db) => {
+        return await db.select()
+          .from(cartItems)
+          .where(eq(cartItems.cartId, cartId));
+      });
       
       return {
         ...cart,
@@ -296,9 +324,11 @@ export class CartService {
   private async updateCartTotals(cartId: string) {
     try {
       // Get all items in the cart
-      const items = await this.db.select()
-        .from(cartItems)
-        .where(eq(cartItems.cartId, cartId));
+      const items = await this.db.query(async (db) => {
+        return await db.select()
+          .from(cartItems)
+          .where(eq(cartItems.cartId, cartId));
+      });
       
       // Calculate totals
       const subtotal = items.reduce((sum: number, item: any) => sum + Number(item.totalPrice), 0);
@@ -311,15 +341,17 @@ export class CartService {
       const total = subtotal + taxAmount - discountAmount;
       
       // Update the cart
-      await this.db.update(carts)
-        .set({
-          subtotal: String(subtotal),
-          taxAmount: String(taxAmount),
-          discountAmount: String(discountAmount),
-          total: String(total),
-          updatedAt: new Date()
-        })
-        .where(eq(carts.id, cartId));
+      await this.db.query(async (db) => {
+        return await db.update(carts)
+          .set({
+            subtotal: String(subtotal),
+            taxAmount: String(taxAmount),
+            discountAmount: String(discountAmount),
+            total: String(total),
+            updatedAt: new Date()
+          })
+          .where(eq(carts.id, cartId));
+      });
     } catch (error) {
       logger.error(`Failed to update cart totals for ${cartId}`, error);
       throw new Error('Failed to update cart totals');
@@ -337,27 +369,33 @@ export class CartService {
   async applyDiscount(cartId: string, discountAmount: number, discountCode: string) {
     try {
       // Update cart with discount
-      await this.db.update(carts)
-        .set({
-          discountAmount: String(discountAmount),
-          appliedDiscountCode: discountCode,
-          updatedAt: new Date()
-        })
-        .where(eq(carts.id, cartId));
+      await this.db.query(async (db) => {
+        return await db.update(carts)
+          .set({
+            discountAmount: String(discountAmount),
+            appliedDiscountCode: discountCode,
+            updatedAt: new Date()
+          })
+          .where(eq(carts.id, cartId));
+      });
       
       // Recalculate totals
-      const [cart] = await this.db.select()
-        .from(carts)
-        .where(eq(carts.id, cartId));
+      const [cart] = await this.db.query(async (db) => {
+        return await db.select()
+          .from(carts)
+          .where(eq(carts.id, cartId));
+      });
       
       const total = Number(cart.subtotal) + Number(cart.taxAmount) - Number(cart.discountAmount);
       
-      await this.db.update(carts)
-        .set({
-          total: String(total),
-          updatedAt: new Date()
-        })
-        .where(eq(carts.id, cartId));
+      await this.db.query(async (db) => {
+        return await db.update(carts)
+          .set({
+            total: String(total),
+            updatedAt: new Date()
+          })
+          .where(eq(carts.id, cartId));
+      });
       
       // Return updated cart with items
       return this.getCartWithItems(cartId);
@@ -376,17 +414,21 @@ export class CartService {
    */
   async setCartStatus(cartId: string, status: CartStatus) {
     try {
-      await this.db.update(carts)
-        .set({
-          status,
-          updatedAt: new Date()
-        })
-        .where(eq(carts.id, cartId));
+      await this.db.query(async (db) => {
+        return await db.update(carts)
+          .set({
+            status,
+            updatedAt: new Date()
+          })
+          .where(eq(carts.id, cartId));
+      });
       
       // Return updated cart
-      const [cart] = await this.db.select()
-        .from(carts)
-        .where(eq(carts.id, cartId));
+      const [cart] = await this.db.query(async (db) => {
+        return await db.select()
+          .from(carts)
+          .where(eq(carts.id, cartId));
+      });
       
       return cart;
     } catch (error) {
