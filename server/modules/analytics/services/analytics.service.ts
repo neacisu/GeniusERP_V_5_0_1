@@ -1341,7 +1341,7 @@ export class AnalyticsService {
       // Sort by severity manually since we're using an enum
       const severityOrder = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
       
-      return alerts.sort((a, b) => {
+      return alerts.sort((a: any, b: any) => {
         const severityA = a.severity as keyof typeof severityOrder;
         const severityB = b.severity as keyof typeof severityOrder;
         

@@ -489,7 +489,7 @@ export class LicenseService {
       
       // If the active license expired, reload
       const activeExpired = expiredLicenses.some(
-        license => this.activeLicense && license.id === this.activeLicense.id
+        (license: any) => this.activeLicense && license.id === this.activeLicense.id
       );
       
       if (activeExpired) {

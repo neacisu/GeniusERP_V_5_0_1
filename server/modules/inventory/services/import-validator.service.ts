@@ -71,7 +71,7 @@ export class ImportValidatorService {
           report.invalidRows++;
           report.errors.push({
             row: rowNumber,
-            errors: result.error.errors.map(err => 
+            errors: result.error.errors.map((err: any) => 
               `${err.path.join('.')}: ${err.message}`
             ),
           });

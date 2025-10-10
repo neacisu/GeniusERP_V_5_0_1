@@ -223,8 +223,8 @@ class AnafController {
       console.log(`[AnafController] Procesare individuală pentru ${cuiList.length} CUI-uri`);
       
       const validatedCuis = cuiList
-        .map(cui => validateCui(cui))
-        .filter(cui => cui !== null) as string[];
+        .map((cui: any) => validateCui(cui))
+        .filter((cui: any) => cui !== null) as string[];
       
       // Adăugăm un log detaliat pentru depanare
       console.log(`[AnafController] CUI-uri primite: ${JSON.stringify(cuiList)}`);

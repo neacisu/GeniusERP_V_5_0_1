@@ -102,7 +102,7 @@ export const authGuard = (options: AuthOptions = { required: true }) => {
     if (options.requiredPermissions && options.requiredPermissions.length > 0) {
       const userPermissions = userData.permissions || [];
       const hasAllPermissions = options.requiredPermissions.every(
-        perm => userPermissions.includes(perm)
+        (perm: any) => userPermissions.includes(perm)
       );
       
       if (!hasAllPermissions) {

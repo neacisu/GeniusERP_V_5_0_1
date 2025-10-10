@@ -21,7 +21,7 @@ export class StepTemplateService {
    * 
    * @param db Database connection
    */
-  constructor(private db) {}
+  constructor(private db: any) {}
 
   /**
    * Create a new step template

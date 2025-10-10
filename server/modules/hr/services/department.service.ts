@@ -108,7 +108,7 @@ export class DepartmentService {
       const rootDepartments = [];
 
       // First, create a map of all departments
-      result.forEach(department => {
+      result.forEach((department: any) => {
         departmentsMap[department.id] = {
           ...department,
           children: []
@@ -116,7 +116,7 @@ export class DepartmentService {
       });
 
       // Build the hierarchy
-      result.forEach(department => {
+      result.forEach((department: any) => {
         if (department.parentDepartmentId && departmentsMap[department.parentDepartmentId]) {
           departmentsMap[department.parentDepartmentId].children.push(departmentsMap[department.id]);
         } else {

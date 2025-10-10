@@ -80,7 +80,7 @@ export class InventoryValuationService {
     
     let totalQuantity = 0;
     let totalValue = 0;
-    const batchesWithValues = batches.map(batch => {
+    const batchesWithValues = batches.map((batch: any) => {
       const quantity = Number(batch.remainingQuantity);
       const unitValue = Number(batch.purchasePrice);
       const totalBatchValue = quantity * unitValue;
@@ -157,7 +157,7 @@ export class InventoryValuationService {
     
     let totalQuantity = 0;
     let totalValue = 0;
-    const batchesWithValues = batches.map(batch => {
+    const batchesWithValues = batches.map((batch: any) => {
       const quantity = Number(batch.remainingQuantity);
       const unitValue = Number(batch.purchasePrice);
       const totalBatchValue = quantity * unitValue;

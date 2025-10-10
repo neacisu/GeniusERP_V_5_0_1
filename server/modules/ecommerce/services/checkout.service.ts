@@ -88,7 +88,7 @@ export class CheckoutService {
         shippingAddress,
         billingAddress,
         paymentMethod,
-        items: cart.items.map(item => ({
+        items: cart.items.map((item: any) => ({
           productId: item.productId,
           quantity: item.quantity,
           unitPrice: item.unitPrice,

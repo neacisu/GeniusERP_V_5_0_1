@@ -261,7 +261,7 @@ export class TemplateService {
       
       // Extract category names
       return result
-        .map(row => row.category)
+        .map((row: any) => row.category)
         .filter(Boolean) as string[];
     } catch (error) {
       this._logger.error('Error getting template categories', error instanceof Error ? error.message : String(error));

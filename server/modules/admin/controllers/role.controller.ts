@@ -465,7 +465,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
       const users = await roleService.getRoleUsers(roleId);
 
       // Remove password field from user objects
-      const sanitizedUsers = users.map(user => {
+      const sanitizedUsers = users.map((user: any) => {
         const { password, ...userWithoutPassword } = user;
         return userWithoutPassword;
       });

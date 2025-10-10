@@ -161,7 +161,7 @@ router.get('/onboarding', async (req: Request, res: Response) => {
     // Format the response for the onboarding UI
     const onboardingDetails = {
       progress,
-      steps: steps.map((step) => ({
+      steps: steps.map((step: any) => ({
         id: step.id,
         step: step.step,
         status: step.status,

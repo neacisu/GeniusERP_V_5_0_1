@@ -436,7 +436,7 @@ export class PipelineService {
           eq(pipelineStages.companyId, companyId)
         ));
 
-      const stageMap = new Map(stages.map(stage => [stage.id, stage]));
+      const stageMap = new Map(stages.map((stage: any) => [stage.id, stage]));
       
       // Check if all provided stage IDs exist in this pipeline
       for (const stageId of stageIds) {

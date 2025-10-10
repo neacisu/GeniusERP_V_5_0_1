@@ -214,7 +214,7 @@ campaignRoutes.get(
  * PUT /api/marketing/campaigns/:id
  * PATCH /api/marketing/campaigns/:id
  */
-const handleUpdateCampaign = async (req, res) => {
+const handleUpdateCampaign = async (req: any, res: any) => {
   try {
     const userId = req.user?.id;
     const companyId = req.user?.companyId;

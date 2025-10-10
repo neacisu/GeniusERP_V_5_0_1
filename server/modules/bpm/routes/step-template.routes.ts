@@ -11,7 +11,7 @@ import { AuthGuard } from '../../../common/middleware/auth-guard.js';
  * @param db Database connection
  * @returns Express router
  */
-export const initStepTemplateRoutes = (app, db) => {
+export const initStepTemplateRoutes = (app: any, db: any) => {
   const router = express.Router();
   const stepTemplateService = new StepTemplateService(db);
   const auditService = new AuditService(db);

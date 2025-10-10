@@ -356,7 +356,7 @@ export class TransactionsService {
         period
       };
       
-      transactions.forEach(transaction => {
+      transactions.forEach((transaction: any) => {
         // Skip refund transactions to avoid double counting
         if (transaction.metadata && transaction.metadata.type === 'refund') {
           return;

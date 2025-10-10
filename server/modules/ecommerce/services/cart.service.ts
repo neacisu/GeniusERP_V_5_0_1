@@ -301,7 +301,7 @@ export class CartService {
         .where(eq(cartItems.cartId, cartId));
       
       // Calculate totals
-      const subtotal = items.reduce((sum: number, item) => sum + Number(item.totalPrice), 0);
+      const subtotal = items.reduce((sum: number, item: any) => sum + Number(item.totalPrice), 0);
       
       // For now, we'll set tax and discount to 0
       // In a real system, these would be calculated based on business rules

@@ -397,7 +397,7 @@ export class CompanyController {
       try {
         // Using direct query
         const company = await this.db.query.crm_companies.findFirst({
-          where: (companies, { eq, and }) => 
+          where: (companies: any, { eq, and }: any) => 
             and(
               eq(companies.id, id),
               eq(companies.companyId, companyId)
@@ -439,7 +439,7 @@ export class CompanyController {
       try {
         // Direct query to find company
         existingCompany = await this.db.query.crm_companies.findFirst({
-          where: (companies, { eq, and }) => 
+          where: (companies: any, { eq, and }: any) => 
             and(
               eq(companies.id, id),
               eq(companies.companyId, companyId)

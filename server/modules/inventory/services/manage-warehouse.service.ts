@@ -80,8 +80,8 @@ export class ManageWarehouseService {
       
       // Combine results from both tables
       const allCodes = [
-        ...analyticResults.map(row => row.code),
-        ...warehouseResults.map(row => row.code)
+        ...analyticResults.map((row: any) => row.code),
+        ...warehouseResults.map((row: any) => row.code)
       ];
       
       if (allCodes.length === 0) {

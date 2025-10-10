@@ -376,7 +376,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder
+                    {(header: any).isPlaceholder
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
@@ -405,7 +405,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
                   data-state={row.getIsSelected() ? 'selected' : undefined}
                   className={!row.original.isRead ? 'bg-slate-50' : ''}
                 >
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map((cell: any) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>

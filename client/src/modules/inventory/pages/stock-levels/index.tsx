@@ -482,7 +482,7 @@ const StockLevelsPage: React.FC = () => {
                   <p className="text-muted-foreground">Nu există stocuri care să corespundă criteriilor.</p>
                 </div>
               ) : (
-                filteredStockItems.map(stock => (
+                filteredStockItems.map((stock: any) => (
                   <Card key={stock.id}>
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">

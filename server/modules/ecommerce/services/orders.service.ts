@@ -379,7 +379,7 @@ export class OrdersService {
       });
       
       // Count orders by status
-      orders.forEach(order => {
+      orders.forEach((order: any) => {
         counts[order.status] = (counts[order.status] || 0) + 1;
       });
       
@@ -414,7 +414,7 @@ export class OrdersService {
       
       // Filter orders that contain the search term in order number
       // This is just a simple example - in practice, you'd use database search
-      return orders.filter(order => 
+      return orders.filter((order: any) => 
         order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase())
       );
     } catch (error) {

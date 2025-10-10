@@ -269,7 +269,7 @@ export class ExchangeRateController {
       }
       
       // Fill in the rates where we have data
-      ratesData.forEach(record => {
+      ratesData.forEach((record: any) => {
         const dateStr = record.date.toISOString().split('T')[0];
         if (dateMap.has(dateStr)) {
           const entry = dateMap.get(dateStr);

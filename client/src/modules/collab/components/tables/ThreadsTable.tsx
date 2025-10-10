@@ -362,7 +362,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder
+                    {(header: any).isPlaceholder
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
@@ -390,7 +390,7 @@ const ThreadsTable: React.FC<ThreadsTableProps> = ({
                   key={row.id}
                   data-state={row.getIsSelected() ? 'selected' : undefined}
                 >
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map((cell: any) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>

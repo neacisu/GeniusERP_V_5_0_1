@@ -133,7 +133,7 @@ export class SetupService {
         );
       
       // Count completed and skipped steps as done for progress calculation
-      const completedSteps = totalSteps.filter(step => 
+      const completedSteps = totalSteps.filter((step: any) => 
         step.status === 'completed' || step.status === 'skipped'
       );
       

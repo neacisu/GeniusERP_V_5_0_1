@@ -277,7 +277,7 @@ export class UserService {
         .innerJoin(roles, eq(userRoles.roleId, roles.id))
         .where(eq(userRoles.userId, userId));
       
-      const userRolesArray = result.map(r => r.role);
+      const userRolesArray = result.map((r: any) => r.role);
       this.logger.debug(`Retrieved ${userRolesArray.length} roles for user ID: ${userId}`);
       
       return userRolesArray;
@@ -377,7 +377,7 @@ export class UserService {
         .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
         .where(eq(rolePermissions.roleId, roleId));
       
-      const rolePermissionsArray = result.map(r => r.permission);
+      const rolePermissionsArray = result.map((r: any) => r.permission);
       this.logger.debug(`Retrieved ${rolePermissionsArray.length} permissions for role ID: ${roleId}`);
       
       return rolePermissionsArray;

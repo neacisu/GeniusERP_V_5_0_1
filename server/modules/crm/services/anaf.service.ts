@@ -188,7 +188,7 @@ export class AnafService {
       console.log(`[AnafService] ✅ Răspuns ANAF procesat cu succes: ${found.length} companii găsite, ${notFound.length} negăsite`);
       
       // Verifică dacă toate CUI-urile au fost procesate în răspuns
-      const processedCuis = [...found.map(company => company.date_generale?.cui), ...notFound].filter(Boolean);
+      const processedCuis = [...found.map((company: any) => company.date_generale?.cui), ...notFound].filter(Boolean);
       const missingCuis = cuiList.filter(cui => {
         const cleanCui = cui.replace(/^RO/i, '').trim();
         return !processedCuis.includes(cleanCui);

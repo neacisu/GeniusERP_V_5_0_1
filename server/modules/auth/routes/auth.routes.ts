@@ -50,7 +50,7 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         secretOrKey: process.env.JWT_SECRET
       },
-      async (payload, done) => {
+      async (payload: any, done: any) => {
         try {
           const user = await authService.getUserById(payload.id);
           if (!user) {

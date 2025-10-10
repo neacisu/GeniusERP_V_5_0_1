@@ -133,7 +133,7 @@ export class MarketingModule {
     // Add explicit route for campaign-placeholder to fix the validation issue
     const logger = new Logger('MarketingModule');
     
-    app.post('/api/marketing/campaign-placeholder', AuthGuard.protect(JwtAuthMode.REQUIRED), (req, res) => {
+    app.post('/api/marketing/campaign-placeholder', AuthGuard.protect(JwtAuthMode.REQUIRED), (req: any, res: any) => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;

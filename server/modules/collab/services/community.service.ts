@@ -133,7 +133,7 @@ export class CommunityService {
       });
       
       // Convert to expected format
-      const threads = results.map(result => ({
+      const threads = results.map((result: any) => ({
         ...result.thread,
         replyCount: result.replyCount
       }));
