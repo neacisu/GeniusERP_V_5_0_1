@@ -7,7 +7,7 @@
 
 import React, { useState } from "react";
 import { useWarehouses } from "../../hooks/useInventoryApi";
-import { GestiuneType, StockTrackingType, Warehouse, WarehouseFormValues } from "../../types";
+import { GestiuneType, StockTrackingType, Warehouse } from "../../types";
 
 // UI Components
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,17 +55,15 @@ const warehouseFormSchema = z.object({
   name: z.string().min(3, {
     message: "Numele gestiunii trebuie să aibă cel puțin 3 caractere.",
   }),
-  code: z.string().optional(), // Cod e generat automat pe server din cont analitic 371.x
-  type: z.enum(["depozit", "magazin", "custodie", "transfer"], {
-    required_error: "Selectați tipul gestiunii.",
-  }),
-  trackingType: z.enum(["QUANTITATIVE", "QUANTITATIVE_VALUE", "VALUE_ONLY"], {
-    required_error: "Selectați tipul de evidență.",
-  }),
+  code: z.string().optional(),
+  type: z.enum(["depozit", "magazin", "custodie", "transfer"]),
+  trackingType: z.enum(["standard", "fifo", "lifo", "cmp"]),
   location: z.string().optional(),
   responsible: z.string().optional(),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
+
+type WarehouseFormValues = z.infer<typeof warehouseFormSchema>;
 
 const WarehousesPage: React.FC = () => {
   const { toast } = useToast();
@@ -79,19 +77,19 @@ const WarehousesPage: React.FC = () => {
     warehouses, 
     isLoading, 
     isError, 
+    refetch,
     createWarehouse, 
-    updateWarehouse, 
-    deactivateWarehouse 
+    updateWarehouse 
   } = useWarehouses();
   
   // Form setup
-  const form = useForm<z.infer<typeof warehouseFormSchema>>({
+  const form = useForm<WarehouseFormValues>({
     resolver: zodResolver(warehouseFormSchema),
     defaultValues: {
       name: "",
       code: "",
       type: "depozit",
-      trackingType: "QUANTITATIVE",
+      trackingType: "standard",
       location: "",
       responsible: "",
       isActive: true,
@@ -114,7 +112,7 @@ const WarehousesPage: React.FC = () => {
       name: "",
       code: "",
       type: "depozit",
-      trackingType: "QUANTITATIVE",
+      trackingType: "standard",
       location: "",
       responsible: "",
       isActive: true,
@@ -138,7 +136,7 @@ const WarehousesPage: React.FC = () => {
   };
   
   // Form submission handler
-  const onSubmit = (values: z.infer<typeof warehouseFormSchema>) => {
+  const onSubmit = (values: WarehouseFormValues) => {
     if (currentWarehouse) {
       // Update existing warehouse
       updateWarehouse.mutate({
@@ -208,12 +206,14 @@ const WarehousesPage: React.FC = () => {
   // Get tracking type label for display
   const getTrackingTypeLabel = (type: StockTrackingType) => {
     switch (type) {
-      case "QUANTITATIVE":
-        return "Cantitativ";
-      case "QUANTITATIVE_VALUE":
-        return "Cantitativ-Valoric";
-      case "VALUE_ONLY":
-        return "Valoric";
+      case StockTrackingType.STANDARD:
+        return "Standard";
+      case StockTrackingType.FIFO:
+        return "FIFO (First In, First Out)";
+      case StockTrackingType.LIFO:
+        return "LIFO (Last In, First Out)";
+      case StockTrackingType.CMP:
+        return "CMP (Cost Mediu Ponderat)";
       default:
         return type;
     }
@@ -324,7 +324,7 @@ const WarehousesPage: React.FC = () => {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (window.confirm(`Sigur doriți să ${warehouse.isActive ? 'dezactivați' : 'activați'} gestiunea ${warehouse.name}?`)) {
-                                    deactivateWarehouse.mutate(warehouse.id);
+                                    updateWarehouse.mutate({ id: warehouse.id, isActive: !warehouse.isActive });
                                   }
                                 }}
                               >
@@ -543,9 +543,10 @@ const WarehousesPage: React.FC = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="QUANTITATIVE">Cantitativ</SelectItem>
-                          <SelectItem value="QUANTITATIVE_VALUE">Cantitativ-Valoric</SelectItem>
-                          <SelectItem value="VALUE_ONLY">Valoric</SelectItem>
+                          <SelectItem value="standard">Standard</SelectItem>
+                          <SelectItem value="fifo">FIFO (First In, First Out)</SelectItem>
+                          <SelectItem value="lifo">LIFO (Last In, First Out)</SelectItem>
+                          <SelectItem value="cmp">CMP (Cost Mediu Ponderat)</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>
