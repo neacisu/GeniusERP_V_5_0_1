@@ -91,9 +91,7 @@ export default function ReportsPage() {
     total, 
     isLoading, 
     deleteReport, 
-    isDeleting, 
-    runReport, 
-    isRunning 
+    runReport
   } = useAnalyticsReports({
     search: searchQuery,
     type: filterType !== 'all' ? filterType : undefined,
@@ -356,7 +354,7 @@ export default function ReportsPage() {
                         {report.schedule ? (
                           <div className="flex items-center">
                             <Clock className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                            <span>{report.schedule.frequency}</span>
+                            <span>{report.schedule}</span>
                           </div>
                         ) : (
                           <span className="text-muted-foreground">Fără programare</span>
@@ -368,7 +366,6 @@ export default function ReportsPage() {
                             variant="ghost" 
                             size="icon" 
                             onClick={() => handleRunReport(report.id)}
-                            disabled={isRunning}
                           >
                             <Play className="h-4 w-4" />
                             <span className="sr-only">Rulează</span>
@@ -488,7 +485,7 @@ export default function ReportsPage() {
                       {report.schedule && (
                         <div className="flex items-center text-muted-foreground">
                           <Clock className="h-3.5 w-3.5 mr-1.5" />
-                          <span>Programat {report.schedule.frequency}</span>
+                          <span>Programat {report.schedule}</span>
                         </div>
                       )}
                     </div>
@@ -500,7 +497,6 @@ export default function ReportsPage() {
                         size="sm" 
                         className="flex-1"
                         onClick={() => handleRunReport(report.id)}
-                        disabled={isRunning}
                       >
                         <Play className="h-4 w-4 mr-1" />
                         <span>Rulează</span>
@@ -604,23 +600,14 @@ export default function ReportsPage() {
             <Button
               variant="outline"
               onClick={() => setConfirmDeleteId(null)}
-              disabled={isDeleting}
             >
               Anulează
             </Button>
             <Button
               variant="destructive"
               onClick={() => confirmDeleteId && handleDeleteReport(confirmDeleteId)}
-              disabled={isDeleting}
             >
-              {isDeleting ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  <span>Ștergere...</span>
-                </>
-              ) : (
-                'Șterge raportul'
-              )}
+              Șterge raportul
             </Button>
           </DialogFooter>
         </DialogContent>
