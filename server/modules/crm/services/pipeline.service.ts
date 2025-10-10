@@ -31,27 +31,33 @@ export class PipelineService {
       // Check if this is the first pipeline and set isDefault to true if it is
       if (data.isDefault) {
         // If this pipeline is default, reset any other default pipelines
-        await this.db.update(pipelines)
-          .set({ isDefault: false })
-          .where(eq(pipelines.companyId, data.companyId));
+        await this.db.query(async (db) => {
+          return await db.update(pipelines)
+            .set({ isDefault: false })
+            .where(eq(pipelines.companyId, data.companyId));
+        });
       } else {
-        const existingPipelines = await this.db.select({ count: sql`count(*)` })
-          .from(pipelines)
-          .where(eq(pipelines.companyId, data.companyId));
+        const existingPipelines = await this.db.query(async (db) => {
+          return await db.select({ count: sql`count(*)` })
+            .from(pipelines)
+            .where(eq(pipelines.companyId, data.companyId));
+        });
         
         if (Number(existingPipelines[0]?.count || 0) === 0) {
           data.isDefault = true;
         }
       }
 
-      const result = await this.db.insert(pipelines)
-        .values({
-          ...data,
-          id: randomUUID(),
-          createdBy: userId,
-          updatedBy: userId
-        })
-        .returning();
+      const result = await this.db.query(async (db) => {
+        return await db.insert(pipelines)
+          .values({
+            ...data,
+            id: randomUUID(),
+            createdBy: userId,
+            updatedBy: userId
+          })
+          .returning();
+      });
 
       if (result.length > 0) {
         await AuditService.log({
@@ -78,25 +84,29 @@ export class PipelineService {
     try {
       // If setting this pipeline as default, reset any other default pipelines
       if (data.isDefault) {
-        await this.db.update(pipelines)
-          .set({ isDefault: false })
-          .where(and(
-            eq(pipelines.companyId, data.companyId || ''),
-            sql`${pipelines.id} != ${id}`
-          ));
+        await this.db.query(async (db) => {
+          return await db.update(pipelines)
+            .set({ isDefault: false })
+            .where(and(
+              eq(pipelines.companyId, data.companyId || ''),
+              sql`${pipelines.id} != ${id}`
+            ));
+        });
       }
 
-      const result = await this.db.update(pipelines)
-        .set({
-          ...data,
-          updatedAt: new Date(),
-          updatedBy: userId
-        })
-        .where(and(
-          eq(pipelines.id, id),
-          eq(pipelines.companyId, data.companyId || '')
-        ))
-        .returning();
+      const result = await this.db.query(async (db) => {
+        return await db.update(pipelines)
+          .set({
+            ...data,
+            updatedAt: new Date(),
+            updatedBy: userId
+          })
+          .where(and(
+            eq(pipelines.id, id),
+            eq(pipelines.companyId, data.companyId || '')
+          ))
+          .returning();
+      });
 
       if (result.length > 0) {
         await AuditService.log({
@@ -122,12 +132,14 @@ export class PipelineService {
   async deletePipeline(id: string, companyId: string, userId: string): Promise<boolean> {
     try {
       // Check if this is the default pipeline
-      const pipeline = await this.db.select()
-        .from(pipelines)
-        .where(and(
-          eq(pipelines.id, id),
-          eq(pipelines.companyId, companyId)
-        ));
+      const pipeline = await this.db.query(async (db) => {
+        return await db.select()
+          .from(pipelines)
+          .where(and(
+            eq(pipelines.id, id),
+            eq(pipelines.companyId, companyId)
+          ));
+      });
 
       if (pipeline.length === 0) {
         return false;
@@ -135,26 +147,30 @@ export class PipelineService {
 
       // Don't allow deleting the default pipeline if it's the only one
       if (pipeline[0].isDefault) {
-        const pipelineCount = await this.db.select({ count: sql`count(*)` })
-          .from(pipelines)
-          .where(eq(pipelines.companyId, companyId));
+        const pipelineCount = await this.db.query(async (db) => {
+          return await db.select({ count: sql`count(*)` })
+            .from(pipelines)
+            .where(eq(pipelines.companyId, companyId));
+        });
         
         if (Number(pipelineCount[0]?.count || 0) === 1) {
           throw new Error("Cannot delete the only pipeline. Create a new pipeline first.");
         }
       }
 
-      const result = await this.db.update(pipelines)
-        .set({
-          isActive: false,
-          updatedAt: new Date(),
-          updatedBy: userId
-        })
-        .where(and(
-          eq(pipelines.id, id),
-          eq(pipelines.companyId, companyId)
-        ))
-        .returning();
+      const result = await this.db.query(async (db) => {
+        return await db.update(pipelines)
+          .set({
+            isActive: false,
+            updatedAt: new Date(),
+            updatedBy: userId
+          })
+          .where(and(
+            eq(pipelines.id, id),
+            eq(pipelines.companyId, companyId)
+          ))
+          .returning();
+      });
 
       if (result.length > 0) {
         await AuditService.log({
@@ -168,23 +184,27 @@ export class PipelineService {
 
         // If the deleted pipeline was the default one, set another pipeline as default
         if (result[0].isDefault) {
-          const otherPipeline = await this.db.select()
-            .from(pipelines)
-            .where(and(
-              eq(pipelines.companyId, companyId),
-              eq(pipelines.isActive, true),
-              sql`${pipelines.id} != ${id}`
-            ))
-            .limit(1);
+          const otherPipeline = await this.db.query(async (db) => {
+            return await db.select()
+              .from(pipelines)
+              .where(and(
+                eq(pipelines.companyId, companyId),
+                eq(pipelines.isActive, true),
+                sql`${pipelines.id} != ${id}`
+              ))
+              .limit(1);
+          });
 
           if (otherPipeline.length > 0) {
-            await this.db.update(pipelines)
-              .set({ 
-                isDefault: true,
-                updatedAt: new Date(),
-                updatedBy: userId
-              })
-              .where(eq(pipelines.id, otherPipeline[0].id));
+            await this.db.query(async (db) => {
+              return await db.update(pipelines)
+                .set({ 
+                  isDefault: true,
+                  updatedAt: new Date(),
+                  updatedBy: userId
+                })
+                .where(eq(pipelines.id, otherPipeline[0].id));
+            });
           }
         }
       }
@@ -207,10 +227,12 @@ export class PipelineService {
         conditions.push(eq(pipelines.isActive, true));
       }
 
-      return await this.db.select()
-        .from(pipelines)
-        .where(and(...conditions))
-        .orderBy(asc(pipelines.displayOrder));
+      return await this.db.query(async (db) => {
+        return await db.select()
+          .from(pipelines)
+          .where(and(...conditions))
+          .orderBy(asc(pipelines.displayOrder));
+      });
     } catch (error) {
       console.error("Error getting pipelines:", error);
       throw new Error("Failed to get pipelines");
@@ -222,12 +244,14 @@ export class PipelineService {
    */
   async getPipelineById(id: string, companyId: string): Promise<Pipeline | null> {
     try {
-      const result = await this.db.select()
-        .from(pipelines)
-        .where(and(
-          eq(pipelines.id, id),
-          eq(pipelines.companyId, companyId)
-        ));
+      const result = await this.db.query(async (db) => {
+        return await db.select()
+          .from(pipelines)
+          .where(and(
+            eq(pipelines.id, id),
+            eq(pipelines.companyId, companyId)
+          ));
+      });
 
       return result.length > 0 ? result[0] : null;
     } catch (error) {
@@ -241,23 +265,27 @@ export class PipelineService {
    */
   async getDefaultPipeline(companyId: string): Promise<Pipeline | null> {
     try {
-      const result = await this.db.select()
-        .from(pipelines)
-        .where(and(
-          eq(pipelines.companyId, companyId),
-          eq(pipelines.isDefault, true),
-          eq(pipelines.isActive, true)
-        ));
-
-      if (result.length === 0) {
-        // If no default pipeline, get the first active pipeline
-        const anyPipeline = await this.db.select()
+      const result = await this.db.query(async (db) => {
+        return await db.select()
           .from(pipelines)
           .where(and(
             eq(pipelines.companyId, companyId),
+            eq(pipelines.isDefault, true),
             eq(pipelines.isActive, true)
-          ))
-          .limit(1);
+          ));
+      });
+
+      if (result.length === 0) {
+        // If no default pipeline, get the first active pipeline
+        const anyPipeline = await this.db.query(async (db) => {
+          return await db.select()
+            .from(pipelines)
+            .where(and(
+              eq(pipelines.companyId, companyId),
+              eq(pipelines.isActive, true)
+            ))
+            .limit(1);
+        });
 
         return anyPipeline.length > 0 ? anyPipeline[0] : null;
       }
@@ -276,28 +304,32 @@ export class PipelineService {
     try {
       // If displayOrder is not provided, put it at the end
       if (data.displayOrder === undefined) {
-        const lastStage = await this.db.select()
-          .from(pipelineStages)
-          .where(and(
-            eq(pipelineStages.pipelineId, data.pipelineId),
-            eq(pipelineStages.companyId, data.companyId)
-          ))
-          .orderBy(desc(pipelineStages.displayOrder))
-          .limit(1);
+        const lastStage = await this.db.query(async (db) => {
+          return await db.select()
+            .from(pipelineStages)
+            .where(and(
+              eq(pipelineStages.pipelineId, data.pipelineId),
+              eq(pipelineStages.companyId, data.companyId)
+            ))
+            .orderBy(desc(pipelineStages.displayOrder))
+            .limit(1);
+        });
 
         data.displayOrder = lastStage.length > 0
           ? (lastStage[0].displayOrder || 0) + 1
           : 0;
       }
 
-      const result = await this.db.insert(pipelineStages)
-        .values({
-          ...data,
-          id: randomUUID(),
-          createdBy: userId,
-          updatedBy: userId
-        })
-        .returning();
+      const result = await this.db.query(async (db) => {
+        return await db.insert(pipelineStages)
+          .values({
+            ...data,
+            id: randomUUID(),
+            createdBy: userId,
+            updatedBy: userId
+          })
+          .returning();
+      });
 
       if (result.length > 0) {
         await AuditService.log({
