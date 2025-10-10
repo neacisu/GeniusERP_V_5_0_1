@@ -386,7 +386,7 @@ const NIRDocumentsPage: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">Toate gestiunile</SelectItem>
-                    {warehouses.map(warehouse => (
+                    {warehouses.map((warehouse: any) => (
                       <SelectItem key={warehouse.id} value={warehouse.id}>
                         {warehouse.name}
                       </SelectItem>
@@ -511,7 +511,7 @@ const NIRDocumentsPage: React.FC = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredDocuments.map((doc) => {
+                  filteredDocuments.map((doc: any) => {
                     const warehouse = getWarehouseById(doc.warehouseId || doc.warehouse_id || '');
                     const supplier = getSupplierById(doc.supplierId || doc.supplier_id || '');
                     
@@ -664,7 +664,7 @@ const NIRDocumentsPage: React.FC = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {warehouses.map(warehouse => (
+                          {warehouses.map((warehouse: any) => (
                             <SelectItem key={warehouse.id} value={warehouse.id}>
                               {warehouse.name}
                             </SelectItem>
@@ -827,7 +827,7 @@ const NIRDocumentsPage: React.FC = () => {
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      {products.map(product => (
+                                      {products.map((product: any) => (
                                         <SelectItem key={product.id} value={product.id}>
                                           {product.name} ({product.code})
                                         </SelectItem>

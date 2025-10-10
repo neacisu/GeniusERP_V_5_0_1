@@ -423,7 +423,7 @@ export default function ProductsPage() {
 
   // Produsul selectat pentru detalii
   const selectedProduct = productDetailId 
-    ? products.find(p => p.id === productDetailId) 
+    ? products.find((p: any) => p.id === productDetailId) 
     : null;
   
   // Filtrăm produsele în funcție de căutare și categorie
@@ -432,20 +432,20 @@ export default function ProductsPage() {
     
     // Filtrare după tab activ
     if (activeTab === "active") {
-      result = result.filter(p => p.isActive);
+      result = result.filter((p: any) => p.isActive);
     } else if (activeTab === "inactive") {
-      result = result.filter(p => !p.isActive);
+      result = result.filter((p: any) => !p.isActive);
     }
     
     // Filtrare după categorie
     if (selectedCategory !== "all") {
-      result = result.filter(p => p.categoryId === selectedCategory);
+      result = result.filter((p: any) => p.categoryId === selectedCategory);
     }
     
     // Filtrare după căutare
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(p => 
+      result = result.filter((p: any) => 
         p.name.toLowerCase().includes(query) ||
         p.sku?.toLowerCase().includes(query) ||
         p.barcode?.toLowerCase().includes(query)
@@ -480,13 +480,13 @@ export default function ProductsPage() {
   // Funcții helper pentru a obține numele categoriei și unității
   const getCategoryName = (categoryId?: string) => {
     if (!categoryId) return "-";
-    const category = categories.find(c => c.id === categoryId);
+    const category = categories.find((c: any) => c.id === categoryId);
     return category ? category.name : "-";
   };
   
   const getUnitName = (unitId?: string) => {
     if (!unitId) return "-";
-    const unit = units.find(u => u.id === unitId);
+    const unit = units.find((u: any) => u.id === unitId);
     return unit ? unit.abbreviation : "-";
   };
   
