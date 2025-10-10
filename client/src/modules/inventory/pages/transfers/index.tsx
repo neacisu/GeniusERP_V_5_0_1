@@ -7,7 +7,7 @@
 
 import React, { useState } from "react";
 import { useTransfers, useWarehouses, useProducts, useStockItems } from "../../hooks/useInventoryApi";
-import { TransferDocument, TransferStatus, Warehouse, Product, StockItem } from "../../types";
+import { Warehouse, Product, StockItem } from "../../types";
 
 // UI Components
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,11 +89,8 @@ const transferDocumentSchema = z.object({
   sourceWarehouseId: z.string().min(1, "Selectați gestiunea sursă"),
   destinationWarehouseId: z.string().min(1, "Selectați gestiunea destinație"),
   transferDate: z.date(),
-  currency: z.string().default("RON"),
-  exchangeRate: z.preprocess(
-    (val) => (val === "" ? 1 : Number(val)),
-    z.number().min(0.01)
-  ),
+  currency: z.string(),
+  exchangeRate: z.number().min(0.01),
   notes: z.string().optional(),
 }).refine(data => data.sourceWarehouseId !== data.destinationWarehouseId, {
   message: "Gestiunea sursă și destinație nu pot fi identice",
@@ -104,18 +101,9 @@ const transferDocumentSchema = z.object({
 const transferItemSchema = z.object({
   productId: z.string().min(1, "Selectați produsul"),
   stockItemId: z.string().min(1, "Selectați stocul"),
-  quantity: z.preprocess(
-    (val) => (val === "" ? 0 : Number(val)),
-    z.number().min(0.01, "Cantitatea trebuie să fie mai mare de 0")
-  ),
-  unitPrice: z.preprocess(
-    (val) => (val === "" ? 0 : Number(val)),
-    z.number().min(0, "Prețul nu poate fi negativ")
-  ),
-  vatRate: z.preprocess(
-    (val) => (val === "" ? 19 : Number(val)),
-    z.number().min(0, "TVA nu poate fi negativ")
-  ),
+  quantity: z.number().min(0.01, "Cantitatea trebuie să fie mai mare de 0"),
+  unitPrice: z.number().min(0, "Prețul nu poate fi negativ"),
+  vatRate: z.number().min(0, "TVA nu poate fi negativ"),
   batchNo: z.string().optional(),
   expiryDate: z.date().optional().nullable(),
 });
@@ -126,11 +114,13 @@ const transferFormSchema = z.object({
   items: z.array(transferItemSchema).min(1, "Adăugați cel puțin un produs"),
 });
 
+type TransferFormValues = z.infer<typeof transferFormSchema>;
+
 const TransfersPage: React.FC = () => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [viewDocument, setViewDocument] = useState<TransferDocument | null>(null);
+  const [viewDocument, setViewDocument] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
@@ -145,7 +135,7 @@ const TransfersPage: React.FC = () => {
   const { stockItems } = useStockItems();
   
   // Form setup
-  const form = useForm<z.infer<typeof transferFormSchema>>({
+  const form = useForm<TransferFormValues>({
     resolver: zodResolver(transferFormSchema),
     defaultValues: {
       document: {
@@ -241,7 +231,7 @@ const TransfersPage: React.FC = () => {
   };
   
   // Form submission handler
-  const onSubmit = (values: z.infer<typeof transferFormSchema>) => {
+  const onSubmit = (values: TransferFormValues) => {
     // Format for API - in a real implementation we'd need to add more transformations
     const formattedValues = {
       document: {
@@ -268,13 +258,13 @@ const TransfersPage: React.FC = () => {
   };
   
   // View transfer document details
-  const handleViewDocument = (document: TransferDocument) => {
+  const handleViewDocument = (document: any) => {
     setViewDocument(document);
     setIsViewDialogOpen(true);
   };
   
   // Update transfer status
-  const handleUpdateStatus = (id: string, status: TransferStatus) => {
+  const handleUpdateStatus = (id: string, status: string) => {
     updateTransferStatus.mutate({ id, status }, {
       onSuccess: () => {
         toast({
@@ -352,7 +342,7 @@ const TransfersPage: React.FC = () => {
   const handleProductChange = (index: number, productId: string) => {
     const product = getProductById(productId);
     if (product) {
-      form.setValue(`items.${index}.unitPrice`, product.purchasePrice || 0);
+      form.setValue(`items.${index}.unitPrice`, parseFloat(product.purchasePrice) || 0);
       form.setValue(`items.${index}.vatRate`, product.vatRate || 19);
       // Clear the stockItemId to force reselection
       form.setValue(`items.${index}.stockItemId`, "");
