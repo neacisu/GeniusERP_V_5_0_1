@@ -286,7 +286,7 @@ const TransfersPage: React.FC = () => {
   };
   
   // Filter transfer documents
-  const filteredTransfers = transfers.filter(doc => {
+  const filteredTransfers = transfers.filter((doc: any) => {
     // Apply search filter
     const matchesSearch = 
       (doc.referenceNumber || doc.transfer_number || '').toLowerCase().includes(searchQuery.toLowerCase());
@@ -825,7 +825,7 @@ const TransfersPage: React.FC = () => {
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      {products.map(product => (
+                                      {products.map((product: any) => (
                                         <SelectItem key={product.id} value={product.id}>
                                           {product.name} ({product.code})
                                         </SelectItem>

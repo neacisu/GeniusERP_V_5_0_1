@@ -66,7 +66,7 @@ export default function ApiKeysPage() {
   const [newKeyName, setNewKeyName] = React.useState("");
   const [newKeyExpiry, setNewKeyExpiry] = React.useState("1");
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: any) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("ro-RO");
   };

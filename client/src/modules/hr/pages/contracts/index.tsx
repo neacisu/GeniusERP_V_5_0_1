@@ -261,7 +261,7 @@ const ContractsPage: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toți angajații</SelectItem>
-                  {employees.map(emp => (
+                  {employees.map((emp: any) => (
                     <SelectItem key={emp.id} value={emp.id}>
                       {emp.lastName} {emp.firstName}
                     </SelectItem>

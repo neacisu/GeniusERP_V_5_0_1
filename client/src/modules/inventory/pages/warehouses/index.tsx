@@ -154,7 +154,7 @@ const WarehousesPage: React.FC = () => {
   };
   
   // Filter warehouses based on search and active tab
-  const filteredWarehouses = warehouses.filter(warehouse => {
+  const filteredWarehouses = warehouses.filter((warehouse: any) => {
     // Apply search filter
     const matchesSearch = 
       warehouse.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -221,7 +221,7 @@ const WarehousesPage: React.FC = () => {
   
   // Get the selected warehouse for detail view
   const selectedWarehouse = warehouseDetailId 
-    ? warehouses.find(w => w.id === warehouseDetailId) 
+    ? warehouses.find((w: any) => w.id === warehouseDetailId) 
     : null;
   
   return (

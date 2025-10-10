@@ -584,7 +584,7 @@ const RevisalPage: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {operations.map((operation) => (
+                      {operations.map((operation: any) => (
                         <TableRow key={operation.id}>
                           <TableCell>
                             {getOperationDescription(operation.type)}

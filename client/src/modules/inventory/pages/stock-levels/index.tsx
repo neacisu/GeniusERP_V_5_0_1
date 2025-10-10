@@ -184,7 +184,7 @@ const StockLevelsPage: React.FC = () => {
   
   // Compute enriched stock items
   const enrichedStockItems = useMemo(() => {
-    return stockItems.map(item => {
+    return stockItems.map((item: any) => {
       const product = products.find((p: any) => p.id === item.productId);
       const warehouse = warehouses.find((w: any) => w.id === item.warehouseId);
       const stockAlert = product?.stockAlert || 0;
@@ -205,7 +205,7 @@ const StockLevelsPage: React.FC = () => {
   }, [stockItems, products, warehouses]);
   
   // Filter stock items
-  const filteredStockItems = enrichedStockItems.filter(item => {
+  const filteredStockItems = enrichedStockItems.filter((item: any) => {
     // Apply search filter
     const matchesSearch = 
       item.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||

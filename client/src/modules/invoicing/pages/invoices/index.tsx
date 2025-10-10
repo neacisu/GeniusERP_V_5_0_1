@@ -385,7 +385,7 @@ const InvoicesPage: React.FC = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  invoices.map((invoice) => (
+                  invoices.map((invoice: any) => (
                     <TableRow key={invoice.id}>
                       <TableCell className="font-medium">
                         <Link href={`/invoicing/invoices/${invoice.id}`} className="text-blue-600 hover:underline">
