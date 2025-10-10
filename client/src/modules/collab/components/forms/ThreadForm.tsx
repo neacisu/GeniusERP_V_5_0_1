@@ -64,7 +64,10 @@ const ThreadForm: React.FC<ThreadFormProps> = ({
   isLoading = false,
   isCommunityThread = false
 }) => {
-  const { useUsers, useThreadTags } = useCollabApi();
+  // TODO: Implementare useUsers și useThreadTags în useCollabApi
+  const useUsers = () => ({ data: [], isLoading: false });
+  const useThreadTags = () => ({ data: [], isLoading: false });
+  
   const [selectedTags, setSelectedTags] = useState<string[]>(
     thread?.tags || []
   );
@@ -84,36 +87,38 @@ const ThreadForm: React.FC<ThreadFormProps> = ({
     description: z.string().optional(),
     participants: z.array(z.string()).optional(),
     tags: z.array(z.string()).optional(),
-    isPublic: z.boolean().default(false),
-    isPinned: z.boolean().default(false),
+    isPrivate: z.boolean(),
+    isPinned: z.boolean(),
     category: isCommunityThread 
       ? z.nativeEnum(CommunityCategory).optional()
       : z.string().optional(),
     expiryDate: z.date().optional().nullable(),
   });
 
+  type ThreadFormValues = z.infer<typeof threadSchema>;
+
   // Inițializarea formularului
-  const form = useForm<z.infer<typeof threadSchema>>({
+  const form = useForm<ThreadFormValues>({
     resolver: zodResolver(threadSchema),
     defaultValues: {
       title: thread?.title || '',
       description: thread?.description || '',
       participants: thread?.participants || [],
       tags: thread?.tags || [],
-      isPublic: thread?.isPublic ?? true,
+      isPrivate: thread?.isPrivate ?? false,
       isPinned: thread?.isPinned || false,
-      category: thread?.category || (isCommunityThread ? CommunityCategory.GENERAL : undefined),
-      expiryDate: thread?.expiryDate ? new Date(thread.expiryDate) : null,
+      category: thread?.category || (isCommunityThread ? CommunityCategory.ANUNTURI : undefined),
+      expiryDate: (thread as any)?.expiryDate ? new Date((thread as any).expiryDate) : null,
     },
   });
 
-  const handleSubmit = (values: z.infer<typeof threadSchema>) => {
+  const handleSubmit = (values: ThreadFormValues) => {
     onSubmit({
       id: thread?.id,
       ...values,
       createdAt: thread?.createdAt || new Date(),
       updatedAt: new Date(),
-    } as Thread);
+    } as any);
   };
 
   // Handler pentru adăugarea unui tag
@@ -296,7 +301,7 @@ const ThreadForm: React.FC<ThreadFormProps> = ({
                 <div className="space-y-2">
                   <div className="flex flex-wrap gap-2 mb-2">
                     {selectedParticipants.map(userId => {
-                      const user = users?.find((u: { id: string; name?: string }) => u.id === userId);
+                      const user = users?.find((u: { id: string; name?: string }) => u.id === userId) as { id: string; name?: string } | undefined;
                       return (
                         <Badge 
                           key={userId} 
@@ -305,10 +310,10 @@ const ThreadForm: React.FC<ThreadFormProps> = ({
                         >
                           <Avatar className="h-4 w-4">
                             <AvatarFallback className="text-[10px]">
-                              {user?.name?.substring(0, 2).toUpperCase() || 'UN'}
+                              {(user as any)?.name?.substring(0, 2).toUpperCase() || 'UN'}
                             </AvatarFallback>
                           </Avatar>
-                          <span>{user?.name || userId}</span>
+                          <span>{(user as any)?.name || userId}</span>
                           <button
                             type="button"
                             className="ml-1 rounded-full hover:bg-muted p-0.5"
@@ -397,7 +402,7 @@ const ThreadForm: React.FC<ThreadFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="isPublic"
+            name="isPrivate"
             render={({ field }) => (
               <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                 <FormControl>
@@ -407,11 +412,11 @@ const ThreadForm: React.FC<ThreadFormProps> = ({
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>Public</FormLabel>
+                  <FormLabel>Privat</FormLabel>
                   <FormDescription>
                     {isCommunityThread 
-                      ? 'Postarea va fi vizibilă pentru toți utilizatorii.' 
-                      : 'Discuția va fi vizibilă pentru toți utilizatorii, nu doar pentru participanți.'}
+                      ? 'Postarea va fi vizibilă doar pentru participanți.' 
+                      : 'Discuția va fi vizibilă doar pentru participanți, nu pentru toți utilizatorii.'}
                   </FormDescription>
                 </div>
               </FormItem>
