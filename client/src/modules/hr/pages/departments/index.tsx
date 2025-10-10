@@ -202,7 +202,7 @@ const DepartmentsPage: React.FC = () => {
           <StatsCard
             title="Buget utilizat"
             value={`${Math.round((totalBudgetUsed / totalBudgetAllocated) * 100)}%`}
-            description={`${totalBudgetUsed.toLocaleString()} / ${totalBudgetAllocated.toLocaleString()} RON`}
+            subtitle={`${totalBudgetUsed.toLocaleString()} / ${totalBudgetAllocated.toLocaleString()} RON`}
             icon={<Briefcase size={20} />}
             color="warning"
           />
