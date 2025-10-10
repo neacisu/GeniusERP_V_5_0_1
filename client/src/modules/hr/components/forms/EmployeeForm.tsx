@@ -116,6 +116,9 @@ const validateCNP = (cnp: string): boolean => {
 
 // Schema de validare pentru angajat
 const employeeSchema = z.object({
+  // ID opțional pentru edit mode
+  id: z.string().optional(),
+  
   // Informații personale de bază
   firstName: z.string().min(2, { message: 'Prenumele trebuie să conțină cel puțin 2 caractere' }),
   lastName: z.string().min(2, { message: 'Numele trebuie să conțină cel puțin 2 caractere' }),
@@ -130,10 +133,10 @@ const employeeSchema = z.object({
   }),
   idSeriesNumber: z.string().min(3, { message: 'Seria și numărul CI/BI sunt obligatorii' }),
   birthDate: z.date({
-    required_error: "Data nașterii este obligatorie.",
+    message: "Data nașterii este obligatorie.",
   }),
   birthPlace: z.string().min(2, { message: 'Locul nașterii este obligatoriu' }),
-  nationality: z.string().default('Română'),
+  nationality: z.string(),
   
   // Adresă
   address: z.string().min(5, { message: 'Adresa trebuie să conțină cel puțin 5 caractere' }),
@@ -148,15 +151,15 @@ const employeeSchema = z.object({
   departmentId: z.string().optional().or(z.literal('')),
   
   // Status
-  isActive: z.boolean().default(true),
-  status: z.string().default('active'),
+  isActive: z.boolean(),
+  status: z.string(),
   
   // Drepturi de acces (opțional)
-  hasUserAccount: z.boolean().default(false),
+  hasUserAccount: z.boolean(),
   
   // Date privind GDPR și consimțământ
-  gdprConsent: z.boolean().default(false),
-  dataProcessingConsent: z.boolean().default(false),
+  gdprConsent: z.boolean(),
+  dataProcessingConsent: z.boolean(),
   gdprDocumentId: z.string().optional(),
   accountTermsDocumentId: z.string().optional(),
 });
@@ -309,23 +312,25 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
       lastName: '',
       email: '',
       phone: '',
+      personalEmail: '',
+      personalPhone: '',
       cnp: '',
       idSeriesNumber: '',
       birthDate: new Date(),
       birthPlace: '',
-      nationality: 'română',
+      nationality: 'Română',
       address: '',
       city: '',
       county: '',
       postalCode: '',
-      internalPosition: '',
+      position: '',
+      department: '',
       departmentId: '',
-      managerId: '',
-      status: 'PENDING',
-      civilStatus: 'SINGLE',
+      status: 'active',
+      isActive: true,
+      hasUserAccount: false,
       gdprConsent: false,
-      healthInsurance: true,
-      taxExempt: false
+      dataProcessingConsent: false
     },
     mode: "onChange" // Activăm validarea la schimbare pentru a putea verifica tab-urile în timp real
   });
@@ -344,20 +349,20 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
     }
     
     // Verificăm câmpurile obligatorii pentru fiecare tab
-    const personalTabValid = 
+    const personalTabValid = !!(
       formValues.firstName && 
       formValues.lastName && 
-      formValues.email;
+      formValues.email
+    );
       
-    const identificationTabValid = 
+    const identificationTabValid = !!(
       formValues.cnp && 
-      validateCNP(formValues.cnp);
+      validateCNP(formValues.cnp)
+    );
       
-    const employmentTabValid = 
-      formValues.departmentId;
+    const employmentTabValid = !!formValues.departmentId;
     
-    const settingsTabValid = 
-      formValues.gdprConsent === true;
+    const settingsTabValid = formValues.gdprConsent === true;
       
     // Setăm starea pentru fiecare tab
     setTabsValidated({
@@ -394,23 +399,23 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
     // Verifică validitatea datelor din tab-ul curent
     switch (activeTab) {
       case "personal":
-        currentTabValid = 
+        currentTabValid = !!(
           currentData.firstName && 
           currentData.lastName && 
-          currentData.email;
+          currentData.email
+        );
         break;
       case "contact":
-        currentTabValid = 
+        currentTabValid = !!(
           currentData.cnp && 
-          validateCNP(currentData.cnp);
+          validateCNP(currentData.cnp)
+        );
         break;
       case "employment":
-        currentTabValid = 
-          currentData.departmentId;
+        currentTabValid = !!currentData.departmentId;
         break;
       case "documents":
-        currentTabValid = 
-          currentData.gdprConsent === true;
+        currentTabValid = currentData.gdprConsent === true;
         break;
     }
     
@@ -483,7 +488,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
       // Actualizăm lista de documente
       setUploadedDocuments(prev => [
         ...prev, 
-        { name: file.name, url: '#', type: 'gdpr_consent' }
+        { id: Date.now().toString(), name: file.name, url: '#', type: 'gdpr_consent' }
       ]);
     } catch (error) {
       console.error("Eroare la încărcarea documentului:", error);
@@ -1176,8 +1181,9 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                               const formData = new FormData();
                               formData.append('file', file);
                               formData.append('type', 'gdpr_consent');
-                              if (form.getValues('id')) {
-                                formData.append('employeeId', form.getValues('id'));
+                              const employeeId = form.getValues('id');
+                              if (employeeId) {
+                                formData.append('employeeId', employeeId);
                               }
                               
                               const response = await fetch('/api/hr/documents/upload', {
@@ -1327,8 +1333,9 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                               const formData = new FormData();
                               formData.append('file', file);
                               formData.append('type', 'account_terms');
-                              if (form.getValues('id')) {
-                                formData.append('employeeId', form.getValues('id'));
+                              const employeeId = form.getValues('id');
+                              if (employeeId) {
+                                formData.append('employeeId', employeeId);
                               }
                               
                               const response = await fetch('/api/hr/documents/upload', {
