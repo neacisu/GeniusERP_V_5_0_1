@@ -8,6 +8,7 @@
 import { Logger } from '../../../../common/logger';
 import { BaseDrizzleService } from '../core/base-drizzle.service';
 import { SQL, sql } from 'drizzle-orm';
+import { getPostgresClient } from '../../db';
 
 // Create a logger for invoicing database operations
 const logger = new Logger('InvoicingDrizzleService');
@@ -46,7 +47,7 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
         ORDER BY created_at DESC
       `;
       
-      return this.executeQuery(query, [], 'getInvoiceNumberingSettings');
+      return this.executeQuery(query, []);
     } catch (error) {
       logger.error('Failed to get invoice numbering settings', error);
       throw new Error('Failed to retrieve invoice numbering settings');
@@ -83,7 +84,7 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
         WHERE id = $1 AND deleted_at IS NULL
       `;
       
-      const results = await this.executeQuery(query, [id], 'getInvoiceNumberingSettingById');
+      const results = await this.executeQuery(query, [id]);
       
       if (!results || results.length === 0) {
         return null;
@@ -105,9 +106,11 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
    */
   async createInvoiceNumberingSetting(data: any, createdBy: string): Promise<any> {
     try {
-      logger.debug('Creating invoice numbering setting with data:', data);
+      logger.debug(`Creating invoice numbering setting with data: ${JSON.stringify(data)}`);
       
       return await this.transaction(async (tx) => {
+        const pgClient = getPostgresClient();
+        
         // If this is set as default, unset any other defaults of the same type
         if (data.isDefault) {
           const unsetDefaultQuery = `
@@ -122,7 +125,7 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
               AND deleted_at IS NULL
           `;
           
-          await tx.$client.unsafe(unsetDefaultQuery, [createdBy, data.type]);
+          await pgClient.unsafe(unsetDefaultQuery, [createdBy, data.type]);
         }
         
         // Insert the new setting
@@ -173,7 +176,7 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
           createdBy
         ];
         
-        const result = await tx.$client.unsafe(insertQuery, params);
+        const result = await pgClient.unsafe(insertQuery, params);
         
         if (!result || result.length === 0) {
           throw new Error('Failed to create invoice numbering setting');
@@ -197,7 +200,7 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
    */
   async updateInvoiceNumberingSetting(id: string, data: any, updatedBy: string): Promise<any | null> {
     try {
-      logger.debug(`Updating invoice numbering setting ${id} with data:`, data);
+      logger.debug(`Updating invoice numbering setting ${id} with data: ${JSON.stringify(data)}`);
       
       // First check if the setting exists
       const setting = await this.getInvoiceNumberingSettingById(id);
@@ -208,6 +211,8 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
       }
       
       return await this.transaction(async (tx) => {
+        const pgClient = getPostgresClient();
+        
         // If this is set as default, unset any other defaults of the same type
         if (data.isDefault) {
           const unsetDefaultQuery = `
@@ -223,7 +228,7 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
               AND deleted_at IS NULL
           `;
           
-          await tx.$client.unsafe(unsetDefaultQuery, [
+          await pgClient.unsafe(unsetDefaultQuery, [
             updatedBy, 
             id, 
             data.type || setting.type
@@ -326,7 +331,7 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
             updated_at as "updatedAt"
         `;
         
-        const result = await tx.$client.unsafe(updateQuery, params);
+        const result = await pgClient.unsafe(updateQuery, params);
         
         if (!result || result.length === 0) {
           throw new Error(`Failed to update invoice numbering setting ${id}`);
@@ -360,6 +365,8 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
       }
       
       return await this.transaction(async (tx) => {
+        const pgClient = getPostgresClient();
+        
         const deleteQuery = `
           UPDATE invoice_numbering_settings
           SET 
@@ -369,7 +376,7 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
           WHERE id = $2 AND deleted_at IS NULL
         `;
         
-        await tx.$client.unsafe(deleteQuery, [deletedBy, id]);
+        await pgClient.unsafe(deleteQuery, [deletedBy, id]);
         
         return true;
       }, 'deleteInvoiceNumberingSetting');
@@ -390,6 +397,8 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
       logger.debug(`Getting next invoice number for setting ${settingId}`);
       
       return await this.transaction(async (tx) => {
+        const pgClient = getPostgresClient();
+        
         // Get the current setting
         const getSettingQuery = `
           SELECT 
@@ -403,7 +412,7 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
           FOR UPDATE
         `;
         
-        const settings = await tx.$client.unsafe(getSettingQuery, [settingId]);
+        const settings = await pgClient.unsafe(getSettingQuery, [settingId]);
         
         if (!settings || settings.length === 0) {
           throw new Error(`Invoice numbering setting ${settingId} not found`);
@@ -426,7 +435,7 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
           WHERE id = $2
         `;
         
-        await tx.$client.unsafe(updateQuery, [nextNumber, settingId]);
+        await pgClient.unsafe(updateQuery, [nextNumber, settingId]);
         
         return {
           formattedNumber,
@@ -480,7 +489,7 @@ export class InvoicingDrizzleService extends BaseDrizzleService {
         query += ` LIMIT 1`;
       }
       
-      const results = await this.executeQuery(query, params, 'getDefaultInvoiceNumberingSetting');
+      const results = await this.executeQuery(query, params);
       
       if (!results || results.length === 0) {
         return null;
