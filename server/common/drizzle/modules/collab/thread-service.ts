@@ -139,7 +139,7 @@ export class ThreadDrizzleService extends BaseDrizzleService {
         tags = []
       } = options;
       
-      logger.debug(`[${context}] Fetching threads for company ${companyId} with options:`, options);
+      logger.debug(`[${context}] Fetching threads for company ${companyId} with options: ${JSON.stringify(options)}`);
       
       return await this.query(async (db) => {
         // Build base conditions
@@ -149,12 +149,13 @@ export class ThreadDrizzleService extends BaseDrizzleService {
         
         // Add search condition if provided
         if (search) {
-          conditions.push(
-            or(
-              like(collaborationThreads.title, `%${search}%`),
-              like(collaborationThreads.description, `%${search}%`)
-            )
+          const searchCondition = or(
+            like(collaborationThreads.title, `%${search}%`),
+            like(collaborationThreads.description, `%${search}%`)
           );
+          if (searchCondition) {
+            conditions.push(searchCondition);
+          }
         }
         
         // Add category filter if provided
@@ -203,7 +204,7 @@ export class ThreadDrizzleService extends BaseDrizzleService {
         let filteredThreads = threadsResult;
         if (tags.length > 0) {
           filteredThreads = threadsResult.filter(thread => {
-            const threadTags = thread.tags || [];
+            const threadTags = (thread.tags as string[]) || [];
             return tags.some(tag => threadTags.includes(tag));
           });
         }
@@ -427,11 +428,11 @@ export class ThreadDrizzleService extends BaseDrizzleService {
         }
         
         const thread = threads[0];
-        const participants = thread.participants || [];
+        const participants = Array.isArray(thread.participants) ? thread.participants as string[] : [];
         
         // Only add if not already a participant
         if (!participants.includes(userId)) {
-          const updatedParticipants = [...participants, userId];
+          const updatedParticipants: string[] = [...participants, userId];
           
           const updatedThreads = await db.update(collaborationThreads)
             .set({
