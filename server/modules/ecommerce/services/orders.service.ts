@@ -102,11 +102,11 @@ export class OrdersService {
 
       // Use raw SQL query directly instead of Drizzle's query builder to avoid timestamp mapping issues
       const orderDateISO = orderDate instanceof Date ? orderDate.toISOString() : new Date().toISOString();
-      const subtotal = orderData.subtotal || orderData.totalAmount;
-      const tax = orderData.tax || orderData.taxAmount;
-      const discount = orderData.discount || orderData.discountAmount;
-      const shipping = orderData.shipping || orderData.shippingAmount;
-      const total = orderData.total || orderData.totalAmount;
+      const subtotal = orderData.totalAmount; // Use totalAmount as subtotal
+      const tax = orderData.taxAmount;
+      const discount = orderData.discountAmount;
+      const shipping = orderData.shippingAmount;
+      const total = orderData.totalAmount;
       const notes = orderData.notes || '';
       const items = JSON.stringify(orderData.items);
       const shippingAddress = orderData.shippingAddress ? JSON.stringify(orderData.shippingAddress) : null;
@@ -117,7 +117,7 @@ export class OrdersService {
       logger.info(`Creating order with date: ${orderDateISO}`);
       
       // Execute raw SQL INSERT query using string literal for timestamp
-      const result = await this.db.execute(sql`
+      const result = await this.db.query(async (db) => db.execute(sql`
         INSERT INTO ecommerce_orders (
           id, company_id, user_id, order_number, order_date, status,
           subtotal, tax, discount, shipping, total, 
@@ -132,7 +132,7 @@ export class OrdersService {
           ${items}::jsonb, ${notes}, ${now}::timestamptz, ${now}::timestamptz
         )
         RETURNING *;
-      `);
+      `));
       
       // Get the first row of results which should be our inserted order
       const order = result.rows[0];
@@ -154,14 +154,16 @@ export class OrdersService {
    */
   async getOrderById(orderId: string, companyId: string) {
     try {
-      const orders = await this.db.select()
-        .from(ecommerceOrders)
-        .where(
-          and(
-            eq(ecommerceOrders.id, orderId),
-            eq(ecommerceOrders.companyId, companyId)
-          )
-        );
+      const orders = await this.db.query(async (db) => {
+        return await db.select()
+          .from(ecommerceOrders)
+          .where(
+            and(
+              eq(ecommerceOrders.id, orderId),
+              eq(ecommerceOrders.companyId, companyId)
+            )
+          );
+      });
       
       if (orders.length === 0) {
         return null;
@@ -197,26 +199,31 @@ export class OrdersService {
         sortDirection = 'desc'
       } = options;
       
-      let query = this.db.select()
-        .from(ecommerceOrders)
-        .where(eq(ecommerceOrders.companyId, companyId));
-      
-      // Apply status filter if not 'all'
-      if (status !== 'all') {
-        query = query.where(eq(ecommerceOrders.status, status));
-      }
-      
-      // Apply sorting
-      if (sortDirection === 'desc') {
-        query = query.orderBy(desc(ecommerceOrders[sortBy as keyof typeof ecommerceOrders]));
-      } else {
-        query = query.orderBy(ecommerceOrders[sortBy as keyof typeof ecommerceOrders]);
-      }
-      
-      // Apply pagination
-      query = query.limit(limit).offset(offset);
-      
-      const orders = await query;
+      const orders = await this.db.query(async (db) => {
+        let query = db.select()
+          .from(ecommerceOrders)
+          .where(eq(ecommerceOrders.companyId, companyId));
+        
+        // Apply status filter if not 'all'
+        if (status !== 'all') {
+          query = query.where(eq(ecommerceOrders.status, status));
+        }
+        
+        // Apply sorting
+        const sortColumn = ecommerceOrders[sortBy as keyof typeof ecommerceOrders];
+        if (sortColumn && typeof sortColumn !== 'function') {
+          if (sortDirection === 'desc') {
+            query = query.orderBy(desc(sortColumn as any));
+          } else {
+            query = query.orderBy(sortColumn as any);
+          }
+        }
+        
+        // Apply pagination
+        query = query.limit(limit).offset(offset);
+        
+        return await query;
+      });
       return orders;
     } catch (error) {
       logger.error(`Failed to get orders for company ${companyId}`, error);
@@ -248,31 +255,36 @@ export class OrdersService {
         sortDirection = 'desc'
       } = options;
       
-      let query = this.db.select()
-        .from(ecommerceOrders)
-        .where(
-          and(
-            eq(ecommerceOrders.userId, userId),
-            eq(ecommerceOrders.companyId, companyId)
-          )
-        );
-      
-      // Apply status filter if not 'all'
-      if (status !== 'all') {
-        query = query.where(eq(ecommerceOrders.status, status));
-      }
-      
-      // Apply sorting
-      if (sortDirection === 'desc') {
-        query = query.orderBy(desc(ecommerceOrders[sortBy as keyof typeof ecommerceOrders]));
-      } else {
-        query = query.orderBy(ecommerceOrders[sortBy as keyof typeof ecommerceOrders]);
-      }
-      
-      // Apply pagination
-      query = query.limit(limit).offset(offset);
-      
-      const orders = await query;
+      const orders = await this.db.query(async (db) => {
+        let query = db.select()
+          .from(ecommerceOrders)
+          .where(
+            and(
+              eq(ecommerceOrders.customerId, userId), // Fixed: ecommerceOrders uses customerId, not userId
+              eq(ecommerceOrders.companyId, companyId)
+            )
+          );
+        
+        // Apply status filter if not 'all'
+        if (status !== 'all') {
+          query = query.where(eq(ecommerceOrders.status, status));
+        }
+        
+        // Apply sorting
+        const sortColumn = ecommerceOrders[sortBy as keyof typeof ecommerceOrders];
+        if (sortColumn && typeof sortColumn !== 'function') {
+          if (sortDirection === 'desc') {
+            query = query.orderBy(desc(sortColumn as any));
+          } else {
+            query = query.orderBy(sortColumn as any);
+          }
+        }
+        
+        // Apply pagination
+        query = query.limit(limit).offset(offset);
+        
+        return await query;
+      });
       return orders;
     } catch (error) {
       logger.error(`Failed to get orders for user ${userId}`, error);
@@ -290,18 +302,20 @@ export class OrdersService {
    */
   async updateOrderStatus(orderId: string, newStatus: OrderStatus, companyId: string) {
     try {
-      const [updatedOrder] = await this.db.update(ecommerceOrders)
-        .set({
-          status: newStatus,
-          updatedAt: new Date()
-        })
-        .where(
-          and(
-            eq(ecommerceOrders.id, orderId),
-            eq(ecommerceOrders.companyId, companyId)
+      const [updatedOrder] = await this.db.query(async (db) => {
+        return await db.update(ecommerceOrders)
+          .set({
+            status: newStatus,
+            updatedAt: new Date()
+          })
+          .where(
+            and(
+              eq(ecommerceOrders.id, orderId),
+              eq(ecommerceOrders.companyId, companyId)
+            )
           )
-        )
-        .returning();
+          .returning();
+      });
       
       if (!updatedOrder) {
         throw new Error('Order not found');
@@ -332,18 +346,20 @@ export class OrdersService {
     shippingAmount: string;
   }>, companyId: string) {
     try {
-      const [updatedOrder] = await this.db.update(ecommerceOrders)
-        .set({
-          ...updateData,
-          updatedAt: new Date()
-        })
-        .where(
-          and(
-            eq(ecommerceOrders.id, orderId),
-            eq(ecommerceOrders.companyId, companyId)
+      const [updatedOrder] = await this.db.query(async (db) => {
+        return await db.update(ecommerceOrders)
+          .set({
+            ...updateData,
+            updatedAt: new Date()
+          })
+          .where(
+            and(
+              eq(ecommerceOrders.id, orderId),
+              eq(ecommerceOrders.companyId, companyId)
+            )
           )
-        )
-        .returning();
+          .returning();
+      });
       
       if (!updatedOrder) {
         throw new Error('Order not found');
@@ -367,9 +383,11 @@ export class OrdersService {
     try {
       // This would typically involve a GROUP BY query
       // For simplicity, we're fetching all orders and counting in JavaScript
-      const orders = await this.db.select()
-        .from(ecommerceOrders)
-        .where(eq(ecommerceOrders.companyId, companyId));
+      const orders = await this.db.query(async (db) => {
+        return await db.select()
+          .from(ecommerceOrders)
+          .where(eq(ecommerceOrders.companyId, companyId));
+      });
       
       const counts: Record<string, number> = {};
       
@@ -404,13 +422,15 @@ export class OrdersService {
     try {
       // In a real implementation, this would use more sophisticated search
       // For now, we'll just do a simple filter on order number
-      const orders = await this.db.select()
-        .from(ecommerceOrders)
-        .where(
-          and(
-            eq(ecommerceOrders.companyId, companyId)
-          )
-        );
+      const orders = await this.db.query(async (db) => {
+        return await db.select()
+          .from(ecommerceOrders)
+          .where(
+            and(
+              eq(ecommerceOrders.companyId, companyId)
+            )
+          );
+      });
       
       // Filter orders that contain the search term in order number
       // This is just a simple example - in practice, you'd use database search
