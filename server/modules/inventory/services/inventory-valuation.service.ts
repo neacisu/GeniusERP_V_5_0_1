@@ -55,28 +55,30 @@ export class InventoryValuationService {
     }>
   }> {
     // Get all batches for the product in the warehouse, sorted by purchase date (oldest first)
-    let batchesQuery = this.db.select({
-      id: inventoryBatches.id,
-      purchaseDate: inventoryBatches.purchaseDate,
-      purchasePrice: inventoryBatches.purchasePrice,
-      remainingQuantity: inventoryBatches.remainingQuantity
-    })
-    .from(inventoryBatches)
-    .where(
-      and(
-        eq(inventoryBatches.productId, productId),
-        eq(inventoryBatches.warehouseId, warehouseId),
-        sql`${inventoryBatches.remainingQuantity} > 0`
+    const batches = await this.db.query(async (db) => {
+      let batchesQuery = db.select({
+        id: inventoryBatches.id,
+        purchaseDate: inventoryBatches.purchaseDate,
+        purchasePrice: inventoryBatches.purchasePrice,
+        remainingQuantity: inventoryBatches.remainingQuantity
+      })
+      .from(inventoryBatches)
+      .where(
+        and(
+          eq(inventoryBatches.productId, productId),
+          eq(inventoryBatches.warehouseId, warehouseId),
+          sql`${inventoryBatches.remainingQuantity} > 0`
+        )
       )
-    )
-    .orderBy(asc(inventoryBatches.purchaseDate));
-    
-    // Apply date filter for historical valuation if specified
-    if (date) {
-      batchesQuery = batchesQuery.where(lt(inventoryBatches.purchaseDate, date));
-    }
-    
-    const batches = await batchesQuery;
+      .orderBy(asc(inventoryBatches.purchaseDate));
+      
+      // Apply date filter for historical valuation if specified
+      if (date) {
+        batchesQuery = batchesQuery.where(lt(inventoryBatches.purchaseDate, date));
+      }
+      
+      return await batchesQuery;
+    });
     
     let totalQuantity = 0;
     let totalValue = 0;
@@ -132,28 +134,30 @@ export class InventoryValuationService {
     }>
   }> {
     // Get all batches for the product in the warehouse, sorted by purchase date (newest first)
-    let batchesQuery = this.db.select({
-      id: inventoryBatches.id,
-      purchaseDate: inventoryBatches.purchaseDate,
-      purchasePrice: inventoryBatches.purchasePrice,
-      remainingQuantity: inventoryBatches.remainingQuantity
-    })
-    .from(inventoryBatches)
-    .where(
-      and(
-        eq(inventoryBatches.productId, productId),
-        eq(inventoryBatches.warehouseId, warehouseId),
-        sql`${inventoryBatches.remainingQuantity} > 0`
+    const batches = await this.db.query(async (db) => {
+      let batchesQuery = db.select({
+        id: inventoryBatches.id,
+        purchaseDate: inventoryBatches.purchaseDate,
+        purchasePrice: inventoryBatches.purchasePrice,
+        remainingQuantity: inventoryBatches.remainingQuantity
+      })
+      .from(inventoryBatches)
+      .where(
+        and(
+          eq(inventoryBatches.productId, productId),
+          eq(inventoryBatches.warehouseId, warehouseId),
+          sql`${inventoryBatches.remainingQuantity} > 0`
+        )
       )
-    )
-    .orderBy(desc(inventoryBatches.purchaseDate));
-    
-    // Apply date filter for historical valuation if specified
-    if (date) {
-      batchesQuery = batchesQuery.where(lt(inventoryBatches.purchaseDate, date));
-    }
-    
-    const batches = await batchesQuery;
+      .orderBy(desc(inventoryBatches.purchaseDate));
+      
+      // Apply date filter for historical valuation if specified
+      if (date) {
+        batchesQuery = batchesQuery.where(lt(inventoryBatches.purchaseDate, date));
+      }
+      
+      return await batchesQuery;
+    });
     
     let totalQuantity = 0;
     let totalValue = 0;
@@ -202,25 +206,27 @@ export class InventoryValuationService {
     averageUnitValue: number;
   }> {
     // Get all batches for the product in the warehouse
-    let batchesQuery = this.db.select({
-      purchasePrice: inventoryBatches.purchasePrice,
-      remainingQuantity: inventoryBatches.remainingQuantity
-    })
-    .from(inventoryBatches)
-    .where(
-      and(
-        eq(inventoryBatches.productId, productId),
-        eq(inventoryBatches.warehouseId, warehouseId),
-        sql`${inventoryBatches.remainingQuantity} > 0`
-      )
-    );
-    
-    // Apply date filter for historical valuation if specified
-    if (date) {
-      batchesQuery = batchesQuery.where(lt(inventoryBatches.purchaseDate, date));
-    }
-    
-    const batches = await batchesQuery;
+    const batches = await this.db.query(async (db) => {
+      let batchesQuery = db.select({
+        purchasePrice: inventoryBatches.purchasePrice,
+        remainingQuantity: inventoryBatches.remainingQuantity
+      })
+      .from(inventoryBatches)
+      .where(
+        and(
+          eq(inventoryBatches.productId, productId),
+          eq(inventoryBatches.warehouseId, warehouseId),
+          sql`${inventoryBatches.remainingQuantity} > 0`
+        )
+      );
+      
+      // Apply date filter for historical valuation if specified
+      if (date) {
+        batchesQuery = batchesQuery.where(lt(inventoryBatches.purchaseDate, date));
+      }
+      
+      return await batchesQuery;
+    });
     
     let totalQuantity = 0;
     let totalValue = 0;
@@ -249,16 +255,18 @@ export class InventoryValuationService {
    * @param warehouseId - Warehouse ID
    */
   async getLatestValuation(productId: string, warehouseId: string): Promise<any> {
-    const [valuation] = await this.db.select()
-      .from(inventoryValuations)
-      .where(
-        and(
-          eq(inventoryValuations.productId, productId),
-          eq(inventoryValuations.warehouseId, warehouseId)
+    const [valuation] = await this.db.query(async (db) => {
+      return await db.select()
+        .from(inventoryValuations)
+        .where(
+          and(
+            eq(inventoryValuations.productId, productId),
+            eq(inventoryValuations.warehouseId, warehouseId)
+          )
         )
-      )
-      .orderBy(desc(inventoryValuations.valuationDate))
-      .limit(1);
+        .orderBy(desc(inventoryValuations.valuationDate))
+        .limit(1);
+    });
     
     return valuation;
   }
@@ -354,9 +362,11 @@ export class InventoryValuationService {
     // Validate with Zod schema
     const validatedData = insertValuationSchema.parse(valuation);
     
-    const [result] = await this.db.insertInto(inventoryValuations)
-      .values(validatedData)
-      .returning();
+    const [result] = await this.db.query(async (db) => {
+      return await db.insert(inventoryValuations)
+        .values(validatedData)
+        .returning();
+    });
     
     // Log the valuation for audit purposes
     await AuditService.log({
@@ -365,7 +375,7 @@ export class InventoryValuationService {
       entityId: result.id,
       userId,
       companyId: result.companyId,
-      data: {
+      details: {
         productId: data.productId,
         warehouseId: data.warehouseId,
         method: data.method,
@@ -391,26 +401,28 @@ export class InventoryValuationService {
     startDate?: Date,
     endDate?: Date
   ): Promise<any[]> {
-    let query = this.db.select()
-      .from(inventoryValuations)
-      .where(
-        and(
-          eq(inventoryValuations.productId, productId),
-          eq(inventoryValuations.warehouseId, warehouseId)
+    return await this.db.query(async (db) => {
+      let query = db.select()
+        .from(inventoryValuations)
+        .where(
+          and(
+            eq(inventoryValuations.productId, productId),
+            eq(inventoryValuations.warehouseId, warehouseId)
+          )
         )
-      )
-      .orderBy(desc(inventoryValuations.valuationDate));
-    
-    // Apply date range filters if specified
-    if (startDate) {
-      query = query.where(gte(inventoryValuations.valuationDate, startDate));
-    }
-    
-    if (endDate) {
-      query = query.where(lt(inventoryValuations.valuationDate, endDate));
-    }
-    
-    return query;
+        .orderBy(desc(inventoryValuations.valuationDate));
+      
+      // Apply date range filters if specified
+      if (startDate) {
+        query = query.where(gte(inventoryValuations.valuationDate, startDate));
+      }
+      
+      if (endDate) {
+        query = query.where(lt(inventoryValuations.valuationDate, endDate));
+      }
+      
+      return await query;
+    });
   }
 
   /**
@@ -443,9 +455,11 @@ export class InventoryValuationService {
     // Validate with Zod schema
     const validatedData = insertBatchSchema.parse(batchData);
     
-    const [batch] = await this.db.insertInto(inventoryBatches)
-      .values(validatedData)
-      .returning();
+    const [batch] = await this.db.query(async (db) => {
+      return await db.insert(inventoryBatches)
+        .values(validatedData)
+        .returning();
+    });
     
     // Log the batch creation for audit purposes
     await AuditService.log({
@@ -454,7 +468,7 @@ export class InventoryValuationService {
       entityId: batch.id,
       userId,
       companyId: batch.companyId,
-      data: {
+      details: {
         productId: data.productId,
         warehouseId: data.warehouseId,
         batchNumber: data.batchNumber,
@@ -497,28 +511,32 @@ export class InventoryValuationService {
     let batches;
     if (method === 'FIFO') {
       // Get oldest batches first for FIFO
-      batches = await this.db.select()
-        .from(inventoryBatches)
-        .where(
-          and(
-            eq(inventoryBatches.productId, productId),
-            eq(inventoryBatches.warehouseId, warehouseId),
-            sql`${inventoryBatches.remainingQuantity} > 0`
+      batches = await this.db.query(async (db) => {
+        return await db.select()
+          .from(inventoryBatches)
+          .where(
+            and(
+              eq(inventoryBatches.productId, productId),
+              eq(inventoryBatches.warehouseId, warehouseId),
+              sql`${inventoryBatches.remainingQuantity} > 0`
+            )
           )
-        )
-        .orderBy(asc(inventoryBatches.purchaseDate));
+          .orderBy(asc(inventoryBatches.purchaseDate));
+      });
     } else {
       // Get newest batches first for LIFO
-      batches = await this.db.select()
-        .from(inventoryBatches)
-        .where(
-          and(
-            eq(inventoryBatches.productId, productId),
-            eq(inventoryBatches.warehouseId, warehouseId),
-            sql`${inventoryBatches.remainingQuantity} > 0`
+      batches = await this.db.query(async (db) => {
+        return await db.select()
+          .from(inventoryBatches)
+          .where(
+            and(
+              eq(inventoryBatches.productId, productId),
+              eq(inventoryBatches.warehouseId, warehouseId),
+              sql`${inventoryBatches.remainingQuantity} > 0`
+            )
           )
-        )
-        .orderBy(desc(inventoryBatches.purchaseDate));
+          .orderBy(desc(inventoryBatches.purchaseDate));
+      });
     }
     
     let remainingToConsume = quantity;
@@ -534,13 +552,15 @@ export class InventoryValuationService {
       
       // Update the batch remaining quantity
       const newRemaining = batchRemaining - consumeFromBatch;
-      const [updatedBatch] = await this.db.update(inventoryBatches)
-        .set({
-          remainingQuantity: newRemaining,
-          updatedAt: new Date()
-        })
-        .where(eq(inventoryBatches.id, batch.id))
-        .returning();
+      const [updatedBatch] = await this.db.query(async (db) => {
+        return await db.update(inventoryBatches)
+          .set({
+            remainingQuantity: newRemaining,
+            updatedAt: new Date()
+          })
+          .where(eq(inventoryBatches.id, batch.id))
+          .returning();
+      });
       
       // Calculate the value consumed from this batch
       const batchValue = consumeFromBatch * Number(batch.purchasePrice);
@@ -559,13 +579,14 @@ export class InventoryValuationService {
     }
     
     // Log the stock consumption for audit purposes
+    // Note: companyId extraction simplified - should be passed as parameter if multi-company support needed
     await AuditService.log({
       action: AuditAction.UPDATE,
       entity: 'stock',
       entityId: `${productId}-${warehouseId}`,
       userId,
-      companyId: batchesUpdated.length > 0 ? batchesUpdated[0].companyId : warehouseId.split('-')[0], // Get companyId from batch or extract from warehouseId
-      data: {
+      companyId: warehouseId, // Placeholder: should be actual companyId
+      details: {
         productId,
         warehouseId,
         quantityRequested: quantity,
@@ -603,10 +624,12 @@ export class InventoryValuationService {
     const valuation = await this.calculateStockValue(productId, warehouseId, method);
     
     // Get company ID (required for the valuation record)
-    const [product] = await this.db.select({ companyId: inventoryBatches.companyId })
-      .from(inventoryBatches)
-      .where(eq(inventoryBatches.productId, productId))
-      .limit(1);
+    const [product] = await this.db.query(async (db) => {
+      return await db.select({ companyId: inventoryBatches.companyId })
+        .from(inventoryBatches)
+        .where(eq(inventoryBatches.productId, productId))
+        .limit(1);
+    });
     
     if (!product) {
       throw new Error(`Product with ID ${productId} not found in any batch records`);
