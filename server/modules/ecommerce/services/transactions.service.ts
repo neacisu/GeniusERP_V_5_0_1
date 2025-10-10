@@ -7,7 +7,7 @@
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 import { v4 as uuidv4 } from 'uuid';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, gte, lte } from 'drizzle-orm';
 import { ecommerceTransactions, PaymentStatus } from '../../../../shared/schema/ecommerce.schema';
 import { Logger } from '../../../common/logger';
 
@@ -81,9 +81,11 @@ export class TransactionsService {
    */
   async getTransactionById(transactionId: string, type: 'all' | 'company' = 'company') {
     try {
-      const transactions = await this.db.select()
-        .from(ecommerceTransactions)
-        .where(eq(ecommerceTransactions.id, transactionId));
+      const transactions = await this.db.query(async (db) => {
+        return await db.select()
+          .from(ecommerceTransactions)
+          .where(eq(ecommerceTransactions.id, transactionId));
+      });
       
       if (transactions.length === 0) {
         return null;
@@ -105,15 +107,17 @@ export class TransactionsService {
    */
   async getOrderTransactions(orderId: string, companyId: string) {
     try {
-      const transactions = await this.db.select()
-        .from(ecommerceTransactions)
-        .where(
-          and(
-            eq(ecommerceTransactions.orderId, orderId),
-            eq(ecommerceTransactions.companyId, companyId)
+      const transactions = await this.db.query(async (db) => {
+        return await db.select()
+          .from(ecommerceTransactions)
+          .where(
+            and(
+              eq(ecommerceTransactions.orderId, orderId),
+              eq(ecommerceTransactions.companyId, companyId)
+            )
           )
-        )
-        .orderBy(desc(ecommerceTransactions.transactionDate));
+          .orderBy(desc(ecommerceTransactions.transactionDate));
+      });
       
       return transactions;
     } catch (error) {
@@ -145,30 +149,32 @@ export class TransactionsService {
         endDate
       } = options;
       
-      let query = this.db.select()
-        .from(ecommerceTransactions)
-        .where(eq(ecommerceTransactions.companyId, companyId));
-      
-      // Apply status filter if not 'all'
-      if (status !== 'all') {
-        query = query.where(eq(ecommerceTransactions.status, status));
-      }
-      
-      // Apply date range filters if provided
-      if (startDate) {
-        query = query.where(ecommerceTransactions.transactionDate >= startDate);
-      }
-      
-      if (endDate) {
-        query = query.where(ecommerceTransactions.transactionDate <= endDate);
-      }
-      
-      // Apply sorting and pagination
-      query = query.orderBy(desc(ecommerceTransactions.transactionDate))
-        .limit(limit)
-        .offset(offset);
-      
-      const transactions = await query;
+      const transactions = await this.db.query(async (db) => {
+        let query = db.select()
+          .from(ecommerceTransactions)
+          .where(eq(ecommerceTransactions.companyId, companyId));
+        
+        // Apply status filter if not 'all'
+        if (status !== 'all') {
+          query = query.where(eq(ecommerceTransactions.status, status));
+        }
+        
+        // Apply date range filters if provided
+        if (startDate) {
+          query = query.where(gte(ecommerceTransactions.transactionDate, startDate));
+        }
+        
+        if (endDate) {
+          query = query.where(lte(ecommerceTransactions.transactionDate, endDate));
+        }
+        
+        // Apply sorting and pagination
+        query = query.orderBy(desc(ecommerceTransactions.transactionDate))
+          .limit(limit)
+          .offset(offset);
+        
+        return await query;
+      });
       return transactions;
     } catch (error) {
       logger.error(`Failed to get transactions for company ${companyId}`, error);
@@ -192,17 +198,19 @@ export class TransactionsService {
     additionalData: Record<string, any> = {}
   ) {
     try {
-      const [updatedTransaction] = await this.db.update(ecommerceTransactions)
-        .set({
-          status: newStatus,
-          metadata: {
-            ...additionalData,
-            statusUpdatedAt: new Date()
-          },
-          updatedAt: new Date()
-        })
-        .where(eq(ecommerceTransactions.id, transactionId))
-        .returning();
+      const [updatedTransaction] = await this.db.query(async (db) => {
+        return await db.update(ecommerceTransactions)
+          .set({
+            status: newStatus,
+            metadata: {
+              ...additionalData,
+              statusUpdatedAt: new Date()
+            },
+            updatedAt: new Date()
+          })
+          .where(eq(ecommerceTransactions.id, transactionId))
+          .returning();
+      });
       
       if (!updatedTransaction) {
         throw new Error('Transaction not found');
@@ -335,15 +343,17 @@ export class TransactionsService {
       }
       
       // Get transactions for the period
-      const transactions = await this.db.select()
-        .from(ecommerceTransactions)
-        .where(
-          and(
-            eq(ecommerceTransactions.companyId, companyId),
-            ecommerceTransactions.transactionDate >= startDate,
-            ecommerceTransactions.transactionDate <= now
-          )
-        );
+      const transactions = await this.db.query(async (db) => {
+        return await db.select()
+          .from(ecommerceTransactions)
+          .where(
+            and(
+              eq(ecommerceTransactions.companyId, companyId),
+              gte(ecommerceTransactions.transactionDate, startDate),
+              lte(ecommerceTransactions.transactionDate, now)
+            )
+          );
+      });
       
       // Calculate statistics
       const stats = {
