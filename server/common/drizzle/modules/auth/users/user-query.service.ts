@@ -48,10 +48,15 @@ export class UserQueryService extends BaseDrizzleService {
         return result[0];
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to get user by username: ${username}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve user by username: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to retrieve user by username: ${errorMessage}`);
     }
   }
   
@@ -85,10 +90,15 @@ export class UserQueryService extends BaseDrizzleService {
         return result[0];
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to get user by ID: ${userId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve user by ID: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to retrieve user by ID: ${errorMessage}`);
     }
   }
   
@@ -107,14 +117,13 @@ export class UserQueryService extends BaseDrizzleService {
     const context = 'getUsers';
     try {
       const { companyId, status, limit = 100, offset = 0 } = options;
-      logger.debug(`[${context}] Getting users with options:`, options);
+      logger.debug(`[${context}] Getting users with options: ${JSON.stringify(options)}`);
       
       return await this.query(async (db) => {
-        // Build query with filters
+        // Build query with filters - avoid reassignment to fix type issues
         logger.debug(`[${context}] Building query with filters: companyId=${companyId}, status=${status}`);
-        let query = db.select().from(users);
         
-        // Apply filters
+        // Build conditions array
         const conditions: SQL<unknown>[] = [];
         
         if (companyId) {
@@ -127,24 +136,26 @@ export class UserQueryService extends BaseDrizzleService {
           conditions.push(eq(users.status, status));
         }
         
-        if (conditions.length > 0) {
-          query = query.where(and(...conditions));
-        }
-        
-        // Apply pagination
         logger.debug(`[${context}] Applying pagination: limit=${limit}, offset=${offset}`);
-        query = query.limit(limit).offset(offset);
         
-        // Execute query
-        const result = await query;
+        // Build query directly to avoid type mismatch
+        const result = conditions.length > 0
+          ? await db.select().from(users).where(and(...conditions)).limit(limit).offset(offset)
+          : await db.select().from(users).limit(limit).offset(offset);
+        
         logger.debug(`[${context}] Retrieved ${result.length} users`);
         return result;
       }, context);
     } catch (error) {
-      logger.error(`[${context}] Failed to get users with options:`, options, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve users: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
+      logger.error(`[${context}] Failed to get users with options: ${JSON.stringify(options)}`, error);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to retrieve users: ${errorMessage}`);
     }
   }
 }
