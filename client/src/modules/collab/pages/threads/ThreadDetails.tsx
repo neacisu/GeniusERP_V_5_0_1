@@ -92,9 +92,11 @@ const ThreadDetailsPage: React.FC = () => {
   };
   
   // Handler pentru succes la editare/creare
-  const handleSuccess = (updatedThread: Thread) => {
+  const handleSuccess = () => {
     if (isNewThread) {
-      navigate(`/collab/threads/${updatedThread.id}`);
+      // Pentru thread nou, nu avem updatedThread disponibil din ThreadModal
+      // ThreadModal va trebui să redirecționeze sau să apeleze această funcție după creare
+      setIsEditModalOpen(false);
     } else {
       setIsEditModalOpen(false);
       // Aici ar veni reîncărcarea datelor
@@ -103,10 +105,10 @@ const ThreadDetailsPage: React.FC = () => {
   
   // Handler pentru trimiterea unui mesaj nou
   const handleSendMessage = async () => {
-    if (message.trim() && threadId !== 'new') {
+    if (message.trim() && threadId !== 'new' && threadId) {
       try {
         await sendMessageMutation.mutateAsync({
-          threadId,
+          threadId: threadId,
           content: message
         });
         setMessage('');
@@ -254,9 +256,9 @@ const ThreadDetailsPage: React.FC = () => {
                   <p className="text-muted-foreground">Fără descriere</p>
                 )}
                 
-                {thread?.tags && thread.tags.length > 0 && (
+                {(thread as any)?.tags && Array.isArray((thread as any).tags) && (thread as any).tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-4">
-                    {thread.tags.map((tag: string, index: number) => (
+                    {((thread as any).tags as string[]).map((tag: string, index: number) => (
                       <Badge key={index} variant="outline">
                         <Tag className="h-3 w-3 mr-1" />
                         {tag}
@@ -293,12 +295,12 @@ const ThreadDetailsPage: React.FC = () => {
                         <div key={msg.id} className="flex gap-4">
                           <Avatar>
                             <AvatarFallback>
-                              {msg.sender?.substring(0, 2).toUpperCase() || 'UN'}
+                              {((msg as any).sender || 'Utilizator necunoscut').substring(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">{msg.sender}</span>
+                              <span className="font-medium">{(msg as any).sender || 'Utilizator necunoscut'}</span>
                               <span className="text-xs text-muted-foreground">
                                 {new Date(msg.createdAt).toLocaleString()}
                               </span>
@@ -359,9 +361,9 @@ const ThreadDetailsPage: React.FC = () => {
                 {/* Participanți */}
                 <div>
                   <h3 className="text-sm font-medium mb-2">Participanți</h3>
-                  {thread?.participants && thread.participants.length > 0 ? (
+                  {(thread as any)?.participants && Array.isArray((thread as any).participants) && (thread as any).participants.length > 0 ? (
                     <div className="space-y-2">
-                      {thread.participants.map((participant: string, index: number) => (
+                      {((thread as any).participants as string[]).map((participant: string, index: number) => (
                         <div key={index} className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarFallback>
@@ -444,7 +446,7 @@ const ThreadDetailsPage: React.FC = () => {
       <ThreadModal
         isOpen={isEditModalOpen}
         onClose={handleCloseModal}
-        thread={thread}
+        thread={thread as any}
         onSuccess={handleSuccess}
       />
     </CollabLayout>
