@@ -12,7 +12,7 @@ async function seedDefaultCompany() {
     
     console.log('Checking if default company exists...');
     
-    const existingCompanies = await drizzleService.executeQuery(async (db) => {
+    const existingCompanies = await drizzleService.executeQuery(async (db: any) => {
       return await db.select().from(companies);
     });
     

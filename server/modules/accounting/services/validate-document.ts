@@ -236,7 +236,7 @@ export class ValidateDocumentService {
       const now = new Date();
       const drizzleService = new DrizzleService();
       
-      await drizzleService.executeQuery(async (db) => {
+      await drizzleService.executeQuery(async (db: any) => {
         await db.update(invoiceData.constructor.table) // This assumes the ORM model has a 'table' property
           .set({
             isValidated: true,
@@ -245,7 +245,7 @@ export class ValidateDocumentService {
             ledgerEntryId: ledgerEntryData.id,
             updatedAt: now.toISOString()
           })
-          .where((fields, { eq }) => eq(fields.id, invoiceData.id));
+          .where((fields: any, { eq }) => eq(fields.id, invoiceData.id));
       });
       
       // Log audit event
@@ -358,7 +358,7 @@ export class ValidateDocumentService {
       const now = new Date();
       const drizzleService = new DrizzleService();
       
-      await drizzleService.executeQuery(async (db) => {
+      await drizzleService.executeQuery(async (db: any) => {
         await db.update(documentData.constructor.table) // This assumes the ORM model has a 'table' property
           .set({
             isValidated: false,
@@ -367,7 +367,7 @@ export class ValidateDocumentService {
             ledgerEntryId: null,
             updatedAt: now.toISOString()
           })
-          .where((fields, { eq }) => eq(fields.id, documentId));
+          .where((fields: any, { eq }) => eq(fields.id, documentId));
       });
       
       // Log audit event
