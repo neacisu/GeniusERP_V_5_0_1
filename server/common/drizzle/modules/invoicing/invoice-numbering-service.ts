@@ -7,6 +7,7 @@
 
 import { Logger } from '../../../../common/logger';
 import { BaseDrizzleService } from '../core/base-drizzle.service';
+import { getPostgresClient } from '../../db';
 
 // Create a logger for invoice numbering operations
 const logger = new Logger('InvoiceNumberingService');
@@ -44,7 +45,7 @@ export class InvoiceNumberingService extends BaseDrizzleService {
         ORDER BY created_at DESC
       `;
       
-      return this.executeQuery(query, [], 'getInvoiceNumberingSettings');
+      return this.executeQuery(query, []);
     } catch (error) {
       logger.error('Failed to get invoice numbering settings', error);
       throw new Error('Failed to retrieve invoice numbering settings');
@@ -80,7 +81,7 @@ export class InvoiceNumberingService extends BaseDrizzleService {
         WHERE id = $1 AND is_active = TRUE
       `;
       
-      const results = await this.executeQuery(query, [id], 'getInvoiceNumberingSettingById');
+      const results = await this.executeQuery(query, [id]);
       
       if (!results || results.length === 0) {
         logger.debug(`No invoice numbering setting found with ID: ${id}`);
@@ -134,7 +135,7 @@ export class InvoiceNumberingService extends BaseDrizzleService {
         query += ` LIMIT 1`;
       }
       
-      const results = await this.executeQuery(query, params, 'getDefaultInvoiceNumberingSetting');
+      const results = await this.executeQuery(query, params);
       
       if (!results || results.length === 0) {
         logger.debug(`No default invoice numbering setting found for type ${type}`);
@@ -159,6 +160,8 @@ export class InvoiceNumberingService extends BaseDrizzleService {
       logger.debug(`Getting next invoice number for setting ${settingId}`);
       
       return await this.transaction(async (tx) => {
+        const pgClient = getPostgresClient();
+        
         // Get the current setting with a row lock to prevent race conditions
         const getSettingQuery = `
           SELECT 
@@ -172,7 +175,7 @@ export class InvoiceNumberingService extends BaseDrizzleService {
           FOR UPDATE
         `;
         
-        const settings = await tx.$client.unsafe(getSettingQuery, [settingId]);
+        const settings = await pgClient.unsafe(getSettingQuery, [settingId]);
         
         if (!settings || settings.length === 0) {
           const errMsg = `Invoice numbering setting ${settingId} not found or inactive`;
@@ -199,7 +202,7 @@ export class InvoiceNumberingService extends BaseDrizzleService {
           WHERE id = $3
         `;
         
-        await tx.$client.unsafe(updateQuery, [currentNumber, nextNumber, settingId]);
+        await pgClient.unsafe(updateQuery, [currentNumber, nextNumber, settingId]);
         
         logger.debug(`Generated invoice number ${formattedNumber} for setting ${settingId}, next number is ${nextNumber}`);
         
