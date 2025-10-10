@@ -7,11 +7,12 @@
  */
 
 import express, { Request, Response } from 'express';
-import { setupService } from '../services/setup.service';
+import { SetupService } from '../services/setup.service';
 import { AuthGuard } from '../../../modules/auth/guards/auth.guard';
 import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
 
 const router = express.Router();
+const setupService = new SetupService();
 
 // Apply authentication middleware to all routes
 router.use(AuthGuard.protect(JwtAuthMode.REQUIRED));
@@ -19,7 +20,7 @@ router.use(AuthGuard.protect(JwtAuthMode.REQUIRED));
 // Apply role guard to administrative operations
 const adminRouteGuard = [
   AuthGuard.roleGuard(['hq_admin', 'ADMIN']), // Allow both hq_admin and ADMIN roles
-  AuthGuard.companyGuard() // Enforce company-level access control
+  AuthGuard.companyGuard('companyId') // Enforce company-level access control
 ];
 
 /**
