@@ -7,6 +7,8 @@
 
 import { Logger } from '../../../../common/logger';
 import { BaseDrizzleService } from '../core/base-drizzle.service';
+import { sql } from 'drizzle-orm';
+import { getPostgresClient } from '../../db';
 
 // Create a logger for invoice mutation operations
 const logger = new Logger('InvoiceMutationService');
@@ -24,11 +26,9 @@ export class InvoiceMutationService extends BaseDrizzleService {
    */
   async createInvoice(data: any, createdBy: string): Promise<any> {
     try {
-      logger.debug('Creating new invoice', {
-        companyId: data.companyId,
-        series: data.series,
-        status: data.status
-      });
+      logger.debug(`Creating new invoice - companyId: ${data.companyId}, series: ${data.series}, status: ${data.status}`);
+      
+      const pgClient = getPostgresClient();
       
       return await this.transaction(async (tx) => {
         // First, insert the main invoice
@@ -76,7 +76,7 @@ export class InvoiceMutationService extends BaseDrizzleService {
           createdBy
         ];
         
-        const invoiceResult = await tx.$client.unsafe(insertInvoiceQuery, invoiceParams);
+        const invoiceResult = await pgClient.unsafe(insertInvoiceQuery, invoiceParams);
         
         if (!invoiceResult || invoiceResult.length === 0) {
           const errMsg = 'Failed to create invoice - no rows returned';
@@ -126,7 +126,7 @@ export class InvoiceMutationService extends BaseDrizzleService {
             data.details.notes || null
           ];
           
-          await tx.$client.unsafe(detailsQuery, detailsParams);
+          await pgClient.unsafe(detailsQuery, detailsParams);
         }
         
         // If lines are provided, insert invoice lines
@@ -157,7 +157,7 @@ export class InvoiceMutationService extends BaseDrizzleService {
               line.totalAmount || 0
             ];
             
-            await tx.$client.unsafe(lineQuery, lineParams);
+            await pgClient.unsafe(lineQuery, lineParams);
           }
         }
         
@@ -186,10 +186,9 @@ export class InvoiceMutationService extends BaseDrizzleService {
    */
   async updateInvoice(id: string, data: any, updatedBy: string): Promise<any | null> {
     try {
-      logger.debug(`Updating invoice ${id}`, {
-        status: data.status,
-        totalAmount: data.totalAmount
-      });
+      logger.debug(`Updating invoice ${id} - status: ${data.status}, totalAmount: ${data.totalAmount}`);
+      
+      const pgClient = getPostgresClient();
       
       return await this.transaction(async (tx) => {
         // First check if the invoice exists
@@ -199,7 +198,7 @@ export class InvoiceMutationService extends BaseDrizzleService {
           WHERE id = $1 AND deleted_at IS NULL
         `;
         
-        const invoiceCheck = await tx.$client.unsafe(checkQuery, [id]);
+        const invoiceCheck = await pgClient.unsafe(checkQuery, [id]);
         
         if (!invoiceCheck || invoiceCheck.length === 0) {
           logger.warn(`Invoice ${id} not found for update`);
@@ -307,7 +306,7 @@ export class InvoiceMutationService extends BaseDrizzleService {
             ledger_entry_id as "ledgerEntryId"
         `;
         
-        const result = await tx.$client.unsafe(updateQuery, params);
+        const result = await pgClient.unsafe(updateQuery, params);
         
         if (!result || result.length === 0) {
           const errMsg = `Failed to update invoice ${id}`;
@@ -353,13 +352,13 @@ export class InvoiceMutationService extends BaseDrizzleService {
             id
           ];
           
-          await tx.$client.unsafe(detailsUpdateQuery, detailsParams);
+          await pgClient.unsafe(detailsUpdateQuery, detailsParams);
         }
         
         // Update invoice lines if provided
         if (data.lines && Array.isArray(data.lines) && data.lines.length > 0) {
           // First, delete all existing lines for this invoice
-          await tx.$client.unsafe('DELETE FROM invoice_lines WHERE invoice_id = $1', [id]);
+          await pgClient.unsafe('DELETE FROM invoice_lines WHERE invoice_id = $1', [id]);
           
           // Then insert new lines
           for (const line of data.lines) {
@@ -387,7 +386,7 @@ export class InvoiceMutationService extends BaseDrizzleService {
               line.totalAmount || 0
             ];
             
-            await tx.$client.unsafe(lineQuery, lineParams);
+            await pgClient.unsafe(lineQuery, lineParams);
           }
         }
         
@@ -411,6 +410,8 @@ export class InvoiceMutationService extends BaseDrizzleService {
     try {
       logger.debug(`Soft deleting invoice ${id}`);
       
+      const pgClient = getPostgresClient();
+      
       return await this.transaction(async (tx) => {
         // First check if the invoice exists and is not already deleted
         const checkQuery = `
@@ -418,7 +419,7 @@ export class InvoiceMutationService extends BaseDrizzleService {
           WHERE id = $1 AND deleted_at IS NULL
         `;
         
-        const invoiceCheck = await tx.$client.unsafe(checkQuery, [id]);
+        const invoiceCheck = await pgClient.unsafe(checkQuery, [id]);
         
         if (!invoiceCheck || invoiceCheck.length === 0) {
           logger.warn(`Invoice ${id} not found or already deleted`);
@@ -442,7 +443,7 @@ export class InvoiceMutationService extends BaseDrizzleService {
           WHERE id = $2 AND deleted_at IS NULL
         `;
         
-        await tx.$client.unsafe(deleteQuery, [deletedBy, id]);
+        await pgClient.unsafe(deleteQuery, [deletedBy, id]);
         
         logger.info(`Successfully marked invoice ${id} as deleted`);
         return true;
