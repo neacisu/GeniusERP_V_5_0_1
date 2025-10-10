@@ -133,7 +133,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
   const columns: ColumnDef<Task>[] = [
     {
       id: 'select',
-      header: ({ table }) => (
+      header: ({ table }: { table: any }) => (
         <Checkbox
           checked={
             table.getIsAllPageRowsSelected() ||
@@ -143,7 +143,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
           aria-label="Select all"
         />
       ),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: any }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
@@ -155,7 +155,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
     },
     {
       accessorKey: 'title',
-      header: ({ column }) => (
+      header: ({ column }: { column: any }) => (
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -166,7 +166,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
           </Button>
         </div>
       ),
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const task = row.original;
         return (
           <div className="flex items-center">
@@ -182,7 +182,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
     },
     {
       accessorKey: 'status',
-      header: ({ column }) => (
+      header: ({ column }: { column: any }) => (
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -193,7 +193,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
           </Button>
         </div>
       ),
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const status = row.getValue('status') as TaskStatus;
         const statusColor = getStatusColor(status);
         
@@ -236,7 +236,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
     },
     {
       accessorKey: 'priority',
-      header: ({ column }) => (
+      header: ({ column }: { column: any }) => (
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -247,7 +247,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
           </Button>
         </div>
       ),
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const priority = row.getValue('priority') as TaskPriority;
         return (
           <Badge className={getPriorityColor(priority)}>
@@ -262,7 +262,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
     {
       accessorKey: 'assignedTo',
       header: 'Atribuit',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const assignedTo = row.getValue('assignedTo') as string | null;
         return assignedTo ? (
           <div className="flex items-center">
@@ -281,7 +281,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
     {
       accessorKey: 'progress',
       header: 'Progres',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const progress = row.getValue('progress') as number;
         return (
           <div className="w-24">
@@ -295,7 +295,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
     },
     {
       accessorKey: 'dueDate',
-      header: ({ column }) => (
+      header: ({ column }: { column: any }) => (
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -306,7 +306,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
           </Button>
         </div>
       ),
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const dueDate = row.getValue('dueDate') as string | null;
         if (!dueDate) return <span className="text-muted-foreground text-sm">Nespecificat</span>;
         
@@ -324,7 +324,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
     },
     {
       id: 'actions',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -392,9 +392,9 @@ const TasksTable: React.FC<TasksTableProps> = ({
       <div className="flex items-center justify-between">
         <Input
           placeholder="Filtrează după titlu..."
-          value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
+          value={((table as any).getColumn('title')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn('title')?.setFilterValue(event.target.value)
+            (table as any).getColumn('title')?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -414,13 +414,13 @@ const TasksTable: React.FC<TasksTableProps> = ({
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map((headerGroup: any) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header: any) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
+                      : (flexRender as any)(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
@@ -441,14 +441,14 @@ const TasksTable: React.FC<TasksTableProps> = ({
                 </TableRow>
               ))
             ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row: any) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() ? 'selected' : undefined}
                 >
                   {row.getVisibleCells().map((cell: any) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {(flexRender as any)(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
