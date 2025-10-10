@@ -179,13 +179,13 @@ const TransfersPage: React.FC = () => {
   
   // Watch values from form
   const sourceWarehouseId = form.watch("document.sourceWarehouseId");
-  const selectedProductIds = form.watch("items").map(item => item.productId);
+  const selectedProductIds = form.watch("items").map((item: any) => item.productId);
   
   // Update available stock items when source warehouse changes
   React.useEffect(() => {
     if (sourceWarehouseId) {
       const filtered = stockItems.filter(
-        item => item.warehouseId === sourceWarehouseId && item.quantity > 0
+        (item: any) => item.warehouseId === sourceWarehouseId && item.quantity > 0
       );
       setFilteredStockItems(filtered);
     } else {
@@ -316,12 +316,12 @@ const TransfersPage: React.FC = () => {
   
   // Helper to get product details
   const getProductById = (productId: string): Product | undefined => {
-    return products.find(p => p.id === productId);
+    return products.find((p: any) => p.id === productId);
   };
   
   // Helper to get warehouse details
   const getWarehouseById = (warehouseId: string): Warehouse | undefined => {
-    return warehouses.find(w => w.id === warehouseId);
+    return warehouses.find((w: any) => w.id === warehouseId);
   };
   
   // Helper to format currency
@@ -344,7 +344,7 @@ const TransfersPage: React.FC = () => {
   
   // Helper to get available stock quantity for a product
   const getAvailableStockQuantity = (productId: string, stockItemId: string): number => {
-    const stockItem = stockItems.find(item => item.id === stockItemId && item.productId === productId);
+    const stockItem = stockItems.find((item: any) => item.id === stockItemId && item.productId === productId);
     return stockItem ? stockItem.quantity : 0;
   };
   
@@ -361,12 +361,12 @@ const TransfersPage: React.FC = () => {
   
   // Get available stock items for a product
   const getAvailableStockItems = (productId: string): StockItem[] => {
-    return filteredStockItems.filter(item => item.productId === productId && item.quantity > 0);
+    return filteredStockItems.filter((item: any) => item.productId === productId && item.quantity > 0);
   };
   
   // Set batch and expiry info when stock item is selected
   const handleStockItemChange = (index: number, stockItemId: string) => {
-    const stockItem = stockItems.find(item => item.id === stockItemId);
+    const stockItem = stockItems.find((item: any) => item.id === stockItemId);
     if (stockItem) {
       form.setValue(`items.${index}.batchNo`, stockItem.batchNo || "");
       if (stockItem.expiryDate) {
@@ -417,7 +417,7 @@ const TransfersPage: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">Toate gestiunile</SelectItem>
-                    {warehouses.map(warehouse => (
+                    {warehouses.map((warehouse: any) => (
                       <SelectItem key={warehouse.id} value={warehouse.id}>
                         {warehouse.name}
                       </SelectItem>
@@ -436,7 +436,7 @@ const TransfersPage: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">Toate gestiunile</SelectItem>
-                    {warehouses.map(warehouse => (
+                    {warehouses.map((warehouse: any) => (
                       <SelectItem key={warehouse.id} value={warehouse.id}>
                         {warehouse.name}
                       </SelectItem>
@@ -529,7 +529,7 @@ const TransfersPage: React.FC = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredTransfers.map((doc) => {
+                  filteredTransfers.map((doc: any) => {
                     const sourceWarehouse = getWarehouseById(doc.sourceWarehouseId || doc.source_warehouse_id || '');
                     const destWarehouse = getWarehouseById(doc.destinationWarehouseId || doc.destination_warehouse_id || '');
                     
@@ -687,7 +687,7 @@ const TransfersPage: React.FC = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {warehouses.map(warehouse => (
+                          {warehouses.map((warehouse: any) => (
                             <SelectItem key={warehouse.id} value={warehouse.id}>
                               {warehouse.name}
                             </SelectItem>
@@ -712,7 +712,7 @@ const TransfersPage: React.FC = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {warehouses.map(warehouse => (
+                          {warehouses.map((warehouse: any) => (
                             <SelectItem key={warehouse.id} value={warehouse.id}>
                               {warehouse.name}
                             </SelectItem>

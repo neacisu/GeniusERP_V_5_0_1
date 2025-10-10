@@ -538,7 +538,7 @@ const InventoryReportsPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-background divide-y divide-border">
-                      {rawAssessmentData.assessments.slice(0, 5).map((assessment) => (
+                      {rawAssessmentData.assessments.slice(0, 5).map((assessment: any) => (
                         <tr key={assessment.id}>
                           <td className="px-3 py-2 whitespace-nowrap text-sm">{assessment.assessment_number}</td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm capitalize">{assessment.assessment_type}</td>

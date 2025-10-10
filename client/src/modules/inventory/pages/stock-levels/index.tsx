@@ -185,8 +185,8 @@ const StockLevelsPage: React.FC = () => {
   // Compute enriched stock items
   const enrichedStockItems = useMemo(() => {
     return stockItems.map(item => {
-      const product = products.find(p => p.id === item.productId);
-      const warehouse = warehouses.find(w => w.id === item.warehouseId);
+      const product = products.find((p: any) => p.id === item.productId);
+      const warehouse = warehouses.find((w: any) => w.id === item.warehouseId);
       const stockAlert = product?.stockAlert || 0;
       const stockStatus = getStockLevelStatus(item.quantity, stockAlert);
       
@@ -239,18 +239,18 @@ const StockLevelsPage: React.FC = () => {
   
   // Calculate summary metrics
   const totalItems = filteredStockItems.length;
-  const totalQuantity = filteredStockItems.reduce((sum, item) => {
+  const totalQuantity = filteredStockItems.reduce((sum: number, item: any) => {
     // Asigurăm-ne că folosim cantități numerice
     const itemQty = typeof item.quantity === 'number' ? item.quantity : Number(item.quantity || 0);
     return sum + itemQty;
   }, 0);
-  const totalValue = filteredStockItems.reduce((sum, item) => {
+  const totalValue = filteredStockItems.reduce((sum: number, item: any) => {
     // Asigurăm-ne că folosim cantități și prețuri numerice
     const itemQty = typeof item.quantity === 'number' ? item.quantity : Number(item.quantity || 0);
     const itemPrice = typeof item.purchasePrice === 'number' ? item.purchasePrice : Number(item.purchasePrice || 0);
     return sum + (itemQty * itemPrice);
   }, 0);
-  const lowStockCount = filteredStockItems.filter(item => item.stockStatus === "low").length;
+  const lowStockCount = filteredStockItems.filter((item: any) => item.stockStatus === "low").length;
   
   return (
     <div className="space-y-6">
@@ -343,7 +343,7 @@ const StockLevelsPage: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toate gestiunile</SelectItem>
-                  {warehouses.map(warehouse => (
+                  {warehouses.map((warehouse: any) => (
                     <SelectItem key={warehouse.id} value={warehouse.id}>
                       {warehouse.name}
                     </SelectItem>
@@ -407,7 +407,7 @@ const StockLevelsPage: React.FC = () => {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredStockItems.map(stock => (
+                    filteredStockItems.map((stock: any) => (
                       <TableRow key={stock.id}>
                         <TableCell className="font-medium">{stock.productCode}</TableCell>
                         <TableCell>{stock.productName}</TableCell>

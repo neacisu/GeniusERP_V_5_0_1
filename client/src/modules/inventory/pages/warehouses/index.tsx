@@ -287,7 +287,7 @@ const WarehousesPage: React.FC = () => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredWarehouses.map((warehouse) => (
+                      filteredWarehouses.map((warehouse: any) => (
                         <TableRow key={warehouse.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setWarehouseDetailId(warehouse.id)}>
                           <TableCell className="font-medium">{warehouse.code}</TableCell>
                           <TableCell>{warehouse.name}</TableCell>
