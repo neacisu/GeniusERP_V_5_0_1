@@ -94,13 +94,12 @@ const EmployeesPage: React.FC = () => {
     data: employeesResponse, 
     isLoading: isLoadingEmployees,
     refetch: refetchEmployees 
-  } = useEmployees(
-    currentPage,
-    itemsPerPage,
-    searchTerm,
-    filterDepartmentId,
-    false
-  );
+  } = useEmployees({
+    page: currentPage,
+    pageSize: itemsPerPage,
+    search: searchTerm,
+    departmentId: filterDepartmentId
+  });
   
   // Fetch departments for filter
   const { data: departmentsResponse } = useDepartments();
