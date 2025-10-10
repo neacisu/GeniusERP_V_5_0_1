@@ -129,7 +129,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
   const columns: ColumnDef<Message>[] = [
     {
       id: 'select',
-      header: ({ table }) => (
+      header: ({ table }: { table: any }) => (
         <Checkbox
           checked={
             table.getIsAllPageRowsSelected() ||
@@ -139,7 +139,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
           aria-label="Select all"
         />
       ),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: any }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
@@ -152,7 +152,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
     {
       accessorKey: 'isStarred',
       header: '',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const message = row.original;
         return onStar ? (
           <Button 
@@ -174,7 +174,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
     {
       accessorKey: 'type',
       header: '',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const type = row.getValue('type') as MessageType;
         return getMessageTypeIcon(type);
       },
@@ -183,7 +183,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
     {
       accessorKey: 'sender',
       header: 'Expeditor',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const sender = row.getValue('sender') as string;
         return (
           <div className="flex items-center">
@@ -201,7 +201,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
     },
     {
       accessorKey: 'subject',
-      header: ({ column }) => (
+      header: ({ column }: { column: any }) => (
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -212,7 +212,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
           </Button>
         </div>
       ),
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const message = row.original;
         return (
           <Link 
@@ -232,7 +232,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
     {
       accessorKey: 'content',
       header: 'Preview',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const content = row.getValue('content') as string;
         const previewText = content.slice(0, 60) + (content.length > 60 ? '...' : '');
         return (
@@ -245,7 +245,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
     {
       accessorKey: 'createdAt',
       header: 'Data',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const createdAt = row.getValue('createdAt') as string | Date;
         return (
           <div className="flex items-center gap-1">
@@ -257,7 +257,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
     },
     {
       id: 'actions',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const message = row.original;
         
         return (
@@ -350,9 +350,9 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
       <div className="flex items-center justify-between">
         <Input
           placeholder="Filtrează după subiect..."
-          value={(table.getColumn('subject')?.getFilterValue() as string) ?? ''}
+          value={((table as any).getColumn('subject')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn('subject')?.setFilterValue(event.target.value)
+            (table as any).getColumn('subject')?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -372,13 +372,13 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map((headerGroup: any) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header: any) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
+                      : (flexRender as any)(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
@@ -399,7 +399,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
                 </TableRow>
               ))
             ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row: any) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() ? 'selected' : undefined}
@@ -407,7 +407,7 @@ const MessagesTable: React.FC<MessagesTableProps> = ({
                 >
                   {row.getVisibleCells().map((cell: any) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {(flexRender as any)(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
