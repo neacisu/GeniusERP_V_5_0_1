@@ -17,15 +17,16 @@ export enum UserRole {
 /**
  * JWT Payload interface
  * This defines the structure of the JWT payload used for authentication
+ * UNIFIED with shared/types.ts - roles is ALWAYS array (auth.service.ts line 73)
  */
 export interface JwtPayload {
   id: string;
   username: string;
-  email?: string;
-  role?: string;
-  roles?: string[];
-  companyId?: string;
-  userId?: string; // Added for compatibility with existing code
+  role: string; // Primary role - always present (auth.service.ts line 72)
+  roles: string[]; // Always array - never undefined (auth.service.ts line 73)
+  companyId: string | null;
+  email?: string; // Optional
+  userId?: string; // Alias for id - compatibility
   iat?: number;
   exp?: number;
 }

@@ -19,6 +19,7 @@ export function Service() {
 /**
  * JWT payload structure used in the application
  * Based on the User type but with added roles array
+ * Matches auth.service.ts generateToken() payload
  */
 export interface JwtPayload {
   id: string;
@@ -26,6 +27,7 @@ export interface JwtPayload {
   role: string;
   roles: string[];
   companyId: string | null;
+  email?: string; // Added in auth.service.ts line 78
   iat?: number;
   exp?: number;
 }

@@ -8,30 +8,12 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { Logger } from '../logger';
+import { JwtPayload } from '../../../shared/types';
 
-// Enhanced Request interface to include user information
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-        companyId: string;
-        email: string;
-        roles: string[];
-      };
-    }
-  }
-}
+// Note: Request.user type is already defined in server/@types/express/index.d.ts
+// as JwtPayload which includes: id, username, role, roles, companyId, email
 
-// JWT interface for token payload
-interface JwtPayload {
-  id: string;
-  companyId: string;
-  email: string;
-  roles: string[];
-  iat: number;
-  exp: number;
-}
+// Local JwtPayload interface is removed - using shared/types.ts instead
 
 // Create a logger for authentication operations
 const logger = new Logger('AuthGuard');
@@ -75,15 +57,10 @@ export const authGuard = (req: Request, res: Response, next: NextFunction) => {
     // Decode and verify token
     const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
     
-    // Attach user info to request
-    req.user = {
-      id: decoded.id,
-      companyId: decoded.companyId,
-      email: decoded.email,
-      roles: decoded.roles || []
-    };
+    // Attach decoded JWT payload to request.user
+    req.user = decoded;
     
-    logger.debug('User authenticated successfully', { userId: decoded.id, email: decoded.email });
+    logger.debug(`User authenticated successfully - userId: ${decoded.id}, username: ${decoded.username}`);
     
     next();
   } catch (error) {
@@ -91,7 +68,7 @@ export const authGuard = (req: Request, res: Response, next: NextFunction) => {
       logger.warn('Authentication failed - Token expired');
       return res.status(401).json({ message: 'Token expired' });
     } else if (error instanceof jwt.JsonWebTokenError) {
-      logger.warn('Authentication failed - Invalid token', { error: error.message });
+      logger.warn('Authentication failed - Invalid token - {' + JSON.stringify({error: error.message }) + '}');
       return res.status(401).json({ message: 'Invalid token' });
     }
     
@@ -117,7 +94,9 @@ export const roleGuard = (requiredRoles: string[]) => {
         return res.status(401).json({ message: 'Authentication required' });
       }
       
-      const { roles } = req.user;
+      // roles is always array in JWT (auth.service.ts line 73: roles: [user.role])
+      // Using non-null assertion since req.user was verified above
+      const roles = req.user!.roles;
       
       // Check if user has admin role (universal access)
       if (roles.includes('admin')) {
@@ -129,22 +108,20 @@ export const roleGuard = (requiredRoles: string[]) => {
       const hasRequiredRole = requiredRoles.some(role => roles.includes(role));
       
       if (!hasRequiredRole) {
-        logger.warn('Authorization failed - Missing required roles', { 
-          userId: req.user.id, 
+        logger.warn('Authorization failed - Missing required roles - {' + JSON.stringify({userId: req.user.id, 
           userRoles: roles, 
           requiredRoles 
-        });
+        }) + '}');
         return res.status(403).json({ 
           message: 'Access forbidden',
           details: 'You do not have the required permissions'
         });
       }
       
-      logger.debug('Role verification successful', { 
-        userId: req.user.id, 
+      logger.debug('Role verification successful - {' + JSON.stringify({userId: req.user.id, 
         userRoles: roles, 
         requiredRoles 
-      });
+      }) + '}');
       
       next();
     } catch (error) {
@@ -179,7 +156,8 @@ export const companyGuard = (req: Request, res: Response, next: NextFunction) =>
       return next();
     }
     
-    const { companyId, roles } = req.user;
+    const companyId = req.user.companyId;
+    const roles = req.user!.roles; // Always array in JWT, using ! since req.user verified
     
     // Allow admin roles to access any company data
     if (roles.includes('admin') || roles.includes('system_admin')) {
@@ -189,11 +167,10 @@ export const companyGuard = (req: Request, res: Response, next: NextFunction) =>
     
     // For regular users, ensure they can only access their own company data
     if (urlCompanyId !== companyId) {
-      logger.warn('Company access check failed - Cross-company access attempt', { 
-        userId: req.user.id, 
+      logger.warn('Company access check failed - Cross-company access attempt - {' + JSON.stringify({userId: req.user.id, 
         userCompanyId: companyId, 
         attemptedCompanyId: urlCompanyId 
-      });
+      }) + '}');
       
       return res.status(403).json({ 
         message: 'Access forbidden',
@@ -201,10 +178,9 @@ export const companyGuard = (req: Request, res: Response, next: NextFunction) =>
       });
     }
     
-    logger.debug('Company access check successful', { 
-      userId: req.user.id, 
+    logger.debug('Company access check successful - {' + JSON.stringify({userId: req.user.id, 
       companyId 
-    });
+    }) + '}');
     
     next();
   } catch (error) {
@@ -239,13 +215,14 @@ export const ownershipGuard = (
       const resourceId = req.params[resourceIdParam];
       
       if (!resourceId) {
-        logger.warn('Ownership check failed - No resource ID provided', { 
-          parameter: resourceIdParam 
-        });
+        logger.warn('Ownership check failed - No resource ID provided - {' + JSON.stringify({parameter: resourceIdParam 
+        }) + '}');
         return res.status(400).json({ message: 'Resource ID is required' });
       }
       
-      const { id: userId, companyId, roles } = req.user;
+      const userId = req.user.id;
+      const companyId = req.user.companyId;
+      const roles = req.user!.roles; // Always array in JWT, using ! since req.user verified
       
       // Admin or other privileged roles can access any resource
       if (roles.includes('admin') || roles.includes('manager')) {
@@ -257,20 +234,18 @@ export const ownershipGuard = (
       const resource = await fetchResourceFn(resourceId);
       
       if (!resource) {
-        logger.warn('Ownership check failed - Resource not found', { 
-          resourceId, 
+        logger.warn('Ownership check failed - Resource not found - {' + JSON.stringify({resourceId, 
           resourceType: resourceIdParam 
-        });
+        }) + '}');
         return res.status(404).json({ message: 'Resource not found' });
       }
       
       // Check resource company ID first
       if (resource.companyId && resource.companyId !== companyId) {
-        logger.warn('Ownership check failed - Resource belongs to different company', { 
-          userId, 
+        logger.warn('Ownership check failed - Resource belongs to different company - {' + JSON.stringify({userId, 
           userCompanyId: companyId, 
           resourceCompanyId: resource.companyId 
-        });
+        }) + '}');
         return res.status(403).json({ message: 'Access forbidden' });
       }
       
@@ -278,18 +253,16 @@ export const ownershipGuard = (
       if (resource[resourceOwnerKey] && resource[resourceOwnerKey] !== userId) {
         // Check if user has role with company-wide access
         if (!roles.includes('company_admin') && !roles.includes('department_admin')) {
-          logger.warn('Ownership check failed - User is not resource owner', { 
-            userId, 
+          logger.warn('Ownership check failed - User is not resource owner - {' + JSON.stringify({userId, 
             resourceOwner: resource[resourceOwnerKey] 
-          });
+          }) + '}');
           return res.status(403).json({ message: 'Access forbidden' });
         }
       }
       
-      logger.debug('Ownership check successful', { 
-        userId, 
+      logger.debug('Ownership check successful - {' + JSON.stringify({userId, 
         resourceId 
-      });
+      }) + '}');
       
       next();
     } catch (error) {
