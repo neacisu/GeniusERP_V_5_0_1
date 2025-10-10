@@ -71,7 +71,7 @@ export class ImportValidatorService {
           report.invalidRows++;
           report.errors.push({
             row: rowNumber,
-            errors: result.error.errors.map((err: any) => 
+            errors: result.error.issues.map((err: any) => 
               `${err.path.join('.')}: ${err.message}`
             ),
           });
@@ -81,7 +81,7 @@ export class ImportValidatorService {
         report.invalidRows++;
         report.errors.push({
           row: rowNumber,
-          errors: [`Eroare la procesarea rândului: ${error.message || 'Eroare necunoscută'}`],
+          errors: [`Eroare la procesarea rândului: ${(error as any)?.message || 'Eroare necunoscută'}`],
         });
         report.isValid = false;
       }
@@ -116,12 +116,13 @@ export class ImportValidatorService {
    * @returns Produsul găsit sau null
    */
   async getProductBySku(sku: string, companyId: string): Promise<any | null> {
+    // Note: inventoryProducts schema doesn't have companyId field
+    // TODO: Add companyId to schema if multi-company support is needed
     const products = await this.db.query(
       this.db.client
         .select()
         .from(inventoryProducts)
         .where(eq(inventoryProducts.sku, sku))
-        .where(eq(inventoryProducts.companyId, companyId))
         .limit(1)
     );
     
@@ -136,12 +137,13 @@ export class ImportValidatorService {
    * @returns Produsul găsit sau null
    */
   async getProductByName(name: string, companyId: string): Promise<any | null> {
+    // Note: inventoryProducts schema doesn't have companyId field
+    // TODO: Add companyId to schema if multi-company support is needed
     const products = await this.db.query(
       this.db.client
         .select()
         .from(inventoryProducts)
         .where(eq(inventoryProducts.name, name))
-        .where(eq(inventoryProducts.companyId, companyId))
         .limit(1)
     );
     
@@ -182,16 +184,16 @@ export class ImportValidatorService {
           await this.updateProduct(productData, options, rowNumber, result);
         }
       } catch (error) {
-        result.report.errors.push({
+        result.report!.errors.push({
           row: rowNumber,
-          errors: [`Eroare la procesarea rândului: ${error.message || 'Eroare necunoscută'}`],
+          errors: [`Eroare la procesarea rândului: ${(error as any)?.message || 'Eroare necunoscută'}`],
         });
       }
     }
     
     // Actualizează mesajul final
-    result.message = `Import finalizat: ${result.report.createdRows} produse create, ${result.report.updatedRows} produse actualizate, ${result.report.skippedRows} produse ignorate, ${result.report.errors.length} erori`;
-    result.success = result.report.errors.length === 0;
+    result.message = `Import finalizat: ${result.report!.createdRows} produse create, ${result.report!.updatedRows} produse actualizate, ${result.report!.skippedRows} produse ignorate, ${result.report!.errors.length} erori`;
+    result.success = result.report!.errors.length === 0;
     
     return result;
   }
@@ -209,8 +211,8 @@ export class ImportValidatorService {
     const existingProduct = await this.getProductBySku(productData.sku, options.companyId);
     
     if (existingProduct) {
-      result.report.skippedRows++;
-      result.report.errors.push({
+      result.report!.skippedRows++;
+      result.report!.errors.push({
         row: rowNumber,
         errors: [`Produsul cu SKU ${productData.sku} există deja. Folosiți modul de actualizare pentru a-l modifica.`],
       });
@@ -257,7 +259,7 @@ export class ImportValidatorService {
       })
     );
     
-    result.report.createdRows++;
+    result.report!.createdRows++;
     
     // Înregistrează acțiunea în jurnalul de audit
     this.auditService.log({
@@ -293,8 +295,8 @@ export class ImportValidatorService {
     }
     
     if (!existingProduct) {
-      result.report.skippedRows++;
-      result.report.errors.push({
+      result.report!.skippedRows++;
+      result.report!.errors.push({
         row: rowNumber,
         errors: [
           `Produsul cu ${options.matchField === 'name' ? 'numele' : 'SKU'} "${
@@ -324,7 +326,7 @@ export class ImportValidatorService {
         .where(eq(inventoryProducts.id, existingProduct.id))
     );
     
-    result.report.updatedRows++;
+    result.report!.updatedRows++;
     
     // Înregistrează acțiunea în jurnalul de audit
     this.auditService.log({
