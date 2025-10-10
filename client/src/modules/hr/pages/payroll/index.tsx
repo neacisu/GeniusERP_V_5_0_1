@@ -131,7 +131,7 @@ const PayrollPage: React.FC = () => {
   // Mutation for running payroll
   const { mutate: runPayroll } = useMutation({
     mutationFn: async (data: {year: number, month: number}) => {
-      return await apiRequest('POST', '/api/hr/payroll/run', data);
+      return await apiRequest('/api/hr/payroll/run', { method: 'POST', body: data });
     },
     onSuccess: () => {
       refetchPayroll();
