@@ -68,10 +68,13 @@ export class RolePermissionService extends BaseDrizzleService {
         return result;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to get permissions for role with ID: ${roleId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve role permissions: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      logger.error(`[${context}] Stack trace: ${errorStack || "N/A"}`);
+      throw new Error(`Failed to retrieve role permissions: ${errorMessage}`);
     }
   }
   
@@ -137,10 +140,13 @@ export class RolePermissionService extends BaseDrizzleService {
         logger.info(`[${context}] Permission ${permissionId} assigned to role ${roleId}`);
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to assign permission ${permissionId} to role ${roleId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to assign permission to role: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      logger.error(`[${context}] Stack trace: ${errorStack || "N/A"}`);
+      throw new Error(`Failed to assign permission to role: ${errorMessage}`);
     }
   }
   
@@ -191,10 +197,13 @@ export class RolePermissionService extends BaseDrizzleService {
         logger.info(`[${context}] Permission ${permissionId} removed from role ${roleId}`);
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to remove permission ${permissionId} from role ${roleId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to remove permission from role: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      logger.error(`[${context}] Stack trace: ${errorStack || "N/A"}`);
+      throw new Error(`Failed to remove permission from role: ${errorMessage}`);
     }
   }
   
@@ -231,10 +240,13 @@ export class RolePermissionService extends BaseDrizzleService {
         return hasPermission;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to check permission for user ${userId}`, error);
       logger.error(`[${context}] Resource: ${resource}, Action: ${action}`);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      logger.error(`[${context}] Stack trace: ${errorStack || "N/A"}`);
       // Default to false on error for security
       return false;
     }
