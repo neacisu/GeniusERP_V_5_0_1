@@ -104,8 +104,8 @@ export class DepartmentService {
       const result = await query.orderBy(asc(departments.name)).execute();
       
       // Organize departments into hierarchy
-      const departmentsMap = {};
-      const rootDepartments = [];
+      const departmentsMap: Record<string, any> = {};
+      const rootDepartments: any[] = [];
 
       // First, create a map of all departments
       result.forEach((department: any) => {
@@ -253,7 +253,7 @@ export class DepartmentService {
    */
   async getDepartmentById(departmentId: string, companyId: string) {
     try {
-      const departments = await this.db.select()
+      const result = await this.db.select()
         .from(departments)
         .where(sql`
           ${departments.id} = ${departmentId} AND
@@ -261,7 +261,7 @@ export class DepartmentService {
         `)
         .execute();
 
-      return departments.length > 0 ? departments[0] : null;
+      return result.length > 0 ? result[0] : null;
     } catch (error) {
       this.logger.error('Failed to get department by ID:', error);
       throw error;
