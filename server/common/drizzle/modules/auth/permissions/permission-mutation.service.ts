@@ -72,11 +72,16 @@ export class PermissionMutationService extends BaseDrizzleService {
         return newPermission;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to create permission`, error);
       logger.error(`[${context}] Permission data: ${JSON.stringify(permissionData)}`);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to create permission: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to create permission: ${errorMessage}`);
     }
   }
   
@@ -135,11 +140,16 @@ export class PermissionMutationService extends BaseDrizzleService {
         return updatedPermission;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to update permission with ID: ${permissionId}`, error);
       logger.error(`[${context}] Update data: ${JSON.stringify(permissionData)}`);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to update permission: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to update permission: ${errorMessage}`);
     }
   }
 }
