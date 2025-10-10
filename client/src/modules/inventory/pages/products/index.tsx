@@ -603,7 +603,7 @@ export default function ProductsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Toate categoriile</SelectItem>
-                    {categories.map(category => (
+                    {categories.map((category: any) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
                       </SelectItem>
@@ -728,7 +728,7 @@ export default function ProductsPage() {
                             <Checkbox 
                               checked={selectedProducts[product.id] || false}
                               onCheckedChange={(checked) => {
-                                setSelectedProducts(prev => ({
+                                setSelectedProducts((prev: any) => ({
                                   ...prev,
                                   [product.id]: !!checked
                                 }));
@@ -1108,7 +1108,7 @@ export default function ProductsPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {categories.map(category => (
+                          {categories.map((category: any) => (
                             <SelectItem key={category.id} value={category.id}>
                               {category.name}
                             </SelectItem>
@@ -1137,7 +1137,7 @@ export default function ProductsPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {units.map(unit => (
+                          {units.map((unit: any) => (
                             <SelectItem key={unit.id} value={unit.id}>
                               {unit.name} ({unit.abbreviation})
                             </SelectItem>
@@ -1433,7 +1433,7 @@ export default function ProductsPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {categories.map(category => (
+                          {categories.map((category: any) => (
                             <SelectItem key={category.id} value={category.id}>
                               {category.name}
                             </SelectItem>
@@ -1461,7 +1461,7 @@ export default function ProductsPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {units.map(unit => (
+                          {units.map((unit: any) => (
                             <SelectItem key={unit.id} value={unit.id}>
                               {unit.name} ({unit.abbreviation})
                             </SelectItem>
