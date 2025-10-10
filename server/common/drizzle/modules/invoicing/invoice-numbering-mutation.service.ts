@@ -6,6 +6,7 @@
 
 import { Logger } from '../../../../common/logger';
 import { BaseDrizzleService } from '../core/base-drizzle.service';
+import { getPostgresClient } from '../../db';
 
 // Create a logger for invoice numbering operations
 const logger = new Logger('InvoiceNumberingMutationService');
@@ -23,13 +24,15 @@ export class InvoiceNumberingMutationService extends BaseDrizzleService {
    */
   async createInvoiceNumberingSetting(data: any, createdBy: string): Promise<any> {
     try {
-      logger.debug('Creating invoice numbering setting with data:', {
+      logger.debug(`Creating invoice numbering setting with data: ${JSON.stringify({
         series: data.series,
         isDefault: data.isDefault,
         companyId: data.companyId
-      });
+      })}`);
       
       return await this.transaction(async (tx) => {
+        const pgClient = getPostgresClient();
+        
         // If this is set as default, unset any other defaults
         if (data.isDefault) {
           logger.debug(`Setting ${data.series} as default - unsetting any previous defaults`);
@@ -47,7 +50,7 @@ export class InvoiceNumberingMutationService extends BaseDrizzleService {
           `;
           
           const unsetParams = data.companyId ? [createdBy, data.companyId] : [createdBy];
-          await tx.$client.unsafe(unsetDefaultQuery, unsetParams);
+          await pgClient.unsafe(unsetDefaultQuery, unsetParams);
         }
         
         // Insert the new setting
@@ -101,7 +104,7 @@ export class InvoiceNumberingMutationService extends BaseDrizzleService {
           createdBy
         ];
         
-        const result = await tx.$client.unsafe(insertQuery, params);
+        const result = await pgClient.unsafe(insertQuery, params);
         
         if (!result || result.length === 0) {
           const errMsg = 'Failed to create invoice numbering setting - no rows returned';
@@ -128,15 +131,17 @@ export class InvoiceNumberingMutationService extends BaseDrizzleService {
    */
   async updateInvoiceNumberingSetting(id: string, data: any, updatedBy: string): Promise<any | null> {
     try {
-      logger.debug(`Updating invoice numbering setting ${id}`, {
+      logger.debug(`Updating invoice numbering setting ${id} with data: ${JSON.stringify({
         updateData: {
           series: data.series,
           isDefault: data.isDefault,
           isActive: data.isActive
         }
-      });
+      })}`);
       
       return await this.transaction(async (tx) => {
+        const pgClient = getPostgresClient();
+        
         // First check if the setting exists
         const checkQuery = `
           SELECT id, company_id, is_default 
@@ -144,7 +149,7 @@ export class InvoiceNumberingMutationService extends BaseDrizzleService {
           WHERE id = $1 AND is_active = TRUE
         `;
         
-        const settingCheck = await tx.$client.unsafe(checkQuery, [id]);
+        const settingCheck = await pgClient.unsafe(checkQuery, [id]);
         
         if (!settingCheck || settingCheck.length === 0) {
           logger.warn(`Invoice numbering setting ${id} not found for update`);
@@ -171,7 +176,7 @@ export class InvoiceNumberingMutationService extends BaseDrizzleService {
           `;
           
           const unsetParams = companyId ? [updatedBy, id, companyId] : [updatedBy, id];
-          await tx.$client.unsafe(unsetQuery, unsetParams);
+          await pgClient.unsafe(unsetQuery, unsetParams);
         }
         
         // Build update query dynamically based on provided fields
@@ -259,7 +264,7 @@ export class InvoiceNumberingMutationService extends BaseDrizzleService {
             updated_at as "updatedAt"
         `;
         
-        const result = await tx.$client.unsafe(updateQuery, params);
+        const result = await pgClient.unsafe(updateQuery, params);
         
         if (!result || result.length === 0) {
           const errMsg = `Failed to update invoice numbering setting ${id}`;
@@ -288,13 +293,15 @@ export class InvoiceNumberingMutationService extends BaseDrizzleService {
       logger.debug(`Marking invoice numbering setting ${id} as inactive`);
       
       return await this.transaction(async (tx) => {
+        const pgClient = getPostgresClient();
+        
         // First check if the setting exists and is active
         const checkQuery = `
           SELECT id FROM invoice_numbering_settings
           WHERE id = $1 AND is_active = TRUE
         `;
         
-        const settingCheck = await tx.$client.unsafe(checkQuery, [id]);
+        const settingCheck = await pgClient.unsafe(checkQuery, [id]);
         
         if (!settingCheck || settingCheck.length === 0) {
           logger.warn(`Invoice numbering setting ${id} not found or already inactive`);
@@ -310,7 +317,7 @@ export class InvoiceNumberingMutationService extends BaseDrizzleService {
           WHERE id = $2 AND is_active = TRUE
         `;
         
-        await tx.$client.unsafe(deleteQuery, [deletedBy, id]);
+        await pgClient.unsafe(deleteQuery, [deletedBy, id]);
         
         logger.info(`Successfully marked invoice numbering setting ${id} as inactive`);
         return true;
