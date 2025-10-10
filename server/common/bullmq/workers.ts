@@ -10,6 +10,7 @@ import { QueueName, JobPayload, JobTypeMap } from './types';
 import { log } from '../../vite';
 import { defaultConnectionOptions } from './queues';
 import { getNotificationService } from '../../common/services/registry';
+import { NotificationType, NotificationPriority } from '../services/notification.service';
 
 // Default options for all workers
 export const defaultWorkerOptions: WorkerOptions = {
@@ -138,12 +139,12 @@ export function createAllWorkers() {
             const notificationService = getNotificationService();
             
             if (data.companyId) {
-              // Create the notification based on severity
+              // Create the notification based on severity - using NotificationType enum
               const notification = {
                 title: `Inventory Alert: ${data.productName || data.sku}`,
                 message: `Stock level for ${data.productName || data.sku} is ${data.currentQuantity} units, which is ${data.severity === 'critical' ? 'critically low' : 'below recommended threshold'} (min: ${data.minThreshold}).`,
-                type: data.severity === 'critical' ? 'error' : (data.severity === 'high' ? 'warning' : 'info'),
-                priority: data.severity || 'medium',
+                type: data.severity === 'critical' ? NotificationType.ERROR : (data.severity === 'high' ? NotificationType.WARNING : NotificationType.INFO),
+                priority: (data.severity === 'critical' ? NotificationPriority.CRITICAL : (data.severity === 'high' ? NotificationPriority.HIGH : NotificationPriority.MEDIUM)),
                 metadata: {
                   warehouseId: data.warehouseId,
                   productId: data.productId,
