@@ -351,9 +351,11 @@ export class CompanyController {
       // Insert the company into the database
       console.log('[CompanyController] Inserting company data:', companyData);
       try {
-        const result = await this.db.insert(crm_companies)
-          .values(companyData)
-          .returning();
+        const result = await this.db.query(async (db) => {
+          return await db.insert(crm_companies)
+            .values(companyData)
+            .returning();
+        });
         
         console.log('[CompanyController] Insert result:', result);
         
@@ -396,12 +398,14 @@ export class CompanyController {
 
       try {
         // Using direct query
-        const company = await this.db.query.crm_companies.findFirst({
-          where: (companies: any, { eq, and }: any) => 
-            and(
-              eq(companies.id, id),
-              eq(companies.companyId, companyId)
-            )
+        const company = await this.db.query(async (db) => {
+          return await db.query.crm_companies.findFirst({
+            where: (companies: any, { eq, and }: any) => 
+              and(
+                eq(companies.id, id),
+                eq(companies.companyId, companyId)
+              )
+          });
         });
 
         if (!company) {
@@ -438,12 +442,14 @@ export class CompanyController {
       let existingCompany;
       try {
         // Direct query to find company
-        existingCompany = await this.db.query.crm_companies.findFirst({
-          where: (companies: any, { eq, and }: any) => 
-            and(
-              eq(companies.id, id),
-              eq(companies.companyId, companyId)
-            )
+        existingCompany = await this.db.query(async (db) => {
+          return await db.query.crm_companies.findFirst({
+            where: (companies: any, { eq, and }: any) => 
+              and(
+                eq(companies.id, id),
+                eq(companies.companyId, companyId)
+              )
+          });
         });
         
         console.log('[CompanyController] Found existing company:', existingCompany ? 'yes' : 'no');
@@ -495,9 +501,11 @@ export class CompanyController {
           // If CUI is changing, check for duplicates
           if (cuiValue && cuiValue !== existingCompany.cui) {
             try {
-              const existingCompanyWithCui = await this.db.select().from(crm_companies)
-                .where(sql`cui = ${cuiValue} AND company_id = ${companyId} AND id <> ${id}`)
-                .limit(1);
+              const existingCompanyWithCui = await this.db.query(async (db) => {
+                return await db.select().from(crm_companies)
+                  .where(sql`cui = ${cuiValue} AND company_id = ${companyId} AND id <> ${id}`)
+                  .limit(1);
+              });
               
               if (existingCompanyWithCui && existingCompanyWithCui.length > 0) {
                 return res.status(400).json({ 
@@ -608,10 +616,12 @@ export class CompanyController {
         console.log('[CompanyController] Updating company with data:', updateData);
         
         // Direct update query
-        const result = await this.db.update(crm_companies)
-          .set(updateData)
-          .where(sql`id = ${id} AND company_id = ${companyId}`)
-          .returning();
+        const result = await this.db.query(async (db) => {
+          return await db.update(crm_companies)
+            .set(updateData)
+            .where(sql`id = ${id} AND company_id = ${companyId}`)
+            .returning();
+        });
         
         console.log('[CompanyController] Update result:', result);
         
@@ -658,9 +668,11 @@ export class CompanyController {
       
       try {
         // First check if the company has analytic accounts
-        const existingCompany = await this.db.select().from(crm_companies)
-          .where(sql`id = ${id} AND company_id = ${companyId}`)
-          .limit(1);
+        const existingCompany = await this.db.query(async (db) => {
+          return await db.select().from(crm_companies)
+            .where(sql`id = ${id} AND company_id = ${companyId}`)
+            .limit(1);
+        });
         
         if (!existingCompany || existingCompany.length === 0) {
           return res.status(404).json({ message: 'Company not found' });
@@ -675,9 +687,11 @@ export class CompanyController {
         }
         
         // If no analytic accounts, proceed with deletion
-        const result = await this.db.delete(crm_companies)
-          .where(sql`id = ${id} AND company_id = ${companyId}`)
-          .returning();
+        const result = await this.db.query(async (db) => {
+          return await db.delete(crm_companies)
+            .where(sql`id = ${id} AND company_id = ${companyId}`)
+            .returning();
+        });
         
         console.log('[CompanyController] Delete result:', result);
 
