@@ -210,7 +210,7 @@ export class ManualEntriesController extends BaseController {
       if (error instanceof z.ZodError) {
         res.status(400).json({ 
           error: 'Date invalide',
-          details: error.errors.map(err => ({
+          details: error.errors.map((err: any) => ({
             path: err.path.join('.'),
             message: err.message
           }))

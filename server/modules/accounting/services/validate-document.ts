@@ -155,10 +155,10 @@ export class ValidateDocumentService {
       switch (documentType) {
         case DocumentType.INVOICE:
           // Get invoice with items, customer, and company
-          const invoiceData = await drizzleService.executeQuery(async (db) => {
+          const invoiceData = await drizzleService.executeQuery(async (db: any) => {
             // Assuming the database schema and relations are properly set up
             const invoice = await db.query.invoices.findFirst({
-              where: (fields, { eq }) => eq(fields.id, documentId),
+              where: (fields: any, { eq }) => eq(fields.id, documentId),
               with: {
                 items: true,
                 customer: true,
