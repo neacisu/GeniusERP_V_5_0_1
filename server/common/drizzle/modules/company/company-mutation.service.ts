@@ -36,7 +36,7 @@ export class CompanyMutationService extends BaseDrizzleService {
   async createCompany(data: any, createdBy: string): Promise<any> {
     const context = 'createCompany';
     try {
-      logger.debug(`[${context}] Creating company with data:`, {...data, createdBy});
+      logger.debug(`[${context}] Creating company with data: ${JSON.stringify({...data, createdBy})}`);
       
       // Check if required fields are present
       if (!data.name || !data.fiscalCode) {
@@ -99,11 +99,16 @@ export class CompanyMutationService extends BaseDrizzleService {
         }
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to create company`, error);
       logger.error(`[${context}] Company data: ${JSON.stringify(data)}`);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to create company: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to create company: ${errorMessage}`);
     }
   }
   
@@ -118,7 +123,7 @@ export class CompanyMutationService extends BaseDrizzleService {
   async updateCompany(companyId: string, data: any, updatedBy: string): Promise<any | null> {
     const context = 'updateCompany';
     try {
-      logger.debug(`[${context}] Updating company ${companyId} with data:`, {...data, updatedBy});
+      logger.debug(`[${context}] Updating company ${companyId} with data: ${JSON.stringify({...data, updatedBy})}`);
       
       // First check if company exists
       const existingCompany = await this.companyQueryService.getCompanyById(companyId);
@@ -186,11 +191,16 @@ export class CompanyMutationService extends BaseDrizzleService {
         return updatedCompany;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to update company ${companyId}`, error);
       logger.error(`[${context}] Update data: ${JSON.stringify(data)}`);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to update company: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to update company: ${errorMessage}`);
     }
   }
   
@@ -229,10 +239,15 @@ export class CompanyMutationService extends BaseDrizzleService {
         return true;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to delete company ${companyId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to delete company: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to delete company: ${errorMessage}`);
     }
   }
 }
