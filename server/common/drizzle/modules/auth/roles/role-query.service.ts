@@ -29,24 +29,26 @@ export class RoleQueryService extends BaseDrizzleService {
       logger.debug(`[${context}] Getting roles${companyId ? ` for company ${companyId}` : ''}`);
       
       return await this.query(async (db) => {
-        // Build query
-        logger.debug(`[${context}] Building query${companyId ? ` with company filter: ${companyId}` : ''}`);
-        let query = db.select().from(roles);
+        logger.debug(`[${context}] Retrieving roles${companyId ? ` for company ${companyId}` : ''}`);
         
-        if (companyId) {
-          query = query.where(eq(roles.company_id, companyId));
-        }
+        // Build query directly to avoid Drizzle type mismatch
+        const result = companyId
+          ? await db.select().from(roles).where(eq(roles.company_id, companyId))
+          : await db.select().from(roles);
         
-        // Execute query
-        const result = await query;
         logger.debug(`[${context}] Retrieved ${result.length} roles`);
         return result;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to get roles${companyId ? ` for company ${companyId}` : ''}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve roles: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to retrieve roles: ${errorMessage}`);
     }
   }
   
@@ -80,10 +82,15 @@ export class RoleQueryService extends BaseDrizzleService {
         return result[0];
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to get role by ID: ${roleId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve role: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to retrieve role: ${errorMessage}`);
     }
   }
   
@@ -123,10 +130,15 @@ export class RoleQueryService extends BaseDrizzleService {
         return result[0];
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to get role by name: ${name} for company: ${companyId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve role by name: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to retrieve role by name: ${errorMessage}`);
     }
   }
   
@@ -162,10 +174,15 @@ export class RoleQueryService extends BaseDrizzleService {
         return result;
       }, context);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
       logger.error(`[${context}] Failed to get roles for user with ID: ${userId}`, error);
-      logger.error(`[${context}] Error details: ${error.message}`);
-      logger.error(`[${context}] Stack trace: ${error.stack}`);
-      throw new Error(`Failed to retrieve user roles: ${error.message}`);
+      logger.error(`[${context}] Error details: ${errorMessage}`);
+      if (errorStack) {
+        logger.error(`[${context}] Stack trace: ${errorStack}`);
+      }
+      throw new Error(`Failed to retrieve user roles: ${errorMessage}`);
     }
   }
 }
