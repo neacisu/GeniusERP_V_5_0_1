@@ -52,6 +52,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import HrLayout from '../../components/layout/HrLayout';
 import { useHrApi } from '../../hooks/useHrApi';
+import { useToast } from '@/hooks/use-toast';
 import StatsCard from '../../components/cards/StatsCard';
 import { formatDate, formatCurrency } from '../../utils/helpers';
 
@@ -77,25 +78,26 @@ const ContractsPage: React.FC = () => {
   // Use HR API hooks
   const { 
     useContracts, 
-    useEmployees,
-    deleteContract
+    useEmployees
   } = useHrApi();
+  
+  const { toast } = useToast();
   
   // Fetch contracts with pagination, sorting and filtering
   const { 
     data: contractsResponse, 
     isLoading: isLoadingContracts,
     refetch: refetchContracts 
-  } = useContracts(
-    currentPage,
-    itemsPerPage,
-    searchTerm,
-    filterStatus,
-    filterEmployeeId
-  );
+  } = useContracts({
+    page: currentPage,
+    pageSize: itemsPerPage,
+    search: searchTerm,
+    status: filterStatus,
+    employeeId: filterEmployeeId
+  });
   
   // Fetch employees for filter
-  const { data: employeesResponse } = useEmployees(1, 100, '', undefined, true);
+  const { data: employeesResponse } = useEmployees({ page: 1, pageSize: 100 });
   
   // Extract data from responses
   const contracts = contractsResponse?.data?.items || [];
@@ -137,8 +139,12 @@ const ContractsPage: React.FC = () => {
   const confirmDeleteContract = async () => {
     if (contractToDelete) {
       try {
-        await deleteContract(contractToDelete);
-        refetchContracts();
+        // TODO: Implement useDeleteContract hook in useHrApi
+        console.log('Delete contract:', contractToDelete);
+        toast({
+          title: 'Funcționalitate în dezvoltare',
+          description: 'Ștergerea contractelor va fi implementată în curând.'
+        });
         setShowConfirmDelete(false);
       } catch (error) {
         console.error('Error deleting contract:', error);
