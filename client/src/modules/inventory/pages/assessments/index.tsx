@@ -263,17 +263,17 @@ const InventoryAssessmentsPage: React.FC = () => {
                           {assessment.warehouse?.name || "Necunoscut"}
                         </TableCell>
                         <TableCell>
-                          {assessmentTypeLabels[assessment.assessment_type || assessment.type] || assessment.assessment_type || assessment.type || "Necunoscut"}
+                          {(assessmentTypeLabels as any)[assessment.assessment_type || assessment.type] || assessment.assessment_type || assessment.type || "Necunoscut"}
                         </TableCell>
                         <TableCell>
                           <Badge
                             variant={
-                              statusColors[assessment.status || assessment.status] as any || "secondary"
+                              (statusColors as any)[assessment.status] as any || "secondary"
                             }
                           >
                             {assessment.status 
-                              ? statusLabels[assessment.status] || assessment.status 
-                              : statusLabels[assessment.status] || assessment.status || "Necunoscut"}
+                              ? (statusLabels as any)[assessment.status] || assessment.status 
+                              : (statusLabels as any)[assessment.status] || assessment.status || "Necunoscut"}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
