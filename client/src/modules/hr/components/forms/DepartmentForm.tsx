@@ -48,14 +48,13 @@ const departmentSchema = z.object({
     .min(1, { message: 'Codul departamentului este obligatoriu' })
     .max(20, { message: 'Codul departamentului nu poate depăși 20 caractere' }),
   description: z.string().optional(),
-  budgetAllocated: z.coerce.number()
-    .nonnegative({ message: 'Bugetul alocat trebuie să fie un număr pozitiv' })
-    .default(0),
+  budgetAllocated: z.number()
+    .nonnegative({ message: 'Bugetul alocat trebuie să fie un număr pozitiv' }),
   managerId: z.string().optional(),
   parentId: z.string().optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE']).default('ACTIVE'),
-  responsibilityCenter: z.boolean().default(false),
-  isCostCenter: z.boolean().default(false)
+  status: z.enum(['ACTIVE', 'INACTIVE']),
+  responsibilityCenter: z.boolean(),
+  isCostCenter: z.boolean()
 });
 
 // Definim tipul departamentului bazat pe schema
@@ -131,11 +130,11 @@ const DepartmentForm: React.FC<DepartmentFormProps> = ({
   
   // Manevră formular și trimitere
   const handleSubmit = (values: DepartmentFormValues) => {
-    // Convertim valorile "null" la null real
+    // Convertim valorile "null" la undefined pentru schema
     const formattedValues = {
       ...values,
-      managerId: values.managerId === 'null' ? null : values.managerId,
-      parentId: values.parentId === 'null' ? null : values.parentId
+      managerId: values.managerId === 'null' ? undefined : values.managerId,
+      parentId: values.parentId === 'null' ? undefined : values.parentId
     };
     
     onSubmit(formattedValues);
