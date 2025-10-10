@@ -5,22 +5,17 @@
  */
 import { useState } from 'react';
 import { useLocation } from 'wouter';
-// TODO: Install @tanstack/react-table package
-// import type {
-//   ColumnDef,
-//   SortingState
-// } from '@tanstack/react-table';
-// import {
-//   flexRender,
-//   getCoreRowModel,
-//   getPaginationRowModel,
-//   getSortedRowModel,
-//   useReactTable,
-// } from '@tanstack/react-table';
-
-// Temporary type definitions until @tanstack/react-table is installed
-type ColumnDef<T> = any;
-type SortingState = any;
+import type {
+  ColumnDef,
+  SortingState
+} from '@/modules/collab/components/tables/TableMock';
+import {
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@/modules/collab/components/tables/TableMock';
 import {
   Table,
   TableBody,
@@ -114,7 +109,7 @@ export function InvoicesTable({
   const columns: ColumnDef<Invoice>[] = [
     {
       accessorKey: 'invoiceNumber',
-      header: ({ column }) => {
+      header: ({ column }: { column: any }) => {
         return (
           <Button
             variant="ghost"
@@ -125,7 +120,7 @@ export function InvoicesTable({
           </Button>
         );
       },
-      cell: ({ row }) => (
+      cell: ({ row }: { row: any }) => (
         <div className="font-medium">
           {row.original.invoiceNumber}
         </div>
@@ -133,7 +128,7 @@ export function InvoicesTable({
     },
     {
       accessorKey: 'customerName',
-      header: ({ column }) => {
+      header: ({ column }: { column: any }) => {
         return (
           <Button
             variant="ghost"
@@ -144,11 +139,11 @@ export function InvoicesTable({
           </Button>
         );
       },
-      cell: ({ row }) => <div>{row.original.customerName}</div>,
+      cell: ({ row }: { row: any }) => <div>{row.original.customerName}</div>,
     },
     {
       accessorKey: 'issueDate',
-      header: ({ column }) => {
+      header: ({ column }: { column: any }) => {
         return (
           <Button
             variant="ghost"
@@ -159,11 +154,11 @@ export function InvoicesTable({
           </Button>
         );
       },
-      cell: ({ row }) => <div>{formatDate(new Date(row.original.issueDate))}</div>,
+      cell: ({ row }: { row: any }) => <div>{formatDate(new Date(row.original.issueDate))}</div>,
     },
     {
       accessorKey: 'dueDate',
-      header: ({ column }) => {
+      header: ({ column }: { column: any }) => {
         return (
           <Button
             variant="ghost"
@@ -174,18 +169,18 @@ export function InvoicesTable({
           </Button>
         );
       },
-      cell: ({ row }) => <div>{formatDate(new Date(row.original.dueDate))}</div>,
+      cell: ({ row }: { row: any }) => <div>{formatDate(new Date(row.original.dueDate))}</div>,
     },
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => (
+      cell: ({ row }: { row: any }) => (
         <StatusBadge status={row.original.status as InvoiceStatus} />
       ),
     },
     {
       accessorKey: 'grossTotal',
-      header: ({ column }) => {
+      header: ({ column }: { column: any }) => {
         return (
           <Button
             variant="ghost"
@@ -197,14 +192,14 @@ export function InvoicesTable({
           </Button>
         );
       },
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const amount = parseFloat(row.original.grossTotal.toString());
         return <div className="text-right font-medium">{formatCurrency(amount)}</div>;
       },
     },
     {
       id: 'actions',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const invoice = row.original;
         
         return (
@@ -249,7 +244,7 @@ export function InvoicesTable({
                   </DropdownMenuItem>
                 )}
                 
-                {(invoice.status === InvoiceStatus.VALIDATED || invoice.status === InvoiceStatus.PENDING) && (
+                {(invoice.status === InvoiceStatus.ISSUED || invoice.status === InvoiceStatus.DRAFT) && (
                   <DropdownMenuItem onClick={() => onMarkAsPaid && onMarkAsPaid(invoice.id)}>
                     <CreditCardIcon className="h-4 w-4 mr-2" />
                     <span>Marchează ca plătită</span>
@@ -308,12 +303,11 @@ export function InvoicesTable({
   const statusOptions = [
     { value: '', label: 'Toate statusurile' },
     { value: InvoiceStatus.DRAFT, label: 'Ciornă' },
-    { value: InvoiceStatus.PENDING, label: 'În așteptare' },
-    { value: InvoiceStatus.VALIDATED, label: 'Validată' },
+    { value: InvoiceStatus.ISSUED, label: 'Emisă' },
+    { value: InvoiceStatus.SENT, label: 'Trimisă' },
     { value: InvoiceStatus.PAID, label: 'Plătită' },
-    { value: InvoiceStatus.CANCELED, label: 'Anulată' },
     { value: InvoiceStatus.OVERDUE, label: 'Depășită' },
-    { value: InvoiceStatus.PARTIAL, label: 'Plată parțială' },
+    { value: InvoiceStatus.CANCELED, label: 'Anulată' },
   ];
 
   return (
@@ -360,7 +354,7 @@ export function InvoicesTable({
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
+                      : (flexRender as any)(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
@@ -386,7 +380,7 @@ export function InvoicesTable({
                 >
                   {row.getVisibleCells().map((cell: any) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {(flexRender as any)(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
