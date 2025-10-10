@@ -139,7 +139,7 @@ export class MessageDrizzleService extends BaseDrizzleService {
         sortOrder = 'asc' // Default to oldest first
       } = options;
       
-      logger.debug(`[${context}] Fetching messages for thread ${threadId} in company ${companyId} with options:`, options);
+      logger.debug(`[${context}] Fetching messages for thread ${threadId} in company ${companyId} with options: ${JSON.stringify(options)}`);
       
       return await this.query(async (db) => {
         // Build the where condition
