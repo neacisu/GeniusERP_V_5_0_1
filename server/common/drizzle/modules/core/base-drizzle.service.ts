@@ -68,7 +68,7 @@ export class BaseDrizzleService {
         
       logger.debug(`[${ctx}] Executing SQL: ${truncatedSql}`);
       if (params && params.length > 0) {
-        logger.debug(`[${ctx}] With params:`, params);
+        logger.debug(`[${ctx}] With params: ${JSON.stringify(params)}`);
       }
       
       // Handle SQL objects and string queries differently
