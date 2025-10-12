@@ -130,12 +130,22 @@ export class BankJournalService {
   }
   
   // CRUD for Bank Transactions  
-  public async getBankTransactions(companyId: string, page = 1, limit = 20, startDate?: Date, endDate?: Date): Promise<{ data: BankTransaction[]; total: number; page: number; limit: number }> {
+  public async getBankTransactions(
+    companyId: string, 
+    page = 1, 
+    limit = 20, 
+    accountId?: string,
+    startDate?: Date, 
+    endDate?: Date,
+    type?: string
+  ): Promise<{ data: BankTransaction[]; total: number; page: number; limit: number }> {
     const db = getDrizzle();
     const offset = (page - 1) * limit;
     const conditions: any[] = [eq(bankTransactions.companyId, companyId)];
+    if (accountId) conditions.push(eq(bankTransactions.bankAccountId, accountId));
     if (startDate) conditions.push(gte(bankTransactions.transactionDate, startDate));
     if (endDate) conditions.push(lte(bankTransactions.transactionDate, endDate));
+    if (type) conditions.push(eq(bankTransactions.transactionType, type as any));
     
     const result = await db.select().from(bankTransactions).where(and(...conditions)).orderBy(desc(bankTransactions.transactionDate)).limit(limit).offset(offset);
     const total = await db.select().from(bankTransactions).where(and(...conditions));
@@ -726,6 +736,213 @@ export class BankJournalService {
     
     // For now, return null as this is just a placeholder
     return null;
+  }
+
+  /**
+   * Create a new bank account
+   */
+  public async createBankAccount(data: any): Promise<string> {
+    const db = getDrizzle();
+    const accountId = uuidv4();
+    
+    await db.insert(bankAccounts).values({
+      id: accountId,
+      companyId: data.companyId,
+      accountName: data.accountName,
+      accountNumber: data.accountNumber,
+      bankName: data.bankName,
+      bankCode: data.bankCode,
+      currency: data.currency || 'RON',
+      currentBalance: data.currentBalance || '0',
+      isActive: data.isActive !== undefined ? data.isActive : true,
+      createdBy: data.userId
+    });
+    
+    return accountId;
+  }
+
+  /**
+   * Update an existing bank account
+   */
+  public async updateBankAccount(id: string, companyId: string, data: any): Promise<boolean> {
+    const db = getDrizzle();
+    
+    const updateData: any = {
+      updatedAt: new Date()
+    };
+    
+    if (data.accountName) updateData.accountName = data.accountName;
+    if (data.accountNumber) updateData.accountNumber = data.accountNumber;
+    if (data.bankName) updateData.bankName = data.bankName;
+    if (data.bankCode) updateData.bankCode = data.bankCode;
+    if (data.currency) updateData.currency = data.currency;
+    if (data.isActive !== undefined) updateData.isActive = data.isActive;
+    
+    await db.update(bankAccounts)
+      .set(updateData)
+      .where(and(
+        eq(bankAccounts.id, id),
+        eq(bankAccounts.companyId, companyId)
+      ));
+    
+    return true;
+  }
+
+  /**
+   * Create a deposit transaction
+   */
+  public async createDeposit(data: any): Promise<string> {
+    return await this.recordBankTransaction({
+      ...data,
+      transactionType: BankTransactionType.INCOMING_PAYMENT
+    });
+  }
+
+  /**
+   * Create a payment transaction
+   */
+  public async createPayment(data: any): Promise<string> {
+    return await this.recordBankTransaction({
+      ...data,
+      transactionType: BankTransactionType.OUTGOING_PAYMENT
+    });
+  }
+
+  /**
+   * Create a bank transfer between accounts
+   */
+  public async createBankTransfer(data: any): Promise<{ fromTxn: string; toTxn: string }> {
+    return await this.transferBetweenAccounts(
+      data.fromAccountId,
+      data.toAccountId,
+      parseFloat(data.amount),
+      data.companyId,
+      data.description || 'Transfer între conturi',
+      data.userId
+    );
+  }
+
+  /**
+   * Import bank statement from file
+   */
+  public async importBankStatement(data: any): Promise<{ imported: number; errors: string[] }> {
+    // Placeholder implementation
+    // Real implementation would parse CSV/Excel/MT940 format
+    const transactions = data.transactions || [];
+    const errors: string[] = [];
+    let imported = 0;
+    
+    for (const txn of transactions) {
+      try {
+        await this.recordBankTransaction({
+          companyId: data.companyId,
+          bankAccountId: data.bankAccountId,
+          ...txn
+        });
+        imported++;
+      } catch (error) {
+        errors.push(`Failed to import transaction ${txn.referenceNumber}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+    
+    return { imported, errors };
+  }
+
+  /**
+   * Create bank reconciliation
+   */
+  public async createReconciliation(data: any): Promise<{ reconciliationId: string; matchedCount: number }> {
+    // Placeholder implementation
+    // Real implementation would match bank statement lines with recorded transactions
+    const reconciliationId = uuidv4();
+    
+    return {
+      reconciliationId,
+      matchedCount: data.transactions?.length || 0
+    };
+  }
+
+  /**
+   * Get bank account balance as of a specific date
+   */
+  public async getBankAccountBalanceAsOf(accountId: string, companyId: string, asOfDate: Date): Promise<string> {
+    const db = getDrizzle();
+    
+    // Get all transactions up to the specified date
+    const transactions = await db.select()
+      .from(bankTransactions)
+      .where(and(
+        eq(bankTransactions.bankAccountId, accountId),
+        eq(bankTransactions.companyId, companyId),
+        lte(bankTransactions.transactionDate, asOfDate)
+      ))
+      .orderBy(desc(bankTransactions.transactionDate))
+      .limit(1);
+    
+    if (transactions.length > 0) {
+      return transactions[0].balanceAfter as string;
+    }
+    
+    // If no transactions, return current balance
+    const account = await this.getBankAccount(accountId, companyId);
+    return account?.currentBalance as string || '0';
+  }
+
+  /**
+   * Generate bank statement for a period
+   */
+  public async generateBankStatement(accountId: string, companyId: string, startDate: Date, endDate: Date): Promise<any> {
+    const account = await this.getBankAccount(accountId, companyId);
+    
+    if (!account) {
+      throw new Error('Bank account not found');
+    }
+    
+    const transactions = await this.getBankTransactions(
+      companyId,
+      1,
+      1000, // Get all transactions for the period
+      accountId,
+      startDate,
+      endDate
+    );
+    
+    const openingBalance = await this.getBankAccountBalanceAsOf(accountId, companyId, startDate);
+    const closingBalance = await this.getBankAccountBalanceAsOf(accountId, companyId, endDate);
+    
+    return {
+      account: {
+        accountName: account.accountName,
+        accountNumber: account.accountNumber,
+        bankName: account.bankName,
+        currency: account.currency
+      },
+      period: {
+        startDate,
+        endDate
+      },
+      openingBalance,
+      closingBalance,
+      transactions: transactions.data,
+      totalTransactions: transactions.total
+    };
+  }
+
+  /**
+   * Get all bank accounts with their current balances
+   */
+  public async getBankAccountsWithBalances(companyId: string): Promise<any[]> {
+    const accounts = await this.getBankAccounts(companyId);
+    
+    return accounts.data.map(account => ({
+      id: account.id,
+      accountName: account.accountName,
+      accountNumber: account.accountNumber,
+      bankName: account.bankName,
+      currency: account.currency,
+      currentBalance: account.currentBalance,
+      isActive: account.isActive
+    }));
   }
 }
 

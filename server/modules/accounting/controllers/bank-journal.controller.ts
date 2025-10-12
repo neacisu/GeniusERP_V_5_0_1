@@ -86,12 +86,10 @@ export class BankJournalController extends BaseController {
       
       // Update account data
       const accountData = { 
-        ...req.body, 
-        id: accountId,
-        companyId 
+        ...req.body
       };
       
-      await this.bankJournalService.updateBankAccount(accountData);
+      await this.bankJournalService.updateBankAccount(accountId, companyId, accountData);
       const updatedAccount = await this.bankJournalService.getBankAccount(accountId, companyId);
       
       return updatedAccount;
@@ -244,10 +242,10 @@ export class BankJournalController extends BaseController {
         toAccountId
       };
       
-      const { sourceTransactionId, destinationTransactionId } = await this.bankJournalService.createBankTransfer(transferData);
+      const { fromTxn, toTxn } = await this.bankJournalService.createBankTransfer(transferData);
       
-      const sourceTransaction = await this.bankJournalService.getBankTransaction(sourceTransactionId, companyId);
-      const destinationTransaction = await this.bankJournalService.getBankTransaction(destinationTransactionId, companyId);
+      const sourceTransaction = await this.bankJournalService.getBankTransaction(fromTxn, companyId);
+      const destinationTransaction = await this.bankJournalService.getBankTransaction(toTxn, companyId);
       
       if (!sourceTransaction || !destinationTransaction) {
         throw { 
@@ -284,15 +282,16 @@ export class BankJournalController extends BaseController {
       
       // @ts-ignore - req.file comes from multer middleware
       const { path } = req.file;
-      const { format, dateFormat } = req.body;
+      const { format, dateFormat, transactions } = req.body;
       
-      const importResult = await this.bankJournalService.importBankStatement(
-        accountId,
+      const importResult = await this.bankJournalService.importBankStatement({
+        bankAccountId: accountId,
         companyId,
-        path,
+        filePath: path,
         format,
-        dateFormat
-      );
+        dateFormat,
+        transactions
+      });
       
       return importResult;
     });
@@ -360,7 +359,7 @@ export class BankJournalController extends BaseController {
       }
       
       // Parse date parameters
-      const startDate = this.parseDate(req.query.startDate as string);
+      const startDate = this.parseDate(req.query.startDate as string) || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
       const endDate = this.parseDate(req.query.endDate as string) || new Date();
       
       return await this.bankJournalService.generateBankStatement(
@@ -379,13 +378,7 @@ export class BankJournalController extends BaseController {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
       
-      // Parse the "as of" date parameter (optional)
-      const asOfDate = this.parseDate(req.query.asOfDate as string) || new Date();
-      
-      return await this.bankJournalService.getBankAccountsWithBalances(
-        companyId,
-        asOfDate
-      );
+      return await this.bankJournalService.getBankAccountsWithBalances(companyId);
     });
   }
 }

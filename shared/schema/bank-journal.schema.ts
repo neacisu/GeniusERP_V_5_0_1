@@ -134,8 +134,8 @@ export const insertBankAccountSchema = createInsertSchema(bankAccounts); // Fixe
 export const insertBankTransactionSchema = createInsertSchema(bankTransactions); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export type BankAccount = typeof bankAccounts.$inferSelect;
-export type InsertBankAccount = typeof insertBankAccountSchema._type;
+export type InsertBankAccount = typeof insertBankAccountSchema.type;
 
 export type BankTransaction = typeof bankTransactions.$inferSelect;
-export type InsertBankTransaction = typeof insertBankTransactionSchema._type;
+export type InsertBankTransaction = typeof insertBankTransactionSchema.type;
 
