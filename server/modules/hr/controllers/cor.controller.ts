@@ -74,6 +74,7 @@ export class CorController {
     const basePath = '/cor';
     
     // Public endpoints (read-only)
+    router.get(`${basePath}/groups`, (req: Request, res: Response) => this.getMajorGroups(req, res)); // Alias for major-groups
     router.get(`${basePath}/major-groups`, (req: Request, res: Response) => this.getMajorGroups(req, res));
     
     // Submajor groups - both with and without majorCode
