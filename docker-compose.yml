@@ -234,9 +234,10 @@ services:
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=SecretPassword
       - FILEBEAT_SSL_VERIFICATION_MODE=none
-      - SSL_CERTIFICATE_AUTHORITIES=""
-      - SSL_CERTIFICATE=""
-      - SSL_KEY=""
+      # SSL Certificates disabled for development (uncomment and set paths for production)
+      # - SSL_CERTIFICATE_AUTHORITIES=/path/to/ca.crt
+      # - SSL_CERTIFICATE=/path/to/client.crt
+      # - SSL_KEY=/path/to/client.key
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
     volumes:
