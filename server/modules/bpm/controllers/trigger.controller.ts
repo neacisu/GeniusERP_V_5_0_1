@@ -17,7 +17,7 @@ const createTriggerSchema = z.object({
   description: z.string().optional(),
   type: z.enum(['WEBHOOK', 'SCHEDULED', 'EVENT', 'MANUAL', 'DATA_CHANGE', 'EXTERNAL_API']),
   processId: z.string().uuid(),
-  configuration: z.record(z.any()),
+  configuration: z.record(z.string(), z.any()),
   isActive: z.boolean().optional(),
 });
 
@@ -25,7 +25,7 @@ const updateTriggerSchema = z.object({
   name: z.string().min(3).max(100).optional(),
   description: z.string().optional(),
   type: z.enum(['WEBHOOK', 'SCHEDULED', 'EVENT', 'MANUAL', 'DATA_CHANGE', 'EXTERNAL_API']).optional(),
-  configuration: z.record(z.any()).optional(),
+  configuration: z.record(z.string(), z.any()).optional(),
   isActive: z.boolean().optional(),
 });
 
