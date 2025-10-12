@@ -110,7 +110,6 @@
     "rimraf": "^6.0.1",
     "stripe": "^19.1.0",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss-animate": "^1.0.7",
     "ts-node": "^10.9.2",
     "uuid": "^13.0.0",
     "vaul": "^1.1.2",
@@ -125,7 +124,6 @@
     "@replit/vite-plugin-cartographer": "^0.3.2",
     "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
     "@tailwindcss/postcss": "^4.1.14",
-    "@tailwindcss/typography": "^0.5.19",
     "@types/connect-pg-simple": "^7.0.3",
     "@types/express": "^5.0.3",
     "@types/express-session": "^1.18.2",
@@ -146,6 +144,7 @@
     "eslint-plugin-react-hooks": "^7.0.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.14",
+    "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vite": "^7.1.9"
