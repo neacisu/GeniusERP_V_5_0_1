@@ -81,21 +81,19 @@ export class NotificationService {
     notification: NotificationPayload
   ) {
     this.logger.info(
-      `Notification sent to ${targetType}:${targetId}`, 
-      {
+      `Notification sent to ${targetType}:${targetId} - ${JSON.stringify({
         title: notification.title,
         type: notification.type,
         priority: notification.priority || NotificationPriority.MEDIUM
-      }
+      })}`
     );
     
     // Log the full message at debug level
     this.logger.debug(
-      `Notification content`, 
-      {
+      `Notification content: ${JSON.stringify({
         ...notification,
         target: { type: targetType, id: targetId }
-      }
+      })}`
     );
     
     // Here we would implement the actual delivery
