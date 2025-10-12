@@ -56,18 +56,12 @@ export function registerApiKeyControllerRoutes(app: any, apiKeyService: ApiKeySe
       const companyId = req.query.companyId as string | undefined;
       const isActive = req.query.isActive ? req.query.isActive === 'true' : undefined;
 
-      // Get all API keys with filtering and pagination
-      const result = await apiKeyService.getApiKeys({
-        page,
-        limit,
-        companyId: companyId === 'null' ? null : companyId,
-        isActive
-      });
+      // Get all API keys (simple list, no pagination in service)
+      const apiKeys = await apiKeyService.getApiKeysByCompany(req.user?.companyId || '');
 
       return res.status(200).json({
         success: true,
-        data: result.data,
-        pagination: result.pagination
+        data: apiKeys
       });
     } catch (error) {
       logger.error('Error retrieving API keys', error);
@@ -138,10 +132,9 @@ export function registerApiKeyControllerRoutes(app: any, apiKeyService: ApiKeySe
         name: apiKeyData.name,
         description: apiKeyData.description || '',
         expiresAt: apiKeyData.expiresAt ? new Date(apiKeyData.expiresAt) : undefined,
-        scopes: apiKeyData.scopes || [],
-        companyId: apiKeyData.companyId,
-        createdBy: req.user?.id || '',
-      });
+        scope: apiKeyData.scopes || [],
+        companyId: req.user?.companyId || apiKeyData.companyId || '',
+      }, req.user?.id || 'system');
 
       logger.info(`API key created: ${apiKeyData.name} by user: ${req.user?.id}`);
 
@@ -196,9 +189,8 @@ export function registerApiKeyControllerRoutes(app: any, apiKeyService: ApiKeySe
         name: apiKeyData.name,
         description: apiKeyData.description,
         expiresAt: apiKeyData.expiresAt ? new Date(apiKeyData.expiresAt) : undefined,
-        scopes: apiKeyData.scopes,
-        isActive: apiKeyData.isActive,
-      });
+        scope: apiKeyData.scopes,
+      }, req.user?.id || 'system');
 
       logger.info(`API key updated: ${existingApiKey.name} by user: ${req.user?.id}`);
 
@@ -237,7 +229,7 @@ export function registerApiKeyControllerRoutes(app: any, apiKeyService: ApiKeySe
       }
 
       // Revoke the API key
-      await apiKeyService.revokeApiKey(apiKeyId);
+      await apiKeyService.revokeApiKey(apiKeyId, req.user?.id || 'system');
 
       logger.info(`API key revoked: ${existingApiKey.name} by user: ${req.user?.id}`);
 
@@ -263,8 +255,8 @@ export function registerApiKeyControllerRoutes(app: any, apiKeyService: ApiKeySe
    */
   app.get(`${BASE_PATH}/scopes`, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
-      // Get all available API key scopes
-      const scopes = await apiKeyService.getAvailableScopes();
+      // Get all available API key scopes (static list)
+      const scopes = ['read', 'write', 'admin', 'api:read', 'api:write', 'users:read', 'users:write'];
 
       return res.status(200).json({
         success: true,
@@ -299,8 +291,8 @@ export function registerApiKeyControllerRoutes(app: any, apiKeyService: ApiKeySe
         });
       }
 
-      // Regenerate the API key
-      const regeneratedApiKey = await apiKeyService.regenerateApiKey(apiKeyId);
+      // Regenerate (rotate) the API key
+      const regeneratedApiKey = await apiKeyService.rotateApiKey(apiKeyId, req.user?.id || 'system');
 
       logger.info(`API key regenerated: ${existingApiKey.name} by user: ${req.user?.id}`);
 
