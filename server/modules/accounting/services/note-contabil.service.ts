@@ -608,4 +608,97 @@ export default class NoteContabilService {
       return null;
     }
   }
+
+  /**
+   * ========================================================================
+   * NIR-SPECIFIC ACCOUNTING METHODS (moved from nota-contabila.service.ts)
+   * ========================================================================
+   * 
+   * These methods handle specialized accounting for NIR (Notă Intrare Recepție)
+   * documents, primarily for inventory/warehouse operations.
+   */
+
+  /**
+   * Create accounting note for NIR type Warehouse/Deposit
+   * 
+   * Standard accounting entry for NIR Depozit:
+   * - Debit: 371.x (Goods) - value without VAT
+   * - Debit: 4426.x (Deductible VAT) - VAT value
+   * - Credit: 401 (Suppliers) - total value with VAT
+   */
+  async createNirDepozitNotaContabila(
+    nirId: string,
+    nirNumber: string,
+    companyId: string,
+    supplierId: string,
+    warehouseId: string,
+    valueNoVat: number,
+    vatValue: number,
+    totalValue: number,
+    date: Date,
+    currency: string = 'RON',
+    exchangeRate: number = 1
+  ): Promise<string> {
+    try {
+      const { getClient } = await import('../../../common/drizzle');
+      const sql = getClient();
+      
+      // Get warehouse account suffix
+      const warehouseResult = await sql`SELECT code FROM warehouses WHERE id = ${warehouseId}`;
+      if (!warehouseResult || warehouseResult.length === 0) {
+        throw new Error(`Warehouse with ID ${warehouseId} not found`);
+      }
+      
+      const warehouseCode = warehouseResult[0].code;
+      const warehouseParts = warehouseCode.split('.');
+      if (warehouseParts.length !== 2) {
+        throw new Error(`Warehouse code ${warehouseCode} does not have expected format (xxx.y)`);
+      }
+      const warehouseSuffix = warehouseParts[1];
+      
+      // Get supplier name
+      const supplierResult = await sql`SELECT name FROM companies WHERE id = ${supplierId}`;
+      const supplierName = supplierResult && supplierResult.length > 0 
+        ? supplierResult[0].name 
+        : 'Unknown Supplier';
+      
+      // Create accounting entries using the general createNote method
+      const noteData = {
+        date,
+        description: `Accounting note for NIR ${nirNumber} - goods receipt from ${supplierName}`,
+        entries: [
+          {
+            accountCode: `371.${warehouseSuffix}`,
+            debit: valueNoVat,
+            credit: 0,
+            description: `Goods receipt per NIR ${nirNumber} from ${supplierName}`
+          },
+          {
+            accountCode: `4426.${warehouseSuffix}`,
+            debit: vatValue,
+            credit: 0,
+            description: `VAT for NIR ${nirNumber} from ${supplierName}`
+          },
+          {
+            accountCode: '401',
+            debit: 0,
+            credit: totalValue,
+            description: `Payable to supplier ${supplierName} for NIR ${nirNumber}`
+          }
+        ],
+        documentId: nirId,
+        documentType: 'NIR',
+        companyId,
+        userId: 'system',
+        currencyCode: currency,
+        exchangeRate
+      };
+      
+      const result = await this.createNote(noteData);
+      return result.id;
+    } catch (error) {
+      console.error('❌ Error creating NIR warehouse accounting note:', error);
+      throw error;
+    }
+  }
 }

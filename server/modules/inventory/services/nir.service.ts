@@ -20,7 +20,7 @@ import {
   gestiuneTypeEnum,
   nirStatusEnum
 } from "../schema/inventory.schema";
-import { notaContabilaService } from "../../accounting/services/nota-contabila.service";
+import NoteContabilService from "../../accounting/services/note-contabil.service";
 
 // Define simplified types for use in this service
 type NirDocument = {
@@ -528,8 +528,9 @@ export class NirService extends BaseDrizzleService {
       const currency = nirDoc.currency || 'RON';
       const exchangeRate = parseFloat(nirDoc.exchange_rate?.toString() || nirDoc.exchangeRate?.toString() || '1');
       
-      // Create the accounting entry using the NotaContabilaService
-      await notaContabilaService.createNirDepozitNotaContabila(
+      // Create the accounting entry using the unified NoteContabilService
+      const noteContabilService = new NoteContabilService();
+      await noteContabilService.createNirDepozitNotaContabila(
         nirId,
         nirNumber,
         companyId,

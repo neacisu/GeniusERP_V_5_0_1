@@ -155,12 +155,3 @@ export interface CategoryAggregation {
   documentCount: number;                // Număr documente
 }
 
-export default {
-  SalesJournalRow,
-  SalesJournalTotals,
-  SalesJournalReport,
-  GenerateSalesJournalParams,
-  ExportOptions,
-  CategoryAggregation
-};
-

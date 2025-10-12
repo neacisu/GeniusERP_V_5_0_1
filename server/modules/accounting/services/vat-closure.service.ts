@@ -100,7 +100,7 @@ export class VATClosureService extends DrizzleService {
         action: 'VAT_CLOSED' as any,
         severity: 'INFO' as any,
         entityType: 'ledger_entry',
-        entityId: ledgerEntryId,
+        entityId: ledgerEntryId!, // Guaranteed set at line 93 within same if (!dryRun) block
         description: `TVA închis: ${periodMonth}/${periodYear}`,
         metadata: {
           period: `${periodYear}-${periodMonth}`,
