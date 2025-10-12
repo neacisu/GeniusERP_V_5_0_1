@@ -390,13 +390,12 @@ export default class NoteContabilService {
     userId: string
   ): Promise<any> {
     try {
-      const db = getDrizzle();
+      // Use DrizzleService to access invoicing queries (same pattern as ValidateInvoiceService)
+      const drizzleService = new DrizzleService();
       
-      // Import services dinamically to avoid circular dependencies
-      const { JournalService } = await import('./journal.service');
+      // Import services and helpers dynamically to avoid circular dependencies
       const { SalesJournalService } = await import('./sales-journal.service');
-      
-      const journalService = new JournalService();
+      const { InvoiceService } = await import('../../invoicing/services/invoice.service');
       
       // Generate accounting entries based on document type
       let ledgerEntry;
@@ -405,41 +404,44 @@ export default class NoteContabilService {
         case 'sales_invoice':
         case 'invoice':
         case 'factura_vanzare':
-          // Fetch invoice data from DB
-          const invoice = await db.query.invoices.findFirst({
-            where: (invoices: any, { eq }: any) => eq(invoices.id, documentId),
-            with: {
-              items: true,
-              customer: true
-            }
-          });
+          // Fetch invoice data from DB using InvoiceService (REAL production code)
+          // InvoiceService.getInvoiceById returns any type with dynamic properties
+          const invoice: any = await InvoiceService.getInvoiceById(documentId, companyId);
           
           if (!invoice) {
             throw new Error(`Invoice ${documentId} not found in database`);
           }
           
-          // Calculate totals from real invoice data
-          const totalNet = invoice.items.reduce((sum: number, item: any) => sum + Number(item.netAmount || 0), 0);
-          const totalVat = invoice.items.reduce((sum: number, item: any) => sum + Number(item.vatAmount || 0), 0);
+          if (!invoice.lines || invoice.lines.length === 0) {
+            throw new Error(`Invoice ${documentId} has no line items`);
+          }
+          
+          // Calculate totals from REAL invoice lines (InvoiceService adds invoice.lines dynamically)
+          const totalNet = invoice.lines.reduce((sum: number, line: any) => {
+            return sum + Number(line.netAmount || line.net_amount || 0);
+          }, 0);
+          const totalVat = invoice.lines.reduce((sum: number, line: any) => {
+            return sum + Number(line.vatAmount || line.vat_amount || 0);
+          }, 0);
           const totalGross = totalNet + totalVat;
           
           // Use REAL SalesJournalService to create accounting entry
-          const salesJournal = new SalesJournalService(journalService);
+          const salesJournal = new SalesJournalService();
           ledgerEntry = await salesJournal.createSalesInvoiceEntry({
             companyId: companyId,
-            invoiceNumber: invoice.invoiceNumber,
-            invoiceId: invoice.id,
-            customerId: invoice.customerId,
-            customerName: invoice.customer?.name || 'Unknown Customer',
+            invoiceNumber: invoice.invoiceNumber || invoice.invoice_number,
+            invoiceId: documentId,
+            customerId: invoice.customerId || invoice.customer_id,
+            customerName: invoice.customer_name || (invoice.details?.partner_name as string) || 'Unknown Customer',
             amount: totalGross,
             netAmount: totalNet,
             vatAmount: totalVat,
-            vatRate: invoice.vatRate || 19,
+            vatRate: Number(invoice.vat_rate || 19),
             currency: invoice.currency || 'RON',
-            exchangeRate: invoice.exchangeRate || 1,
-            issueDate: new Date(invoice.issueDate),
+            exchangeRate: Number(invoice.exchangeRate || 1),
+            issueDate: invoice.issueDate ? new Date(invoice.issueDate) : new Date(),
             dueDate: invoice.dueDate ? new Date(invoice.dueDate) : new Date(),
-            description: `Sales invoice ${invoice.invoiceNumber} to ${invoice.customer?.name || 'customer'}`,
+            description: `Sales invoice ${invoice.invoiceNumber || invoice.invoice_number} to ${invoice.customer_name || 'customer'}`,
             userId: userId
           });
           break;

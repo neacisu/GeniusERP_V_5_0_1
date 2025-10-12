@@ -13,3 +13,7 @@ export * from './inventory-assessment';
 export * from './cash-register.schema';
 export * from './bank-journal.schema';
 export * from './integrations.schema';
+
+// Export invoicing schemas from server modules  
+// Note: Path is relative to shared/schema/index.ts location
+export * from '../../server/modules/invoicing/schema/invoice.schema';
