@@ -16,6 +16,50 @@ const router = express.Router();
 const noteContabilService = new NoteContabilService();
 
 /**
+ * Get all Note Contabil for a company
+ * GET /api/accounting/note-contabil
+ */
+router.get(
+  '/',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  async (req, res) => {
+    try {
+      const { companyId } = req.query;
+      
+      if (!companyId) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required query parameter: companyId'
+        });
+      }
+      
+      // Check if user has access to this company
+      if (req.user && req.user.companyId !== companyId && 
+          !req.user.roles!.includes(UserRole.ADMIN)) {
+        return res.status(403).json({
+          success: false,
+          error: 'You do not have permission to access this company data'
+        });
+      }
+      
+      // Get all Note Contabil for company
+      const notes = await noteContabilService.getNotesByCompany(companyId as string);
+      
+      return res.status(200).json({
+        success: true,
+        data: notes
+      });
+    } catch (error) {
+      console.error('[NoteContabilRoute] Error fetching Note Contabil list:', error instanceof Error ? error.message : String(error));
+      return res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
+  }
+);
+
+/**
  * Generate a Note Contabil for a document
  * POST /api/accounting/note-contabil/generate
  */

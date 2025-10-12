@@ -2,6 +2,7 @@ import { Express, Router, Response } from "express";
 import { setupAccountingRoutes } from "./routes/accounting.routes";
 import { setupLedgerRoutes } from "./routes/ledger.routes";
 // Note Contabil routes are now handled by routes/index.ts (note-contabil.route.ts)
+import accountingSubRoutes from "./routes/index";
 import { setupBankJournalRoutes } from "./routes/bank-journal.routes";
 import { setupCashRegisterRoutes } from "./routes/cash-register.routes";
 import { setupSalesJournalRoutes } from "./routes/sales-journal.routes";
@@ -56,8 +57,8 @@ export function initAccountingModule(app: Express) {
   const ledgerRoutes = setupLedgerRoutes();
   app.use("/api/accounting/ledger", ledgerRoutes);
   
-  // Note Contabil routes are mounted via routes/index.ts (modern pattern)
-  // Removed duplicate setupNoteContabilRoutes() to avoid routing conflicts
+  // Mount Note Contabil routes (/api/accounting/note-contabil and /api/accounting/fiscal-closure)
+  app.use("/api/accounting", accountingSubRoutes);
   
   // Setup specialized journal routes
   const bankJournalRoutes = setupBankJournalRoutes();
