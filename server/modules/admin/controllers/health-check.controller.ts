@@ -57,7 +57,7 @@ export function registerHealthCheckControllerRoutes(app: any, healthCheckService
   app.get(BASE_PATH, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
       // Get detailed system health status
-      const health = await healthCheckService.getDetailedHealthCheck();
+      const health = await healthCheckService.runHealthChecks();
 
       return res.status(health.status === 'healthy' ? 200 : health.status === 'degraded' ? 429 : 503).json(health);
     } catch (error) {
@@ -106,21 +106,18 @@ export function registerHealthCheckControllerRoutes(app: any, healthCheckService
    * @route GET /api/admin/health/history
    * @middleware AuthGuard.protect(JwtAuthMode.REQUIRED) - Requires authentication
    * @middleware AuthGuard.roleGuard(['admin']) - Requires admin role
+   * 
+   * TODO: Implement health check history storage and retrieval
    */
   app.get(`${BASE_PATH}/history`, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
-      // Parse query parameters
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
-      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
-      const fromDate = req.query.fromDate ? new Date(req.query.fromDate as string) : undefined;
-      const toDate = req.query.toDate ? new Date(req.query.toDate as string) : undefined;
-
-      // Get health check history
-      const history = await healthCheckService.getHealthCheckHistory(limit, offset, fromDate, toDate);
+      // TODO: Implement health check history
+      // For now, return current health status as history
+      const health = await healthCheckService.runHealthChecks();
 
       return res.status(200).json({
         success: true,
-        data: history
+        data: [health] // Return current state as history
       });
     } catch (error) {
       logger.error('Error retrieving health check history', error);
@@ -137,15 +134,19 @@ export function registerHealthCheckControllerRoutes(app: any, healthCheckService
    * @route GET /api/admin/health/resources
    * @middleware AuthGuard.protect(JwtAuthMode.REQUIRED) - Requires authentication
    * @middleware AuthGuard.roleGuard(['admin']) - Requires admin role
+   * 
+   * TODO: Implement system resource usage tracking
    */
   app.get(`${BASE_PATH}/resources`, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
-      // Get system resource usage
-      const resources = await healthCheckService.getSystemResourceUsage();
+      // TODO: Implement system resource usage
+      // For now, return health components that contain CPU/Memory/Disk info
+      const components = healthCheckService.getHealthComponents();
+      const systemComponents = components.filter(c => c.type === 'system');
 
       return res.status(200).json({
         success: true,
-        data: resources
+        data: systemComponents
       });
     } catch (error) {
       logger.error('Error retrieving system resource usage', error);
@@ -166,7 +167,7 @@ export function registerHealthCheckControllerRoutes(app: any, healthCheckService
   app.post(`${BASE_PATH}/check-all`, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
       // Run all health checks
-      const results = await healthCheckService.runAllHealthChecks();
+      const results = await healthCheckService.runHealthChecks();
 
       return res.status(200).json({
         success: true,
@@ -191,7 +192,7 @@ export function registerHealthCheckControllerRoutes(app: any, healthCheckService
   app.get(`${BASE_PATH}/checks`, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
       // Get list of available health checks
-      const checks = await healthCheckService.getAvailableHealthChecks();
+      const checks = healthCheckService.getHealthComponents();
 
       return res.status(200).json({
         success: true,

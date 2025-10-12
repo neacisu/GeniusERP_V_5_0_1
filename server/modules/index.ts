@@ -4,6 +4,7 @@ import { initAuthModule } from "./auth";
 import { initUserModule } from "./users";
 import { initAdminModule } from "./admin";
 import { getDrizzle } from '../common/drizzle';
+import { drizzleService } from '../common/drizzle/drizzle.service.instance';
 import { InvoicesModule } from "./invoicing/invoices.module";
 import { initCrmModule } from "./crm/crm.module";
 import { initHrModule } from "./hr/init";
@@ -62,7 +63,7 @@ export async function initializeModules(app: Express) {
     
     // Initialize E-commerce module
     console.log('Initializing E-Commerce module...');
-    ECommerceModule.register(app, db);
+    ECommerceModule.register(app, drizzleService);
     console.log('E-Commerce module initialized');
     
     // Initialize Integrations module
@@ -86,7 +87,7 @@ export async function initializeModules(app: Express) {
     
     // Initialize AI module
     console.log('Initializing AI module...');
-    initAiModule(app, db);
+    initAiModule(app, drizzleService);
     console.log('AI module initialized');
     
     // Initialize Settings module
@@ -111,7 +112,7 @@ export async function initializeModules(app: Express) {
     
     // Initialize Communications module
     console.log('Initializing Communications module...');
-    CommsModule.register(app, db);
+    CommsModule.register(app, drizzleService);
     console.log('Communications module initialized');
     
     // Initialize Inventory module
@@ -121,7 +122,7 @@ export async function initializeModules(app: Express) {
     
     // Initialize Company module
     console.log('Initializing Company module...');
-    initCompanyModule(app, db);
+    initCompanyModule(app, drizzleService);
     console.log('Company module initialized');
     
     console.log("Core modules initialized successfully");
