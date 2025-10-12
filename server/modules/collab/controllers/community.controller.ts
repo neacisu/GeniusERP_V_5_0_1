@@ -191,7 +191,7 @@ export class CommunityController {
       threadData.createdBy = userId;
       
       // Create thread
-      const thread = await this.communityService.createCommunityThread(threadData);
+      const thread = await this.communityService.createCommunityThread(threadData, req.user?.id || 'unknown');
       
       return res.status(201).json({ thread });
     } catch (error) {
@@ -234,7 +234,7 @@ export class CommunityController {
       threadData.updatedBy = userId;
       
       // Update thread
-      const thread = await this.communityService.updateCommunityThread(threadId, threadData, companyId);
+      const thread = await this.communityService.updateCommunityThread(threadId, threadData, companyId, req.user?.id || 'unknown');
       
       if (!thread) {
         return res.status(404).json({ message: 'Thread not found' });
