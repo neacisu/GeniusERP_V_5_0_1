@@ -372,4 +372,122 @@ export default class NoteContabilService {
       throw error;
     }
   }
+
+  /**
+   * Generate REAL accounting note from a source document
+   * Uses actual business logic from SalesJournalService, PurchaseJournalService, etc.
+   * 
+   * @param documentId - UUID of the source document
+   * @param documentType - Type: 'sales_invoice', 'purchase_invoice', 'nir', 'receipt', etc.
+   * @param companyId - Company UUID
+   * @param userId - User performing the action
+   * @returns Generated ledger entry with accounting lines
+   */
+  async generateNoteFromDocument(
+    documentId: string, 
+    documentType: string, 
+    companyId: string, 
+    userId: string
+  ): Promise<any> {
+    try {
+      const db = getDrizzle();
+      
+      // Import services dinamically to avoid circular dependencies
+      const { JournalService } = await import('./journal.service');
+      const { SalesJournalService } = await import('./sales-journal.service');
+      
+      const journalService = new JournalService();
+      
+      // Generate accounting entries based on document type
+      let ledgerEntry;
+      
+      switch (documentType.toLowerCase()) {
+        case 'sales_invoice':
+        case 'invoice':
+        case 'factura_vanzare':
+          // Fetch invoice data from DB
+          const invoice = await db.query.invoices.findFirst({
+            where: (invoices: any, { eq }: any) => eq(invoices.id, documentId),
+            with: {
+              items: true,
+              customer: true
+            }
+          });
+          
+          if (!invoice) {
+            throw new Error(`Invoice ${documentId} not found in database`);
+          }
+          
+          // Calculate totals from real invoice data
+          const totalNet = invoice.items.reduce((sum: number, item: any) => sum + Number(item.netAmount || 0), 0);
+          const totalVat = invoice.items.reduce((sum: number, item: any) => sum + Number(item.vatAmount || 0), 0);
+          const totalGross = totalNet + totalVat;
+          
+          // Use REAL SalesJournalService to create accounting entry
+          const salesJournal = new SalesJournalService(journalService);
+          ledgerEntry = await salesJournal.createSalesInvoiceEntry({
+            companyId: companyId,
+            invoiceNumber: invoice.invoiceNumber,
+            invoiceId: invoice.id,
+            customerId: invoice.customerId,
+            customerName: invoice.customer?.name || 'Unknown Customer',
+            amount: totalGross,
+            netAmount: totalNet,
+            vatAmount: totalVat,
+            vatRate: invoice.vatRate || 19,
+            currency: invoice.currency || 'RON',
+            exchangeRate: invoice.exchangeRate || 1,
+            issueDate: new Date(invoice.issueDate),
+            dueDate: invoice.dueDate ? new Date(invoice.dueDate) : new Date(),
+            description: `Sales invoice ${invoice.invoiceNumber} to ${invoice.customer?.name || 'customer'}`,
+            userId: userId
+          });
+          break;
+          
+        case 'purchase_invoice':
+        case 'factura_cumparare':
+          // TODO: Implement using PurchaseJournalService when available
+          throw new Error('Purchase invoice accounting generation not yet implemented. Need to create PurchaseJournalService.');
+          
+        case 'nir':
+        case 'receipt':
+          // TODO: Implement using inventory services
+          throw new Error('NIR/Receipt accounting generation not yet implemented. Need to integrate with inventory module.');
+          
+        default:
+          throw new Error(`Unsupported document type: ${documentType}. Supported types: sales_invoice, purchase_invoice, nir, receipt.`);
+      }
+      
+      // Log audit event with REAL data
+      await AuditService.log({
+        userId: userId,
+        companyId: companyId,
+        action: 'generate_accounting_note',
+        entity: 'ledger_entry',
+        entityId: ledgerEntry.id,
+        details: {
+          documentId,
+          documentType,
+          ledgerEntryId: ledgerEntry.id,
+          journalNumber: ledgerEntry.journalNumber,
+          amount: ledgerEntry.amount,
+          generatedAt: new Date()
+        }
+      });
+      
+      return ledgerEntry;
+      
+    } catch (error) {
+      console.error('❌ Error generating REAL accounting note from document:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Approve an accounting note
+   * Alias for validateAndMarkNote for better API semantics
+   */
+  async approveNote(noteId: string, companyId: string, userId: string): Promise<any> {
+    return this.validateAndMarkNote(noteId, companyId, userId);
+  }
 }

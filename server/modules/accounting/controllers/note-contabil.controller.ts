@@ -25,10 +25,15 @@ export class NoteContabilController extends BaseController {
       const companyId = this.getCompanyId(req);
       const userId = this.getUserId(req);
       
-      note.companyId = companyId;
-      note.createdBy = userId;
+      // Combine note and lines into NoteContabilData format
+      const noteData = {
+        ...note,
+        entries: lines, // NoteContabilData expects 'entries' field
+        companyId,
+        userId
+      };
       
-      const result = await this.noteContabilService.createNote(note, lines);
+      const result = await this.noteContabilService.createNote(noteData);
       
       return {
         success: true,
@@ -61,8 +66,9 @@ export class NoteContabilController extends BaseController {
     await this.handleRequest(req, res, async () => {
       const { id } = req.params;
       const companyId = this.getCompanyId(req);
+      const userId = this.getUserId(req);
       
-      const note = await this.noteContabilService.getNoteById(id, companyId);
+      const note = await this.noteContabilService.getNoteById(id, companyId, userId);
       
       if (!note) {
         throw {
