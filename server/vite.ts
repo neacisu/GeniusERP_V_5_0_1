@@ -27,7 +27,11 @@ export async function setupVite(app: Express, server: Server) {
     middlewareMode: true,
     hmr: { 
       server,
-      // Override cu setări din vite.config.ts pentru a asigura compatibilitate Docker
+      // HMR settings pentru Docker - CRITIC pentru a evita eroarea ws://localhost:5173
+      port: 5000,
+      host: '0.0.0.0',
+      protocol: 'ws' as const,
+      clientPort: 5000,
       overlay: true,
     },
     allowedHosts: true as true,
