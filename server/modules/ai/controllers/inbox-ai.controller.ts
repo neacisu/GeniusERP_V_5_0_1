@@ -78,7 +78,7 @@ export function registerInboxAIControllerRoutes(app: any, inboxAiService: InboxA
   app.post(
     `${BASE_PATH}/analyze`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    AuthGuard.companyGuard(),
+    
     async (req: Request, res: Response) => {
       try {
         // Validate request body
@@ -130,7 +130,7 @@ export function registerInboxAIControllerRoutes(app: any, inboxAiService: InboxA
   app.post(
     `${BASE_PATH}/suggestions`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    AuthGuard.companyGuard(),
+    
     async (req: Request, res: Response) => {
       try {
         // Validate request body
@@ -187,7 +187,7 @@ export function registerInboxAIControllerRoutes(app: any, inboxAiService: InboxA
   app.post(
     `${BASE_PATH}/complete-response`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    AuthGuard.companyGuard(),
+    
     async (req: Request, res: Response) => {
       try {
         // Validate request body
@@ -244,7 +244,7 @@ export function registerInboxAIControllerRoutes(app: any, inboxAiService: InboxA
   app.post(
     `${BASE_PATH}/followup`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    AuthGuard.companyGuard(),
+    
     async (req: Request, res: Response) => {
       try {
         // Validate request body

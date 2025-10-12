@@ -64,8 +64,8 @@ export function registerOpenAIControllerRoutes(app: any, openAiService: OpenAiSe
             action: 'CHECK_OPENAI_STATUS',
             entity: 'AI_MODULE',
             entityId: 'openai',
-            userId: req.user.id,
-            companyId: req.user.companyId,
+            userId: req.user!.id,
+            companyId: req.user!.companyId || 'unknown',
             details: {
               apiKeyStatus: openAiService.getApiKeyStatus(),
               sdkInstalled
@@ -109,7 +109,6 @@ export function registerOpenAIControllerRoutes(app: any, openAiService: OpenAiSe
   app.post(
     `${BASE_PATH}/completion`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    AuthGuard.companyGuard(),
     async (req: Request, res: Response) => {
       try {
         // Validate request body
@@ -168,7 +167,6 @@ export function registerOpenAIControllerRoutes(app: any, openAiService: OpenAiSe
   app.post(
     `${BASE_PATH}/analyze`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    AuthGuard.companyGuard(),
     async (req: Request, res: Response) => {
       try {
         // Validate request body
@@ -272,8 +270,8 @@ export function registerOpenAIControllerRoutes(app: any, openAiService: OpenAiSe
           action: 'OPENAI_CONFIG_UPDATE',
           entity: 'AI_MODULE',
           entityId: 'openai_config',
-          userId: req.user?.id,
-          companyId: req.user?.companyId,
+          userId: req.user?.id || 'unknown',
+          companyId: req.user?.companyId || 'unknown',
           details: {
             updatedFields: Object.keys(req.body).filter(key => key !== 'apiKey'),
             apiKeyUpdated: !!apiKey

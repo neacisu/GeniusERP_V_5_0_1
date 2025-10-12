@@ -51,7 +51,6 @@ export function registerSalesAIControllerRoutes(app: any, salesAiService: SalesA
   app.post(
     `${BASE_PATH}/leads/score`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    AuthGuard.companyGuard(),
     async (req: Request, res: Response) => {
       try {
         // Validate request body

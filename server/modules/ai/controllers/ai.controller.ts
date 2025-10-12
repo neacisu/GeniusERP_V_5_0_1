@@ -144,7 +144,7 @@ export function registerAIControllerRoutes(app: any, aiService: AIService) {
     `${BASE_PATH}/report`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     AuthGuard.roleGuard(['hq_admin', 'ai_access']),
-    AuthGuard.companyGuard(),
+    
     async (req: Request, res: Response) => {
       try {
         // Validate request body
@@ -208,7 +208,7 @@ export function registerAIControllerRoutes(app: any, aiService: AIService) {
   app.get(
     `${BASE_PATH}/reports/:id`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    AuthGuard.companyGuard(),
+    
     async (req: Request, res: Response) => {
       try {
         const reportId = req.params.id;
@@ -255,7 +255,7 @@ export function registerAIControllerRoutes(app: any, aiService: AIService) {
   app.get(
     `${BASE_PATH}/reports`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    AuthGuard.companyGuard(),
+    
     async (req: Request, res: Response) => {
       try {
         const companyId = req.user?.companyId;
