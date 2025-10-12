@@ -20,121 +20,124 @@ import { initAccountingModule } from "./accounting";
 import { CommsModule } from "./comms/comms.module";
 import { initializeInventoryModule } from "./inventory";
 import { initCompanyModule } from "./company/company.module";
+import { createModuleLogger } from '../common/logger/loki-logger';
+
+const moduleLogger = createModuleLogger('modules');
 
 export async function initializeModules(app: Express) {
-  console.log('Starting minimal module initialization for debugging');
+  moduleLogger.info('Starting minimal module initialization for debugging');
   
   try {
     // Get database connection
     const db = getDrizzle();
-    console.log('Database connection established');
+    moduleLogger.info('Database connection established');
     
     // Initialize only essential modules for debugging
     
     // Initialize auth module (core functionality)
-    console.log('Initializing Auth module...');
+    moduleLogger.info('Initializing Auth module...');
     const authRouter = initAuthModule(app, storage.sessionStore);
-    console.log('Auth module initialized');
+    moduleLogger.info('Auth module initialized');
     
     // Initialize users module (core functionality)
-    console.log('Initializing Users module...');
+    moduleLogger.info('Initializing Users module...');
     initUserModule(app);
-    console.log('Users module initialized');
+    moduleLogger.info('Users module initialized');
     
     // Initialize admin module (core functionality)
-    console.log('Initializing Admin module...');
+    moduleLogger.info('Initializing Admin module...');
     const adminModuleInfo = initAdminModule(app);
-    console.log('Admin module initialized');
+    moduleLogger.info('Admin module initialized');
     
-    console.log('✅ Core modules loaded successfully');
+    moduleLogger.info('✅ Core modules loaded successfully');
     
     // Initialize invoices module
-    console.log('Initializing Invoices module...');
+    moduleLogger.info('Initializing Invoices module...');
     InvoicesModule.register(app);
-    console.log('Invoices module initialized');
+    moduleLogger.info('Invoices module initialized');
     
     // Initialize CRM module
-    console.log('Initializing CRM module...');
+    moduleLogger.info('Initializing CRM module...');
     initCrmModule(app);
-    console.log('CRM module initialized');
+    moduleLogger.info('CRM module initialized');
     
     // Initialize HR module
-    console.log('Initializing HR module...');
+    moduleLogger.info('Initializing HR module...');
     initHrModule(app);
-    console.log('HR module initialized');
+    moduleLogger.info('HR module initialized');
     
     // Initialize E-commerce module
-    console.log('Initializing E-Commerce module...');
+    moduleLogger.info('Initializing E-Commerce module...');
     ECommerceModule.register(app, drizzleService);
-    console.log('E-Commerce module initialized');
+    moduleLogger.info('E-Commerce module initialized');
     
     // Initialize Integrations module
-    console.log('Initializing Integrations module...');
+    moduleLogger.info('Initializing Integrations module...');
     initializeIntegrationsModule(app);
-    console.log('Integrations module initialized');
+    moduleLogger.info('Integrations module initialized');
     
     // Initialize BPM module
-    console.log('Initializing BPM module...');
+    moduleLogger.info('Initializing BPM module...');
     const bpmModule = BpmModule.getInstance();
     bpmModule.initialize(db);
     bpmModule.registerRoutes(app);
-    console.log('BPM module initialized');
+    moduleLogger.info('BPM module initialized');
     
     // Initialize Collaboration module
-    console.log('Initializing Collaboration module...');
+    moduleLogger.info('Initializing Collaboration module...');
     const collabModule = CollabModule.getInstance();
     collabModule.initialize(db);
     collabModule.registerRoutes(app);
-    console.log('Collaboration module initialized');
+    moduleLogger.info('Collaboration module initialized');
     
     // Initialize AI module
-    console.log('Initializing AI module...');
+    moduleLogger.info('Initializing AI module...');
     initAiModule(app, drizzleService);
-    console.log('AI module initialized');
+    moduleLogger.info('AI module initialized');
     
     // Initialize Settings module
-    console.log('Initializing Settings module...');
+    moduleLogger.info('Initializing Settings module...');
     const settingsInfo = SettingsModule.registerRoutes(app);
-    console.log('Settings module initialized');
+    moduleLogger.info('Settings module initialized');
     
     // Initialize Marketing module
-    console.log('Initializing Marketing module...');
+    moduleLogger.info('Initializing Marketing module...');
     await MarketingModule.register(app);
-    console.log('Marketing module initialized');
+    moduleLogger.info('Marketing module initialized');
     
     // Initialize Sales module
-    console.log('Initializing Sales module...');
+    moduleLogger.info('Initializing Sales module...');
     initSalesModule(app);
-    console.log('Sales module initialized');
+    moduleLogger.info('Sales module initialized');
     
     // Initialize Accounting module
-    console.log('Initializing Accounting module...');
+    moduleLogger.info('Initializing Accounting module...');
     initAccountingModule(app);
-    console.log('Accounting module initialized');
+    moduleLogger.info('Accounting module initialized');
     
     // Initialize Communications module
-    console.log('Initializing Communications module...');
+    moduleLogger.info('Initializing Communications module...');
     CommsModule.register(app, drizzleService);
-    console.log('Communications module initialized');
+    moduleLogger.info('Communications module initialized');
     
     // Initialize Inventory module
-    console.log('Initializing Inventory module...');
+    moduleLogger.info('Initializing Inventory module...');
     initializeInventoryModule(app);
-    console.log('Inventory module initialized');
+    moduleLogger.info('Inventory module initialized');
     
     // Initialize Company module
-    console.log('Initializing Company module...');
+    moduleLogger.info('Initializing Company module...');
     initCompanyModule(app, drizzleService);
-    console.log('Company module initialized');
+    moduleLogger.info('Company module initialized');
     
-    console.log("Core modules initialized successfully");
+    moduleLogger.info("Core modules initialized successfully");
     
     return {
       authRouter
     };
   } catch (error) {
-    console.error('Error during module initialization:', error);
-    console.log('Continuing with limited functionality');
+    moduleLogger.error('Error during module initialization', error as Error);
+    moduleLogger.warn('Continuing with limited functionality');
     
     return {};
   }

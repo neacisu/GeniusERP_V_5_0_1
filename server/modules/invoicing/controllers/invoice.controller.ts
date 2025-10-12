@@ -14,6 +14,7 @@ import { ENTITY_NAME } from '../invoices.module';
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 import { invoices, invoiceDetails, invoiceLines } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
+import { trackInvoiceCreation, invoiceMetrics } from '../../../middlewares/business-metrics.middleware';
 
 export class InvoiceController {
   private logger: Logger;
@@ -49,6 +50,9 @@ export class InvoiceController {
         lines,
         userId
       );
+
+      // Track invoice creation metrics
+      trackInvoiceCreation('sales', companyId as string);
 
       this.logger.debug(`Created invoice ${result.id}`);
       res.status(201).json(result);

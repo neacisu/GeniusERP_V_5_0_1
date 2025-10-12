@@ -1,0 +1,26 @@
+# Wazuh SSL Certificate Generator Configuration
+# Configuration for generating SSL certificates for Wazuh cluster
+
+nodes:
+  # Wazuh indexer node(s)
+  indexer:
+    - name: wazuh-indexer
+      ip:
+        - "127.0.0.1"
+        - "wazuh-indexer"
+
+  # Wazuh server node(s)
+  server:
+    - name: wazuh-manager
+      ip:
+        - "127.0.0.1"
+        - "wazuh-manager"
+      node_type: master
+
+  # Wazuh dashboard node(s)
+  dashboard:
+    - name: wazuh-dashboard
+      ip:
+        - "127.0.0.1"
+        - "wazuh-dashboard"
+

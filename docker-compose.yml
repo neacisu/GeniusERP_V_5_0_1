@@ -85,6 +85,9 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=geniuserp
+    labels:
+      - logging=promtail
+      - logging_jobname=postgres
     restart: unless-stopped
     networks:
       - geniuserp-network
@@ -97,6 +100,9 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
+    labels:
+      - logging=promtail
+      - logging_jobname=adminer
     depends_on:
       - postgres
     networks:
@@ -118,6 +124,9 @@ services:
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
+    labels:
+      - logging=promtail
+      - logging_jobname=prometheus
     networks:
       - geniuserp-network
     restart: unless-stopped
@@ -135,10 +144,15 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin123
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SERVER_ROOT_URL=http://localhost:4000
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    labels:
+      - logging=promtail
+      - logging_jobname=grafana
     networks:
       - geniuserp-network
     depends_on:
       - prometheus
+      - loki
     restart: unless-stopped
 
   # Loki - Log aggregation
@@ -152,6 +166,9 @@ services:
       - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml
       - loki_data:/loki
     command: -config.file=/etc/loki/local-config.yaml
+    labels:
+      - logging=promtail
+      - logging_jobname=loki
     networks:
       - geniuserp-network
     restart: unless-stopped
@@ -193,11 +210,15 @@ services:
       - geniuserp-network
     restart: unless-stopped
 
-  # Wazuh Indexer (OpenSearch)
+  # Wazuh Indexer (OpenSearch) - CON SSL ACTIVAT
+  # DEZACTIVAT PE MAC - va fi activat pe VPS la deploy
+  # Pentru a porni manual: docker-compose --profile wazuh up -d
   wazuh-indexer:
     image: wazuh/wazuh-indexer:4.7.0
     container_name: geniuserp-wazuh-indexer
     hostname: wazuh-indexer
+    profiles:
+      - wazuh  # Pornește doar cu: docker-compose --profile wazuh up -d
     ports:
       - "9200:9200"
     environment:
@@ -205,8 +226,11 @@ services:
       - "bootstrap.memory_lock=true"
       - "discovery.type=single-node"
       - "network.host=0.0.0.0"
-      - "plugins.security.ssl.http.enabled=false"
-      - "plugins.security.disabled=true"
+      # SSL ACTIVAT - certificate demo pentru development (schimbă în producție)
+      - "plugins.security.ssl.http.enabled=true"
+      - "plugins.security.ssl.transport.enabled=true"
+      - "plugins.security.disabled=false"
+      - "DISABLE_INSTALL_DEMO_CONFIG=false"
     ulimits:
       memlock:
         soft: -1
@@ -216,34 +240,38 @@ services:
         hard: 65536
     volumes:
       - wazuh_indexer_data:/var/lib/wazuh-indexer
+      - ./monitoring/wazuh/certs/wazuh-certificates:/usr/share/wazuh-indexer/certs/
     networks:
       - geniuserp-network
     restart: unless-stopped
 
-  # Wazuh Manager
+  # Wazuh Manager - CON SSL
+  # DEZACTIVAT PE MAC - va fi activat pe VPS la deploy
   wazuh-manager:
     image: wazuh/wazuh-manager:4.7.0
     container_name: geniuserp-wazuh-manager
     hostname: wazuh-manager
+    profiles:
+      - wazuh  # Pornește doar cu: docker-compose --profile wazuh up -d
     ports:
       - "1514:1514"
       - "1515:1515"
       - "55000:55000"
     environment:
-      - INDEXER_URL=http://wazuh-indexer:9200
+      # SSL ACTIVAT - folosește HTTPS
+      - INDEXER_URL=https://wazuh-indexer:9200
       - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=SecretPassword
+      - INDEXER_PASSWORD=admin
       - FILEBEAT_SSL_VERIFICATION_MODE=none
-      # SSL Certificates disabled for development (uncomment and set paths for production)
-      # - SSL_CERTIFICATE_AUTHORITIES=/path/to/ca.crt
-      # - SSL_CERTIFICATE=/path/to/client.crt
-      # - SSL_KEY=/path/to/client.key
+      # Certificate SSL pentru conexiune securizată
+      - SSL_CERTIFICATE_AUTHORITIES=/etc/ssl/root-ca.pem
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
     volumes:
       - wazuh_manager_data:/var/ossec/data
       - wazuh_manager_etc:/var/ossec/etc
       - wazuh_manager_logs:/var/ossec/logs
+      - ./monitoring/wazuh/certs/wazuh-certificates:/etc/ssl:ro
     labels:
       - logging=promtail
       - logging_jobname=wazuh-manager
@@ -253,22 +281,31 @@ services:
       - wazuh-indexer
     restart: unless-stopped
 
-  # Wazuh Dashboard
+  # Wazuh Dashboard - CON SSL
+  # DEZACTIVAT PE MAC - va fi activat pe VPS la deploy
   wazuh-dashboard:
     image: wazuh/wazuh-dashboard:4.7.0
     container_name: geniuserp-wazuh-dashboard
     hostname: wazuh-dashboard
+    profiles:
+      - wazuh  # Pornește doar cu: docker-compose --profile wazuh up -d
     ports:
       - "9443:5601"
     environment:
+      # Credențiale default Wazuh (schimbă în producție)
       - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=SecretPassword
-      - WAZUH_API_URL=https://wazuh-manager
+      - INDEXER_PASSWORD=admin
+      # HTTPS activat pentru toate conexiunile
+      - WAZUH_API_URL=https://wazuh-manager:55000
       - DASHBOARD_USERNAME=kibanaserver
       - DASHBOARD_PASSWORD=kibanaserver
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
-      - OPENSEARCH_HOSTS=http://wazuh-indexer:9200
+      # SSL/HTTPS pentru indexer
+      - OPENSEARCH_HOSTS=https://wazuh-indexer:9200
+      - OPENSEARCH_SSL_VERIFICATIONMODE=none
+    volumes:
+      - ./monitoring/wazuh/certs/wazuh-certificates:/usr/share/wazuh-dashboard/certs:ro
     networks:
       - geniuserp-network
     depends_on:

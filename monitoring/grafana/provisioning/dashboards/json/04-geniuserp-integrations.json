@@ -1,0 +1,402 @@
+{
+  "title": "🔌 GeniusERP - Integrări (ANAF & API)",
+  "uid": "geniuserp-integrations",
+  "tags": ["geniuserp", "integrations", "anaf", "api"],
+  "timezone": "Europe/Bucharest",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-12h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "✅ Sincronizări ANAF Reușite",
+      "gridPos": {"h": 7, "w": 6, "x": 0, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_anaf_sync_requests_total{status=\"success\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "❌ Erori Sincronizări ANAF",
+      "gridPos": {"h": 7, "w": 6, "x": 6, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_anaf_sync_requests_total{status=\"error\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 1, "color": "yellow"},
+              {"value": 5, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "🔍 Validări CUI (ANAF)",
+      "gridPos": {"h": 7, "w": 6, "x": 12, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_anaf_sync_requests_total{endpoint=\"vat_validation\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "blue"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "📄 E-Factura (ANAF)",
+      "gridPos": {"h": 7, "w": 6, "x": 18, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_anaf_sync_requests_total{endpoint=\"efactura\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "purple"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "📈 Requests ANAF API în Timp (pe endpoint)",
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 7},
+      "targets": [{
+        "expr": "rate(geniuserp_anaf_sync_requests_total[5m])",
+        "legendFormat": "{{endpoint}} - {{status}}",
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 30,
+            "showPoints": "auto"
+          },
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["sum", "mean", "last"]
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "❌ Erori ANAF pe Tip",
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 16},
+      "targets": [{
+        "expr": "sum by(error_type) (geniuserp_anaf_errors_total)",
+        "format": "table",
+        "instant": true,
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          }
+        }
+      },
+      "options": {
+        "showHeader": true
+      },
+      "transformations": [{
+        "id": "organize",
+        "options": {
+          "renameByName": {
+            "error_type": "Tip Eroare",
+            "Value": "Număr Erori"
+          }
+        }
+      }]
+    },
+    {
+      "id": 7,
+      "type": "piechart",
+      "title": "📊 Distribuție Erori ANAF",
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 16},
+      "targets": [{
+        "expr": "sum by(error_type) (geniuserp_anaf_errors_total)",
+        "legendFormat": "{{error_type}}",
+        "refId": "A"
+      }],
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": ["value", "percent"]
+        },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"}
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "🌐 Total API Calls Externe",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 25},
+      "targets": [{
+        "expr": "sum(geniuserp_external_api_calls_total)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "🛒 Shopify API Calls",
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 25},
+      "targets": [{
+        "expr": "sum(geniuserp_external_api_calls_total{service=\"shopify\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "blue"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "💱 Exchange Rate API Calls",
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 25},
+      "targets": [{
+        "expr": "sum(geniuserp_external_api_calls_total{service=\"exchange_rate\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "purple"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "bargauge",
+      "title": "📊 API Calls pe Serviciu",
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 25},
+      "targets": [{
+        "expr": "sum by(service) (geniuserp_external_api_calls_total)",
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient"
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "🔌 API Calls Externe în Timp (pe serviciu)",
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 31},
+      "targets": [{
+        "expr": "rate(geniuserp_external_api_calls_total[5m])",
+        "legendFormat": "{{service}} - {{method}}",
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 20,
+            "showPoints": "never"
+          },
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["sum", "mean"]
+        }
+      }
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "🛒 Comenzi E-commerce Sincronizate",
+      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 40},
+      "targets": [{
+        "expr": "sum(geniuserp_ecommerce_orders_total)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 14,
+      "type": "stat",
+      "title": "✅ Sincronizări E-commerce Reușite",
+      "gridPos": {"h": 6, "w": 8, "x": 8, "y": 40},
+      "targets": [{
+        "expr": "sum(geniuserp_ecommerce_sync_operations_total{result=\"success\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 15,
+      "type": "stat",
+      "title": "❌ Sincronizări E-commerce Eșuate",
+      "gridPos": {"h": 6, "w": 8, "x": 16, "y": 40},
+      "targets": [{
+        "expr": "sum(geniuserp_ecommerce_sync_operations_total{result=\"error\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 1, "color": "red"}
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
+

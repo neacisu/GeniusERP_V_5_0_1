@@ -1,0 +1,355 @@
+{
+  "title": "📦 GeniusERP - Gestiune Stocuri",
+  "uid": "geniuserp-inventory",
+  "tags": ["geniuserp", "inventory", "stocuri", "gestiune"],
+  "timezone": "Europe/Bucharest",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "📥 Mișcări de Intrare Stoc",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_stock_movements_total{movement_type=\"in\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "📤 Mișcări de Ieșire Stoc",
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_stock_movements_total{movement_type=\"out\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "blue"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "🔄 Transferuri între Depozite",
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_stock_movements_total{movement_type=\"transfer\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "purple"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "⚙️ Ajustări de Stoc",
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_stock_movements_total{movement_type=\"adjustment\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "orange"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "📊 Mișcări de Stoc în Timp (pe tip)",
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 6},
+      "targets": [{
+        "expr": "rate(geniuserp_stock_movements_total[5m])",
+        "legendFormat": "{{movement_type}} - {{warehouse_id}}",
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 20,
+            "showPoints": "auto",
+            "stacking": {"mode": "normal"}
+          },
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["sum", "mean", "max"]
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "📝 NIR Create",
+      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 15},
+      "targets": [{
+        "expr": "sum(geniuserp_nir_processed_total{status=\"created\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "blue"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "✅ NIR Aprobate",
+      "gridPos": {"h": 6, "w": 8, "x": 8, "y": 15},
+      "targets": [{
+        "expr": "sum(geniuserp_nir_processed_total{status=\"approved\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "❌ NIR Anulate",
+      "gridPos": {"h": 6, "w": 8, "x": 16, "y": 15},
+      "targets": [{
+        "expr": "sum(geniuserp_nir_processed_total{status=\"cancelled\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "⚠️ Alerte Stoc Scăzut (Active)",
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 21},
+      "targets": [{
+        "expr": "geniuserp_low_stock_alerts_active",
+        "format": "table",
+        "instant": true,
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          }
+        },
+        "overrides": [{
+          "matcher": {"id": "byName", "options": "severity"},
+          "properties": [{
+            "id": "custom.displayMode",
+            "value": "color-background"
+          }, {
+            "id": "thresholds",
+            "value": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "yellow"},
+                {"value": 1, "color": "red"}
+              ]
+            }
+          }]
+        }]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "transformations": [{
+        "id": "organize",
+        "options": {
+          "excludeByName": {},
+          "indexByName": {},
+          "renameByName": {
+            "warehouse_id": "Depozit",
+            "severity": "Severitate",
+            "Value": "Număr Alerte"
+          }
+        }
+      }]
+    },
+    {
+      "id": 10,
+      "type": "bargauge",
+      "title": "📊 Alerte Stoc Scăzut pe Depozit",
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 21},
+      "targets": [{
+        "expr": "sum by(warehouse_id) (geniuserp_low_stock_alerts_active)",
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 5, "color": "yellow"},
+              {"value": 10, "color": "red"}
+            ]
+          }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true
+      }
+    },
+    {
+      "id": 11,
+      "type": "heatmap",
+      "title": "🔥 Heatmap Mișcări de Stoc (ultimele 6h)",
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 31},
+      "targets": [{
+        "expr": "sum by(warehouse_id) (rate(geniuserp_stock_movements_total[10m]))",
+        "format": "time_series",
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
+        }
+      },
+      "options": {
+        "calculate": true,
+        "cellGap": 2,
+        "color": {
+          "exponent": 0.5,
+          "fill": "dark-green",
+          "mode": "scheme",
+          "scheme": "Spectral",
+          "steps": 128
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-9
+        },
+        "legend": {
+          "show": true
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "show": true,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "left"
+        }
+      }
+    }
+  ]
+}
+

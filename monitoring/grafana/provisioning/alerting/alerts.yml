@@ -1,0 +1,122 @@
+apiVersion: 1
+
+groups:
+  - name: geniuserp_alerts
+    interval: 1m
+    folder: GeniusERP Alerts
+    rules:
+      # Alertă pentru erori HTTP
+      - uid: http_errors_high
+        title: "🚨 Erori HTTP Prea Mari"
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: rate(geniuserp_http_request_errors_total[5m]) > 1
+              refId: A
+        noDataState: OK
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          description: "Rata de erori HTTP e prea mare: {{ $value }} erori/sec"
+          summary: "Aplicația are mai mult de 1 eroare/sec"
+        labels:
+          severity: critical
+          module: technical
+      
+      # Alertă pentru stoc scăzut
+      - uid: low_stock_alerts
+        title: "⚠️ Produse cu Stoc Scăzut"
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 60
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: sum(geniuserp_low_stock_alerts_active{severity="critical"}) > 5
+              refId: A
+        noDataState: OK
+        execErrState: OK
+        for: 10m
+        annotations:
+          description: "Ai {{ $value }} produse cu stoc critic scăzut"
+          summary: "Prea multe alerte de stoc scăzut"
+        labels:
+          severity: warning
+          module: inventory
+      
+      # Alertă pentru erori ANAF
+      - uid: anaf_sync_errors
+        title: "❌ Erori Sincronizare ANAF"
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 1800
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: increase(geniuserp_anaf_errors_total[30m]) > 3
+              refId: A
+        noDataState: OK
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          description: "{{ $value }} erori ANAF în ultimele 30 min"
+          summary: "Probleme la sincronizarea cu ANAF"
+        labels:
+          severity: critical
+          module: integrations
+      
+      # Alertă pentru memorie mare
+      - uid: high_memory_usage
+        title: "💾 Utilizare Mare de Memorie"
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: geniuserp_process_resident_memory_bytes / 1024 / 1024 > 768
+              refId: A
+        noDataState: OK
+        execErrState: OK
+        for: 10m
+        annotations:
+          description: "Aplicația folosește {{ $value }}MB memorie (limită: 768MB)"
+          summary: "Consum mare de memorie - posibil memory leak"
+        labels:
+          severity: warning
+          module: technical
+      
+      # Alertă pentru response time mare
+      - uid: high_response_time
+        title: "⚡ Timp de Răspuns Mare"
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: histogram_quantile(0.95, rate(geniuserp_http_request_duration_seconds_bucket[5m])) * 1000 > 2000
+              refId: A
+        noDataState: OK
+        execErrState: OK
+        for: 5m
+        annotations:
+          description: "P95 response time: {{ $value }}ms (limită: 2000ms)"
+          summary: "Aplicația răspunde prea încet"
+        labels:
+          severity: warning
+          module: technical
+

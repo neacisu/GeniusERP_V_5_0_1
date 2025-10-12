@@ -1,6 +1,10 @@
 #!/bin/bash
 # Script pentru exportul bazei de date PostgreSQL
 
+# Încarcă Loki Logger
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/loki-logger.sh" 2>/dev/null || echo "⚠ Loki Logger indisponibil, se continuă fără logging."
+
 # Setări implicite
 BACKUP_DIR="./db-backups"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
@@ -112,6 +116,7 @@ export PGPASSWORD="$DB_PASSWORD"
 # Calea completă către fișierul de backup
 BACKUP_FILE="$BACKUP_DIR/$BACKUP_FILENAME"
 
+log_backup "start" "Database: $DB_NAME, File: $BACKUP_FILENAME"
 echo "Începem backup-ul bazei de date $DB_NAME la $BACKUP_FILE..."
 
 # Executăm pg_dump
@@ -126,9 +131,12 @@ fi
 
 # Verifică dacă backup-ul a reușit
 if [ $? -eq 0 ]; then
+  FILE_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
   echo "Backup realizat cu succes!"
-  echo "Dimensiune fișier: $(du -h "$BACKUP_FILE" | cut -f1)"
+  echo "Dimensiune fișier: $FILE_SIZE"
+  log_backup "success" "File: $BACKUP_FILE, Size: $FILE_SIZE"
 else
   echo "Eroare la realizarea backup-ului!"
+  log_backup "error" "Database: $DB_NAME, File: $BACKUP_FILE"
   exit 1
 fi

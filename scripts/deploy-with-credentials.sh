@@ -3,6 +3,10 @@
 # Acest script realizează un backup al bazei de date curente, transferă 
 # fișierele aplicației pe server și restaurează baza de date
 
+# Încarcă Loki Logger
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/loki-logger.sh" 2>/dev/null || echo "⚠ Loki Logger indisponibil, se continuă fără logging."
+
 # Setări obligatorii
 REMOTE_SERVER=""              # Adresa serverului remote (ex: user@example.com)
 REMOTE_DIR="/opt/geniuserp"   # Directorul unde va fi instalată aplicația
@@ -14,27 +18,24 @@ INITIAL_BACKUP=""             # Dacă este specificat, se va utiliza acest backu
 SKIP_BACKUP=false             # Dacă este true, nu se va face backup
 SKIP_DB_RESTORE=false         # Dacă este true, nu se va restaura baza de date
 
-# Colorare pentru output
+# Colorare pentru output (păstrăm pentru backward compatibility)
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Funcție pentru a afișa mesaje cu timestamp
+# Funcție pentru a afișa mesaje cu timestamp (wrapper peste loki logger)
 log() {
   local level=$1
   local message=$2
-  local color=$NC
   
   case $level in
-    "INFO") color=$GREEN ;;
-    "WARNING") color=$YELLOW ;;
-    "ERROR") color=$RED ;;
-    "STEP") color=$BLUE ;;
+    "INFO") log_info "$message" ;;
+    "WARNING") log_warning "$message" ;;
+    "ERROR") log_error "$message" ;;
+    "STEP") log_deploy "progress" "$message" ;;
   esac
-  
-  echo -e "${color}[$(date +"%Y-%m-%d %H:%M:%S")] [$level] $message${NC}"
 }
 
 # Verifică dacă sunt setate toate variabilele obligatorii
@@ -49,6 +50,7 @@ if [ -z "$REMOTE_DIR" ]; then
 fi
 
 # Afișare parametri deploy
+log_deploy "start" "Target: $REMOTE_SERVER:$REMOTE_DIR"
 log "INFO" "Începe procesul de deploy către $REMOTE_SERVER:$REMOTE_DIR"
 log "INFO" "Redis Cloud va fi utilizat pentru caching și cozi"
 
@@ -214,5 +216,6 @@ log "STEP" "Instalare pe serverul remote..."
 ssh "$REMOTE_SERVER" "cd $REMOTE_DIR && ./$INSTALL_SCRIPT"
 
 # Verificare finală
+log_deploy "success" "Server: $REMOTE_SERVER"
 log "INFO" "Deployment finalizat! Verificați starea aplicației pe server."
 log "INFO" "URL aplicație: http://$(ssh "$REMOTE_SERVER" "curl -s ifconfig.me")"

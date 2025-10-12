@@ -1,6 +1,10 @@
 #!/bin/bash
 # Script pentru restaurarea bazei de date PostgreSQL
 
+# Încarcă Loki Logger
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/loki-logger.sh" 2>/dev/null || echo "⚠ Loki Logger indisponibil, se continuă fără logging."
+
 # Setări implicite
 BACKUP_DIR="./db-backups"
 DB_NAME=${PGDATABASE:-"geniuserp"}
@@ -164,6 +168,7 @@ if [ "$DB_EXISTS" -eq 0 ]; then
 fi
 
 # Restaurează baza de date
+log_info "🔄 Începe restaurare: Database=$DB_NAME, File=$BACKUP_FILE" '"operation": "restore"'
 echo "Restaurare baza de date $DB_NAME din $BACKUP_FILE..."
 
 # Adaugă opțiunea de ștergere a rolurilor dacă este specificată
@@ -182,7 +187,9 @@ fi
 # Verifică dacă restaurarea a reușit
 if [ $? -eq 0 ]; then
   echo "Restaurare finalizată cu succes!"
+  log_info "✅ Restaurare finalizată cu succes: Database=$DB_NAME" '"operation": "restore", "status": "success"'
 else
   echo "Eroare la restaurarea bazei de date!"
+  log_error "❌ Eroare la restaurare: Database=$DB_NAME, File=$BACKUP_FILE" '"operation": "restore", "status": "error"'
   exit 1
 fi

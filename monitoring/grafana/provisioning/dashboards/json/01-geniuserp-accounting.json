@@ -1,0 +1,375 @@
+{
+  "title": "📊 GeniusERP - Contabilitate",
+  "uid": "geniuserp-accounting",
+  "tags": ["geniuserp", "accounting", "contabilitate"],
+  "timezone": "Europe/Bucharest",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "📝 Total Înregistrări Jurnal Vânzări",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_journal_entries_total{journal_type=\"sales\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 100, "color": "yellow"},
+              {"value": 500, "color": "orange"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "🛒 Total Înregistrări Jurnal Cumpărări",
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_journal_entries_total{journal_type=\"purchase\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "blue"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "🏦 Total Înregistrări Jurnal Bancă",
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_journal_entries_total{journal_type=\"bank\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "purple"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "💵 Total Înregistrări Casă",
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_journal_entries_total{journal_type=\"cash\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "📈 Înregistrări Contabile pe Tipuri (ultimele 24h)",
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 6},
+      "targets": [{
+        "expr": "rate(geniuserp_journal_entries_total[5m])",
+        "legendFormat": "{{journal_type}}",
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 20,
+            "showPoints": "never"
+          },
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["sum", "last"]
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "piechart",
+      "title": "📊 Distribuție Înregistrări pe Tipuri Jurnal",
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 6},
+      "targets": [{
+        "expr": "sum by(journal_type) (geniuserp_journal_entries_total)",
+        "legendFormat": "{{journal_type}}",
+        "refId": "A"
+      }],
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": ["value", "percent"]
+        },
+        "pieType": "donut"
+      }
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "💰 TVA de Colectat",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 15},
+      "targets": [{
+        "expr": "geniuserp_vat_amount_ron{vat_type=\"collected\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyRON",
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"}
+            ]
+          },
+          "decimals": 2
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "💸 TVA Plătită",
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 15},
+      "targets": [{
+        "expr": "geniuserp_vat_amount_ron{vat_type=\"paid\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyRON",
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "blue"}
+            ]
+          },
+          "decimals": 2
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "📤 TVA de Plată (Calculată)",
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 15},
+      "targets": [{
+        "expr": "geniuserp_vat_amount_ron{vat_type=\"to_pay\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyRON",
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "orange"},
+              {"value": 10000, "color": "red"}
+            ]
+          },
+          "decimals": 2
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "📥 TVA de Recuperat",
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 15},
+      "targets": [{
+        "expr": "geniuserp_vat_amount_ron{vat_type=\"to_receive\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyRON",
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "purple"}
+            ]
+          },
+          "decimals": 2
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "🔒 Închideri Fiscale Zilnice",
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 21},
+      "targets": [{
+        "expr": "sum(geniuserp_fiscal_closures_total{period_type=\"daily\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "none",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "stat",
+      "title": "🔒 Închideri Fiscale Lunare",
+      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 21},
+      "targets": [{
+        "expr": "sum(geniuserp_fiscal_closures_total{period_type=\"monthly\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "none",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "blue"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "🔒 Închideri Fiscale Trimestriale",
+      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 21},
+      "targets": [{
+        "expr": "sum(geniuserp_fiscal_closures_total{period_type=\"quarterly\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "none",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "orange"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 14,
+      "type": "stat",
+      "title": "🔒 Închideri Fiscale Anuale",
+      "gridPos": {"h": 5, "w": 6, "x": 18, "y": 21},
+      "targets": [{
+        "expr": "sum(geniuserp_fiscal_closures_total{period_type=\"yearly\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "none",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "red"}
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
+

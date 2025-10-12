@@ -1,0 +1,321 @@
+{
+  "title": "🐳 GeniusERP - Docker & Containere",
+  "uid": "geniuserp-docker",
+  "tags": ["geniuserp", "docker", "containers", "infrastructure"],
+  "timezone": "Europe/Bucharest",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "logs",
+      "title": "📋 Loguri Container GeniusERP App",
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 0},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "{container=\"geniuserp-app\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "id": 2,
+      "type": "logs",
+      "title": "🗄️ Loguri PostgreSQL",
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 0},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "{container=\"geniuserp-postgres\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "📊 Volume Loguri per Container",
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 10},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "sum by(container) (rate({job=~\".+\"}[1m]))",
+        "legendFormat": "{{container}}",
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 20,
+            "showPoints": "never",
+            "stacking": {"mode": "normal"}
+          },
+          "color": {"mode": "palette-classic"},
+          "unit": "logs/s"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["sum", "mean", "last"]
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "logs",
+      "title": "📊 Loguri Prometheus",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 19},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "{container=\"geniuserp-prometheus\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "id": 5,
+      "type": "logs",
+      "title": "📈 Loguri Grafana",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 19},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "{container=\"geniuserp-grafana\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "id": 6,
+      "type": "logs",
+      "title": "📝 Loguri Loki",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 27},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "{container=\"geniuserp-loki\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "id": 7,
+      "type": "logs",
+      "title": "🚀 Loguri Promtail",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 27},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "{container=\"geniuserp-promtail\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "📦 Total Containere Active",
+      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 35},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "count(count by(container) (rate({job=~\".+\"}[1m])))",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "none",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "⚠️ Containere cu Erori",
+      "gridPos": {"h": 6, "w": 8, "x": 8, "y": 35},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "count(count by(container) (rate({job=~\".+\"} |~ \"(?i)error\" [5m])))",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 1, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "📊 Total Linii Log (ultimele 5 min)",
+      "gridPos": {"h": 6, "w": 8, "x": 16, "y": 35},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "sum(count_over_time({job=~\".+\"}[5m]))",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "blue"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "📋 Status Containere (din loguri)",
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 41},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "sum by(container) (count_over_time({job=~\".+\"}[1m]))",
+        "refId": "A",
+        "instant": true
+      }],
+      "options": {
+        "showHeader": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          }
+        }
+      },
+      "transformations": [{
+        "id": "organize",
+        "options": {
+          "renameByName": {
+            "container": "Container",
+            "Value": "Linii Log (ultima min)"
+          }
+        }
+      }]
+    },
+    {
+      "id": 12,
+      "type": "logs",
+      "title": "🔴 Erori din TOATE Containerele",
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 51},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "{job=~\".+\"} |~ \"(?i)(error|exception|failed|fatal)\"",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      }
+    }
+  ]
+}
+

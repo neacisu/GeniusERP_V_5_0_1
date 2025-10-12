@@ -1,0 +1,359 @@
+{
+  "title": "📄 GeniusERP - Facturare & Vânzări",
+  "uid": "geniuserp-invoicing-sales",
+  "tags": ["geniuserp", "invoicing", "sales", "facturare"],
+  "timezone": "Europe/Bucharest",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "📄 Facturi Vânzare Create",
+      "gridPos": {"h": 7, "w": 6, "x": 0, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_invoices_created_total{type=\"sales\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 100, "color": "yellow"},
+              {"value": 500, "color": "orange"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "🛒 Facturi Cumpărare Create",
+      "gridPos": {"h": 7, "w": 6, "x": 6, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_invoices_created_total{type=\"purchase\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "blue"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "💰 Venit Total Vânzări (RON)",
+      "gridPos": {"h": 7, "w": 6, "x": 12, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_sales_revenue_total_ron)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyRON",
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 50000, "color": "yellow"},
+              {"value": 100000, "color": "orange"}
+            ]
+          },
+          "decimals": 2
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "📦 Comenzi Totale",
+      "gridPos": {"h": 7, "w": 6, "x": 18, "y": 0},
+      "targets": [{
+        "expr": "sum(geniuserp_sales_orders_total)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "purple"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "📈 Facturi Create în Timp (pe tip)",
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 7},
+      "targets": [{
+        "expr": "rate(geniuserp_invoices_created_total[5m])",
+        "legendFormat": "{{type}}",
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 30,
+            "showPoints": "auto"
+          },
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["sum", "mean", "max"]
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "💵 Venit din Vânzări în Timp (RON)",
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 7},
+      "targets": [{
+        "expr": "rate(geniuserp_sales_revenue_total_ron[5m]) * 300",
+        "legendFormat": "{{channel}} - {{payment_method}}",
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 20,
+            "showPoints": "never"
+          },
+          "unit": "currencyRON",
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["sum", "mean"]
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "piechart",
+      "title": "📊 Distribuție Comenzi pe Status",
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 16},
+      "targets": [{
+        "expr": "sum by(status) (geniuserp_sales_orders_total)",
+        "legendFormat": "{{status}}",
+        "refId": "A"
+      }],
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": ["value", "percent"]
+        },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"}
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "piechart",
+      "title": "🛒 Vânzări pe Canal",
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 16},
+      "targets": [{
+        "expr": "sum by(channel) (geniuserp_sales_orders_total)",
+        "legendFormat": "{{channel}}",
+        "refId": "A"
+      }],
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": ["value", "percent"]
+        },
+        "pieType": "pie"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"}
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "gauge",
+      "title": "💳 Valoare Medie Comandă (AOV) - Zilnic",
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 25},
+      "targets": [{
+        "expr": "geniuserp_sales_average_order_value_ron{period=\"daily\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyRON",
+          "min": 0,
+          "max": 5000,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "red"},
+              {"value": 500, "color": "yellow"},
+              {"value": 1000, "color": "green"},
+              {"value": 2000, "color": "blue"}
+            ]
+          },
+          "decimals": 2
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "gauge",
+      "title": "💳 Valoare Medie Comandă (AOV) - Săptămânal",
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 25},
+      "targets": [{
+        "expr": "geniuserp_sales_average_order_value_ron{period=\"weekly\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyRON",
+          "min": 0,
+          "max": 5000,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "red"},
+              {"value": 500, "color": "yellow"},
+              {"value": 1000, "color": "green"},
+              {"value": 2000, "color": "blue"}
+            ]
+          },
+          "decimals": 2
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "gauge",
+      "title": "💳 Valoare Medie Comandă (AOV) - Lunar",
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 25},
+      "targets": [{
+        "expr": "geniuserp_sales_average_order_value_ron{period=\"monthly\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyRON",
+          "min": 0,
+          "max": 5000,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "red"},
+              {"value": 500, "color": "yellow"},
+              {"value": 1000, "color": "green"},
+              {"value": 2000, "color": "blue"}
+            ]
+          },
+          "decimals": 2
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "⏱️ Timp de Procesare Facturi (secundede)",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 33},
+      "targets": [{
+        "expr": "histogram_quantile(0.95, rate(geniuserp_invoice_processing_duration_seconds_bucket[5m]))",
+        "legendFormat": "p95 - {{operation}}",
+        "refId": "A"
+      }, {
+        "expr": "histogram_quantile(0.50, rate(geniuserp_invoice_processing_duration_seconds_bucket[5m]))",
+        "legendFormat": "p50 - {{operation}}",
+        "refId": "B"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "unit": "s",
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["mean", "max"]
+        }
+      }
+    }
+  ]
+}
+

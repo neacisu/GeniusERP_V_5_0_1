@@ -3,6 +3,7 @@ import { SalesJournalService } from '../services/sales-journal.service';
 import { SalesJournalExportService } from '../services/sales-journal-export.service';
 import { BaseController } from './base.controller';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
+import { trackJournalEntry, accountingMetrics } from '../../../middlewares/business-metrics.middleware';
 
 /**
  * SalesJournalController
@@ -94,6 +95,9 @@ export class SalesJournalController extends BaseController {
         paymentTerms,
         notes
       );
+      
+      // Track sales journal entry creation
+      trackJournalEntry('sales');
       
       return await this.salesJournalService.getCustomerInvoice(invoiceId, companyId);
     });

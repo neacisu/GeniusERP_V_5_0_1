@@ -20,10 +20,16 @@ import './common/services';
 // Import the service registry initialization
 import { initializeServiceRegistry } from './common/services/registry.init';
 
+// Import Loki Logger
+import { createModuleLogger } from './common/logger/loki-logger';
+const appLogger = createModuleLogger('app');
+
 // Import metrics middleware
 import { metricsMiddleware, metricsHandler } from './middlewares/metrics.middleware';
 // Import Sentry middleware
 import { initializeSentry, sentryErrorHandler } from './middlewares/sentry.middleware';
+// Import logging middleware
+import { loggingMiddleware } from './middlewares/logging.middleware';
 
 // Create Express app
 const app = express();
@@ -36,6 +42,9 @@ app.use(express.urlencoded({ extended: false }));
 
 // Apply metrics middleware early to capture all requests
 app.use(metricsMiddleware);
+
+// Apply Loki logging middleware
+app.use(loggingMiddleware);
 
 // Serve static files from public directory
 app.use('/templates', express.static('public/templates'));
@@ -85,19 +94,19 @@ const httpServer = createServer(app);
 (async () => {
   try {
     // Simplified startup for debugging purposes
-    console.log('Starting server with minimal services for debugging');
+    appLogger.info('Starting server with minimal services for debugging');
     
     // Initialize essential modules
-    console.log('Initializing modules...');
+    appLogger.info('Initializing modules...');
     await initializeModules(app);
     
     // No direct permissions API needed, using modular approach
     
     // Initialize service registry
-    console.log('Initializing service registry...');
+    appLogger.info('Initializing service registry...');
     initializeServiceRegistry();
     
-    console.log('Essential services initialized successfully');
+    appLogger.info('Essential services initialized successfully');
 
     // Sentry error handler - MUST be before the default error handler (v10+ API)
     sentryErrorHandler(app);
@@ -107,7 +116,7 @@ const httpServer = createServer(app);
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
 
-      console.error('Error handler:', status, message, err.stack);
+      appLogger.error('Error handler', err, { status, message });
       res.status(status).json({ message });
     });
 
@@ -125,11 +134,12 @@ const httpServer = createServer(app);
       host: "0.0.0.0",
       reusePort: true,
     }, () => {
-      log(`Server is running on port ${port}`);
+      appLogger.info(`Server is running on port ${port}`);
+      log(`Server is running on port ${port}`); // Keep vite log too
     });
     
   } catch (error) {
-    console.error('Failed to start server:', error);
+    appLogger.error('Failed to start server', error as Error);
     process.exit(1);
   }
 })();

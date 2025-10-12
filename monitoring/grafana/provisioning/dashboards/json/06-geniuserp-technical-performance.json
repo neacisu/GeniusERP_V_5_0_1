@@ -1,0 +1,377 @@
+{
+  "title": "⚡ GeniusERP - Performance Tehnic",
+  "uid": "geniuserp-technical",
+  "tags": ["geniuserp", "performance", "technical", "system"],
+  "timezone": "Europe/Bucharest",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "📊 Requests/sec",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+      "targets": [{
+        "expr": "sum(rate(geniuserp_http_requests_total[1m]))",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 2,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 10, "color": "yellow"},
+              {"value": 50, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "⚡ Response Time (p95)",
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+      "targets": [{
+        "expr": "histogram_quantile(0.95, rate(geniuserp_http_request_duration_seconds_bucket[5m])) * 1000",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "decimals": 2,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 500, "color": "yellow"},
+              {"value": 1000, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "❌ Errors/sec",
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+      "targets": [{
+        "expr": "sum(rate(geniuserp_http_request_errors_total[1m]))",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 0.1, "color": "yellow"},
+              {"value": 1, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "💾 Memory (MB)",
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+      "targets": [{
+        "expr": "geniuserp_process_resident_memory_bytes / 1024 / 1024",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decmbytes",
+          "decimals": 0,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 512, "color": "yellow"},
+              {"value": 768, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "📈 HTTP Requests Rate (pe metodă)",
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 6},
+      "targets": [{
+        "expr": "sum by(method) (rate(geniuserp_http_requests_total[1m]))",
+        "legendFormat": "{{method}}",
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 20,
+            "showPoints": "never"
+          },
+          "unit": "reqps",
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["mean", "max", "last"]
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "⚡ Response Time Percentiles",
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 6},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(geniuserp_http_request_duration_seconds_bucket[5m])) * 1000",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(geniuserp_http_request_duration_seconds_bucket[5m])) * 1000",
+          "legendFormat": "p95",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(geniuserp_http_request_duration_seconds_bucket[5m])) * 1000",
+          "legendFormat": "p99",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "unit": "ms",
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["mean", "max", "last"]
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "💾 Memory Usage (MB)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 15},
+      "targets": [
+        {
+          "expr": "geniuserp_process_resident_memory_bytes / 1024 / 1024",
+          "legendFormat": "Resident Memory",
+          "refId": "A"
+        },
+        {
+          "expr": "geniuserp_process_heap_bytes / 1024 / 1024",
+          "legendFormat": "Heap Memory",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 30,
+            "showPoints": "never"
+          },
+          "unit": "decmbytes",
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["mean", "last"]
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "🖥️ CPU Usage",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 15},
+      "targets": [
+        {
+          "expr": "rate(geniuserp_process_cpu_user_seconds_total[1m])",
+          "legendFormat": "User CPU",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(geniuserp_process_cpu_system_seconds_total[1m])",
+          "legendFormat": "System CPU",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 20,
+            "showPoints": "never"
+          },
+          "unit": "percentunit",
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["mean", "last"]
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "🔄 Event Loop Lag (Node.js)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 23},
+      "targets": [
+        {
+          "expr": "geniuserp_nodejs_eventloop_lag_seconds * 1000",
+          "legendFormat": "Current Lag",
+          "refId": "A"
+        },
+        {
+          "expr": "geniuserp_nodejs_eventloop_lag_mean_seconds * 1000",
+          "legendFormat": "Mean Lag",
+          "refId": "B"
+        },
+        {
+          "expr": "geniuserp_nodejs_eventloop_lag_max_seconds * 1000",
+          "legendFormat": "Max Lag",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "unit": "ms",
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["mean", "max", "last"]
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "piechart",
+      "title": "📊 HTTP Status Codes",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 23},
+      "targets": [{
+        "expr": "sum by(status_code) (rate(geniuserp_http_requests_total[5m]))",
+        "legendFormat": "{{status_code}}",
+        "refId": "A"
+      }],
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": ["value", "percent"]
+        },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"}
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "📋 Top Endpoints (by request count)",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 31},
+      "targets": [{
+        "expr": "topk(20, sum by(route, method) (geniuserp_http_requests_total))",
+        "format": "table",
+        "instant": true,
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          }
+        }
+      },
+      "options": {
+        "showHeader": true
+      },
+      "transformations": [{
+        "id": "organize",
+        "options": {
+          "renameByName": {
+            "method": "Method",
+            "route": "Endpoint",
+            "Value": "Total Requests"
+          }
+        }
+      }]
+    }
+  ]
+}
+

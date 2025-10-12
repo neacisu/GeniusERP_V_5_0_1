@@ -63,6 +63,9 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./client/dist:/usr/share/nginx/html
+    labels:
+      - logging=promtail
+      - logging_jobname=nginx
     depends_on:
       - app
     networks:
@@ -79,6 +82,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - db_backups:/backups
+    labels:
+      - logging=promtail
+      - logging_jobname=postgres
     command: postgres -c 'max_connections=200' -c 'shared_buffers=512MB'
     networks:
       - geniuserp-network
@@ -95,6 +101,9 @@ services:
       - PGPASSWORD=${DB_PASSWORD:-postgres}
       - PGDATABASE=${DB_NAME:-geniuserp}
       - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-7}
+    labels:
+      - logging=promtail
+      - logging_jobname=db-backup
     entrypoint: |
       sh -c '
         mkdir -p /backups;
@@ -176,6 +185,9 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--storage.tsdb.retention.time=30d'
+    labels:
+      - logging=promtail
+      - logging_jobname=prometheus
     networks:
       - geniuserp-network
     restart: unless-stopped
@@ -192,20 +204,29 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SERVER_ROOT_URL=${GRAFANA_URL:-http://localhost:4000}
       - GF_SERVER_DOMAIN=${GRAFANA_DOMAIN:-localhost}
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    labels:
+      - logging=promtail
+      - logging_jobname=grafana
     networks:
       - geniuserp-network
     depends_on:
       - prometheus
+      - loki
     restart: unless-stopped
 
   # Loki - Log aggregation
   loki:
     image: grafana/loki:latest
     container_name: geniuserp-loki
+    user: "0:0"
     volumes:
       - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml
-      - loki_data:/tmp/loki
+      - loki_data:/loki
     command: -config.file=/etc/loki/local-config.yaml
+    labels:
+      - logging=promtail
+      - logging_jobname=loki
     networks:
       - geniuserp-network
     restart: unless-stopped
@@ -268,6 +289,9 @@ services:
         hard: 65536
     volumes:
       - wazuh_indexer_data:/var/lib/wazuh-indexer
+    labels:
+      - logging=promtail
+      - logging_jobname=wazuh-indexer
     networks:
       - geniuserp-network
     restart: unless-stopped
@@ -314,6 +338,9 @@ services:
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=${WAZUH_API_PASSWORD:-MyS3cr37P450r.*-}
       - OPENSEARCH_HOSTS=http://wazuh-indexer:9200
+    labels:
+      - logging=promtail
+      - logging_jobname=wazuh-dashboard
     networks:
       - geniuserp-network
     depends_on:

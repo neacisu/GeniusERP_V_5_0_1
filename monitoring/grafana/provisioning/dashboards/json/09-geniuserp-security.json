@@ -1,0 +1,361 @@
+{
+  "title": "🛡️ GeniusERP - Securitate & Monitorizare",
+  "uid": "geniuserp-security",
+  "tags": ["geniuserp", "security", "wazuh", "falco", "audit"],
+  "timezone": "Europe/Bucharest",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "🚨 Evenimente Securitate (ultimele 6h)",
+      "gridPos": {"h": 7, "w": 6, "x": 0, "y": 0},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "sum(count_over_time({job=\"falco\"} |~ \"(?i)(warning|error|critical|alert)\" [6h]))",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 10, "color": "yellow"},
+              {"value": 50, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "🔐 Încercări Login Eșuate",
+      "gridPos": {"h": 7, "w": 6, "x": 6, "y": 0},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [{
+        "expr": "sum(geniuserp_security_events_total{event_type=\"login_failed\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 5, "color": "yellow"},
+              {"value": 20, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "❌ Acces Interzis (403)",
+      "gridPos": {"h": 7, "w": 6, "x": 12, "y": 0},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [{
+        "expr": "sum(geniuserp_security_events_total{event_type=\"permission_denied\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 10, "color": "orange"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "⚠️ Activități Suspecte",
+      "gridPos": {"h": 7, "w": 6, "x": 18, "y": 0},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [{
+        "expr": "sum(geniuserp_security_events_total{event_type=\"suspicious_activity\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 1, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "logs",
+      "title": "🛡️ Falco - Alerte Securitate Runtime",
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 7},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "{job=\"falco\"} |~ \"(?i)(warning|error|critical|alert)\"",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "📈 Evenimente Securitate în Timp",
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 19},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [{
+        "expr": "sum by(event_type) (rate(geniuserp_security_events_total[5m]))",
+        "legendFormat": "{{event_type}}",
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 30,
+            "showPoints": "auto"
+          },
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["sum", "mean", "max"]
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "logs",
+      "title": "🔒 Wazuh - Loguri Securitate",
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 28},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "{job=\"wazuh-manager\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "id": 8,
+      "type": "piechart",
+      "title": "📊 Distribuție Evenimente Securitate pe Tip",
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 40},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [{
+        "expr": "sum by(event_type) (geniuserp_security_events_total)",
+        "legendFormat": "{{event_type}}",
+        "refId": "A"
+      }],
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": ["value", "percent"]
+        },
+        "pieType": "donut"
+      }
+    },
+    {
+      "id": 9,
+      "type": "piechart",
+      "title": "🔥 Evenimente pe Severitate",
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 40},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [{
+        "expr": "sum by(severity) (geniuserp_security_events_total)",
+        "legendFormat": "{{severity}}",
+        "refId": "A"
+      }],
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": ["value", "percent"]
+        },
+        "pieType": "pie"
+      }
+    },
+    {
+      "id": 10,
+      "type": "logs",
+      "title": "🔐 Login & Authentication Events",
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 50},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "{job=\"geniuserp-app\"} |~ \"(?i)(login|logout|authentication|unauthorized|session)\"",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "id": 11,
+      "type": "logs",
+      "title": "🔍 Audit Trail - Operațiuni Critice",
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 50},
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [{
+        "expr": "{job=\"geniuserp-app\"} |~ \"(?i)(delete|remove|drop|truncate|destroy)\"",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "id": 12,
+      "type": "table",
+      "title": "📋 Top Utilizatori cu Acces Interzis",
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 60},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [{
+        "expr": "topk(10, sum by(user_role) (geniuserp_audit_log_entries_total{action=\"delete\"}))",
+        "refId": "A",
+        "instant": true
+      }],
+      "options": {
+        "showHeader": true
+      },
+      "transformations": [{
+        "id": "organize",
+        "options": {
+          "renameByName": {
+            "user_role": "Rol Utilizator",
+            "Value": "Număr Operațiuni DELETE"
+          }
+        }
+      }]
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "📊 Audit Log - Operațiuni pe Entități",
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 70},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [{
+        "expr": "sum by(entity_type, action) (rate(geniuserp_audit_log_entries_total[5m]))",
+        "legendFormat": "{{entity_type}} - {{action}}",
+        "refId": "A"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": ["sum", "mean"]
+        }
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,502 @@
+{
+  "title": "🎯 GeniusERP - Business Overview",
+  "uid": "geniuserp-business-overview",
+  "tags": ["geniuserp", "overview", "business", "dashboard"],
+  "timezone": "Europe/Bucharest",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "💰 FACTURARE & VÂNZĂRI",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "collapsed": false
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "📄 Total Facturi Create",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 1},
+      "targets": [{
+        "expr": "sum(geniuserp_invoices_created_total)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "💰 Venit Total (RON)",
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 1},
+      "targets": [{
+        "expr": "sum(geniuserp_sales_revenue_total_ron)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyRON",
+          "decimals": 2,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 100000, "color": "yellow"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "📦 Total Comenzi",
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 1},
+      "targets": [{
+        "expr": "sum(geniuserp_sales_orders_total)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "blue"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "gauge",
+      "title": "💳 AOV (Lunar)",
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 1},
+      "targets": [{
+        "expr": "geniuserp_sales_average_order_value_ron{period=\"monthly\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyRON",
+          "min": 0,
+          "max": 5000,
+          "decimals": 2,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "red"},
+              {"value": 500, "color": "yellow"},
+              {"value": 1000, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "row",
+      "title": "📊 CONTABILITATE",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 7},
+      "collapsed": false
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "📝 Înregistrări Jurnal Total",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 8},
+      "targets": [{
+        "expr": "sum(geniuserp_journal_entries_total)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "💰 TVA de Plată (RON)",
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 8},
+      "targets": [{
+        "expr": "geniuserp_vat_amount_ron{vat_type=\"to_pay\"}",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyRON",
+          "decimals": 2,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 10000, "color": "orange"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "piechart",
+      "title": "📊 Înregistrări pe Tipuri Jurnal",
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 8},
+      "targets": [{
+        "expr": "sum by(journal_type) (geniuserp_journal_entries_total)",
+        "legendFormat": "{{journal_type}}",
+        "refId": "A"
+      }],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "pieType": "donut"
+      }
+    },
+    {
+      "id": 10,
+      "type": "row",
+      "title": "📦 GESTIUNE STOCURI",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 14},
+      "collapsed": false
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "🔄 Mișcări Stoc Total",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 15},
+      "targets": [{
+        "expr": "sum(geniuserp_stock_movements_total)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "purple"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "stat",
+      "title": "⚠️ Alerte Stoc Scăzut",
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 15},
+      "targets": [{
+        "expr": "sum(geniuserp_low_stock_alerts_active)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 5, "color": "yellow"},
+              {"value": 10, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "📝 NIR Procesate",
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 15},
+      "targets": [{
+        "expr": "sum(geniuserp_nir_processed_total)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "blue"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 14,
+      "type": "piechart",
+      "title": "📊 Mișcări Stoc pe Tip",
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 15},
+      "targets": [{
+        "expr": "sum by(movement_type) (geniuserp_stock_movements_total)",
+        "legendFormat": "{{movement_type}}",
+        "refId": "A"
+      }],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "pieType": "pie"
+      }
+    },
+    {
+      "id": 15,
+      "type": "row",
+      "title": "🔌 INTEGRĂRI",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 21},
+      "collapsed": false
+    },
+    {
+      "id": 16,
+      "type": "stat",
+      "title": "✅ ANAF Sync (Success)",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 22},
+      "targets": [{
+        "expr": "sum(geniuserp_anaf_sync_requests_total{status=\"success\"})",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 17,
+      "type": "stat",
+      "title": "❌ ANAF Errors",
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 22},
+      "targets": [{
+        "expr": "sum(geniuserp_anaf_errors_total)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 1, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 18,
+      "type": "stat",
+      "title": "🌐 External API Calls",
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 22},
+      "targets": [{
+        "expr": "sum(geniuserp_external_api_calls_total)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "blue"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 19,
+      "type": "stat",
+      "title": "🛒 E-commerce Orders",
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 22},
+      "targets": [{
+        "expr": "sum(geniuserp_ecommerce_orders_total)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "purple"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 20,
+      "type": "row",
+      "title": "🤖 INTELIGENȚĂ ARTIFICIALĂ & ANALYTICS",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 28},
+      "collapsed": false
+    },
+    {
+      "id": 21,
+      "type": "stat",
+      "title": "🤖 AI Requests",
+      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 29},
+      "targets": [{
+        "expr": "sum(geniuserp_ai_requests_total)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 22,
+      "type": "stat",
+      "title": "📊 Rapoarte Generate",
+      "gridPos": {"h": 6, "w": 8, "x": 8, "y": 29},
+      "targets": [{
+        "expr": "sum(geniuserp_analytics_reports_generated_total)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "blue"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 23,
+      "type": "stat",
+      "title": "🔍 Audit Log Entries",
+      "gridPos": {"h": 6, "w": 8, "x": 16, "y": 29},
+      "targets": [{
+        "expr": "sum(geniuserp_audit_log_entries_total)",
+        "refId": "A"
+      }],
+      "options": {
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "orange"}
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
+
