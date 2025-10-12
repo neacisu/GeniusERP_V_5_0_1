@@ -370,10 +370,10 @@ export class CashRegisterController extends BaseController {
           personName: referenceNumber || 'Bank Deposit'
         };
         
-        const depositId = await this.cashRegisterService.recordCashDepositToBank(data);
+        const { cashTransactionId, bankTransactionId } = await this.cashRegisterService.recordCashDepositToBank(data);
         
         const deposit = await this.cashRegisterService.getCashTransaction(
-          depositId,
+          cashTransactionId,
           companyId
         );
         
@@ -423,10 +423,10 @@ export class CashRegisterController extends BaseController {
           personName: referenceNumber || 'Bank Withdrawal'
         };
         
-        const withdrawalId = await this.cashRegisterService.recordCashWithdrawalFromBank(data);
+        const { cashTransactionId, bankTransactionId } = await this.cashRegisterService.recordCashWithdrawalFromBank(data);
         
         const withdrawal = await this.cashRegisterService.getCashTransaction(
-          withdrawalId,
+          cashTransactionId,
           companyId
         );
         
