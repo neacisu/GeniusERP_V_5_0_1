@@ -8,7 +8,7 @@ import { setupPurchaseJournalRoutes } from "./purchase-journal.routes";
 import { setupBankJournalRoutes } from "./bank-journal.routes";
 import { setupCashRegisterRoutes } from "./cash-register.routes";
 import { setupLedgerRoutes } from "./ledger.routes";
-import { setupNoteContabilRoutes } from "./note-contabil.routes";
+// Note Contabil routes moved to routes/index.ts (note-contabil.route.ts)
 import { AccountingController } from "../controllers/accounting.controller";
 import { AuthenticatedRequest } from "../../../common/middleware/auth-types";
 import { Response } from "express";
