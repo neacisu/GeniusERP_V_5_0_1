@@ -8,7 +8,8 @@ import express from 'express';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { UserRole } from '../../auth/types';
-import NoteContabilService, { DocumentType } from '../services/note-contabil.service';
+import NoteContabilService from '../services/note-contabil.service';
+import { DocumentType } from '../services/validate-document';
 import AuditService, { AuditAction } from '../../audit/services/audit.service';
 
 const router = express.Router();
@@ -43,8 +44,8 @@ router.post(
       
       // Check if user has access to this company
       if (req.user && req.user.companyId !== companyId && 
-          !req.user.roles.includes(UserRole.ADMIN) && 
-          !req.user.roles.some(role => role === UserRole.ADMIN)) {
+          !req.user.roles!.includes(UserRole.ADMIN) && 
+          !req.user.roles!.some(role => role === UserRole.ADMIN)) {
         return res.status(403).json({
           success: false,
           error: 'You do not have permission to access this company data'
@@ -72,18 +73,17 @@ router.post(
         companyId,
         action: AuditAction.CREATE,
         entity: 'note_contabil',
-        entityId: result.noteContabil!.id,
+        entityId: result.data?.id || documentId,
         details: {
           documentType,
           documentId,
-          noteContabilNumber: result.noteContabil!.number
+          noteContabilData: result.data
         }
       });
       
       return res.status(200).json({
         success: true,
-        noteContabil: result.noteContabil,
-        ledgerEntry: result.ledgerEntry
+        data: result.data
       });
     } catch (error) {
       console.error('[NoteContabilRoute] Error generating Note Contabil:', error instanceof Error ? error.message : String(error));
@@ -117,8 +117,8 @@ router.post(
       
       // Check if user has access to this company
       if (req.user && req.user.companyId !== companyId && 
-          !req.user.roles.includes(UserRole.ADMIN) &&
-          !req.user.roles.some(role => role === UserRole.ADMIN)) {
+          !req.user.roles!.includes(UserRole.ADMIN) &&
+          !req.user.roles!.some(role => role === UserRole.ADMIN)) {
         return res.status(403).json({
           success: false,
           error: 'You do not have permission to access this company data'
@@ -193,8 +193,8 @@ router.get(
       
       // Check if user has access to this company
       if (req.user && req.user.companyId !== companyId && 
-          !req.user.roles.includes(UserRole.ADMIN) &&
-          !req.user.roles.some(role => role === UserRole.ADMIN)) {
+          !req.user.roles!.includes(UserRole.ADMIN) &&
+          !req.user.roles!.some(role => role === UserRole.ADMIN)) {
         return res.status(403).json({
           success: false,
           error: 'You do not have permission to access this company data'
@@ -246,8 +246,8 @@ router.get(
       
       // Check if user has access to this company
       if (req.user && req.user.companyId !== companyId && 
-          !req.user.roles.includes(UserRole.ADMIN) &&
-          !req.user.roles.some(role => role === UserRole.ADMIN)) {
+          !req.user.roles!.includes(UserRole.ADMIN) &&
+          !req.user.roles!.some(role => role === UserRole.ADMIN)) {
         return res.status(403).json({
           success: false,
           error: 'You do not have permission to access this company data'

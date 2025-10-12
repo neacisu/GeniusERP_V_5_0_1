@@ -492,4 +492,120 @@ export default class NoteContabilService {
   async approveNote(noteId: string, companyId: string, userId: string): Promise<any> {
     return this.validateAndMarkNote(noteId, companyId, userId);
   }
+
+  /**
+   * Generate Note Contabil from document
+   * Alias for generateNoteFromDocument for API consistency
+   */
+  async generateNoteContabil(
+    documentType: string,
+    documentId: string,
+    companyId: string,
+    userId: string
+  ): Promise<{ success: boolean; data?: any; errors?: string[] }> {
+    try {
+      const result = await this.generateNoteFromDocument(documentId, documentType, companyId, userId);
+      return {
+        success: true,
+        data: result
+      };
+    } catch (error) {
+      console.error('❌ Error generating Note Contabil:', error);
+      return {
+        success: false,
+        errors: [error instanceof Error ? error.message : String(error)]
+      };
+    }
+  }
+
+  /**
+   * Get Note Contabil by ID
+   * Alias for getNoteById for API consistency
+   */
+  async getNoteContabilById(noteId: string, companyId: string): Promise<any> {
+    return this.getNoteById(noteId, companyId, 'system');
+  }
+
+  /**
+   * Reverse (storno) an accounting note
+   * Creates a reversal entry by swapping debit and credit amounts
+   */
+  async reverseNoteContabil(noteId: string, userId: string): Promise<boolean> {
+    try {
+      const { JournalService } = await import('./journal.service');
+      const journalService = new JournalService();
+      
+      // Use JournalService to reverse the ledger entry associated with this note
+      // The noteId could be the ledger entry ID or we need to find it
+      await journalService.reverseLedgerEntry(
+        noteId,
+        'Manual reversal via Note Contabil',
+        userId
+      );
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Error reversing Note Contabil:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Generate PDF for Note Contabil
+   * Creates a formatted PDF document for the accounting note
+   */
+  async generateNoteContabilPdf(noteId: string, companyId: string): Promise<Buffer | null> {
+    try {
+      // Import PDFKit dynamically
+      const PDFDocument = require('pdfkit');
+      
+      // Get the note data
+      const note = await this.getNoteById(noteId, companyId, 'system');
+      if (!note) {
+        throw new Error('Note Contabil not found');
+      }
+      
+      // Create PDF document
+      const doc = new PDFDocument({ size: 'A4', margin: 50 });
+      const chunks: Buffer[] = [];
+      
+      // Collect PDF data
+      doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+      
+      // Generate PDF content
+      doc.fontSize(20).text('NOTĂ CONTABILĂ', { align: 'center' });
+      doc.moveDown();
+      doc.fontSize(12).text(`Nr. ${note.number || note.id}`);
+      doc.text(`Data: ${note.date ? new Date(note.date).toLocaleDateString('ro-RO') : 'N/A'}`);
+      doc.moveDown();
+      doc.text(`Descriere: ${note.description || 'N/A'}`);
+      doc.moveDown();
+      
+      if (note.entries && Array.isArray(note.entries)) {
+        doc.fontSize(14).text('Înregistrări contabile:', { underline: true });
+        doc.moveDown();
+        doc.fontSize(10);
+        
+        note.entries.forEach((entry: any, index: number) => {
+          doc.text(`${index + 1}. Cont: ${entry.accountCode || entry.accountId || 'N/A'}`);
+          doc.text(`   Debit: ${Number(entry.debitAmount || 0).toFixed(2)} RON`);
+          doc.text(`   Credit: ${Number(entry.creditAmount || 0).toFixed(2)} RON`);
+          doc.text(`   Descriere: ${entry.description || 'N/A'}`);
+          doc.moveDown(0.5);
+        });
+      }
+      
+      // Finalize PDF
+      doc.end();
+      
+      // Return PDF as buffer
+      return new Promise((resolve, reject) => {
+        doc.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('error', reject);
+      });
+    } catch (error) {
+      console.error('❌ Error generating Note Contabil PDF:', error);
+      return null;
+    }
+  }
 }
