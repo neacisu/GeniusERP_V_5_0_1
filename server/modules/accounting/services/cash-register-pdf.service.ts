@@ -86,11 +86,11 @@ export class CashRegisterPDFService {
         currentY += 20;
         
         // Sold inițial
-        doc.font('Helvetica').fontSize(8);
+        doc.fontSize(8);
         doc.rect(50, currentY, 495, 15).stroke();
-        doc.text('Sold reportat din ziua precedentă', 85, currentY + 3, { width: 320, italic: true });
+        doc.font('Helvetica-Oblique').text('Sold reportat din ziua precedentă', 85, currentY + 3, { width: 320 });
         const soldInitial = transactions.length > 0 ? Number(transactions[0].balanceBefore) : 0;
-        doc.text(soldInitial.toFixed(2), 515, currentY + 3, { width: colWidths.sold, align: 'right' });
+        doc.font('Helvetica').text(soldInitial.toFixed(2), 515, currentY + 3, { width: colWidths.sold, align: 'right' });
         currentY += 15;
         
         // Tranzacții
