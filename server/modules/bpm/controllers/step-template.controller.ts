@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { StepTemplateService } from '../services/step-template.service.js';
-import { AuditService } from '../../../common/services/audit.service.js';
 import { 
   BpmStepTemplateType, 
   BpmStepTemplateTargetType, 
@@ -34,7 +33,7 @@ export class StepTemplateController {
    */
   async getStepTemplates(req: Request, res: Response) {
     try {
-      const { companyId } = req.user;
+      const companyId = req.user?.companyId || 'unknown';
       const includeGlobal = req.query.includeGlobal !== 'false';
 
       const stepTemplates = await this.stepTemplateService.getStepTemplates(companyId, includeGlobal);
@@ -47,7 +46,7 @@ export class StepTemplateController {
       console.error('Error getting step templates:', error);
       res.status(500).json({
         success: false,
-        message: `Error getting step templates: ${error.message}`
+        message: `Error getting step templates: ${error instanceof Error ? error.message : String(error)}`
       });
     }
   }
@@ -61,7 +60,7 @@ export class StepTemplateController {
   async getStepTemplateById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { companyId } = req.user;
+      const companyId = req.user?.companyId || "unknown";
 
       const stepTemplate = await this.stepTemplateService.getStepTemplateById(id, companyId);
       
@@ -80,7 +79,7 @@ export class StepTemplateController {
       console.error('Error getting step template by ID:', error);
       res.status(500).json({
         success: false,
-        message: `Error getting step template: ${error.message}`
+        message: `Error getting step template: ${error instanceof Error ? error.message : String(error)}`
       });
     }
   }
@@ -93,7 +92,8 @@ export class StepTemplateController {
    */
   async createStepTemplate(req: Request, res: Response) {
     try {
-      const { companyId, id: userId } = req.user;
+      const companyId = req.user?.companyId || 'unknown';
+      const userId = req.user?.id || 'unknown';
       
       // Validate request body
       const validation = createStepTemplateSchema.safeParse({
@@ -125,7 +125,7 @@ export class StepTemplateController {
         entityId: stepTemplate.id,
         userId,
         companyId,
-        metadata: {
+        details: {
           name: stepTemplate.name,
           type: stepTemplate.type,
           targetType: stepTemplate.targetType
@@ -140,7 +140,7 @@ export class StepTemplateController {
       console.error('Error creating step template:', error);
       res.status(500).json({
         success: false,
-        message: `Error creating step template: ${error.message}`
+        message: `Error creating step template: ${error instanceof Error ? error.message : String(error)}`
       });
     }
   }
@@ -154,7 +154,7 @@ export class StepTemplateController {
   async updateStepTemplate(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { companyId, id: userId } = req.user;
+      const companyId = req.user?.companyId || "unknown"; const userId = req.user?.id || "unknown";
       
       // Validate request body
       const validation = updateStepTemplateSchema.safeParse({
@@ -191,7 +191,7 @@ export class StepTemplateController {
         entityId: id,
         userId,
         companyId,
-        metadata: {
+        details: {
           name: stepTemplate.name,
           type: stepTemplate.type,
           targetType: stepTemplate.targetType,
@@ -207,7 +207,7 @@ export class StepTemplateController {
       console.error('Error updating step template:', error);
       res.status(500).json({
         success: false,
-        message: `Error updating step template: ${error.message}`
+        message: `Error updating step template: ${error instanceof Error ? error.message : String(error)}`
       });
     }
   }
@@ -221,7 +221,7 @@ export class StepTemplateController {
   async deleteStepTemplate(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { companyId, id: userId } = req.user;
+      const companyId = req.user?.companyId || "unknown"; const userId = req.user?.id || "unknown";
       
       // Check if the step template exists
       const stepTemplate = await this.stepTemplateService.getStepTemplateById(id, companyId);
@@ -242,7 +242,7 @@ export class StepTemplateController {
         entityId: id,
         userId,
         companyId,
-        metadata: {
+        details: {
           name: stepTemplate.name,
           type: stepTemplate.type
         }
@@ -256,7 +256,7 @@ export class StepTemplateController {
       console.error('Error deleting step template:', error);
       res.status(500).json({
         success: false,
-        message: `Error deleting step template: ${error.message}`
+        message: `Error deleting step template: ${error instanceof Error ? error.message : String(error)}`
       });
     }
   }
@@ -270,7 +270,7 @@ export class StepTemplateController {
   async getStepTemplatesByType(req: Request, res: Response) {
     try {
       const { type } = req.params;
-      const { companyId } = req.user;
+      const companyId = req.user?.companyId || "unknown";
       const includeGlobal = req.query.includeGlobal !== 'false';
       
       // Validate the type parameter
@@ -295,7 +295,7 @@ export class StepTemplateController {
       console.error('Error getting step templates by type:', error);
       res.status(500).json({
         success: false,
-        message: `Error getting step templates: ${error.message}`
+        message: `Error getting step templates: ${error instanceof Error ? error.message : String(error)}`
       });
     }
   }
@@ -309,7 +309,7 @@ export class StepTemplateController {
   async getStepTemplatesByTargetType(req: Request, res: Response) {
     try {
       const { targetType } = req.params;
-      const { companyId } = req.user;
+      const companyId = req.user?.companyId || "unknown";
       const includeGlobal = req.query.includeGlobal !== 'false';
       
       // Validate the targetType parameter
@@ -334,7 +334,7 @@ export class StepTemplateController {
       console.error('Error getting step templates by target type:', error);
       res.status(500).json({
         success: false,
-        message: `Error getting step templates: ${error.message}`
+        message: `Error getting step templates: ${error instanceof Error ? error.message : String(error)}`
       });
     }
   }
@@ -348,7 +348,7 @@ export class StepTemplateController {
   async toggleGlobalTemplate(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { companyId, id: userId } = req.user;
+      const companyId = req.user?.companyId || "unknown"; const userId = req.user?.id || "unknown";
       const { isGlobal } = req.body;
       
       // Validate request body
@@ -378,7 +378,7 @@ export class StepTemplateController {
         entityId: id,
         userId,
         companyId,
-        metadata: {
+        details: {
           name: stepTemplate.name,
           isGlobal: isGlobal,
           previousIsGlobal: existingTemplate.isGlobal
@@ -393,7 +393,7 @@ export class StepTemplateController {
       console.error('Error toggling global status:', error);
       res.status(500).json({
         success: false,
-        message: `Error toggling global status: ${error.message}`
+        message: `Error toggling global status: ${error instanceof Error ? error.message : String(error)}`
       });
     }
   }

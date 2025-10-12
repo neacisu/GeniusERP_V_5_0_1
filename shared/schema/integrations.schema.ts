@@ -87,3 +87,23 @@ export const insertIntegrationSchema = createInsertSchema(integrations, {
 export type Integration = typeof integrations.$inferSelect;
 export type InsertIntegration = z.infer<typeof insertIntegrationSchema>;
 
+/**
+ * TypeScript enum for IntegrationProvider (for type-safe usage in code)
+ */
+export enum IntegrationProvider {
+  STRIPE = 'stripe',
+  PAYPAL = 'paypal',
+  SHOPIFY = 'shopify',
+  PANDADOC = 'pandadoc',
+  ANAF_EFACTURA = 'anaf_efactura',
+  GOOGLE = 'google',
+  MICROSOFT = 'microsoft',
+  AMAZON = 'amazon',
+  FACEBOOK = 'facebook',
+  TWITTER = 'twitter',
+  HUBSPOT = 'hubspot',
+  MAILCHIMP = 'mailchimp',
+  QUICKBOOKS = 'quickbooks',
+  XERO = 'xero'
+}
+
