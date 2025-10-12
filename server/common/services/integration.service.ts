@@ -8,8 +8,8 @@
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { v4 as uuidv4 } from 'uuid';
 import { Logger } from '../logger';
-import { getPostgresClient } from '../drizzle/db';
-import postgres from 'postgres';
+import { integrations } from '../../../shared/schema/integrations.schema';
+import { eq, and } from 'drizzle-orm';
 
 // Initialize logger
 const logger = new Logger('IntegrationService');
@@ -62,33 +62,17 @@ export class IntegrationService {
    */
   async getActiveIntegration(companyId: string, provider: IntegrationProvider) {
     try {
-      const pgClient = getPostgresClient();
-      
-      // Use raw SQL since integrations table doesn't have a Drizzle schema defined
-      const result = await pgClient.unsafe<any[]>(`
-        SELECT 
-          id, 
-          company_id as "companyId",
-          franchise_id as "franchiseId",
-          provider, 
-          name,
-          description,
-          status, 
-          is_connected as "isConnected",
-          config, 
-          last_synced_at as "lastSyncedAt",
-          webhook_url as "webhookUrl",
-          webhook_secret as "webhookSecret",
-          created_at as "createdAt",
-          updated_at as "updatedAt",
-          created_by as "createdBy",
-          updated_by as "updatedBy"
-        FROM integrations
-        WHERE company_id = $1 
-          AND provider = $2 
-          AND status = $3
-        LIMIT 1
-      `, [companyId, provider, IntegrationStatus.ACTIVE]);
+      const result = await this.db
+        .select()
+        .from(integrations)
+        .where(
+          and(
+            eq(integrations.companyId, companyId),
+            eq(integrations.provider, provider),
+            eq(integrations.status, IntegrationStatus.ACTIVE)
+          )
+        )
+        .limit(1);
 
       return result[0] || null;
     } catch (error) {
@@ -189,96 +173,58 @@ export class IntegrationService {
    */
   async saveIntegration(companyId: string, provider: IntegrationProvider, config: any, userId: string) {
     try {
-      const pgClient = getPostgresClient();
-      
-      // Check if integration already exists using raw SQL
-      const existing = await pgClient.unsafe<any[]>(`
-        SELECT 
-          id, 
-          company_id as "companyId",
-          franchise_id as "franchiseId",
-          provider, 
-          name,
-          description,
-          status, 
-          is_connected as "isConnected",
-          config, 
-          last_synced_at as "lastSyncedAt",
-          webhook_url as "webhookUrl",
-          webhook_secret as "webhookSecret",
-          created_at as "createdAt",
-          updated_at as "updatedAt",
-          created_by as "createdBy",
-          updated_by as "updatedBy"
-        FROM integrations
-        WHERE company_id = $1 AND provider = $2
-        LIMIT 1
-      `, [companyId, provider]);
+      // Check if integration already exists
+      const existing = await this.db
+        .select()
+        .from(integrations)
+        .where(
+          and(
+            eq(integrations.companyId, companyId),
+            eq(integrations.provider, provider)
+          )
+        )
+        .limit(1);
 
       const existingIntegration = existing[0] || null;
       const timestamp = new Date();
       
       if (existingIntegration) {
         // Update existing integration
-        const updated = await pgClient.unsafe<any[]>(`
-          UPDATE integrations
-          SET 
-            config = $1,
-            status = $2,
-            is_connected = true,
-            updated_at = NOW(),
-            updated_by = $3
-          WHERE id = $4
-          RETURNING 
-            id, 
-            company_id as "companyId",
-            franchise_id as "franchiseId",
-            provider, 
-            name,
-            description,
-            status, 
-            is_connected as "isConnected",
-            config, 
-            last_synced_at as "lastSyncedAt",
-            webhook_url as "webhookUrl",
-            webhook_secret as "webhookSecret",
-            created_at as "createdAt",
-            updated_at as "updatedAt",
-            created_by as "createdBy",
-            updated_by as "updatedBy"
-        `, [JSON.stringify(config), IntegrationStatus.ACTIVE, userId, existingIntegration.id]);
+        const updated = await this.db
+          .update(integrations)
+          .set({
+            config,
+            status: IntegrationStatus.ACTIVE,
+            isConnected: true,
+            updatedAt: timestamp,
+            updatedBy: userId
+          })
+          .where(eq(integrations.id, existingIntegration.id))
+          .returning();
         
         logger.info(`Updated ${provider} integration for company ${companyId}`);
         
         return updated[0];
       } else {
         // Create new integration
-        const newId = uuidv4();
-        const defaultName = this.getDefaultName(provider);
+        const newIntegration = {
+          id: uuidv4(),
+          companyId,
+          provider,
+          name: this.getDefaultName(provider),
+          config,
+          status: IntegrationStatus.ACTIVE as any,
+          isConnected: true,
+          createdAt: timestamp,
+          createdBy: userId,
+          updatedAt: timestamp,
+          updatedBy: userId
+        };
         
-        const created = await pgClient.unsafe<any[]>(`
-          INSERT INTO integrations (
-            id, company_id, provider, name, config, status, is_connected,
-            created_at, created_by, updated_at, updated_by
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, NOW(), $9)
-          RETURNING 
-            id, 
-            company_id as "companyId",
-            franchise_id as "franchiseId",
-            provider, 
-            name,
-            description,
-            status, 
-            is_connected as "isConnected",
-            config, 
-            last_synced_at as "lastSyncedAt",
-            webhook_url as "webhookUrl",
-            webhook_secret as "webhookSecret",
-            created_at as "createdAt",
-            updated_at as "updatedAt",
-            created_by as "createdBy",
-            updated_by as "updatedBy"
-        `, [newId, companyId, provider, defaultName, JSON.stringify(config), IntegrationStatus.ACTIVE, true, userId, userId]);
+        const created = await this.db
+          .insert(integrations)
+          .values(newIntegration)
+          .returning();
         
         logger.info(`Created new ${provider} integration for company ${companyId}`);
         
