@@ -58,13 +58,23 @@ export async function setupVite(app: Express, server: Server) {
 
   app.use(vite.middlewares);
   
-  // Catch-all route for SPA - handle all non-API routes
-  // Use a function without path parameter to avoid path-to-regexp issues
+  // Catch-all route for SPA - ONLY serve HTML if Vite didn't handle the request
+  // This ensures Vite processes .tsx, .ts, .css files FIRST
   app.use(async (req, res, next) => {
     const url = req.originalUrl;
 
-    // Skip Vite HTML rendering for API routes - let Express handle them
+    // Skip for API routes
     if (url.startsWith('/api/')) {
+      return next();
+    }
+
+    // Skip if response already sent by Vite middleware
+    if (res.headersSent) {
+      return;
+    }
+
+    // Skip for asset files that Vite should handle
+    if (url.match(/\.(js|ts|tsx|jsx|css|json|woff2?|ttf|otf|eot|svg|png|jpg|jpeg|gif|webp|ico)$/)) {
       return next();
     }
 
