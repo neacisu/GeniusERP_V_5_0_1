@@ -7,3 +7,4 @@
 export * from './hr.schema';
 export * from './settings.schema';
 export * from './cor.schema';
+export * from './documents.schema';

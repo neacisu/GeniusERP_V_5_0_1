@@ -5,3 +5,4 @@
  */
 
 export * from './crm.schema';
+export * from './financial-data.schema';
