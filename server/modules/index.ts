@@ -14,7 +14,6 @@ import { CollabModule } from "./collab/collab.module";
 import { initAiModule } from "./ai/ai.module";
 import { SettingsModule } from "./settings/settings.module";
 import { MarketingModule } from "./marketing/marketing.module";
-import { initExampleModule } from "./examples";
 import { initSalesModule } from "./sales/sales.module";
 import { initAccountingModule } from "./accounting";
 import { CommsModule } from "./comms/comms.module";
@@ -99,11 +98,6 @@ export async function initializeModules(app: Express) {
     console.log('Initializing Marketing module...');
     await MarketingModule.register(app);
     console.log('Marketing module initialized');
-    
-    // Initialize Examples module
-    console.log('Initializing Examples module...');
-    initExampleModule(app);
-    console.log('Examples module initialized');
     
     // Initialize Sales module
     console.log('Initializing Sales module...');
