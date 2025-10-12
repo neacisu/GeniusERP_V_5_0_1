@@ -53,7 +53,10 @@ export async function setupVite(app: Express, server: Server) {
   });
 
   app.use(vite.middlewares);
-  app.use("*", async (req, res, next) => {
+  
+  // Catch-all route for SPA - handle all non-API routes
+  // Use a function without path parameter to avoid path-to-regexp issues
+  app.use(async (req, res, next) => {
     const url = req.originalUrl;
 
     // Skip Vite HTML rendering for API routes - let Express handle them
@@ -96,7 +99,8 @@ export function serveStatic(app: Express) {
   app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist, but exclude API routes
-  app.use("*", (req, res) => {
+  // Use middleware without path parameter to avoid path-to-regexp issues
+  app.use((req, res) => {
     // Don't serve index.html for API routes
     if (req.originalUrl.startsWith('/api/')) {
       return res.status(404).json({ error: 'API endpoint not found' });

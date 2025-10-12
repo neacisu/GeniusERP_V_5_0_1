@@ -1,0 +1,50 @@
+# Custom Falco Rules for GeniusERP
+# Reguli de securitate simplificate fără dependențe de macros externe
+
+- list: geniuserp_containers
+  items: [geniuserp-app, geniuserp-postgres]
+
+- list: shell_binaries
+  items: [bash, sh, zsh, ash, csh, tcsh]
+
+- list: sensitive_files
+  items: [/etc/shadow, /etc/passwd, /etc/sudoers]
+
+# Detectare acces la fișiere sensibile
+- rule: Sensitive File Access in Container
+  desc: Detect access to sensitive files in containers
+  condition: >
+    evt.type in (open, openat, openat2) and
+    evt.is_open_write=true and
+    fd.name pmatch (sensitive_files) and
+    container.id != host
+  output: >
+    Sensitive file accessed (user=%user.name command=%proc.cmdline file=%fd.name container=%container.name)
+  priority: WARNING
+  tags: [filesystem, container]
+
+# Detectare shell în container
+- rule: Shell Execution in App Container
+  desc: Detect shell execution in application container
+  condition: >
+    evt.type = execve and
+    proc.name in (shell_binaries) and
+    container.name = "geniuserp-app"
+  output: >
+    Shell executed in app container (user=%user.name shell=%proc.name parent=%proc.pname cmdline=%proc.cmdline container=%container.name)
+  priority: NOTICE
+  tags: [process, shell]
+
+# Detectare modificări în /etc
+- rule: Write to Config Directory
+  desc: Detect writes to /etc directory in containers
+  condition: >
+    evt.type in (open, openat, openat2) and
+    evt.is_open_write=true and
+    fd.name startswith /etc and
+    container.id != host and
+    not fd.name in (/etc/ld.so.cache, /etc/resolv.conf, /etc/hosts, /etc/hostname)
+  output: >
+    Write to /etc directory (user=%user.name file=%fd.name container=%container.name command=%proc.cmdline)
+  priority: WARNING
+  tags: [filesystem, container]

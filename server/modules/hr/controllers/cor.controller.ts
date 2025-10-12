@@ -75,10 +75,23 @@ export class CorController {
     
     // Public endpoints (read-only)
     router.get(`${basePath}/major-groups`, (req: Request, res: Response) => this.getMajorGroups(req, res));
-    router.get(`${basePath}/submajor-groups/:majorCode?`, (req: Request, res: Response) => this.getSubmajorGroups(req, res));
-    router.get(`${basePath}/minor-groups/:submajorCode?`, (req: Request, res: Response) => this.getMinorGroups(req, res));
-    router.get(`${basePath}/subminor-groups/:minorCode?`, (req: Request, res: Response) => this.getSubminorGroups(req, res));
-    router.get(`${basePath}/occupations/:subminorCode?`, (req: Request, res: Response) => this.getOccupations(req, res));
+    
+    // Submajor groups - both with and without majorCode
+    router.get(`${basePath}/submajor-groups`, (req: Request, res: Response) => this.getSubmajorGroups(req, res));
+    router.get(`${basePath}/submajor-groups/:majorCode`, (req: Request, res: Response) => this.getSubmajorGroups(req, res));
+    
+    // Minor groups - both with and without submajorCode
+    router.get(`${basePath}/minor-groups`, (req: Request, res: Response) => this.getMinorGroups(req, res));
+    router.get(`${basePath}/minor-groups/:submajorCode`, (req: Request, res: Response) => this.getMinorGroups(req, res));
+    
+    // Subminor groups - both with and without minorCode
+    router.get(`${basePath}/subminor-groups`, (req: Request, res: Response) => this.getSubminorGroups(req, res));
+    router.get(`${basePath}/subminor-groups/:minorCode`, (req: Request, res: Response) => this.getSubminorGroups(req, res));
+    
+    // Occupations - both with and without subminorCode
+    router.get(`${basePath}/occupations`, (req: Request, res: Response) => this.getOccupations(req, res));
+    router.get(`${basePath}/occupations/:subminorCode`, (req: Request, res: Response) => this.getOccupations(req, res));
+    
     router.get(`${basePath}/occupation/:code`, (req: Request, res: Response) => this.getOccupationByCode(req, res));
     router.get(`${basePath}/search`, (req: Request, res: Response) => this.searchOccupations(req, res));
     router.get(`${basePath}/validate/:code`, (req: Request, res: Response) => this.validateCorCode(req, res));

@@ -67,7 +67,24 @@ tmp/
 *.sqlite3
 
 # Docker
-docker-compose.override.yml# Large data files (COR - Romanian Occupations Classification)
+docker-compose.override.yml
+
+# Monitoring & Security
+monitoring/wazuh/certs/
+monitoring/*/data/
+trivy-report.json
+trivy-*.json
+eslint-report.json
+eslint-report.html
+*.trivyignore
+
+# Grafana
+grafana-backup/
+
+# Sentry
+.sentryclirc
+
+# Large data files (COR - Romanian Occupations Classification)
 hr/CORseed/data/*.xml
 attached_assets/cor-data/*.xml
 migrations/cor/*.json

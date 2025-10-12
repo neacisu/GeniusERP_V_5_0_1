@@ -6,10 +6,13 @@ services:
     container_name: geniuserp-app
     volumes:
       - .:/app
-      - /app/node_modules # Volume pentru node_modules să nu fie suprascris de volumul din container
+      - node_modules_volume:/app/node_modules
     ports:
       - "5000:5000" # API
       - "3000:3000" # Frontend Vite
+    labels:
+      - logging=promtail
+      - logging_jobname=geniuserp-app
     environment:
       # Variabile de bază
       - NODE_ENV=${NODE_ENV:-development}
@@ -48,6 +51,10 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_ORGANIZATION=${OPENAI_ORGANIZATION}
       - OPENAI_DEFAULT_MODEL=${OPENAI_DEFAULT_MODEL:-gpt-4}
+      
+      # Sentry Error Tracking
+      - SENTRY_DSN=${SENTRY_DSN}
+      - VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
       
       # Setări pentru debugare și HMR
       - VITE_DEV_SERVER_URL=http://localhost:5000
@@ -95,9 +102,205 @@ services:
     networks:
       - geniuserp-network
 
+  # ===== MONITORING STACK =====
+  
+  # Prometheus - Colectare metrici
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: geniuserp-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - geniuserp-network
+    restart: unless-stopped
+
+  # Grafana - Dashboards și Alerte
+  grafana:
+    image: grafana/grafana:latest
+    container_name: geniuserp-grafana
+    ports:
+      - "4000:3000"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:4000
+    networks:
+      - geniuserp-network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # Loki - Log aggregation
+  loki:
+    image: grafana/loki:latest
+    container_name: geniuserp-loki
+    user: "0:0"
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - geniuserp-network
+    restart: unless-stopped
+
+  # Promtail - Log collector
+  promtail:
+    image: grafana/promtail:latest
+    container_name: geniuserp-promtail
+    volumes:
+      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - geniuserp-network
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  # ===== SECURITY STACK =====
+
+  # Falco - Runtime Security Monitoring
+  falco:
+    image: falcosecurity/falco-no-driver:latest
+    container_name: geniuserp-falco
+    privileged: true
+    pid: host
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock:ro
+      - /proc:/host/proc:ro
+      - /etc:/host/etc:ro
+      - ./monitoring/falco:/etc/falco
+    environment:
+      - FALCO_BPF_PROBE=""
+    labels:
+      - logging=promtail
+      - logging_jobname=falco
+    networks:
+      - geniuserp-network
+    restart: unless-stopped
+
+  # Wazuh Indexer (OpenSearch)
+  wazuh-indexer:
+    image: wazuh/wazuh-indexer:4.7.0
+    container_name: geniuserp-wazuh-indexer
+    hostname: wazuh-indexer
+    ports:
+      - "9200:9200"
+    environment:
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "bootstrap.memory_lock=true"
+      - "discovery.type=single-node"
+      - "network.host=0.0.0.0"
+      - "plugins.security.ssl.http.enabled=false"
+      - "plugins.security.disabled=true"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - wazuh_indexer_data:/var/lib/wazuh-indexer
+    networks:
+      - geniuserp-network
+    restart: unless-stopped
+
+  # Wazuh Manager
+  wazuh-manager:
+    image: wazuh/wazuh-manager:4.7.0
+    container_name: geniuserp-wazuh-manager
+    hostname: wazuh-manager
+    ports:
+      - "1514:1514"
+      - "1515:1515"
+      - "55000:55000"
+    environment:
+      - INDEXER_URL=http://wazuh-indexer:9200
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=SecretPassword
+      - FILEBEAT_SSL_VERIFICATION_MODE=none
+      - SSL_CERTIFICATE_AUTHORITIES=""
+      - SSL_CERTIFICATE=""
+      - SSL_KEY=""
+      - API_USERNAME=wazuh-wui
+      - API_PASSWORD=MyS3cr37P450r.*-
+    volumes:
+      - wazuh_manager_data:/var/ossec/data
+      - wazuh_manager_etc:/var/ossec/etc
+      - wazuh_manager_logs:/var/ossec/logs
+    labels:
+      - logging=promtail
+      - logging_jobname=wazuh-manager
+    networks:
+      - geniuserp-network
+    depends_on:
+      - wazuh-indexer
+    restart: unless-stopped
+
+  # Wazuh Dashboard
+  wazuh-dashboard:
+    image: wazuh/wazuh-dashboard:4.7.0
+    container_name: geniuserp-wazuh-dashboard
+    hostname: wazuh-dashboard
+    ports:
+      - "9443:5601"
+    environment:
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=SecretPassword
+      - WAZUH_API_URL=https://wazuh-manager
+      - DASHBOARD_USERNAME=kibanaserver
+      - DASHBOARD_PASSWORD=kibanaserver
+      - API_USERNAME=wazuh-wui
+      - API_PASSWORD=MyS3cr37P450r.*-
+      - OPENSEARCH_HOSTS=http://wazuh-indexer:9200
+    networks:
+      - geniuserp-network
+    depends_on:
+      - wazuh-manager
+    restart: unless-stopped
+
+  # Trivy Scanner (optional - runs on demand)
+  trivy-scanner:
+    image: aquasec/trivy:latest
+    container_name: geniuserp-trivy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - .:/app:ro
+      - trivy_cache:/root/.cache
+    command: ["--help"]
+    networks:
+      - geniuserp-network
+    profiles:
+      - tools
+    restart: "no"
+
 networks:
   geniuserp-network:
     driver: bridge
 
 volumes:
   postgres_data:
+  node_modules_volume:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  wazuh_indexer_data:
+  wazuh_manager_data:
+  wazuh_manager_etc:
+  wazuh_manager_logs:
+  trivy_cache:

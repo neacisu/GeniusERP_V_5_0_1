@@ -20,10 +20,22 @@ import './common/services';
 // Import the service registry initialization
 import { initializeServiceRegistry } from './common/services/registry.init';
 
+// Import metrics middleware
+import { metricsMiddleware, metricsHandler } from './middlewares/metrics.middleware';
+// Import Sentry middleware
+import { initializeSentry, sentryErrorHandler } from './middlewares/sentry.middleware';
+
 // Create Express app
 const app = express();
+
+// Initialize Sentry FIRST - before any other middleware
+initializeSentry(app);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Apply metrics middleware early to capture all requests
+app.use(metricsMiddleware);
 
 // Serve static files from public directory
 app.use('/templates', express.static('public/templates'));
@@ -32,6 +44,9 @@ app.use('/templates', express.static('public/templates'));
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Prometheus metrics endpoint
+app.get('/metrics', metricsHandler);
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -84,6 +99,9 @@ const httpServer = createServer(app);
     
     console.log('Essential services initialized successfully');
 
+    // Sentry error handler - MUST be before the default error handler (v10+ API)
+    sentryErrorHandler(app);
+
     // Error handling middleware
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
@@ -95,7 +113,6 @@ const httpServer = createServer(app);
 
     // Vite setup for frontend - DUPĂ ce am înregistrat toate rutele API
     if (app.get("env") === "development") {
-      console.log('Setting up Vite development server...');
       await setupVite(app, httpServer);
     } else {
       serveStatic(app);

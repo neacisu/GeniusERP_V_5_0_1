@@ -47,8 +47,14 @@ export class AuditModule {
       this.auditController.getUserLogs.bind(this.auditController)
     );
 
-    // Get recent audit logs
-    router.get('/recent/:limit?',
+    // Get recent audit logs - with limit
+    router.get('/recent/:limit',
+      AuthGuard.protect(JwtAuthMode.REQUIRED),
+      this.auditController.getRecentLogs.bind(this.auditController)
+    );
+    
+    // Get recent audit logs - without limit (default)
+    router.get('/recent',
       AuthGuard.protect(JwtAuthMode.REQUIRED),
       this.auditController.getRecentLogs.bind(this.auditController)
     );

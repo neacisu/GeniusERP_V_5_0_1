@@ -45,6 +45,45 @@ GeniusERP este un sistem ERP modern și complet, dezvoltat pentru afaceri din Ro
 - ✅ Docker Compose optimizat
 - ✅ Port conflict resolution (5433:5432)
 
+## 🛡️ Monitoring, Securitate și Calitate
+
+GeniusERP v5.1.0 integrează un stack complet de instrumente enterprise-grade:
+
+### 🔍 Monitoring Stack
+- **Prometheus** - Colectare metrici în timp real (CPU, memorie, request rate, latency)
+- **Grafana** - Dashboards interactive și alerting (http://localhost:4000)
+- **Loki & Promtail** - Agregare centralizată de logs de la toate serviciile
+
+### 🛡️ Security Stack
+- **Falco** - Runtime security monitoring și detectare intruziuni în containere
+- **Wazuh** - SIEM complet (Security Information and Event Management)
+- **Trivy** - Scanare automată vulnerabilități în imagini Docker și dependențe
+
+### ✨ Quality Stack
+- **Sentry** - Error tracking și performance monitoring pentru frontend și backend
+- **ESLint** - Static code analysis pentru TypeScript și React
+
+**📖 Documentație detaliată:** Vezi [MONITORING-SECURITY-GUIDE.md](./MONITORING-SECURITY-GUIDE.md)
+
+**🚀 Quick Start Monitoring:**
+```bash
+# Start toate serviciile
+docker-compose up -d
+
+# Acces dashboards
+- Grafana: http://localhost:4000 (admin/admin123)
+- Prometheus: http://localhost:9090
+- Wazuh: https://localhost:9443 (admin/SecretPassword)
+
+# Scanare vulnerabilități
+npm run scan:vulnerabilities
+
+# Linting
+npm run lint
+```
+
+---
+
 ## 🛠️ Stack Tehnologic
 
 ### Backend

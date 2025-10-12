@@ -73,10 +73,10 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
   /**
    * Get roles by company ID
    * 
-   * @route GET /api/admin/roles/:companyId
+   * @route GET /api/admin/roles/by-company/:companyId
    * @middleware AuthGuard.protect(JwtAuthMode.REQUIRED) - Requires authentication
    */
-  app.get(`${BASE_PATH}/:companyId`, AuthGuard.protect(JwtAuthMode.REQUIRED), async (req: Request, res: Response) => {
+  app.get(`${BASE_PATH}/by-company/:companyId`, AuthGuard.protect(JwtAuthMode.REQUIRED), async (req: Request, res: Response) => {
     try {
       const companyId = req.params.companyId;
       

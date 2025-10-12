@@ -46,6 +46,8 @@ export async function initializeModules(app: Express) {
     const adminModuleInfo = initAdminModule(app);
     console.log('Admin module initialized');
     
+    console.log('✅ Core modules loaded successfully');
+    
     // Initialize invoices module
     console.log('Initializing Invoices module...');
     InvoicesModule.register(app);

@@ -34,8 +34,16 @@ import { format } from 'date-fns';
 import { ro } from 'date-fns/locale';
 import { CalendarIcon, Save, Edit3, Check, Search } from 'lucide-react';
 import { useHrApi } from '../../hooks/useHrApi';
-import { debounce } from 'lodash';
 import { useToast } from '@/hooks/use-toast';
+
+// Simple debounce implementation
+const debounce = <T extends (...args: any[]) => any>(func: T, wait: number) => {
+  let timeout: NodeJS.Timeout | null = null;
+  return ((...args: Parameters<T>) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  }) as T;
+};
 
 // Define form validation schema
 const contractSchema = z.object({
