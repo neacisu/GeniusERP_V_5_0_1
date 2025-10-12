@@ -176,7 +176,7 @@ export class DocumentEditorService {
       }
       
       // Apply the changes to the content (simplified implementation)
-      let newContent = latestVersion.content;
+      const newContent = latestVersion.content;
       // In a real implementation, this would apply the actual edits
       
       // Save as a new version

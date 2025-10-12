@@ -1238,7 +1238,7 @@ export class SalesJournalService {
    */
   private mapToSalesJournalEntry(entry: Record<string, any>): SalesJournalEntry {
     // Extract customer information from the entry
-    let customerId = '';
+    const customerId = '';
     let customerName = '';
     
     // Look for customer info in the description

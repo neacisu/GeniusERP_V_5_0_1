@@ -179,7 +179,7 @@ export class TaskService {
       } = options;
       
       // Build conditions for the query
-      let conditions = [eq(collaborationTasks.companyId, companyId)];
+      const conditions = [eq(collaborationTasks.companyId, companyId)];
       
       // Add filter conditions
       if (status && status.length > 0) {

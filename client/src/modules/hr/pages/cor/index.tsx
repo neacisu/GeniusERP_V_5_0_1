@@ -84,7 +84,7 @@ const CorPage: React.FC = () => {
   
   // Generate pagination items
   const generatePaginationItems = () => {
-    let items = [];
+    const items = [];
     const maxVisiblePages = 5;
     
     // Previous button
@@ -99,7 +99,7 @@ const CorPage: React.FC = () => {
     
     // Calculate visible page range
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
     
     // Adjust if we're near the end
     if (endPage - startPage + 1 < maxVisiblePages) {

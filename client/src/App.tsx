@@ -1,4 +1,4 @@
-import React, { useEffect, lazy, Suspense } from "react";
+import React from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -35,9 +35,7 @@ import SettingsModule from "@/modules/settings";
 import SalesModule from "@/modules/sales";
 // CollabModule is lazy loaded
 // Import Settings Module pages directly
-import SystemGeneralPage from "@/modules/settings/pages/system/general";
-import SystemIndexPage from "@/modules/settings/pages/system/index";
-import ModuleSettingsPage from "@/modules/settings/pages/system/module-settings";
+// SystemGeneralPage, SystemIndexPage, ModuleSettingsPage - unused, removed
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { createLogger } from "@/utils/logger/logger";

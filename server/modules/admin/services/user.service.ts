@@ -219,7 +219,7 @@ export class UserService {
       const offset = (page - 1) * limit;
       
       // Build query conditions
-      let conditions = [];
+      const conditions = [];
       
       if (options.companyId !== undefined) {
         if (options.companyId === null) {

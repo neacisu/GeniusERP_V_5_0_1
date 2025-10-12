@@ -285,9 +285,9 @@ async function addMissingAccountsFromDb(accounts: AccountEntry[], accountCodeSet
     if (!synthetic || accountCodeSet.has(synthetic.code)) continue;
     
     // Determine the account level and parent
-    let level: 'class' | 'group' | 'synthetic' = 'synthetic';
+    const level: 'class' | 'group' | 'synthetic' = 'synthetic';
     let parentCode = '';
-    let grade = synthetic.grade;
+    const grade = synthetic.grade;
     
     if (synthetic.code.length === 3) {
       parentCode = synthetic.code.substring(0, 2);
@@ -574,7 +574,7 @@ async function seedAnalyticAccounts(accountEntries: AccountEntry[], dbInstance: 
   console.log(`Found ${analyticEntries.length} analytic accounts to seed`);
   
   let successCount = 0;
-  let createdAnalyticIds = new Map();
+  const createdAnalyticIds = new Map();
   
   // First, try to seed accounts with synthetic parents (proper structure)
   for (const analytic of analyticEntries) {

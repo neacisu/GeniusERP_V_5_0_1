@@ -56,6 +56,7 @@ const Carousel = React.forwardRef<
     },
     ref
   ) => {
+     
     const [carouselRef, api] = useEmblaCarousel(
       {
         ...opts,

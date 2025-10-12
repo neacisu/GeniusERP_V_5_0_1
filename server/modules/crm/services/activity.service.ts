@@ -234,7 +234,7 @@ export class ActivityService {
       const offset = (page - 1) * limit;
 
       // Build where conditions
-      let conditions = [eq(activities.companyId, companyId)];
+      const conditions = [eq(activities.companyId, companyId)];
 
       if (dealId) {
         conditions.push(eq(activities.dealId, dealId));
@@ -422,7 +422,7 @@ export class ActivityService {
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      let conditions = [
+      const conditions = [
         eq(activities.companyId, companyId),
         gte(activities.startTime, today),
         lte(activities.startTime, tomorrow)
@@ -452,7 +452,7 @@ export class ActivityService {
     userId?: string
   ): Promise<Activity[]> {
     try {
-      let conditions = [
+      const conditions = [
         eq(activities.companyId, companyId),
         gte(activities.startTime, startDate),
         lte(activities.startTime, endDate)
@@ -477,7 +477,7 @@ export class ActivityService {
    */
   async getActivityStats(companyId: string, userId?: string): Promise<any> {
     try {
-      let conditions = [eq(activities.companyId, companyId)];
+      const conditions = [eq(activities.companyId, companyId)];
       
       if (userId) {
         conditions.push(eq(activities.assignedTo, userId));

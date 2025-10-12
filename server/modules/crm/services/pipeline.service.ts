@@ -221,7 +221,7 @@ export class PipelineService {
    */
   async getPipelines(companyId: string, includeInactive: boolean = false): Promise<Pipeline[]> {
     try {
-      let conditions = [eq(pipelines.companyId, companyId)];
+      const conditions = [eq(pipelines.companyId, companyId)];
       
       if (!includeInactive) {
         conditions.push(eq(pipelines.isActive, true));
@@ -442,7 +442,7 @@ export class PipelineService {
    */
   async getStages(pipelineId: string, companyId: string, includeInactive: boolean = false): Promise<PipelineStage[]> {
     try {
-      let conditions = [
+      const conditions = [
         eq(pipelineStages.pipelineId, pipelineId),
         eq(pipelineStages.companyId, companyId)
       ];

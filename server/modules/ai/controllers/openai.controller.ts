@@ -55,7 +55,7 @@ export function registerOpenAIControllerRoutes(app: any, openAiService: OpenAiSe
   app.get(`${BASE_PATH}/status`, AuthGuard.protect(JwtAuthMode.REQUIRED), (req: Request, res: Response) => {
     try {
       // Check if the OpenAI SDK is installed by attempting an import
-      let sdkInstalled = true;
+      const sdkInstalled = true;
       
       try {
         // Log audit event for checking OpenAI status

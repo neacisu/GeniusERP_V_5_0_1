@@ -123,7 +123,7 @@ export class ThreadService {
       } = options;
       
       // Build the base where condition
-      let conditions = [eq(collaborationThreads.companyId, companyId)];
+      const conditions = [eq(collaborationThreads.companyId, companyId)];
       
       // Add additional filter conditions
       if (category) {

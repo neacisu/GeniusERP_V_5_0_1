@@ -170,7 +170,7 @@ export class ContactService {
       const offset = (page - 1) * limit;
 
       // Build where conditions
-      let conditions = [eq(contacts.companyId, companyId)];
+      const conditions = [eq(contacts.companyId, companyId)];
 
       if (isActive !== undefined) {
         conditions.push(eq(contacts.isActive, isActive));

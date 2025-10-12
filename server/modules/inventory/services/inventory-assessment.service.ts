@@ -184,7 +184,7 @@ export class InventoryAssessmentService {
         }
         
         // Create assessment items for each stock item
-        let assessmentItems = [];
+        const assessmentItems = [];
         let successCount = 0;
         let errorCount = 0;
         

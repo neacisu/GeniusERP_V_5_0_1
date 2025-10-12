@@ -118,7 +118,7 @@ export class ProcessService {
     this._logger.debug('Getting process by ID', { id, companyId });
     
     try {
-      let query = this.drizzleService.query((tx) => {
+      const query = this.drizzleService.query((tx) => {
         let baseQuery = tx.select().from(bpmProcesses).where(eq(bpmProcesses.id, id));
         
         // Add company filter if provided

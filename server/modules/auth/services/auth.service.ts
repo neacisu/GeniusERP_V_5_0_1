@@ -1,6 +1,5 @@
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions, Secret } from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import { User as SelectUser } from "@shared/schema";
 import { JwtPayload } from "@shared/types";
 import { storage } from "../../../storage";
@@ -8,19 +7,17 @@ import { DrizzleService, getDrizzle } from "../../../common/drizzle";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
-const scryptAsync = promisify(scrypt);
-
 // JWT Settings
 // Pentru mediul de dezvoltare, folosim o valoare prestabilită dacă JWT_SECRET nu este setat
 const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
-export const JWT_SECRET: string = process.env.JWT_SECRET || (isDevelopment ? 'dev_secret_key_for_local_development_only' : '');
+export const JWT_SECRET: Secret = process.env.JWT_SECRET || (isDevelopment ? 'dev_secret_key_for_local_development_only' : '');
 
 if (!JWT_SECRET) {
   console.error('[AuthService] ERROR: JWT_SECRET is not set in environment variables.');
   throw new Error('JWT_SECRET environment variable is required for authentication');
 }
 
-export const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "24h";
+export const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || "24h";
 
 // Log the JWT settings more explicitly for debugging
 console.log('[AuthService] JWT_SECRET exists and is being used');
@@ -38,22 +35,18 @@ export class AuthService {
   }
 
   /**
-   * Hash password using secure scrypt algorithm
+   * Hash password using secure bcrypt algorithm
    */
-  async hashPassword(password: string) {
-    const salt = randomBytes(16).toString("hex");
-    const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-    return `${buf.toString("hex")}.${salt}`;
+  async hashPassword(password: string): Promise<string> {
+    const saltRounds = 10;
+    return await bcrypt.hash(password, saltRounds);
   }
 
   /**
-   * Compare a supplied password against a stored hashed password
+   * Compare a supplied password against a stored hashed password (bcrypt)
    */
-  async comparePasswords(supplied: string, stored: string) {
-    const [hashed, salt] = stored.split(".");
-    const hashedBuf = Buffer.from(hashed, "hex");
-    const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-    return timingSafeEqual(hashedBuf, suppliedBuf);
+  async comparePasswords(supplied: string, stored: string): Promise<boolean> {
+    return await bcrypt.compare(supplied, stored);
   }
 
   /**
@@ -81,6 +74,7 @@ export class AuthService {
     
     console.log('[AuthService] Generated token payload:', payload);
     
+    // @ts-ignore - expiresIn accepts string but TypeScript complains
     return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
   }
 

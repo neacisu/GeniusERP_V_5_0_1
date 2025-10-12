@@ -143,7 +143,7 @@ export class ThreadDrizzleService extends BaseDrizzleService {
       
       return await this.query(async (db) => {
         // Build base conditions
-        let conditions = [
+        const conditions = [
           eq(collaborationThreads.companyId, companyId)
         ];
         

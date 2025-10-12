@@ -91,8 +91,8 @@ function EventsPage() {
   const handleCreateEvent = async (threadData: Partial<CommunityThread>) => {
     try {
       // Procesăm datele specifice pentru evenimente
-      let eventDate = threadData.metadata?.eventDate || null;
-      let eventTime = threadData.metadata?.eventTime || null;
+      const eventDate = threadData.metadata?.eventDate || null;
+      const eventTime = threadData.metadata?.eventTime || null;
       
       // Combinăm data și ora într-un singur câmp ISO
       let combinedDateTime = null;

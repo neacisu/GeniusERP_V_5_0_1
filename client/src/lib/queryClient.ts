@@ -249,27 +249,35 @@ export async function apiRequest<T = any>(
     }
   }
   
-  // Add Authorization header - try multiple sources to maximize success
-  const token = getAuthToken();
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-    console.log(`Using auth token: ${token.substring(0, 10)}...`);
-  } else {
-    console.warn("No auth token available for API request");
-    
-    // Try to get token from localStorage directly as fallback
-    try {
-      const localUser = localStorage.getItem('user');
-      if (localUser) {
-        const userData = JSON.parse(localUser);
-        if (userData?.token) {
-          headers["Authorization"] = `Bearer ${userData.token}`;
-          console.log("Using fallback auth token from localStorage");
+  // Add Authorization header - DOAR pentru endpoint-uri care necesită autentificare
+  // Endpoint-urile publice de autentificare NU trebuie să aibă token
+  const publicAuthEndpoints = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh'];
+  const isPublicAuthEndpoint = publicAuthEndpoints.some(endpoint => url.includes(endpoint));
+  
+  if (!isPublicAuthEndpoint) {
+    const token = getAuthToken();
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+      console.log(`Using auth token for protected endpoint: ${token.substring(0, 10)}...`);
+    } else {
+      console.warn("No auth token available for API request");
+      
+      // Try to get token from localStorage directly as fallback
+      try {
+        const localUser = localStorage.getItem('user');
+        if (localUser) {
+          const userData = JSON.parse(localUser);
+          if (userData?.token) {
+            headers["Authorization"] = `Bearer ${userData.token}`;
+            console.log("Using fallback auth token from localStorage");
+          }
         }
+      } catch (e) {
+        console.error("Error getting fallback token", e);
       }
-    } catch (e) {
-      console.error("Error getting fallback token", e);
     }
+  } else {
+    console.log(`Public auth endpoint detected (${url}), skipping token check`);
   }
 
   try {
@@ -315,8 +323,11 @@ export async function apiRequest<T = any>(
         return { error: 'Authentication required', status: 401, items: [] } as unknown as T;
       }
       
-      // Try to refresh the token first (unless we're already doing a token refresh)
-      if (!url.includes('/api/auth/refresh')) {
+      // Try to refresh the token DOAR pentru endpoint-uri protected (NU pentru login/register/refresh)
+      // Pentru endpoint-urile publice de auth, 401 înseamnă credentials invalide, NU token expirat
+      const isPublicAuthEndpoint = publicAuthEndpoints.some(endpoint => url.includes(endpoint));
+      
+      if (!isPublicAuthEndpoint) {
         console.log('Attempting to refresh token due to 401 error...');
         const refreshSuccess = await refreshToken();
         
@@ -347,17 +358,18 @@ export async function apiRequest<T = any>(
             }
           }
         }
-      }
-      
-      // If this is a critical authentication endpoint or refresh failed, force clear localStorage
-      if (url === '/api/user' || url.startsWith('/api/auth/') || url === '/api/auth/logout') {
-        console.warn('Authentication issue detected - clearing cached auth data');
+        
+        // If refresh failed, clear localStorage and redirect
+        console.warn('Token refresh failed - clearing cached auth data');
         localStorage.removeItem('user');
         
         // Redirect to login if not already there
         if (window.location.pathname !== '/login' && window.location.pathname !== '/auth') {
           window.location.href = '/auth';
         }
+      } else {
+        // Pentru endpoint-uri publice de auth, 401 înseamnă credentials invalide
+        console.error(`Invalid credentials for ${url}`);
       }
       
       throw new Error('Authentication required: Please login');

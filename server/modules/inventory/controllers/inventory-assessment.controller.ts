@@ -90,7 +90,7 @@ export function createInventoryAssessmentController(
       // Validate request body manually instead of using middleware
       try {
         // Add assessmentNumber from name if not provided
-        let requestBody = { ...req.body };
+        const requestBody = { ...req.body };
         if (!requestBody.assessmentNumber && requestBody.name) {
           requestBody.assessmentNumber = requestBody.name;
           log(`Added assessmentNumber from name: ${requestBody.assessmentNumber}`, 'inventory-assessment');

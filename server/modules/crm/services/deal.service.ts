@@ -300,7 +300,7 @@ export class DealService {
       const offset = (page - 1) * limit;
 
       // Build where conditions
-      let conditions = [eq(deals.companyId, companyId)];
+      const conditions = [eq(deals.companyId, companyId)];
 
       if (isActive !== undefined) {
         conditions.push(eq(deals.isActive, isActive));

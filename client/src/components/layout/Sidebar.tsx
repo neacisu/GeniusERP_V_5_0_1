@@ -16,7 +16,7 @@ type NavItem = {
   children?: NavItem[];
 };
 
-export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
+export default function Sidebar({ isOpen }: SidebarProps) {
   const [location] = useLocation();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 

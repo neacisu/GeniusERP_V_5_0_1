@@ -151,7 +151,7 @@ export class NotificationService {
         }
 
         // Map source_type to targetType
-        let targetType = notification.sourceType?.toLowerCase() || 'task';
+        const targetType = notification.sourceType?.toLowerCase() || 'task';
 
         // Extract sender info from metadata safely
         const senderId = metadata.senderId || null;

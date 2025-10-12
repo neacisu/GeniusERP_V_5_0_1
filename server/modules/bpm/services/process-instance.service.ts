@@ -239,7 +239,7 @@ export class ProcessInstanceService {
         updatedAt: new Date()
       };
       
-      let changes: Record<string, any> = {};
+      const changes: Record<string, any> = {};
       
       if (data.status !== undefined) {
         updateData.status = data.status;

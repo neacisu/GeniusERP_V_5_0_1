@@ -360,7 +360,7 @@ export class AccountingAttachmentsService extends DrizzleService {
   async cleanupOrphanedFiles(): Promise<number> {
     try {
       const files = await fs.promises.readdir(this.UPLOAD_DIR);
-      let deletedCount = 0;
+      const deletedCount = 0;
 
       for (const fileName of files) {
         const filePath = path.join(this.UPLOAD_DIR, fileName);

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import * as express from 'express';
 import { JwtPayload } from '../../../shared/types';
 

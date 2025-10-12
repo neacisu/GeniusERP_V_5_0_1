@@ -48,7 +48,7 @@ const QuestionsPage = () => {
     if (!data?.threads) return [];
     
     // Clonăm pentru a nu modifica datele originale
-    let filteredThreads = [...data.threads];
+    const filteredThreads = [...data.threads];
     
     // Sortare în funcție de filtru
     if (filter === 'popular') {

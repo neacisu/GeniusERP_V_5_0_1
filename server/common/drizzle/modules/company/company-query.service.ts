@@ -38,7 +38,7 @@ export class CompanyQueryService extends BaseDrizzleService {
       
       return await this.query(async (db) => {
         // Build a dynamic query with filters
-        let query = db
+        const query = db
           .select({
             id: companies.id,
             name: companies.name,
@@ -256,7 +256,7 @@ export class CompanyQueryService extends BaseDrizzleService {
       
       return await this.query(async (db) => {
         // Build query with conditions
-        let conditions: SQL<unknown>[] = [
+        const conditions: SQL<unknown>[] = [
           sql`deleted_at IS NULL`,
           sql`type = 'franchise'`
         ];

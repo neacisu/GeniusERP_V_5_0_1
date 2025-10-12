@@ -28,7 +28,7 @@ const openAiService = new OpenAiService(drizzle);
  */
 router.get('/status', AuthGuard.protect(JwtAuthMode.REQUIRED), (req, res) => {
   // Check if the OpenAI SDK is installed by attempting an import
-  let sdkInstalled = true;
+  const sdkInstalled = true;
   
   try {
     // Log audit event for checking OpenAI status
