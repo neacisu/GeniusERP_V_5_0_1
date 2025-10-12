@@ -124,6 +124,7 @@
   "devDependencies": {
     "@replit/vite-plugin-cartographer": "^0.3.2",
     "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
+    "@tailwindcss/postcss": "^4.1.14",
     "@tailwindcss/typography": "^0.5.19",
     "@types/connect-pg-simple": "^7.0.3",
     "@types/express": "^5.0.3",
