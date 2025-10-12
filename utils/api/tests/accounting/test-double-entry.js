@@ -1,15 +1,15 @@
 /**
- * Test script for JournalServiceV2 - Double-Entry Accounting
+ * Test script for JournalService - Double-Entry Accounting
  * 
  * This script tests the double-entry accounting functionality
  * by verifying a simulated transaction maintains balance between debits and credits.
  * 
- * NOTE: This test uses a mock implementation of JournalServiceV2 for standalone testing
+ * NOTE: This test uses a mock implementation of JournalService for standalone testing
  * without requiring the actual TypeScript imports which can cause issues in Node.js.
  */
 
-// Mock implementation of JournalServiceV2 for testing
-class MockJournalServiceV2 {
+// Mock implementation of JournalService for testing
+class MockJournalService {
   constructor() {
     this.ledgerEntries = new Map();
     this.nextId = 1;
@@ -169,7 +169,7 @@ async function testDoubleEntryRecording() {
   try {
     console.log('Running test for double-entry recording...');
     
-    const journalService = new MockJournalServiceV2();
+    const journalService = new MockJournalService();
     
     // Create a simple transaction between accounts
     const result = await journalService.recordTransaction({
@@ -256,7 +256,7 @@ async function testDoubleEntryRecording() {
 // Run the test
 async function runTest() {
   try {
-    console.log('Starting double-entry accounting test with mock JournalServiceV2');
+    console.log('Starting double-entry accounting test with mock JournalService');
     
     // Run the test
     const entryId = await testDoubleEntryRecording();

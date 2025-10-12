@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { BaseController } from './base.controller';
 import { JournalService, LedgerEntryType } from '../services/journal.service';
-import { JournalServiceV2 } from '../services/journal-service-v2';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
 import { getDrizzle } from '../../../common/drizzle';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,11 +12,8 @@ import { AuditService, AuditAction } from '../../audit/services/audit.service';
  * Handles journal and ledger operations in the accounting system
  */
 export class JournalController extends BaseController {
-  private readonly journalServiceV2: JournalServiceV2;
-  
   constructor(private readonly journalService: JournalService) {
     super();
-    this.journalServiceV2 = new JournalServiceV2();
   }
   
   /**
@@ -90,9 +86,9 @@ export class JournalController extends BaseController {
       const companyId = this.getCompanyId(req);
       const userId = this.getUserId(req);
       
-      // Record the transaction using the V2 service for direct SQL
-      console.log('[DEBUG] Using JournalServiceV2 for transaction recording');
-      const entryId = await this.journalServiceV2.recordTransaction({
+      // Record the transaction using direct SQL
+      console.log('[DEBUG] Using JournalService for transaction recording');
+      const entryId = await this.journalService.recordTransaction({
         companyId,
         franchiseId,
         debitAccount,
@@ -123,11 +119,11 @@ export class JournalController extends BaseController {
       const entryId = req.params.id;
       const companyId = this.getCompanyId(req);
       
-      console.log(`[DEBUG] Fetching transaction details for entry ID: ${entryId} using JournalServiceV2`);
+      console.log(`[DEBUG] Fetching transaction details for entry ID: ${entryId} using JournalService`);
       
       try {
-        // Use the V2 service to get transaction by ID
-        const transaction = await this.journalServiceV2.getLedgerEntryById(entryId);
+        // Get transaction by ID
+        const transaction = await this.journalService.getLedgerEntry(entryId);
         
         if (!transaction) {
           throw {
@@ -197,9 +193,9 @@ export class JournalController extends BaseController {
       
       console.log('[DEBUG] Creating ledger entry with mapped lines:', JSON.stringify(mappedLines, null, 2));
       
-      // Create the ledger entry using the V2 service with direct SQL
-      console.log('[DEBUG] Using JournalServiceV2 for direct SQL operations');
-      const entry = await this.journalServiceV2.createLedgerEntry({
+      // Create the ledger entry using direct SQL
+      console.log('[DEBUG] Using JournalService for direct SQL operations');
+      const entry = await this.journalService.createLedgerEntry({
         companyId,
         franchiseId: franchiseId || undefined,
         // Use the type from the request, or map from documentType if not provided
