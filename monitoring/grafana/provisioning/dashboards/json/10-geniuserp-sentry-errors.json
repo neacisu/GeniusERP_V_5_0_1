@@ -78,7 +78,7 @@
             "type": "grafana-sentry-datasource",
             "uid": "sentry"
           },
-          "projectIds": [4510178882486352, 4510178871607376],
+          "projectIds": "4510178882486352,4510178871607376",
           "queryType": "issues",
           "refId": "A",
           "query": "is:unresolved"
@@ -142,7 +142,7 @@
             "type": "grafana-sentry-datasource",
             "uid": "sentry"
           },
-          "projectIds": [4510178882486352],
+          "projectIds": "4510178882486352",
           "queryType": "issues",
           "refId": "A",
           "query": "is:unresolved"
@@ -206,7 +206,7 @@
             "type": "grafana-sentry-datasource",
             "uid": "sentry"
           },
-          "projectIds": [4510178871607376],
+          "projectIds": "4510178871607376",
           "queryType": "issues",
           "refId": "A",
           "query": "is:unresolved"
