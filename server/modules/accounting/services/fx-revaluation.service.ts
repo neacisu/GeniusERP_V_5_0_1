@@ -178,7 +178,7 @@ export class FXRevaluationService extends DrizzleService {
         action: 'FX_REVALUATION_POSTED' as any,
         severity: 'INFO' as any,
         entityType: 'ledger_entry',
-        entityId: ledgerEntryId,
+        entityId: ledgerEntryId!, // Guaranteed to be set at line 171 within same if block
         description: `Reevaluare valutară postată: ${periodMonth}/${periodYear}`,
         metadata: {
           period: `${periodYear}-${periodMonth}`,
