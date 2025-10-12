@@ -24,26 +24,18 @@ router.get(
   AuthGuard.protect(JwtAuthMode.REQUIRED),
   async (req, res) => {
     try {
-      const { companyId } = req.query;
+      // Use companyId from authenticated user (from JWT token)
+      const companyId = req.user?.companyId;
       
       if (!companyId) {
         return res.status(400).json({
           success: false,
-          error: 'Missing required query parameter: companyId'
+          error: 'User does not have an associated company'
         });
       }
       
-      // Check if user has access to this company
-      if (req.user && req.user.companyId !== companyId && 
-          !req.user.roles!.includes(UserRole.ADMIN)) {
-        return res.status(403).json({
-          success: false,
-          error: 'You do not have permission to access this company data'
-        });
-      }
-      
-      // Get all Note Contabil for company
-      const notes = await noteContabilService.getNotesByCompany(companyId as string);
+      // Get all Note Contabil for user's company
+      const notes = await noteContabilService.getNotesByCompany(companyId);
       
       return res.status(200).json({
         success: true,
