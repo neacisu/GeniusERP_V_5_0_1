@@ -4,8 +4,7 @@
  * API endpoints pentru închiderea fiscală lunară și anuală
  */
 
-import { Response } from 'express';
-import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
+import { Request, Response } from 'express';
 import FiscalClosureService from '../services/fiscal-closure.service';
 import AccountingPeriodsService from '../services/accounting-periods.service';
 
@@ -22,7 +21,7 @@ export class FiscalClosureController {
    * POST /api/accounting/fiscal-closure/month
    * Închide luna fiscală
    */
-  async closeMonth(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async closeMonth(req: Request, res: Response): Promise<void> {
     try {
       const { year, month, skipDepreciation, skipFXRevaluation, skipVAT, dryRun } = req.body;
       const companyId = req.user?.companyId;
@@ -78,7 +77,7 @@ export class FiscalClosureController {
    * POST /api/accounting/fiscal-closure/year
    * Închide anul fiscal
    */
-  async closeYear(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async closeYear(req: Request, res: Response): Promise<void> {
     try {
       const { fiscalYear, taxAdjustments, profitDistribution, dryRun } = req.body;
       const companyId = req.user?.companyId;
@@ -132,7 +131,7 @@ export class FiscalClosureController {
    * POST /api/accounting/fiscal-closure/reopen/:periodId
    * Redeschide o perioadă închisă (doar admin)
    */
-  async reopenPeriod(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async reopenPeriod(req: Request, res: Response): Promise<void> {
     try {
       const { periodId } = req.params;
       const { reason } = req.body;
@@ -191,7 +190,7 @@ export class FiscalClosureController {
    * GET /api/accounting/fiscal-closure/periods
    * Obține toate perioadele fiscale pentru companie
    */
-  async getPeriods(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async getPeriods(req: Request, res: Response): Promise<void> {
     try {
       const companyId = req.user?.companyId;
       const { year } = req.query;
@@ -224,7 +223,7 @@ export class FiscalClosureController {
    * POST /api/accounting/fiscal-closure/generate-periods
    * Generează perioade pentru un an întreg
    */
-  async generateYearlyPeriods(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async generateYearlyPeriods(req: Request, res: Response): Promise<void> {
     try {
       const { year } = req.body;
       const companyId = req.user?.companyId;
@@ -264,7 +263,7 @@ export class FiscalClosureController {
    * GET /api/accounting/fiscal-closure/period/:periodId
    * Obține detalii despre o perioadă specifică
    */
-  async getPeriod(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async getPeriod(req: Request, res: Response): Promise<void> {
     try {
       const { periodId } = req.params;
       const companyId = req.user?.companyId;
@@ -298,7 +297,7 @@ export class FiscalClosureController {
    * POST /api/accounting/fiscal-closure/validate-period
    * Validează consistența perioadelor
    */
-  async validatePeriodConsistency(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async validatePeriodConsistency(req: Request, res: Response): Promise<void> {
     try {
       const companyId = req.user?.companyId;
 
