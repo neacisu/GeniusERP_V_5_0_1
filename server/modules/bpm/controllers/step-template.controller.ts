@@ -7,7 +7,7 @@ import {
   createStepTemplateSchema, 
   updateStepTemplateSchema 
 } from '../schema/bpm.schema.js';
-import { AuditAction } from '../../../shared/schema/audit.schema.js';
+import { AuditService, AuditAction } from '../../audit/services/audit.service';
 
 /**
  * Step Template Controller
@@ -43,7 +43,7 @@ export class StepTemplateController {
         success: true,
         data: stepTemplates
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error getting step templates:', error);
       res.status(500).json({
         success: false,
@@ -76,7 +76,7 @@ export class StepTemplateController {
         success: true,
         data: stepTemplate
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error getting step template by ID:', error);
       res.status(500).json({
         success: false,
@@ -119,7 +119,7 @@ export class StepTemplateController {
       });
       
       // Log the action
-      await this.auditService.log({
+      await AuditService.log({
         action: AuditAction.CREATE,
         entity: 'bpm_step_templates',
         entityId: stepTemplate.id,
@@ -136,7 +136,7 @@ export class StepTemplateController {
         success: true,
         data: stepTemplate
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error creating step template:', error);
       res.status(500).json({
         success: false,
@@ -185,7 +185,7 @@ export class StepTemplateController {
       const stepTemplate = await this.stepTemplateService.updateStepTemplate(id, data, companyId);
       
       // Log the action
-      await this.auditService.log({
+      await AuditService.log({
         action: AuditAction.UPDATE,
         entity: 'bpm_step_templates',
         entityId: id,
@@ -203,7 +203,7 @@ export class StepTemplateController {
         success: true,
         data: stepTemplate
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error updating step template:', error);
       res.status(500).json({
         success: false,
@@ -236,7 +236,7 @@ export class StepTemplateController {
       await this.stepTemplateService.deleteStepTemplate(id, companyId);
       
       // Log the action
-      await this.auditService.log({
+      await AuditService.log({
         action: AuditAction.DELETE,
         entity: 'bpm_step_templates',
         entityId: id,
@@ -252,7 +252,7 @@ export class StepTemplateController {
         success: true,
         message: 'Step template deleted successfully'
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error deleting step template:', error);
       res.status(500).json({
         success: false,
@@ -291,7 +291,7 @@ export class StepTemplateController {
         success: true,
         data: stepTemplates
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error getting step templates by type:', error);
       res.status(500).json({
         success: false,
@@ -330,7 +330,7 @@ export class StepTemplateController {
         success: true,
         data: stepTemplates
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error getting step templates by target type:', error);
       res.status(500).json({
         success: false,
@@ -372,7 +372,7 @@ export class StepTemplateController {
       const stepTemplate = await this.stepTemplateService.toggleGlobalTemplate(id, isGlobal, companyId);
       
       // Log the action
-      await this.auditService.log({
+      await AuditService.log({
         action: AuditAction.UPDATE,
         entity: 'bpm_step_templates',
         entityId: id,
@@ -389,7 +389,7 @@ export class StepTemplateController {
         success: true,
         data: stepTemplate
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error toggling global status:', error);
       res.status(500).json({
         success: false,

@@ -35,7 +35,6 @@ const updateTriggerSchema = z.object({
 export class TriggerController {
   private _logger: Logger;
   private _triggerService: TriggerService;
-  private _auditService: AuditService;
 
   /**
    * Constructor
@@ -43,7 +42,7 @@ export class TriggerController {
   constructor(triggerService: TriggerService) {
     this._logger = new Logger('TriggerController');
     this._triggerService = triggerService;
-    this._auditService = AuditService;
+    // AuditService used as static class - no instance needed
   }
 
   /**
@@ -115,7 +114,7 @@ export class TriggerController {
         data: trigger
       });
     } catch (error) {
-      this._logger.error('Error getting trigger', error instanceof Error ? error.message : String(error), { id: req.params.id });
+      this._logger.error('Error getting trigger: ' + (error instanceof Error ? error.message : String(error)));
       
       return res.status(500).json({ 
         success: false,
@@ -148,7 +147,7 @@ export class TriggerController {
       });
 
       // Record audit log
-      await this._auditService.log({
+      await AuditService.log({
         userId,
         companyId,
         action: AuditAction.CREATE,
@@ -210,7 +209,7 @@ export class TriggerController {
         });
       }
 
-      const trigger = await this._triggerService.updateTrigger(id, companyId, {
+      const trigger = await this._triggerService.updateTrigger(id, {
         ...validatedData,
         updatedBy: userId
       });
@@ -223,7 +222,7 @@ export class TriggerController {
       }
 
       // Record audit log
-      await this._auditService.log({
+      await AuditService.log({
         userId,
         companyId,
         action: AuditAction.UPDATE,
@@ -247,7 +246,7 @@ export class TriggerController {
         });
       }
       
-      this._logger.error('Error updating trigger', error instanceof Error ? error.message : String(error), { id: req.params.id });
+      this._logger.error('Error updating trigger' + ": " + (error instanceof Error ? error.message : String(error)));
       
       return res.status(500).json({ 
         success: false,
@@ -282,7 +281,7 @@ export class TriggerController {
         });
       }
 
-      const success = await this._triggerService.deleteTrigger(id, companyId);
+      const success = await this._triggerService.deleteTrigger(id);
       
       if (!success) {
         return res.status(404).json({ 
@@ -292,7 +291,7 @@ export class TriggerController {
       }
       
       // Record audit log
-      await this._auditService.log({
+      await AuditService.log({
         userId,
         companyId,
         action: AuditAction.DELETE,
@@ -309,7 +308,7 @@ export class TriggerController {
         message: 'Trigger deleted successfully' 
       });
     } catch (error) {
-      this._logger.error('Error deleting trigger', error instanceof Error ? error.message : String(error), { id: req.params.id });
+      this._logger.error('Error deleting trigger' + ": " + (error instanceof Error ? error.message : String(error)));
       
       return res.status(500).json({ 
         success: false,
@@ -352,7 +351,8 @@ export class TriggerController {
         });
       }
 
-      const trigger = await this._triggerService.toggleTriggerActive(id, companyId, active, userId);
+      // Update trigger active status using updateTrigger
+      const trigger = await this._triggerService.updateTrigger(id, { isActive: active, updatedBy: userId });
       
       if (!trigger) {
         return res.status(404).json({ 
@@ -362,7 +362,7 @@ export class TriggerController {
       }
       
       // Record audit log
-      await this._auditService.log({
+      await AuditService.log({
         userId,
         companyId,
         action: AuditAction.UPDATE,
@@ -380,7 +380,7 @@ export class TriggerController {
         data: trigger
       });
     } catch (error) {
-      this._logger.error('Error toggling trigger status', error instanceof Error ? error.message : String(error), { id: req.params.id });
+      this._logger.error('Error toggling trigger status' + ": " + (error instanceof Error ? error.message : String(error)));
       
       return res.status(500).json({ 
         success: false,
@@ -416,7 +416,11 @@ export class TriggerController {
         });
       }
 
-      const result = await this._triggerService.executeTrigger(id, companyId, userId, inputData || {});
+      const result = await this._triggerService.executeTrigger({
+        triggerId: id,
+        userId,
+        inputData: inputData || {}
+      });
       
       if (!result.success) {
         return res.status(result.status || 500).json({ 
@@ -426,10 +430,10 @@ export class TriggerController {
       }
       
       // Record audit log
-      await this._auditService.log({
+      await AuditService.log({
         userId,
         companyId,
-        action: AuditAction.EXECUTE,
+        action: AuditAction.BPM_PROCESS_ACTION,
         entity: 'bpm_trigger',
         entityId: id,
         details: {
@@ -447,7 +451,7 @@ export class TriggerController {
         }
       });
     } catch (error) {
-      this._logger.error('Error executing trigger', error instanceof Error ? error.message : String(error), { id: req.params.id });
+      this._logger.error('Error executing trigger' + ": " + (error instanceof Error ? error.message : String(error)));
       
       return res.status(500).json({ 
         success: false,
