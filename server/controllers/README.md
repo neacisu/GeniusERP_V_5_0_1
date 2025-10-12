@@ -1,12 +1,27 @@
-# Server Controllers
+# Server Controllers (Legacy)
 
-This directory contains controller files that manage the application's API endpoints and route handling.
+This directory previously contained controller files but they have been moved to the modular structure.
 
-## Files:
+## Current Structure:
 
-- **analytics.controller.tmp.ts** - Controller for analytics functionality
-- **predictive.controller.updated.ts** - Controller for predictive analytics functionality
+Controllers are now organized by module in `server/modules/[module-name]/controllers/`:
 
-## Purpose:
+- **Analytics**: `server/modules/analytics/controllers/`
+  - `analytics.controller.ts`
+  - `predictive.controller.ts`
+  - `business-intelligence.controller.ts`
 
-Controllers handle HTTP requests, interact with services to perform operations, and return appropriate responses to clients. They implement the routing logic and apply middleware for authentication and authorization.
+- **Other modules**: Follow the same pattern `server/modules/[module]/controllers/`
+
+## Rationale:
+
+The modular structure provides:
+- Better organization and separation of concerns
+- Easier to locate and maintain related functionality
+- Clearer dependencies between modules
+- Consistent project architecture
+
+## Note:
+
+Old temporary/backup files (`.tmp`, `.updated`) have been removed. 
+All active controllers are in their respective module directories.
