@@ -7,7 +7,6 @@
 import { Router } from 'express';
 import { GeneralJournalController } from '../controllers/general-journal.controller';
 import { AuthGuard } from '../../auth/guards/auth.guard';
-// import { RolesGuard } from '../../auth/guards/roles.guard'; // TODO: Verify roles guard path
 
 const router = Router();
 const controller = new GeneralJournalController();
@@ -22,9 +21,11 @@ const controller = new GeneralJournalController();
  * @query detailLevel - 'summary' sau 'detailed' (default: detailed)
  * @query includeReversals - Include stornări (default: true)
  */
+// Middleware pentru rol contabil/admin/manager
+const requireAccountingRole = AuthGuard.roleGuard(['accountant', 'admin', 'manager']);
+
 router.get('/pdf', 
-  AuthGuard.protect(),
-  RolesGuard.requireRoles(['accountant', 'admin', 'manager']),
+  requireAccountingRole,
   controller.generatePDF.bind(controller)
 );
 
@@ -34,8 +35,7 @@ router.get('/pdf',
  * @access Private (accountant, admin, manager)
  */
 router.get('/excel',
-  AuthGuard.protect(), 
-  RolesGuard.requireRoles(['accountant', 'admin', 'manager']),
+  requireAccountingRole,
   controller.generateExcel.bind(controller)
 );
 
@@ -46,8 +46,7 @@ router.get('/excel',
  * @query Aceiași parametri ca PDF dar limitați la 30 zile
  */
 router.get('/preview',
-  AuthGuard.protect(),
-  RolesGuard.requireRoles(['accountant', 'admin', 'manager']),
+  requireAccountingRole,
   controller.previewData.bind(controller)
 );
 
@@ -57,8 +56,7 @@ router.get('/preview',
  * @access Private (accountant, admin, manager)
  */
 router.get('/periods',
-  AuthGuard.protect(),
-  RolesGuard.requireRoles(['accountant', 'admin', 'manager']),
+  requireAccountingRole,
   controller.getAvailablePeriods.bind(controller)
 );
 

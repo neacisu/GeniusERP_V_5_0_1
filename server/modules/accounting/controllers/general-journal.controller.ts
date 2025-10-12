@@ -10,7 +10,6 @@ import { GeneralJournalPDFService } from '../services/general-journal-pdf.servic
 import { GeneralJournalExcelService } from '../services/general-journal-excel.service';
 import { AccountingPeriodsService } from '../services/accounting-periods.service';
 import { BaseController } from './base.controller';
-import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
 import { z } from 'zod';
 
 /**
@@ -46,7 +45,7 @@ export class GeneralJournalController extends BaseController {
    * @route GET /api/accounting/general-journal/pdf
    * @permission accountant, admin, manager
    */
-  async generatePDF(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async generatePDF(req: Request, res: Response): Promise<void> {
     try {
       // Validare și autentificare
       const companyId = this.getCompanyId(req);
@@ -77,9 +76,7 @@ export class GeneralJournalController extends BaseController {
 
       // Obține informații companie (ar trebui să vină din serviciu dedicat)
       const companyName = 'Companie GeniusERP'; // Default fallback
-      const responsiblePerson = req.user?.firstName && req.user?.lastName 
-        ? `${req.user.firstName} ${req.user.lastName}`
-        : req.user?.email || 'Utilizator necunoscut';
+      const responsiblePerson = req.user?.fullName || req.user?.email || 'Utilizator necunoscut';
 
       // Opțiuni pentru generarea raportului
       const options = {
@@ -134,7 +131,7 @@ export class GeneralJournalController extends BaseController {
    * @route GET /api/accounting/general-journal/excel
    * @permission accountant, admin, manager
    */
-  async generateExcel(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async generateExcel(req: Request, res: Response): Promise<void> {
     try {
       // Validare și autentificare
       const companyId = this.getCompanyId(req);
@@ -165,9 +162,7 @@ export class GeneralJournalController extends BaseController {
 
       // Obține informații companie
       const companyName = 'Companie GeniusERP'; // Default fallback
-      const responsiblePerson = req.user?.firstName && req.user?.lastName 
-        ? `${req.user.firstName} ${req.user.lastName}`
-        : req.user?.email || 'Utilizator necunoscut';
+      const responsiblePerson = req.user?.fullName || req.user?.email || 'Utilizator necunoscut';
 
       // Opțiuni pentru generarea raportului Excel
       const options = {
@@ -221,7 +216,7 @@ export class GeneralJournalController extends BaseController {
    * @route GET /api/accounting/general-journal/preview
    * @permission accountant, admin, manager
    */
-  async previewData(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async previewData(req: Request, res: Response): Promise<void> {
     try {
       const companyId = this.getCompanyId(req);
       
@@ -289,7 +284,7 @@ export class GeneralJournalController extends BaseController {
    * @route GET /api/accounting/general-journal/periods
    * @permission accountant, admin, manager
    */
-  async getAvailablePeriods(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async getAvailablePeriods(req: Request, res: Response): Promise<void> {
     try {
       const companyId = this.getCompanyId(req);
       

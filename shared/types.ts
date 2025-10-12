@@ -40,6 +40,7 @@ export interface JwtPayload {
   roles: string[];
   companyId: string | null;
   email?: string; // Added in auth.service.ts line 78
+  fullName?: string; // Added in auth.service.ts line 79 - combines firstName + lastName
   iat?: number;
   exp?: number;
 }

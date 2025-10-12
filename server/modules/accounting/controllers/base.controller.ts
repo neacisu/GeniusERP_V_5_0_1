@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
 
 /**
  * BaseController
@@ -12,7 +11,7 @@ export class BaseController {
    * Handle API request with standardized error handling
    */
   protected async handleRequest(
-    req: AuthenticatedRequest, 
+    req: Request, 
     res: Response, 
     handler: () => Promise<any>
   ): Promise<void> {
@@ -36,7 +35,7 @@ export class BaseController {
   /**
    * Extract company ID from request
    */
-  protected getCompanyId(req: AuthenticatedRequest): string {
+  protected getCompanyId(req: Request): string {
     if (!req.user || !req.user.companyId) {
       throw { 
         statusCode: 401, 
@@ -49,7 +48,7 @@ export class BaseController {
   /**
    * Extract user ID from request
    */
-  protected getUserId(req: AuthenticatedRequest): string {
+  protected getUserId(req: Request): string {
     if (!req.user || !req.user.id) {
       throw { 
         statusCode: 401, 
