@@ -117,7 +117,7 @@ export const admin_actions = pgTable('admin_actions', {
 export const licenses = pgTable('licenses', {
   id: uuid('id').primaryKey().defaultRandom(),
   license_key: varchar('license_key', { length: 100 }).notNull().unique(),
-  edition: varchar('edition', { length: 50 }).default('standard').notNull(),
+  edition: varchar('edition', { length: 50 }).default('basic').notNull(),
   status: varchar('status', { length: 20 }).default('active').notNull(),
   issued_to: varchar('issued_to', { length: 255 }).notNull(),
   issued_email: varchar('issued_email', { length: 255 }).notNull(),
@@ -125,11 +125,11 @@ export const licenses = pgTable('licenses', {
   current_activations: integer('current_activations').default(0).notNull(),
   features: json('features').default({}).notNull(),
   activation_code: varchar('activation_code', { length: 100 }),
-  issued_at: timestamp('issued_at').defaultNow().notNull(),
+  issued_at: timestamp('issued_at').defaultNow(),
   expires_at: timestamp('expires_at'),
   last_verified: timestamp('last_verified'),
-  created_at: timestamp('created_at').defaultNow().notNull(),
-  updated_at: timestamp('updated_at').defaultNow().notNull(),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
 });
 
 /**

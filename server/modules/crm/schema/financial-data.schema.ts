@@ -5,7 +5,6 @@
  * Aceste date sunt colectate prin API-ul de bilanț al ANAF
  */
 import { pgTable, serial, varchar, integer, json, timestamp, boolean, text } from 'drizzle-orm/pg-core';
-import { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
@@ -81,12 +80,12 @@ export const financialDataJobs = pgTable('financial_data_jobs', {
 });
 
 // Type-uri pentru Drizzle ORM
-export type FinancialData = InferSelectModel<typeof financialData>;
-export type FinancialDataInsert = InferInsertModel<typeof financialData>;
-export type FinancialDataError = InferSelectModel<typeof financialDataErrors>;
-export type FinancialDataErrorInsert = InferInsertModel<typeof financialDataErrors>;
-export type FinancialDataJob = InferSelectModel<typeof financialDataJobs>;
-export type FinancialDataJobInsert = InferInsertModel<typeof financialDataJobs>;
+export type FinancialData = typeof financialData.$inferSelect;
+export type FinancialDataInsert = typeof financialData.$inferInsert;
+export type FinancialDataError = typeof financialDataErrors.$inferSelect;
+export type FinancialDataErrorInsert = typeof financialDataErrors.$inferInsert;
+export type FinancialDataJob = typeof financialDataJobs.$inferSelect;
+export type FinancialDataJobInsert = typeof financialDataJobs.$inferInsert;
 
 // Scheme Zod pentru validare
 export const insertFinancialDataSchema = createInsertSchema(financialData, {

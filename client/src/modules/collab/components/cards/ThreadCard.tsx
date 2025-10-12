@@ -191,7 +191,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
             </div>
             
             {showUser && compact && (
-              <div className="flex justify-between items-center mt-2 pt-2 border-t border-border">
+              <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
                 <div className="flex items-center text-xs text-muted-foreground">
                   <Clock className="h-3 w-3 mr-1" />
                   {formatRelativeTime(thread.createdAt || new Date())}

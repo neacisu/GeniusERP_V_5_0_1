@@ -211,7 +211,7 @@ const CollabIntegration: React.FC<CollabIntegrationProps> = ({
   // Panoul principal de colaborare
   const CollabPanel = isExpanded && (
     <div 
-      className="fixed right-0 top-0 h-screen w-80 bg-white border-l border-border shadow-lg z-40 flex flex-col"
+      className="fixed right-0 top-0 h-screen w-80 bg-white border-l border-gray-200 shadow-lg z-40 flex flex-col"
       style={{ height: '100dvh' }}
     >
       <div className="p-4 border-b flex justify-between items-center">

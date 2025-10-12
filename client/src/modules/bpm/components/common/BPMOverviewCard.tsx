@@ -67,7 +67,7 @@ export default function BPMOverviewCard({
           background: 'bg-card',
           iconBackground: 'bg-primary/10',
           iconColor: 'text-primary',
-          borderColor: 'border-border',
+          borderColor: 'border-gray-200',
           textColor: 'text-foreground',
         };
     }

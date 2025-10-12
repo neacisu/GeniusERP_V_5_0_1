@@ -22,7 +22,8 @@ import {
   json,
   primaryKey,
   time,
-  smallint
+  smallint,
+  unique
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { users, companies } from "../../../../shared/schema";
@@ -301,8 +302,8 @@ export const workSchedules = pgTable("hr_work_schedules", {
   contractScheduleIdx: index("hr_work_schedule_contract_idx").on(table.employmentContractId),
   companyScheduleIdx: index("hr_work_schedule_company_idx").on(table.companyId),
   
-  // Primary key combination
-  uniqueSchedule: primaryKey(table.employmentContractId, table.dayOfWeek)
+  // Unique constraint to prevent duplicate schedules for same contract and day
+  uniqueSchedule: unique("hr_work_schedule_unique").on(table.employmentContractId, table.dayOfWeek)
 }));
 
 /**

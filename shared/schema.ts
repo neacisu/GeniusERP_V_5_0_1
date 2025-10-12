@@ -31,7 +31,7 @@ export * from "./schema/invoice-numbering.schema";
 
 // Export Warehouse models for shared usage across the application
 // Notă: Se exportă explicit pentru a evita conflicte cu inventory-assessment.ts
-export { warehouses, insertWarehouseSchema, type Warehouse, type InsertWarehouse } from "./schema/warehouse";
+export { warehouses, insertWarehouseSchema, warehouseTypeEnumType, type Warehouse, type InsertWarehouse } from "./schema/warehouse";
 
 // Export Cash Register models for shared usage across the application
 export * from "./schema/cash-register.schema";

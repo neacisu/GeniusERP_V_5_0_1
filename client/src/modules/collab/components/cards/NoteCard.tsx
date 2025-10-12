@@ -130,7 +130,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
             </div>
             
             {showRelated && note.relatedItems && note.relatedItems.length > 0 && (
-              <div className="mt-2 pt-2 border-t border-border text-xs">
+              <div className="mt-2 pt-2 border-t border-gray-200 text-xs">
                 <div className="flex items-center text-muted-foreground">
                   <LinkIcon className="h-3 w-3 mr-1" />
                   <span>Asociat cu:</span>
@@ -151,7 +151,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
             )}
             
             {showCreator && compact && (
-              <div className="flex justify-between items-center mt-2 pt-2 border-t border-border">
+              <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
                 <div className="flex items-center text-xs text-muted-foreground">
                   <Clock className="h-3 w-3 mr-1" />
                   {formatRelativeTime(note.createdAt || new Date())}

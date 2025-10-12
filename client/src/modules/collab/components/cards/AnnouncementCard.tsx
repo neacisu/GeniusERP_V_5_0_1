@@ -152,7 +152,7 @@ const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
             </div>
             
             {!compact && (
-              <div className="flex justify-between items-center mt-3 pt-2 border-t border-border">
+              <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-200">
                 <div className="flex items-center text-xs text-muted-foreground">
                   {announcement.createdBy && (
                     <>
