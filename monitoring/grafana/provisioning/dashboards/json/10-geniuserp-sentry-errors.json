@@ -20,6 +20,7 @@
   "graphTooltip": 0,
   "id": null,
   "links": [],
+  "folderTitle": "GeniusERP Alerts",
   "liveNow": false,
   "panels": [
     {
@@ -29,8 +30,12 @@
       },
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
           },
           "mappings": [],
           "thresholds": {
@@ -42,7 +47,7 @@
               },
               {
                 "color": "red",
-                "value": 1
+                "value": 80
               }
             ]
           }
@@ -50,24 +55,21 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 6,
+        "h": 12,
+        "w": 24,
         "x": 0,
         "y": 0
       },
       "id": 1,
       "options": {
-        "orientation": "auto",
-        "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": ""
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "text": {}
+        "showHeader": true
       },
       "pluginVersion": "10.0.0",
       "targets": [
@@ -76,296 +78,14 @@
             "type": "grafana-sentry-datasource",
             "uid": "sentry"
           },
-          "projectIds": ["all"],
-          "queryType": "statsV2",
-          "refId": "A",
-          "statCategory": "errors",
-          "field": ["sum(quantity)"]
-        }
-      ],
-      "title": "🔴 Total Issues (24h)",
-      "type": "gauge"
-    },
-    {
-      "datasource": {
-        "type": "grafana-sentry-datasource",
-        "uid": "sentry"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": []
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 6,
-        "y": 0
-      },
-      "id": 2,
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "pieType": "pie",
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-sentry-datasource",
-            "uid": "sentry"
-          },
-          "projectIds": ["all"],
-          "queryType": "statsV2",
-          "refId": "A",
-          "statCategory": "errors",
-          "field": ["sum(quantity)"],
-          "groupBy": ["project"]
-        }
-      ],
-      "title": "📊 Issues by Project",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "grafana-sentry-datasource",
-        "uid": "sentry"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 1
-              },
-              {
-                "color": "red",
-                "value": 5
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 12,
-        "y": 0
-      },
-      "id": 3,
-      "options": {
-        "orientation": "auto",
-        "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": ""
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "text": {}
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-sentry-datasource",
-            "uid": "sentry"
-          },
-          "projectIds": ["all"],
-          "queryType": "statsV2",
-          "refId": "A",
-          "statCategory": "users",
-          "field": ["count_unique(user)"]
-        }
-      ],
-      "title": "👥 Affected Users",
-      "type": "gauge"
-    },
-    {
-      "datasource": {
-        "type": "grafana-sentry-datasource",
-        "uid": "sentry"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 5
-              },
-              {
-                "color": "red",
-                "value": 10
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 18,
-        "y": 0
-      },
-      "id": 4,
-      "options": {
-        "orientation": "auto",
-        "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": ""
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "text": {}
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-sentry-datasource",
-            "uid": "sentry"
-          },
-          "projectIds": ["all"],
+          "projectIds": [4510178882486352, 4510178871607376],
           "queryType": "issues",
           "refId": "A",
           "query": "is:unresolved"
         }
       ],
-      "title": "⚠️ Unresolved Issues",
-      "type": "gauge"
-    },
-    {
-      "datasource": {
-        "type": "grafana-sentry-datasource",
-        "uid": "sentry"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 8
-      },
-      "id": 5,
-      "options": {
-        "legend": {
-          "calcs": ["mean", "max", "last"],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-sentry-datasource",
-            "uid": "sentry"
-          },
-          "projectIds": ["all"],
-          "queryType": "statsV2",
-          "refId": "A",
-          "statCategory": "errors",
-          "field": ["sum(quantity)"],
-          "groupBy": ["project"]
-        }
-      ],
-      "title": "📈 Error Trend Over Time",
-      "type": "timeseries"
+      "title": "🚨 Sentry Issues - Backend + Frontend",
+      "type": "table"
     },
     {
       "datasource": {
@@ -388,56 +108,23 @@
               {
                 "color": "green",
                 "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
           }
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Priority"
-            },
-            "properties": [
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-background"
-                }
-              },
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "options": {
-                      "high": {
-                        "color": "red",
-                        "index": 0
-                      },
-                      "medium": {
-                        "color": "orange",
-                        "index": 1
-                      },
-                      "low": {
-                        "color": "green",
-                        "index": 2
-                      }
-                    },
-                    "type": "value"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
-        "h": 12,
-        "w": 24,
+        "h": 10,
+        "w": 12,
         "x": 0,
-        "y": 18
+        "y": 12
       },
-      "id": 6,
+      "id": 2,
       "options": {
         "cellHeight": "sm",
         "footer": {
@@ -446,13 +133,7 @@
           "reducer": ["sum"],
           "show": false
         },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "Events"
-          }
-        ]
+        "showHeader": true
       },
       "pluginVersion": "10.0.0",
       "targets": [
@@ -461,85 +142,86 @@
             "type": "grafana-sentry-datasource",
             "uid": "sentry"
           },
-          "projectIds": ["all"],
+          "projectIds": [4510178882486352],
           "queryType": "issues",
           "refId": "A",
-          "query": "is:unresolved",
-          "sort": "freq"
+          "query": "is:unresolved"
         }
       ],
-      "title": "🚨 Top Issues (Unresolved)",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "id": true,
-              "shortId": true,
-              "shareId": true
+      "title": "🔴 Backend Issues",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-sentry-datasource",
+        "uid": "sentry"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
             },
-            "indexByName": {
-              "title": 0,
-              "project": 1,
-              "culprit": 2,
-              "type": 3,
-              "count": 4,
-              "userCount": 5,
-              "firstSeen": 6,
-              "lastSeen": 7,
-              "level": 8,
-              "status": 9,
-              "priority": 10
-            },
-            "renameByName": {
-              "title": "Error Title",
-              "project": "Project",
-              "culprit": "Location",
-              "type": "Type",
-              "count": "Events",
-              "userCount": "Users",
-              "firstSeen": "First Seen",
-              "lastSeen": "Last Seen",
-              "level": "Level",
-              "status": "Status",
-              "priority": "Priority"
-            }
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
           }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-sentry-datasource",
+            "uid": "sentry"
+          },
+          "projectIds": [4510178871607376],
+          "queryType": "issues",
+          "refId": "A",
+          "query": "is:unresolved"
         }
       ],
+      "title": "🔵 Frontend Issues",
       "type": "table"
     }
   ],
   "refresh": "30s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["sentry", "errors", "monitoring", "geniuserp"],
+  "tags": ["sentry", "errors", "monitoring"],
   "templating": {
-    "list": [
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "grafana-sentry-datasource",
-          "uid": "sentry"
-        },
-        "definition": "projects",
-        "hide": 0,
-        "includeAll": true,
-        "multi": true,
-        "name": "project",
-        "options": [],
-        "query": "projects",
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "type": "query"
-      }
-    ]
+    "list": []
   },
   "time": {
     "from": "now-24h",
@@ -547,7 +229,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "🔴 GeniusERP - Sentry Error Tracking",
+  "title": "🔴 GeniusERP - Sentry Errors",
   "uid": "sentry-errors",
   "version": 1,
   "weekStart": ""
