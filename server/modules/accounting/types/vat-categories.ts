@@ -64,7 +64,7 @@ export const VAT_CATEGORY_INFO: Record<VATCategory, VATCategoryInfo> = {
     name: 'Scutit cu drept de deducere',
     description: 'Operațiuni scutite cu drept de deducere (export, livrări intracomunitare)',
     vatRate: 0,
-    accountCode: null,
+    accountCode: '4428', // TVA neexigibilă - pentru urmărire export/intra-EU conform OMFP
     isDeductible: true
   },
   [VATCategory.EXEMPT_NO_CREDIT]: {
@@ -72,7 +72,7 @@ export const VAT_CATEGORY_INFO: Record<VATCategory, VATCategoryInfo> = {
     name: 'Scutit fără drept de deducere',
     description: 'Operațiuni scutite fără drept de deducere (art. 292 Cod Fiscal)',
     vatRate: 0,
-    accountCode: null,
+    accountCode: undefined, // No account code for exempt operations
     isDeductible: false
   },
   [VATCategory.REVERSE_CHARGE]: {
@@ -80,7 +80,7 @@ export const VAT_CATEGORY_INFO: Record<VATCategory, VATCategoryInfo> = {
     name: 'Taxare inversă',
     description: 'Operațiuni cu taxare inversă (TVA datorată de beneficiar)',
     vatRate: 0,
-    accountCode: null,
+    accountCode: '4423', // TVA de plată - OBLIGATORIU conform art. 307 Cod Fiscal
     isDeductible: false
   },
   [VATCategory.NOT_SUBJECT]: {
@@ -88,7 +88,7 @@ export const VAT_CATEGORY_INFO: Record<VATCategory, VATCategoryInfo> = {
     name: 'Neimpozabil',
     description: 'Operațiuni neimpozabile (în afara sferei de aplicare a TVA)',
     vatRate: 0,
-    accountCode: null,
+    accountCode: undefined, // No account code for non-subject operations
     isDeductible: false
   },
   [VATCategory.ZERO_RATE]: {
@@ -96,7 +96,7 @@ export const VAT_CATEGORY_INFO: Record<VATCategory, VATCategoryInfo> = {
     name: 'Cota zero',
     description: 'Operațiuni cu cota zero (cazuri speciale)',
     vatRate: 0,
-    accountCode: null,
+    accountCode: '4427', // TVA colectată cu cota 0% - raportare în Registrul Jurnal
     isDeductible: true
   }
 };
