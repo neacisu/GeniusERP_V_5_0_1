@@ -106,18 +106,21 @@ export function registerHealthCheckControllerRoutes(app: any, healthCheckService
    * @route GET /api/admin/health/history
    * @middleware AuthGuard.protect(JwtAuthMode.REQUIRED) - Requires authentication
    * @middleware AuthGuard.roleGuard(['admin']) - Requires admin role
-   * 
-   * TODO: Implement health check history storage and retrieval
    */
   app.get(`${BASE_PATH}/history`, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
-      // TODO: Implement health check history
-      // For now, return current health status as history
-      const health = await healthCheckService.runHealthChecks();
+      // Parse query parameters
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+      const fromDate = req.query.fromDate ? new Date(req.query.fromDate as string) : undefined;
+      const toDate = req.query.toDate ? new Date(req.query.toDate as string) : undefined;
+
+      // Get health check history
+      const history = healthCheckService.getHealthCheckHistory(limit, offset, fromDate, toDate);
 
       return res.status(200).json({
         success: true,
-        data: [health] // Return current state as history
+        data: history
       });
     } catch (error) {
       logger.error('Error retrieving health check history', error);
@@ -134,19 +137,15 @@ export function registerHealthCheckControllerRoutes(app: any, healthCheckService
    * @route GET /api/admin/health/resources
    * @middleware AuthGuard.protect(JwtAuthMode.REQUIRED) - Requires authentication
    * @middleware AuthGuard.roleGuard(['admin']) - Requires admin role
-   * 
-   * TODO: Implement system resource usage tracking
    */
   app.get(`${BASE_PATH}/resources`, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
-      // TODO: Implement system resource usage
-      // For now, return health components that contain CPU/Memory/Disk info
-      const components = healthCheckService.getHealthComponents();
-      const systemComponents = components.filter(c => c.type === 'system');
+      // Get system resource usage
+      const resources = healthCheckService.getSystemResourceUsage();
 
       return res.status(200).json({
         success: true,
-        data: systemComponents
+        data: resources
       });
     } catch (error) {
       logger.error('Error retrieving system resource usage', error);

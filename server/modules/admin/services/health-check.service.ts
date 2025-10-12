@@ -69,6 +69,8 @@ export class HealthCheckService {
   private configService?: ConfigService;
   private startTime: Date = new Date();
   private version: string = '2.0.0'; // This should come from a version file or environment variable
+  private healthCheckHistory: HealthCheckResult[] = [];
+  private maxHistorySize: number = 100; // Keep last 100 health checks
 
   /**
    * Constructor for HealthCheckService
@@ -195,13 +197,142 @@ export class HealthCheckService {
       overallStatus = HealthStatus.DEGRADED;
     }
     
-    return {
+    const result: HealthCheckResult = {
       status: overallStatus,
       components: updatedComponents,
       timestamp: new Date(),
       uptime: Math.floor((new Date().getTime() - this.startTime.getTime()) / 1000),
       version: this.version
     };
+    
+    // Save to history
+    this.saveToHistory(result);
+    
+    return result;
+  }
+
+  /**
+   * Save health check result to history
+   * @param result Health check result
+   */
+  private saveToHistory(result: HealthCheckResult): void {
+    this.healthCheckHistory.push(result);
+    
+    // Keep only the last N results
+    if (this.healthCheckHistory.length > this.maxHistorySize) {
+      this.healthCheckHistory = this.healthCheckHistory.slice(-this.maxHistorySize);
+    }
+  }
+
+  /**
+   * Get health check history
+   * @param limit Maximum number of results to return
+   * @param offset Offset for pagination
+   * @param fromDate Filter results from this date
+   * @param toDate Filter results to this date
+   * @returns Array of health check results
+   */
+  getHealthCheckHistory(
+    limit: number = 10,
+    offset: number = 0,
+    fromDate?: Date,
+    toDate?: Date
+  ): HealthCheckResult[] {
+    let history = [...this.healthCheckHistory];
+    
+    // Filter by date range
+    if (fromDate) {
+      history = history.filter(h => h.timestamp >= fromDate);
+    }
+    if (toDate) {
+      history = history.filter(h => h.timestamp <= toDate);
+    }
+    
+    // Sort by timestamp (newest first)
+    history.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    
+    // Apply pagination
+    return history.slice(offset, offset + limit);
+  }
+
+  /**
+   * Get system resource usage
+   * @returns System resource usage information
+   */
+  getSystemResourceUsage(): {
+    cpu: {
+      count: number;
+      model: string;
+      usage: number;
+      loadAverage: number[];
+    };
+    memory: {
+      total: number;
+      free: number;
+      used: number;
+      usagePercent: number;
+    };
+    disk: {
+      total: number;
+      free: number;
+      used: number;
+      usagePercent: number;
+    };
+    uptime: number;
+  } {
+    const cpus = os.cpus();
+    const totalMemory = os.totalmem();
+    const freeMemory = os.freemem();
+    const usedMemory = totalMemory - freeMemory;
+    
+    // Get disk info from health component
+    const diskComponent = this.components.get('disk');
+    const diskInfo = diskComponent?.details || { total: 0, free: 0, used: 0 };
+    
+    return {
+      cpu: {
+        count: cpus.length,
+        model: cpus[0]?.model || 'Unknown',
+        usage: this.calculateCpuUsage(),
+        loadAverage: os.loadavg()
+      },
+      memory: {
+        total: totalMemory,
+        free: freeMemory,
+        used: usedMemory,
+        usagePercent: (usedMemory / totalMemory) * 100
+      },
+      disk: {
+        total: diskInfo.total || 0,
+        free: diskInfo.free || 0,
+        used: diskInfo.used || 0,
+        usagePercent: diskInfo.total ? ((diskInfo.used / diskInfo.total) * 100) : 0
+      },
+      uptime: os.uptime()
+    };
+  }
+
+  /**
+   * Calculate CPU usage percentage
+   * @returns CPU usage percentage
+   */
+  private calculateCpuUsage(): number {
+    const cpus = os.cpus();
+    let totalIdle = 0;
+    let totalTick = 0;
+    
+    cpus.forEach(cpu => {
+      for (const type in cpu.times) {
+        totalTick += cpu.times[type as keyof typeof cpu.times];
+      }
+      totalIdle += cpu.times.idle;
+    });
+    
+    const idle = totalIdle / cpus.length;
+    const total = totalTick / cpus.length;
+    const usage = 100 - ~~(100 * idle / total);
+    
+    return usage;
   }
 
   /**
