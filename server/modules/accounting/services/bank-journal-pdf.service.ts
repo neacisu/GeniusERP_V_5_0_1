@@ -77,10 +77,10 @@ export class BankJournalPDFService {
         currentY += 20;
         
         // Sold inițial
-        doc.font('Helvetica').fontSize(8);
+        doc.fontSize(8);
         doc.rect(50, currentY, 495, 15).stroke();
-        doc.text('Sold inițial perioadă', 145, currentY + 3, { width: 200, italic: true });
-        doc.text(initialBalance.toFixed(2), 515, currentY + 3, { width: colWidths.sold, align: 'right' });
+        doc.font('Helvetica-Oblique').text('Sold inițial perioadă', 145, currentY + 3, { width: 200 });
+        doc.font('Helvetica').text(initialBalance.toFixed(2), 515, currentY + 3, { width: colWidths.sold, align: 'right' });
         currentY += 15;
         
         // Tranzacții
