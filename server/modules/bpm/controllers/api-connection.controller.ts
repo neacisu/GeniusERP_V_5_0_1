@@ -17,7 +17,7 @@ const createConnectionSchema = z.object({
   name: z.string().min(3).max(100),
   type: z.nativeEnum(BpmApiConnectionType),
   description: z.string().optional().nullable(),
-  configuration: z.record(z.any()),
+  configuration: z.record(z.string(), z.any()),
   isActive: z.boolean().optional(),
 });
 
@@ -25,7 +25,7 @@ const updateConnectionSchema = z.object({
   name: z.string().min(3).max(100).optional(),
   type: z.nativeEnum(BpmApiConnectionType).optional(),
   description: z.string().optional().nullable(),
-  configuration: z.record(z.any()).optional(),
+  configuration: z.record(z.string(), z.any()).optional(),
   isActive: z.boolean().optional(),
 });
 

@@ -18,7 +18,7 @@ const generateReportSchema = z.object({
   name: z.string().min(1, 'Report name is required'),
   description: z.string().optional(),
   franchiseId: z.string().optional(),
-  parameters: z.record(z.any()).optional(),
+  parameters: z.record(z.string(), z.any()).optional(),
 });
 
 // Create logger instance

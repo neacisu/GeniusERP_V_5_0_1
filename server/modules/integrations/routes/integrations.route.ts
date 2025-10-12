@@ -133,7 +133,7 @@ router.post('/',
         franchiseId: z.string().optional(),
         name: z.string().optional(),
         description: z.string().optional(),
-        config: z.record(z.any()).optional()
+        config: z.record(z.string(), z.any()).optional()
       });
       
       const validationResult = schema.safeParse(req.body);
@@ -250,7 +250,7 @@ router.patch('/:id',
           IntegrationStatus.ERROR,
           IntegrationStatus.PENDING
         ]).optional(),
-        config: z.record(z.any()).optional(),
+        config: z.record(z.string(), z.any()).optional(),
         webhookUrl: z.string().optional(),
         webhookSecret: z.string().optional()
       });

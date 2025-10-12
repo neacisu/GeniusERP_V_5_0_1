@@ -15,8 +15,8 @@ import { BpmStepExecutionStatus } from '../schema/bpm.schema';
 // Validation schemas
 const updateExecutionSchema = z.object({
   status: z.nativeEnum(BpmStepExecutionStatus).optional(),
-  outputData: z.record(z.any()).optional(),
-  errorData: z.record(z.any()).optional(),
+  outputData: z.record(z.string(), z.any()).optional(),
+  errorData: z.record(z.string(), z.any()).optional(),
 });
 
 /**
