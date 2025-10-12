@@ -7,10 +7,13 @@
 import { Router } from 'express';
 import { ManualEntriesController } from '../controllers/manual-entries.controller';
 import { AuthGuard } from '../../auth/guards/auth.guard';
-// import { RolesGuard } from '../../auth/guards/roles.guard'; // TODO: Verify roles guard path
 
 const router = Router();
 const controller = new ManualEntriesController();
+
+// Middleware pentru rol contabil/admin
+const requireAccountant = AuthGuard.roleGuard(['accountant', 'admin']);
+const requireAccountingRole = AuthGuard.roleGuard(['accountant', 'admin', 'manager']);
 
 /**
  * @route POST /api/accounting/manual-entries
@@ -19,8 +22,7 @@ const controller = new ManualEntriesController();
  * @body {entryDate, documentDate?, description, isStorno?, lines[]}
  */
 router.post('/',
-  AuthGuard.protect(),
-  RolesGuard.requireRoles(['accountant', 'admin']),
+  requireAccountant,
   controller.createManualEntry.bind(controller)
 );
 
@@ -31,8 +33,7 @@ router.post('/',
  * @query startDate?, endDate?, page?, limit?, includeStorno?
  */
 router.get('/',
-  AuthGuard.protect(),
-  RolesGuard.requireRoles(['accountant', 'admin', 'manager']),
+  requireAccountingRole,
   controller.getManualEntries.bind(controller)
 );
 
@@ -42,8 +43,7 @@ router.get('/',
  * @access Private (accountant, admin, manager)
  */
 router.get('/:id',
-  AuthGuard.protect(),
-  RolesGuard.requireRoles(['accountant', 'admin', 'manager']),
+  requireAccountingRole,
   controller.getManualEntry.bind(controller)
 );
 
@@ -54,8 +54,7 @@ router.get('/:id',
  * @body {entryDate, documentDate?, description, isStorno?, lines[]}
  */
 router.post('/validate',
-  AuthGuard.protect(),
-  RolesGuard.requireRoles(['accountant', 'admin']),
+  requireAccountant,
   controller.validateManualEntry.bind(controller)
 );
 

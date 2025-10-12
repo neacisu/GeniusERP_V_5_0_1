@@ -61,7 +61,7 @@ export class ManualEntriesController extends BaseController {
    * @route POST /api/accounting/manual-entries
    * @permission accountant, admin
    */
-  async createManualEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async createManualEntry(req: Request, res: Response): Promise<void> {
     try {
       // Validare și autentificare
       const companyId = this.getCompanyId(req);
@@ -231,7 +231,7 @@ export class ManualEntriesController extends BaseController {
    * @route GET /api/accounting/manual-entries
    * @permission accountant, admin, manager
    */
-  async getManualEntries(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async getManualEntries(req: Request, res: Response): Promise<void> {
     try {
       const companyId = this.getCompanyId(req);
       
@@ -290,7 +290,7 @@ export class ManualEntriesController extends BaseController {
    * @route GET /api/accounting/manual-entries/:id
    * @permission accountant, admin, manager
    */
-  async getManualEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async getManualEntry(req: Request, res: Response): Promise<void> {
     try {
       const companyId = this.getCompanyId(req);
       const { id } = req.params;
@@ -326,7 +326,7 @@ export class ManualEntriesController extends BaseController {
    * @route POST /api/accounting/manual-entries/validate
    * @permission accountant, admin
    */
-  async validateManualEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async validateManualEntry(req: Request, res: Response): Promise<void> {
     try {
       const companyId = this.getCompanyId(req);
       
