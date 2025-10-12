@@ -126,19 +126,48 @@ export class CorService {
   /**
    * Get occupations with optional parent code or search filter
    */
-  async getOccupations(subminorGroupCode?: string, searchTerm?: string) {
+  async getOccupations(params?: { 
+    subminorGroupCode?: string; 
+    searchTerm?: string; 
+    page?: number; 
+    limit?: number;
+  }) {
     try {
+      const page = params?.page || 1;
+      const limit = params?.limit || 50;
+      const offset = (page - 1) * limit;
+      
       let query = this.db.select().from(corOccupations);
+      let countQuery = this.db.select({ count: sql<number>`count(*)` }).from(corOccupations);
       
-      if (subminorGroupCode) {
-        query = query.where(eq(corOccupations.subminorGroupCode, subminorGroupCode));
+      if (params?.subminorGroupCode) {
+        query = query.where(eq(corOccupations.subminorGroupCode, params.subminorGroupCode));
+        countQuery = countQuery.where(eq(corOccupations.subminorGroupCode, params.subminorGroupCode));
       }
       
-      if (searchTerm) {
-        query = query.where(sql`lower(name) LIKE ${`%${searchTerm.toLowerCase()}%`}`);
+      if (params?.searchTerm) {
+        const searchCondition = sql`lower(${corOccupations.name}) LIKE ${`%${params.searchTerm.toLowerCase()}%`}`;
+        query = query.where(searchCondition);
+        countQuery = countQuery.where(searchCondition);
       }
       
-      return await query.orderBy(corOccupations.code);
+      // Get total count
+      const totalResult = await countQuery;
+      const total = totalResult[0]?.count || 0;
+      
+      // Get paginated items
+      const items = await query
+        .orderBy(corOccupations.code)
+        .limit(limit)
+        .offset(offset);
+      
+      return {
+        items,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      };
     } catch (error) {
       console.error("Error fetching COR occupations:", error);
       throw new Error("Failed to fetch COR occupations");

@@ -351,13 +351,21 @@ export class CorController {
   async getOccupations(req: Request, res: Response) {
     try {
       const subminorCode = req.params.subminorCode;
-      const searchTerm = req.query.searchTerm as string | undefined;
+      const searchTerm = req.query.search as string | undefined;
+      const groupFilter = req.query.group as string | undefined;
+      const page = parseInt(req.query.page as string || "1");
+      const limit = parseInt(req.query.limit as string || "10");
       
-      const occupations = await this.corService.getOccupations(subminorCode, searchTerm);
+      const result = await this.corService.getOccupations({
+        subminorGroupCode: groupFilter && groupFilter !== 'all' ? groupFilter : subminorCode,
+        searchTerm,
+        page,
+        limit
+      });
       
       return res.status(200).json({
         success: true,
-        data: occupations
+        data: result
       });
     } catch (error: any) {
       console.error("Error fetching COR occupations:", error);
