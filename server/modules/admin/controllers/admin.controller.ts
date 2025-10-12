@@ -50,7 +50,7 @@ export function registerAdminControllerRoutes(app: any, userService: UserService
         return res.status(400).json({
           success: false,
           message: 'Validation error',
-          errors: validationResult.error.errors
+          errors: validationResult.error.issues
         });
       }
 

@@ -109,7 +109,7 @@ export class CommunityController {
       if (!validationResult.success) {
         return res.status(400).json({ 
           message: 'Invalid query parameters',
-          errors: validationResult.error.errors
+          errors: validationResult.error.issues
         });
       }
 
@@ -180,7 +180,7 @@ export class CommunityController {
       if (!validationResult.success) {
         return res.status(400).json({ 
           message: 'Invalid thread data',
-          errors: validationResult.error.errors
+          errors: validationResult.error.issues
         });
       }
 
@@ -224,7 +224,7 @@ export class CommunityController {
       if (!validationResult.success) {
         return res.status(400).json({ 
           message: 'Invalid thread data',
-          errors: validationResult.error.errors
+          errors: validationResult.error.issues
         });
       }
 

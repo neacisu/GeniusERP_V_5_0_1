@@ -154,7 +154,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
         return res.status(400).json({
           success: false,
           message: 'Validation error',
-          errors: validationResult.error.errors
+          errors: validationResult.error.issues
         });
       }
 
@@ -220,7 +220,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
         return res.status(400).json({
           success: false,
           message: 'Validation error',
-          errors: validationResult.error.errors
+          errors: validationResult.error.issues
         });
       }
 

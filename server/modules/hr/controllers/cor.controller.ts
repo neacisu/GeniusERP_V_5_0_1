@@ -141,7 +141,7 @@ export class CorController {
         return res.status(400).json({
           success: false,
           message: "Invalid batch data format",
-          errors: validationResult.error.errors
+          errors: validationResult.error.issues
         });
       }
       
@@ -367,7 +367,7 @@ export class CorController {
         return res.status(400).json({
           success: false,
           message: "Invalid COR code format",
-          errors: validationResult.error.errors
+          errors: validationResult.error.issues
         });
       }
       
@@ -411,7 +411,7 @@ export class CorController {
         return res.status(400).json({
           success: false,
           message: "Invalid search parameters",
-          errors: validationResult.error.errors
+          errors: validationResult.error.issues
         });
       }
       
@@ -445,7 +445,7 @@ export class CorController {
         return res.status(400).json({
           success: false,
           message: "Invalid COR code format",
-          errors: validationResult.error.errors
+          errors: validationResult.error.issues
         });
       }
       
@@ -481,7 +481,7 @@ export class CorController {
         return res.status(400).json({
           success: false,
           message: "Invalid seed data parameters",
-          errors: validationResult.error.errors
+          errors: validationResult.error.issues
         });
       }
       
@@ -524,7 +524,7 @@ export class CorController {
         return res.status(400).json({
           success: false,
           message: "Invalid seed data parameters",
-          errors: validationResult.error.errors
+          errors: validationResult.error.issues
         });
       }
       

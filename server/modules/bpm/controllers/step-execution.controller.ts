@@ -161,7 +161,7 @@ export class StepExecutionController {
         return res.status(400).json({ 
           success: false,
           error: 'Validation error',
-          details: error.errors 
+          details: error.issues 
         });
       }
       

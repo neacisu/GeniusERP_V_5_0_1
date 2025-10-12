@@ -73,7 +73,7 @@ export function registerProductQAControllerRoutes(app: any, productQaService: Pr
           return res.status(400).json({
             success: false,
             message: 'Validation error',
-            errors: validationResult.error.errors
+            errors: validationResult.error.issues
           });
         }
 
@@ -127,7 +127,7 @@ export function registerProductQAControllerRoutes(app: any, productQaService: Pr
           return res.status(400).json({
             success: false,
             message: 'Validation error',
-            errors: validationResult.error.errors
+            errors: validationResult.error.issues
           });
         }
 
@@ -177,7 +177,7 @@ export function registerProductQAControllerRoutes(app: any, productQaService: Pr
           return res.status(400).json({
             success: false,
             message: 'Validation error',
-            errors: validationResult.error.errors
+            errors: validationResult.error.issues
           });
         }
 
@@ -231,7 +231,7 @@ export function registerProductQAControllerRoutes(app: any, productQaService: Pr
           return res.status(400).json({
             success: false,
             message: 'Validation error',
-            errors: validationResult.error.errors
+            errors: validationResult.error.issues
           });
         }
 

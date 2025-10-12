@@ -119,7 +119,7 @@ export function registerOpenAIControllerRoutes(app: any, openAiService: OpenAiSe
           return res.status(400).json({
             success: false,
             message: 'Validation error',
-            errors: validationResult.error.errors
+            errors: validationResult.error.issues
           });
         }
 
@@ -178,7 +178,7 @@ export function registerOpenAIControllerRoutes(app: any, openAiService: OpenAiSe
           return res.status(400).json({
             success: false,
             message: 'Validation error',
-            errors: validationResult.error.errors
+            errors: validationResult.error.issues
           });
         }
 

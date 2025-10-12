@@ -105,7 +105,7 @@ export class StepTemplateController {
         return res.status(400).json({
           success: false,
           message: 'Invalid request data',
-          errors: validation.error.errors
+          errors: validation.error.issues
         });
       }
       
@@ -166,7 +166,7 @@ export class StepTemplateController {
         return res.status(400).json({
           success: false,
           message: 'Invalid request data',
-          errors: validation.error.errors
+          errors: validation.error.issues
         });
       }
       

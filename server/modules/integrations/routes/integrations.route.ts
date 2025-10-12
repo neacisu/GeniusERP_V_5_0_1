@@ -142,7 +142,7 @@ router.post('/',
         return res.status(400).json({
           success: false,
           message: 'Invalid request body',
-          errors: validationResult.error.errors
+          errors: validationResult.error.issues
         });
       }
       
@@ -261,7 +261,7 @@ router.patch('/:id',
         return res.status(400).json({
           success: false,
           message: 'Invalid request body',
-          errors: validationResult.error.errors
+          errors: validationResult.error.issues
         });
       }
       
@@ -436,7 +436,7 @@ router.post('/:provider/initialize',
               return res.status(400).json({
                 success: false,
                 message: 'Invalid ANAF e-Factura initialization parameters',
-                errors: anafValidation.error.errors
+                errors: anafValidation.error.issues
               });
             }
             
@@ -464,7 +464,7 @@ router.post('/:provider/initialize',
               return res.status(400).json({
                 success: false,
                 message: 'Invalid Stripe initialization parameters',
-                errors: stripeValidation.error.errors
+                errors: stripeValidation.error.issues
               });
             }
             
@@ -489,7 +489,7 @@ router.post('/:provider/initialize',
               return res.status(400).json({
                 success: false,
                 message: 'Invalid PandaDoc initialization parameters',
-                errors: pandaDocValidation.error.errors
+                errors: pandaDocValidation.error.issues
               });
             }
             

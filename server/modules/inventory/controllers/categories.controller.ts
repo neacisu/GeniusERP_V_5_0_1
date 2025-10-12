@@ -147,7 +147,7 @@ export function createCategoriesController(categoriesService: CategoriesService)
         if (!validation.success) {
           return res.status(400).json({ 
             error: 'Date de intrare invalide', 
-            details: validation.error.errors 
+            details: validation.error.issues 
           });
         }
 
@@ -211,7 +211,7 @@ export function createCategoriesController(categoriesService: CategoriesService)
         if (!validation.success) {
           return res.status(400).json({ 
             error: 'Date de intrare invalide', 
-            details: validation.error.errors 
+            details: validation.error.issues 
           });
         }
 

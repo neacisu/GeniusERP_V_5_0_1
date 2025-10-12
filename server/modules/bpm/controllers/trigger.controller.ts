@@ -170,7 +170,7 @@ export class TriggerController {
         return res.status(400).json({ 
           success: false,
           error: 'Validation error',
-          details: error.errors 
+          details: error.issues 
         });
       }
       
@@ -243,7 +243,7 @@ export class TriggerController {
         return res.status(400).json({ 
           success: false,
           error: 'Validation error',
-          details: error.errors 
+          details: error.issues 
         });
       }
       

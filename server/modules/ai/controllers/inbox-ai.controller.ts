@@ -88,7 +88,7 @@ export function registerInboxAIControllerRoutes(app: any, inboxAiService: InboxA
           return res.status(400).json({
             success: false,
             message: 'Validation error',
-            errors: validationResult.error.errors
+            errors: validationResult.error.issues
           });
         }
 
@@ -140,7 +140,7 @@ export function registerInboxAIControllerRoutes(app: any, inboxAiService: InboxA
           return res.status(400).json({
             success: false,
             message: 'Validation error',
-            errors: validationResult.error.errors
+            errors: validationResult.error.issues
           });
         }
 
@@ -197,7 +197,7 @@ export function registerInboxAIControllerRoutes(app: any, inboxAiService: InboxA
           return res.status(400).json({
             success: false,
             message: 'Validation error',
-            errors: validationResult.error.errors
+            errors: validationResult.error.issues
           });
         }
 
@@ -254,7 +254,7 @@ export function registerInboxAIControllerRoutes(app: any, inboxAiService: InboxA
           return res.status(400).json({
             success: false,
             message: 'Validation error',
-            errors: validationResult.error.errors
+            errors: validationResult.error.issues
           });
         }
 

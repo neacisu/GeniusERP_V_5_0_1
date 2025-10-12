@@ -61,7 +61,7 @@ export function registerSalesAIControllerRoutes(app: any, salesAiService: SalesA
           return res.status(400).json({
             success: false,
             message: 'Validation error',
-            errors: validationResult.error.errors
+            errors: validationResult.error.issues
           });
         }
 
@@ -113,7 +113,7 @@ export function registerSalesAIControllerRoutes(app: any, salesAiService: SalesA
           return res.status(400).json({
             success: false,
             message: 'Validation error',
-            errors: validationResult.error.errors
+            errors: validationResult.error.issues
           });
         }
 
@@ -169,7 +169,7 @@ export function registerSalesAIControllerRoutes(app: any, salesAiService: SalesA
           return res.status(400).json({
             success: false,
             message: 'Validation error',
-            errors: validationResult.error.errors
+            errors: validationResult.error.issues
           });
         }
 
@@ -221,7 +221,7 @@ export function registerSalesAIControllerRoutes(app: any, salesAiService: SalesA
           return res.status(400).json({
             success: false,
             message: 'Validation error',
-            errors: validationResult.error.errors
+            errors: validationResult.error.issues
           });
         }
 
