@@ -116,9 +116,9 @@ router.post(
       }
       
       // Check if user has access to this company
+      // Only ADMIN can access other companies' data
       if (req.user && req.user.companyId !== companyId && 
-          !req.user.roles!.includes(UserRole.ADMIN) &&
-          !req.user.roles!.some(role => role === UserRole.ADMIN)) {
+          !req.user.roles!.includes(UserRole.ADMIN)) {
         return res.status(403).json({
           success: false,
           error: 'You do not have permission to access this company data'
@@ -192,9 +192,9 @@ router.get(
       }
       
       // Check if user has access to this company
+      // Only ADMIN can access other companies' data
       if (req.user && req.user.companyId !== companyId && 
-          !req.user.roles!.includes(UserRole.ADMIN) &&
-          !req.user.roles!.some(role => role === UserRole.ADMIN)) {
+          !req.user.roles!.includes(UserRole.ADMIN)) {
         return res.status(403).json({
           success: false,
           error: 'You do not have permission to access this company data'
@@ -245,9 +245,9 @@ router.get(
       }
       
       // Check if user has access to this company
+      // Only ADMIN can access other companies' data
       if (req.user && req.user.companyId !== companyId && 
-          !req.user.roles!.includes(UserRole.ADMIN) &&
-          !req.user.roles!.some(role => role === UserRole.ADMIN)) {
+          !req.user.roles!.includes(UserRole.ADMIN)) {
         return res.status(403).json({
           success: false,
           error: 'You do not have permission to access this company data'
