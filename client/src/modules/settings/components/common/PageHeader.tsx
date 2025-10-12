@@ -9,7 +9,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbS
 import { ChevronRight, Home } from "lucide-react";
 import { Link } from "wouter";
 
-export interface BreadcrumbItem {
+export interface BreadcrumbItemData {
   title: string;
   href?: string;
 }
@@ -17,7 +17,7 @@ export interface BreadcrumbItem {
 interface PageHeaderProps {
   title: string;
   description?: string;
-  breadcrumbs?: BreadcrumbItem[];
+  breadcrumbs?: BreadcrumbItemData[];
   actions?: React.ReactNode;
 }
 

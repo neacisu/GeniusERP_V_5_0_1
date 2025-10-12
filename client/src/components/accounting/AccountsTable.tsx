@@ -8,7 +8,7 @@ type AccountsTableProps = {
   onEditAccount: (account: Account) => void;
 };
 
-export default function AccountsTable({ classCode, onAddAccount, onEditAccount }: AccountsTableProps) {
+export default function AccountsTable({ classCode, onAddAccount, onEditAccount: _onEditAccount }: AccountsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;

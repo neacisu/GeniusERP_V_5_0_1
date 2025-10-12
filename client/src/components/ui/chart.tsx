@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 const THEMES = { light: "", dark: ".dark" } as const
 
 export type ChartConfig = {
-  [k in string]: {
+  [_k in string]: {
     label?: React.ReactNode
     icon?: React.ComponentType
   } & (
@@ -67,7 +67,7 @@ ChartContainer.displayName = "Chart"
 
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
-    ([_, config]) => config.theme || config.color
+    ([, config]) => config.theme || config.color
   )
 
   if (!colorConfig.length) {
@@ -111,8 +111,8 @@ const ChartTooltipContent = React.forwardRef<
     indicator?: "line" | "dot" | "dashed"
     nameKey?: string
     labelKey?: string
-    labelFormatter?: (value: any, payload: any) => React.ReactNode
-    formatter?: (value: any, name: string, item: any, index: number, payload: any) => React.ReactNode
+    labelFormatter?: (_value: any, _payload: any) => React.ReactNode
+    formatter?: (_value: any, _name: string, _item: any, _index: number, _payload: any) => React.ReactNode
     color?: string
     className?: string
     labelClassName?: string

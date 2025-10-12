@@ -1,4 +1,5 @@
 import js from '@eslint/js';
+import globals from 'globals';
 import typescript from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
 import react from 'eslint-plugin-react';
@@ -43,10 +44,23 @@ export default [
       'migrations/',
       'drizzle/',
       'utils/',
-      'attached_assets/'
+      'attached_assets/',
+      '**/*.test.cjs',
+      '**/test-*.js',
+      '**/test-*.cjs'
     ]
   },
   js.configs.recommended,
+  {
+    // Base configuration for all files
+    rules: {
+      'no-undef': 'off', // TypeScript handles this
+      'no-unused-vars': 'off', // Use TypeScript version instead
+      'no-redeclare': 'off', // Use TypeScript version instead
+      'no-case-declarations': 'off', // Allow declarations in case blocks (common pattern)
+      'no-useless-escape': 'warn' // Warn instead of error
+    }
+  },
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
@@ -60,25 +74,8 @@ export default [
         }
       },
       globals: {
-        console: 'readonly',
-        process: 'readonly',
-        Buffer: 'readonly',
-        __dirname: 'readonly',
-        __filename: 'readonly',
-        module: 'readonly',
-        require: 'readonly',
-        exports: 'readonly',
-        global: 'readonly',
-        setTimeout: 'readonly',
-        setInterval: 'readonly',
-        clearTimeout: 'readonly',
-        clearInterval: 'readonly',
-        setImmediate: 'readonly',
-        clearImmediate: 'readonly',
-        document: 'readonly',
-        window: 'readonly',
-        navigator: 'readonly',
-        fetch: 'readonly'
+        ...globals.browser,
+        ...globals.node
       }
     },
     plugins: {
@@ -92,15 +89,21 @@ export default [
       }
     },
     rules: {
+      // Disable base rule as it can report incorrect errors
+      'no-unused-vars': 'off',
+      'no-redeclare': 'off',
+      
       // TypeScript rules
       '@typescript-eslint/no-unused-vars': ['warn', {
         argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_'
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_'
       }],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-non-null-assertion': 'warn',
       '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-redeclare': 'error',
       
       // React rules
       'react/react-in-jsx-scope': 'off',

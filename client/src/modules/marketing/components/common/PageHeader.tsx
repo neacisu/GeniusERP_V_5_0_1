@@ -17,7 +17,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-export interface BreadcrumbItem {
+export interface BreadcrumbItemData {
   label: string;
   href?: string;
 }
@@ -27,7 +27,7 @@ interface PageHeaderProps {
   description?: string;
   backButton?: boolean;
   backHref?: string;
-  breadcrumbs?: BreadcrumbItem[];
+  breadcrumbs?: BreadcrumbItemData[];
   actions?: ReactNode;
 }
 
