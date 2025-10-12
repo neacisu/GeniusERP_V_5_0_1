@@ -6,15 +6,20 @@ import { relations } from "drizzle-orm";
 // Export CRM models for shared usage across the application
 // Notă: CRM Activity este exportat ca Activity principal
 export * from "../server/modules/crm/schema/crm.schema";
+export * from "../server/modules/crm/schema/financial-data.schema";
 
 // Export HR models for shared usage across the application
 export * from "../server/modules/hr/schema/hr.schema";
+export * from "../server/modules/hr/schema/documents.schema";
+export * from "../server/modules/hr/schema/cor.schema";
+export * from "../server/modules/hr/schema/settings.schema";
 
 // Export Accounting models for shared usage across the application
 export * from "../server/modules/accounting/schema";
 
 // Export Analytics models for shared usage across the application
 export * from "../server/modules/analytics/schema/analytics.schema";
+export * from "../server/modules/analytics/schema/predictive.schema";
 
 // Export Integrations models for shared usage across the application
 export * from "../server/modules/integrations/schema/integrations.schema";
@@ -26,7 +31,8 @@ export * from "../server/modules/ecommerce/schema";
 // Notă: Activity din Collaboration e redenumit în CollaborationActivity pentru a evita conflicte cu CRM
 export * from "./schema/collaboration.schema";
 
-// Export Invoicing Numbering models for shared usage across the application
+// Export Invoicing models for shared usage across the application
+export * from "../server/modules/invoicing/schema/invoice.schema";
 export * from "./schema/invoice-numbering.schema";
 
 // Export Warehouse models for shared usage across the application
@@ -38,6 +44,58 @@ export * from "./schema/cash-register.schema";
 
 // Export Bank Journal models for shared usage across the application
 export * from "./schema/bank-journal.schema";
+
+// Export Communications models for shared usage across the application
+// Notă: contacts redenumit în communicationsContacts pentru a evita conflicte cu CRM
+export {
+  CommunicationChannel,
+  MessageDirection,
+  MessageStatus,
+  SentimentType,
+  channelEnum,
+  directionEnum,
+  statusEnum,
+  sentimentEnum,
+  messageThreads,
+  messages,
+  contacts as communicationsContacts,
+  channelConfigurations,
+  messageAccess,
+  threadAccess,
+  insertMessageThreadSchema,
+  insertMessageSchema,
+  insertContactSchema as insertCommunicationsContactSchema,
+  insertChannelConfigSchema,
+  type MessageThread,
+  type Message,
+  type Contact as CommunicationsContact,
+  type ChannelConfig,
+  type MessageThreadInsert,
+  type MessageInsert,
+  type ContactInsert as CommunicationsContactInsert,
+  type ChannelConfigInsert
+} from "./schema/communications.schema";
+
+// Export Marketing models for shared usage across the application
+export * from "./schema/marketing.schema";
+
+// Export Account Mappings models for shared usage across the application
+export * from "./schema/account-mappings.schema";
+
+// Export BPM models for shared usage across the application
+export * from "./schema/bpm.schema";
+
+// Export Audit models for shared usage across the application
+export * from "../server/modules/audit/schema/audit.schema";
+
+// Export Settings models for shared usage across the application
+export * from "../server/modules/settings/schema/settings.schema";
+
+// Export Admin models for shared usage across the application
+export * from "./schema/admin.schema";
+
+// Export Company models for shared usage across the application
+export * from "../server/modules/company/schema/company.schema";
 
 // User Management
 export const users = pgTable("users", {

@@ -27,7 +27,8 @@ export enum CompanyType {
 }
 
 // Create enum for company type
-export const companyTypeEnum = pgEnum('company_type', [] /* FIXME: Replace with literal array values from CompanyType */);
+// Note: Using text instead of enum to avoid duplicate enum error with shared schema
+// The company_type enum already exists in database from shared schema
 
 /**
  * Companies table
@@ -35,8 +36,8 @@ export const companyTypeEnum = pgEnum('company_type', [] /* FIXME: Replace with 
 export const companies = pgTable('companies', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
-  type: companyTypeEnum('type').notNull().default(CompanyType.HEADQUARTERS),
-  parentId: uuid('parent_id').references(() => companies.id),
+  type: text('type').notNull().default(CompanyType.HEADQUARTERS),
+  parentId: uuid('parent_id').references((): any => companies.id),
   fiscalCode: varchar('fiscal_code', { length: 50 }).notNull(), // CUI / Cod fiscal
   registrationNumber: varchar('registration_number', { length: 50 }).notNull(), // Număr registrul comerțului
   address: text('address'),
