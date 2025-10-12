@@ -1,0 +1,16 @@
+apiVersion: 1
+
+datasources:
+  - name: Sentry
+    type: grafana-sentry-datasource
+    uid: sentry
+    orgId: 1
+    access: proxy
+    url: https://sentry.io
+    isDefault: false
+    editable: true
+    jsonData:
+      orgSlug: "o4510176750665728"
+    secureJsonData:
+      authToken: "${SENTRY_AUTH_TOKEN}"
+
