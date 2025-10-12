@@ -153,7 +153,7 @@ export class SetupService {
     const router = Router();
 
     // Middleware to verify authentication
-    const requireAuth = AuthGuard.AuthGuard.protect(JwtAuthMode.REQUIRED);
+    const requireAuth = AuthGuard.protect(JwtAuthMode.REQUIRED);
     
     // GET /api/admin/setup/steps/:companyId - Get all setup steps for a company
     router.get('/steps/:companyId', requireAuth, async (req: Request, res: Response) => {
@@ -220,5 +220,151 @@ export class SetupService {
     // Mount routes
     app.use('/api/admin/setup', router);
     this.logger.info('Setup routes registered successfully');
+  }
+
+  /**
+   * ========================================================================
+   * STUB METHODS - These require full implementation for production use
+   * ========================================================================
+   * These methods are minimal implementations to satisfy TypeScript compilation
+   * and allow the application to run. They MUST be properly implemented before
+   * using the setup functionality in production.
+   */
+
+  /**
+   * Check if the system has been set up (has at least one admin user)
+   * TODO: Implement proper logic to check users table
+   */
+  async checkSetupStatus(): Promise<{ isSetup: boolean; hasAdmin: boolean; hasCompany: boolean }> {
+    try {
+      // Minimal stub - always returns that system needs setup
+      this.logger.warn('checkSetupStatus() is a STUB - implement proper logic');
+      return {
+        isSetup: false,
+        hasAdmin: false,
+        hasCompany: false
+      };
+    } catch (error) {
+      this.logger.error('Error checking setup status:', error);
+      return { isSetup: false, hasAdmin: false, hasCompany: false };
+    }
+  }
+
+  /**
+   * Perform initial system setup
+   * TODO: Implement user creation, company creation, default roles, etc.
+   */
+  async performInitialSetup(setupData: any): Promise<any> {
+    try {
+      this.logger.warn('performInitialSetup() is a STUB - implement proper logic');
+      // Stub implementation
+      return {
+        success: true,
+        message: 'Setup stub executed - implement real logic'
+      };
+    } catch (error) {
+      this.logger.error('Error performing initial setup:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check database status
+   * TODO: Implement connection test, migrations check
+   */
+  async checkDatabaseStatus(): Promise<{ connected: boolean; migrationsUpToDate: boolean }> {
+    try {
+      this.logger.warn('checkDatabaseStatus() is a STUB - implement proper logic');
+      return {
+        connected: true,
+        migrationsUpToDate: true
+      };
+    } catch (error) {
+      this.logger.error('Error checking database status:', error);
+      return { connected: false, migrationsUpToDate: false };
+    }
+  }
+
+  /**
+   * Run database migrations
+   * TODO: Implement Drizzle migrations runner
+   */
+  async runDatabaseMigrations(): Promise<{ success: boolean; message: string }> {
+    try {
+      this.logger.warn('runDatabaseMigrations() is a STUB - implement proper logic');
+      return {
+        success: true,
+        message: 'Migrations stub executed'
+      };
+    } catch (error) {
+      this.logger.error('Error running migrations:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Seed database with initial data
+   * TODO: Implement seeding logic
+   */
+  async seedDatabase(datasets: string[]): Promise<{ success: boolean; message: string }> {
+    try {
+      this.logger.warn('seedDatabase() is a STUB - implement proper logic');
+      return {
+        success: true,
+        message: `Seed stub executed for: ${datasets.join(', ')}`
+      };
+    } catch (error) {
+      this.logger.error('Error seeding database:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check system requirements
+   * TODO: Implement Node version, dependencies check
+   */
+  async checkSystemRequirements(): Promise<{ met: boolean; requirements: any[] }> {
+    try {
+      this.logger.warn('checkSystemRequirements() is a STUB - implement proper logic');
+      return {
+        met: true,
+        requirements: []
+      };
+    } catch (error) {
+      this.logger.error('Error checking system requirements:', error);
+      return { met: false, requirements: [] };
+    }
+  }
+
+  /**
+   * Get system information
+   * TODO: Implement OS, Node, DB version retrieval
+   */
+  async getSystemInformation(): Promise<any> {
+    try {
+      this.logger.warn('getSystemInformation() is a STUB - implement proper logic');
+      return {
+        nodeVersion: process.version,
+        platform: process.platform,
+        arch: process.arch
+      };
+    } catch (error) {
+      this.logger.error('Error getting system information:', error);
+      return {};
+    }
+  }
+
+  /**
+   * Get available seed datasets
+   * TODO: Implement dataset discovery
+   */
+  async getAvailableSeedDatasets(): Promise<string[]> {
+    try {
+      this.logger.warn('getAvailableSeedDatasets() is a STUB - implement proper logic');
+      return ['demo-data', 'sample-products', 'test-users'];
+    } catch (error) {
+      this.logger.error('Error getting seed datasets:', error);
+      return [];
+    }
   }
 }

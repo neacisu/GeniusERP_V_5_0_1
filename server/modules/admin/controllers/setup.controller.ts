@@ -29,7 +29,7 @@ const initialSetupSchema = z.object({
     phone: z.string().optional(),
     email: z.string().email('Invalid email format').optional(),
   }).optional(),
-  systemSettings: z.record(z.any()).optional(),
+  systemSettings: z.record(z.string(), z.any()).optional(),
 });
 
 // Create logger instance
@@ -97,11 +97,7 @@ export function registerSetupControllerRoutes(app: any, setupService: SetupServi
 
       // Perform initial setup
       const setupData = validationResult.data;
-      const result = await setupService.performInitialSetup(
-        setupData.adminUser,
-        setupData.company,
-        setupData.systemSettings
-      );
+      const result = await setupService.performInitialSetup(setupData);
 
       logger.info('System successfully initialized');
 
@@ -192,7 +188,7 @@ export function registerSetupControllerRoutes(app: any, setupService: SetupServi
       }
 
       // Seed database with sample data
-      const result = await setupService.seedDatabase(dataset);
+      const result = await setupService.seedDatabase([dataset]);
 
       logger.info(`Database seeded with ${dataset} data by user: ${req.user?.id}`);
 

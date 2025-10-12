@@ -40,7 +40,7 @@ export function registerLicenseControllerRoutes(app: any, licenseService: Licens
   app.get(BASE_PATH, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
       // Get license information
-      const license = await licenseService.getLicenseInfo();
+      const license = await licenseService.getActiveLicense();
 
       if (!license) {
         return res.status(404).json({
@@ -82,23 +82,17 @@ export function registerLicenseControllerRoutes(app: any, licenseService: Licens
         });
       }
 
-      // Activate license
+      // Activate license - first register, then activate
       const { licenseKey, email, companyName } = validationResult.data;
-      const activationResult = await licenseService.activateLicense(licenseKey, email, companyName);
-
-      if (!activationResult.success) {
-        return res.status(400).json({
-          success: false,
-          message: activationResult.message
-        });
-      }
+      const registerResult = await licenseService.registerLicense(licenseKey, req.user?.id || 'system');
+      const activationResult = await licenseService.activateLicense(registerResult.id, req.user?.id || 'system');
 
       logger.info(`License activated by user: ${req.user?.id}`);
 
       return res.status(200).json({
         success: true,
         message: 'License activated successfully',
-        data: activationResult.license
+        data: activationResult
       });
     } catch (error: any) {
       logger.error('Error activating license', error);
@@ -143,15 +137,16 @@ export function registerLicenseControllerRoutes(app: any, licenseService: Licens
    */
   app.post(`${BASE_PATH}/deactivate`, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
-      // Deactivate license
-      const deactivationResult = await licenseService.deactivateLicense();
-
-      if (!deactivationResult.success) {
-        return res.status(400).json({
+      // Deactivate license - get active license first
+      const activeLicense = await licenseService.getActiveLicense();
+      if (!activeLicense) {
+        return res.status(404).json({
           success: false,
-          message: deactivationResult.message
+          message: 'No active license found'
         });
       }
+      
+      const deactivationResult = await licenseService.deactivateLicense(activeLicense.id, req.user?.id || 'system');
 
       logger.info(`License deactivated by user: ${req.user?.id}`);
 
@@ -228,7 +223,7 @@ export function registerLicenseControllerRoutes(app: any, licenseService: Licens
   app.get(`${BASE_PATH}/history`, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
       // Get license history
-      const history = await licenseService.getLicenseHistory();
+      const history = await licenseService.getAllLicenses();
 
       return res.status(200).json({
         success: true,

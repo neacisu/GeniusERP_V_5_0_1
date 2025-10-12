@@ -211,7 +211,7 @@ export class LicenseService {
       // Log the audit event
       await AuditService.log({
         userId: actorId,
-        companyId: null,
+        companyId: 'system',
         action: AuditAction.CREATE,
         entity: 'licenses',
         entityId: license.id,
@@ -316,7 +316,7 @@ export class LicenseService {
       // Log the audit event
       await AuditService.log({
         userId: actorId,
-        companyId: null,
+        companyId: 'system',
         action: AuditAction.UPDATE,
         entity: 'licenses',
         entityId: licenseId,
@@ -385,7 +385,7 @@ export class LicenseService {
       // Log the audit event
       await AuditService.log({
         userId: actorId,
-        companyId: null,
+        companyId: 'system',
         action: AuditAction.UPDATE,
         entity: 'licenses',
         entityId: licenseId,
@@ -439,6 +439,59 @@ export class LicenseService {
   }
 
   /**
+   * Verify if current license is valid
+   */
+  async verifyLicense(): Promise<{ valid: boolean; message?: string }> {
+    try {
+      const license = await this.getActiveLicense();
+      if (!license) {
+        return { valid: false, message: 'No active license' };
+      }
+      
+      const now = new Date();
+      if (license.expiresAt && new Date(license.expiresAt) < now) {
+        return { valid: false, message: 'License expired' };
+      }
+      
+      return { valid: true };
+    } catch (error) {
+      this.logger.error('Error verifying license:', error);
+      return { valid: false, message: 'Error verifying license' };
+    }
+  }
+
+  /**
+   * Get current license usage statistics
+   */
+  async getLicenseUsage() {
+    try {
+      const license = await this.getActiveLicense();
+      return {
+        maxUsers: license?.maxUsers || 0,
+        maxCompanies: license?.maxCompanies || 0,
+        currentUsers: 0, // TODO: Query actual user count
+        currentCompanies: 0 // TODO: Query actual company count
+      };
+    } catch (error) {
+      this.logger.error('Error getting license usage:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all enabled features for current license
+   */
+  async getLicenseFeatures() {
+    try {
+      const license = await this.getActiveLicense();
+      return license?.features || {};
+    } catch (error) {
+      this.logger.error('Error getting license features:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Check for expired licenses and update their status
    */
   async checkExpiredLicenses(): Promise<void> {
@@ -477,7 +530,7 @@ export class LicenseService {
         // Log the audit event
         await AuditService.log({
           userId: 'system',
-          companyId: null,
+          companyId: 'system',
           action: AuditAction.UPDATE,
           entity: 'licenses',
           entityId: license.id,
@@ -681,8 +734,8 @@ export class LicenseService {
     const router = Router();
 
     // Authentication middleware
-    const requireAuth = AuthGuard.AuthGuard.protect(JwtAuthMode.REQUIRED);
-    const requireAdmin = AuthGuard.requireRoles(['admin']);
+    const requireAuth = AuthGuard.protect(JwtAuthMode.REQUIRED);
+    const requireAdmin = AuthGuard.roleGuard(['admin']);
     
     // GET /api/admin/licenses - Get all licenses
     router.get('/licenses', requireAdmin, async (req: Request, res: Response) => {
@@ -747,7 +800,7 @@ export class LicenseService {
           });
         }
         
-        const license = await this.registerLicense(licenseKey, req.user?.id);
+        const license = await this.registerLicense(licenseKey, req.user?.id || 'system');
         
         res.status(201).json({
           success: true,
@@ -768,7 +821,7 @@ export class LicenseService {
       try {
         const { licenseId } = req.params;
         
-        const license = await this.activateLicense(licenseId, req.user?.id);
+        const license = await this.activateLicense(licenseId, req.user?.id || 'system');
         
         res.json({
           success: true,
@@ -789,7 +842,7 @@ export class LicenseService {
       try {
         const { licenseId } = req.params;
         
-        await this.deactivateLicense(licenseId, req.user?.id);
+        await this.deactivateLicense(licenseId, req.user?.id || 'system');
         
         res.json({
           success: true,

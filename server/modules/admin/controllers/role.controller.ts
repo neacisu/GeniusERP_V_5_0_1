@@ -110,7 +110,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
       const roleId = req.params.id;
 
       // Get role by ID
-      const role = await roleService.findRoleById(roleId);
+      const role = await roleService.getRoleById(roleId);
 
       if (!role) {
         return res.status(404).json({
@@ -163,6 +163,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
       const role = await roleService.createRole({
         name: roleData.name,
         description: roleData.description || '',
+        companyId: req.user?.companyId || '', // Required by schema
       });
 
       // Assign permissions if provided
@@ -171,7 +172,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
       }
 
       // Get the created role with permissions
-      const createdRole = await roleService.findRoleById(role.id);
+      const createdRole = await roleService.getRoleById(role.id);
       const permissions = await roleService.getRolePermissions(role.id);
 
       logger.info(`Role created: ${role.name} by user: ${req.user?.id}`);
@@ -225,7 +226,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
       }
 
       // Check if role exists
-      const existingRole = await roleService.findRoleById(roleId);
+      const existingRole = await roleService.getRoleById(roleId);
       if (!existingRole) {
         return res.status(404).json({
           success: false,
@@ -234,7 +235,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
       }
 
       // Prevent updating system roles
-      if (existingRole.isSystem) {
+      if ((existingRole as any).is_system || (existingRole as any).isSystem) {
         return res.status(403).json({
           success: false,
           message: 'System roles cannot be modified'
@@ -246,7 +247,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
       const updatedRole = await roleService.updateRole(roleId, {
         name: roleData.name,
         description: roleData.description,
-      });
+      }, req.user?.id || 'system'); // actorId required by service
 
       // Update permissions if provided
       if (roleData.permissionIds !== undefined) {
@@ -254,7 +255,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
       }
 
       // Get the updated role with permissions
-      const roleWithPermissions = await roleService.findRoleById(roleId);
+      const roleWithPermissions = await roleService.getRoleById(roleId);
       const permissions = await roleService.getRolePermissions(roleId);
 
       logger.info(`Role updated: ${updatedRole.name} by user: ${req.user?.id}`);
@@ -297,7 +298,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
       const roleId = req.params.id;
 
       // Check if role exists
-      const existingRole = await roleService.findRoleById(roleId);
+      const existingRole = await roleService.getRoleById(roleId);
       if (!existingRole) {
         return res.status(404).json({
           success: false,
@@ -306,7 +307,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
       }
 
       // Prevent deleting system roles
-      if (existingRole.isSystem) {
+      if ((existingRole as any).is_system || (existingRole as any).isSystem) {
         return res.status(403).json({
           success: false,
           message: 'System roles cannot be deleted'
@@ -326,7 +327,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
       }
 
       // Delete the role
-      await roleService.deleteRole(roleId);
+      await roleService.deleteRole(roleId, req.user?.id || 'system'); // actorId required by service
 
       logger.info(`Role deleted: ${existingRole.name} by user: ${req.user?.id}`);
 
@@ -403,7 +404,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
       }
 
       // Check if role exists
-      const existingRole = await roleService.findRoleById(roleId);
+      const existingRole = await roleService.getRoleById(roleId);
       if (!existingRole) {
         return res.status(404).json({
           success: false,
@@ -412,7 +413,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
       }
 
       // Prevent modifying system roles' permissions
-      if (existingRole.isSystem) {
+      if ((existingRole as any).is_system || (existingRole as any).isSystem) {
         return res.status(403).json({
           success: false,
           message: 'Permissions for system roles cannot be modified'
@@ -453,7 +454,7 @@ export function registerRoleControllerRoutes(app: any, roleService: RoleService)
       const roleId = req.params.id;
 
       // Check if role exists
-      const existingRole = await roleService.findRoleById(roleId);
+      const existingRole = await roleService.getRoleById(roleId);
       if (!existingRole) {
         return res.status(404).json({
           success: false,

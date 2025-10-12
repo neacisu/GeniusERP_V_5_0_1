@@ -6,7 +6,7 @@
  */
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { roles, permissions, rolePermissions } from '../../../../shared/schema';
+import { roles, permissions, rolePermissions, userRoles } from '../../../../shared/schema';
 import { and, eq } from 'drizzle-orm';
 import { Express, Request, Response, Router } from 'express';
 import { AuthGuard } from '../../auth/guards/auth.guard';
@@ -91,11 +91,12 @@ export class RoleService {
    */
   async getRoleById(roleId: string) {
     try {
-      // Folosim SQL direct pentru a evita probleme de tipuri
-      const result = await this.db.execute(
-        `SELECT * FROM roles WHERE id = $1 LIMIT 1`,
-        [roleId]
-      );
+      this.logger.info(`Getting role by ID: ${roleId}`);
+      const result = await this.db
+        .select()
+        .from(roles)
+        .where(eq(roles.id, roleId))
+        .limit(1);
       
       return result.length > 0 ? result[0] : null;
     } catch (error) {
@@ -161,7 +162,11 @@ export class RoleService {
           RETURNING *
         `;
         
-        const result = await this.db.execute(query, params);
+        const result = await this.db
+          .update(roles)
+          .set(updates)
+          .where(eq(roles.id, roleId))
+          .returning();
         
         if (result.length === 0) {
           throw new Error(`Role with ID ${roleId} could not be updated`);
@@ -173,7 +178,7 @@ export class RoleService {
         try {
           await AuditService.log({
             userId: actorId || 'system',
-            companyId: role.company_id,
+            companyId: (role as any).company_id || (role as any).companyId || 'unknown',
             action: AuditAction.UPDATE,
             entity: 'roles',
             entityId: roleId,
@@ -223,7 +228,7 @@ export class RoleService {
       // Log the audit event
       await AuditService.log({
         userId: actorId,
-        companyId: role.companyId,
+        companyId: role.companyId || 'unknown',
         action: AuditAction.DELETE,
         entity: 'roles',
         entityId: roleId,
@@ -235,6 +240,105 @@ export class RoleService {
       return true;
     } catch (error) {
       this.logger.error(`Error deleting role ${roleId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find roles with pagination - for controller compatibility
+   */
+  async findRoles(page: number = 1, limit: number = 100, search?: string) {
+    try {
+      const offset = (page - 1) * limit;
+      
+      let query = this.db.select().from(roles);
+      
+      if (search) {
+        query = query.where(eq(roles.name, search)) as any;
+      }
+      
+      const data = await query.limit(limit).offset(offset);
+      
+      return {
+        data,
+        pagination: {
+          page,
+          limit,
+          total: data.length
+        }
+      };
+    } catch (error) {
+      this.logger.error('Error finding roles:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all permissions assigned to a role
+   */
+  async getRolePermissions(roleId: string): Promise<any[]> {
+    try {
+      this.logger.info(`Getting permissions for role: ${roleId}`);
+      
+      // Query role_permissions junction table
+      const permissions = await this.db
+        .select()
+        .from(rolePermissions)
+        .where(eq(rolePermissions.roleId, roleId));
+      
+      return permissions;
+    } catch (error) {
+      this.logger.error('Error getting role permissions:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Assign permissions to a role
+   */
+  async assignPermissionsToRole(roleId: string, permissionIds: string[]): Promise<void> {
+    try {
+      this.logger.info(`Assigning ${permissionIds.length} permissions to role: ${roleId}`);
+      
+      // Delete existing permissions
+      await this.db
+        .delete(rolePermissions)
+        .where(eq(rolePermissions.roleId, roleId));
+      
+      // Insert new permissions
+      if (permissionIds.length > 0) {
+        await this.db.insert(rolePermissions).values(
+          permissionIds.map(permissionId => ({
+            roleId,
+            permissionId,
+            id: uuidv4()
+          }))
+        );
+      }
+      
+      this.logger.info(`Successfully assigned permissions to role: ${roleId}`);
+    } catch (error) {
+      this.logger.error('Error assigning permissions to role:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all users assigned to a role
+   */
+  async getRoleUsers(roleId: string): Promise<any[]> {
+    try {
+      this.logger.info(`Getting users for role: ${roleId}`);
+      
+      // Query user_roles junction table
+      const users = await this.db
+        .select()
+        .from(userRoles)
+        .where(eq(userRoles.roleId, roleId));
+      
+      return users;
+    } catch (error) {
+      this.logger.error('Error getting role users:', error);
       throw error;
     }
   }
@@ -284,10 +388,10 @@ export class RoleService {
     router.get('/roles/test-roles', async (req: Request, res: Response) => {
       try {
         // Obținem datele direct din baza de date
-        const result = await this.db.execute(
-          `SELECT * FROM roles WHERE company_id = $1`,
-          ['7196288d-7314-4512-8b67-2c82449b5465'] // GeniusERP Demo Company
-        );
+        const result = await this.db
+          .select()
+          .from(roles)
+          .where(eq(roles.companyId, '7196288d-7314-4512-8b67-2c82449b5465')); // GeniusERP Demo Company
         
         this.logger.info(`Obtained ${result.length} roles via test endpoint`);
         
@@ -380,7 +484,7 @@ export class RoleService {
         const role = await this.updateRole(
           roleId,
           { name, description },
-          req.user?.id
+          req.user?.id || 'system'
         );
         
         res.json({ success: true, data: role });
@@ -395,7 +499,7 @@ export class RoleService {
       try {
         const { roleId } = req.params;
         
-        await this.deleteRole(roleId, req.user?.id);
+        await this.deleteRole(roleId, req.user?.id || 'system');
         
         res.json({ success: true });
       } catch (error) {
