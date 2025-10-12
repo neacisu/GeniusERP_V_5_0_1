@@ -7,7 +7,7 @@
  */
 
 import { randomUUID } from 'crypto';
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle, getClient } from '../../../common/drizzle';
 import { storage } from '../../../storage';
 
 // Tipurile de cont (activ, pasiv)
@@ -87,7 +87,8 @@ export class NotaContabilaService {
         ) RETURNING *`;
       
       console.log('[NotaContabilaService] 📜 Executare SQL pentru înregistrare jurnal...');
-      const journalResult = await this.drizzle.executeQuery(journalSql);
+      const sql = getClient();
+      const journalResult = await sql.unsafe(journalSql);
       console.log('[NotaContabilaService] ✅ Înregistrare jurnal creată cu ID:', journalEntryId);
       
       // Creare linii contabile în jurnal (ledger_lines)
@@ -110,7 +111,7 @@ export class NotaContabilaService {
             '${now}'
           )`;
         
-        await this.drizzle.executeQuery(lineSql);
+        await sql.unsafe(lineSql);
       }
       
       // Creare link între documentul sursă și înregistrarea contabilă
@@ -126,7 +127,7 @@ export class NotaContabilaService {
           '${now}'
         )`;
       
-      await this.drizzle.executeQuery(linkSql);
+      await sql.unsafe(linkSql);
       
       console.log('[NotaContabilaService] ✅ Notă contabilă creată cu succes pentru:', nota.documentType, nota.documentNumber);
       
@@ -237,8 +238,8 @@ export class NotaContabilaService {
    * @returns Sufixul conturilor analitice (ex: "1" pentru 371.1)
    */
   private async getWarehouseAccountSuffix(warehouseId: string): Promise<string> {
-    const sql = `SELECT code FROM warehouses WHERE id = '${warehouseId}'`;
-    const result = await this.drizzle.executeQuery(sql);
+    const sql = getClient();
+    const result = await sql`SELECT code FROM warehouses WHERE id = ${warehouseId}`;
     
     if (!result || result.length === 0) {
       throw new Error(`Depozitul cu ID ${warehouseId} nu a fost găsit`);
@@ -262,8 +263,8 @@ export class NotaContabilaService {
    * @returns Numele furnizorului
    */
   private async getSupplierName(supplierId: string): Promise<string> {
-    const sql = `SELECT name FROM companies WHERE id = '${supplierId}'`;
-    const result = await this.drizzle.executeQuery(sql);
+    const sql = getClient();
+    const result = await sql`SELECT name FROM companies WHERE id = ${supplierId}`;
     
     if (!result || result.length === 0) {
       // Fallback dacă nu găsim furnizorul
@@ -286,9 +287,9 @@ export class NotaContabilaService {
     if (accountSuffix) {
       // Căutare cont analitic (ex: 371.1)
       const analyticCode = `${accountCode}.${accountSuffix}`;
-      sql = `SELECT id FROM analytic_accounts WHERE code = '${analyticCode}'`;
+      const sql = getClient();
       
-      const analyticResult = await this.drizzle.executeQuery(sql);
+      const analyticResult = await sql`SELECT id FROM analytic_accounts WHERE code = ${analyticCode}`;
       
       if (analyticResult && analyticResult.length > 0) {
         return analyticResult[0].id;
@@ -297,9 +298,9 @@ export class NotaContabilaService {
       throw new Error(`Contul analitic ${analyticCode} nu a fost găsit`);
     } else {
       // Căutare cont sintetic (ex: 401)
-      sql = `SELECT id FROM synthetic_accounts WHERE code = '${accountCode}'`;
+      const sql = getClient();
       
-      const syntheticResult = await this.drizzle.executeQuery(sql);
+      const syntheticResult = await sql`SELECT id FROM synthetic_accounts WHERE code = ${accountCode}`;
       
       if (syntheticResult && syntheticResult.length > 0) {
         return syntheticResult[0].id;
