@@ -116,7 +116,7 @@ export class GeneralJournalController extends BaseController {
       if (error instanceof z.ZodError) {
         res.status(400).json({ 
           error: 'Parametri invalizi',
-          details: error.errors
+          details: error.issues
         });
         return;
       }
@@ -203,7 +203,7 @@ export class GeneralJournalController extends BaseController {
       if (error instanceof z.ZodError) {
         res.status(400).json({ 
           error: 'Parametri invalizi',
-          details: error.errors
+          details: error.issues
         });
         return;
       }
@@ -271,7 +271,7 @@ export class GeneralJournalController extends BaseController {
       if (error instanceof z.ZodError) {
         res.status(400).json({ 
           error: 'Parametri invalizi',
-          details: error.errors
+          details: error.issues
         });
         return;
       }

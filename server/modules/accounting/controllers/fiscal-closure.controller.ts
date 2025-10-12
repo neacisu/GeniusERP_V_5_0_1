@@ -4,18 +4,10 @@
  * API endpoints pentru închiderea fiscală lunară și anuală
  */
 
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
 import FiscalClosureService from '../services/fiscal-closure.service';
 import AccountingPeriodsService from '../services/accounting-periods.service';
-
-// Tip pentru request autenticat
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    companyId: string;
-    role: string;
-  };
-}
 
 export class FiscalClosureController {
   private closureService: FiscalClosureService;
