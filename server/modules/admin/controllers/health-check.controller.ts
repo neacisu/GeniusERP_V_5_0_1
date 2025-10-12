@@ -31,11 +31,12 @@ export function registerHealthCheckControllerRoutes(app: any, healthCheckService
   app.get('/api/health', async (req: Request, res: Response) => {
     try {
       // Get basic system health status (minimal checks for public endpoint)
-      const health = await healthCheckService.getBasicHealthCheck();
+      const health = await healthCheckService.runHealthChecks();
 
       return res.status(health.status === 'healthy' ? 200 : 503).json({
         status: health.status,
-        timestamp: health.timestamp
+        timestamp: health.timestamp,
+        uptime: health.uptime
       });
     } catch (error) {
       logger.error('Error checking system health', error);
