@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { Logger } from '../../../common/logger';
-import { ConfigService } from '../services/config.service';
+import { ConfigService, ConfigScope } from '../services/config.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { z } from 'zod';
@@ -32,8 +32,15 @@ export function registerConfigControllerRoutes(app: any, configService: ConfigSe
    */
   app.get(BASE_PATH, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
-      // Get all configuration settings
-      const configs = await configService.getAllConfigs();
+      const { scope, companyId, userId, moduleId } = req.query;
+      
+      // Get all configuration settings with optional filters
+      const configs = await configService.getAllConfigs({
+        scope: scope as ConfigScope | undefined,
+        companyId: companyId as string | undefined,
+        userId: userId as string | undefined,
+        moduleId: moduleId as string | undefined
+      });
 
       return res.status(200).json({
         success: true,
@@ -58,9 +65,23 @@ export function registerConfigControllerRoutes(app: any, configService: ConfigSe
   app.get(`${BASE_PATH}/:key`, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
       const key = req.params.key;
+      const { scope, companyId, userId, moduleId } = req.query;
 
-      // Get configuration by key
-      const config = await configService.getConfig(key);
+      // Validate scope parameter
+      if (!scope || !Object.values(ConfigScope).includes(scope as ConfigScope)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Valid scope parameter is required (global, company, user, or module)'
+        });
+      }
+
+      // Get configuration by key with scope
+      const config = await configService.getConfig(key, {
+        scope: scope as ConfigScope,
+        companyId: companyId as string | undefined,
+        userId: userId as string | undefined,
+        moduleId: moduleId as string | undefined
+      });
 
       if (!config) {
         return res.status(404).json({
@@ -92,7 +113,7 @@ export function registerConfigControllerRoutes(app: any, configService: ConfigSe
   app.put(`${BASE_PATH}/:key`, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
       const key = req.params.key;
-      const { value, description } = req.body;
+      const { value, description, scope, companyId, userId, moduleId } = req.body;
 
       // Validate request body
       if (value === undefined) {
@@ -102,8 +123,27 @@ export function registerConfigControllerRoutes(app: any, configService: ConfigSe
         });
       }
 
+      // Validate scope parameter
+      if (!scope || !Object.values(ConfigScope).includes(scope as ConfigScope)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Valid scope is required (global, company, user, or module)'
+        });
+      }
+
       // Update configuration
-      const updatedConfig = await configService.setConfig(key, value, description);
+      const updatedConfig = await configService.setConfig(
+        key,
+        value,
+        {
+          scope: scope as ConfigScope,
+          companyId,
+          userId,
+          moduleId,
+          description
+        },
+        req.user?.id || 'system'
+      );
 
       logger.info(`Configuration setting updated: ${key} by user: ${req.user?.id}`);
 
@@ -116,7 +156,7 @@ export function registerConfigControllerRoutes(app: any, configService: ConfigSe
       logger.error(`Error updating configuration setting with key ${req.params.key}`, error);
       return res.status(500).json({
         success: false,
-        message: 'Internal server error'
+        message: error instanceof Error ? error.message : 'Internal server error'
       });
     }
   });
@@ -131,9 +171,24 @@ export function registerConfigControllerRoutes(app: any, configService: ConfigSe
   app.delete(`${BASE_PATH}/:key`, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
       const key = req.params.key;
+      const { scope, companyId, userId, moduleId } = req.query;
+
+      // Validate scope parameter
+      if (!scope || !Object.values(ConfigScope).includes(scope as ConfigScope)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Valid scope parameter is required (global, company, user, or module)'
+        });
+      }
 
       // Check if configuration exists
-      const existingConfig = await configService.getConfig(key);
+      const existingConfig = await configService.getConfig(key, {
+        scope: scope as ConfigScope,
+        companyId: companyId as string | undefined,
+        userId: userId as string | undefined,
+        moduleId: moduleId as string | undefined
+      });
+
       if (!existingConfig) {
         return res.status(404).json({
           success: false,
@@ -142,7 +197,16 @@ export function registerConfigControllerRoutes(app: any, configService: ConfigSe
       }
 
       // Delete configuration
-      await configService.deleteConfig(key);
+      await configService.deleteConfig(
+        key,
+        {
+          scope: scope as ConfigScope,
+          companyId: companyId as string | undefined,
+          userId: userId as string | undefined,
+          moduleId: moduleId as string | undefined
+        },
+        req.user?.id || 'system'
+      );
 
       logger.info(`Configuration setting deleted: ${key} by user: ${req.user?.id}`);
 
@@ -169,9 +233,13 @@ export function registerConfigControllerRoutes(app: any, configService: ConfigSe
   app.get(`${BASE_PATH}/category/:category`, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
       const category = req.params.category;
+      const { companyId, userId } = req.query;
 
       // Get configurations by category
-      const configs = await configService.getConfigsByCategory(category);
+      const configs = await configService.getConfigsByCategory(category, {
+        companyId: companyId as string | undefined,
+        userId: userId as string | undefined
+      });
 
       return res.status(200).json({
         success: true,
@@ -207,17 +275,37 @@ export function registerConfigControllerRoutes(app: any, configService: ConfigSe
 
       // Validate each config item
       for (const config of configs) {
-        if (!config.key || config.value === undefined) {
+        if (!config.key || config.value === undefined || !config.scope) {
           return res.status(400).json({
             success: false,
-            message: 'Each config item must have a key and value'
+            message: 'Each config item must have a key, value, and scope'
+          });
+        }
+        
+        if (!Object.values(ConfigScope).includes(config.scope)) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid scope value'
           });
         }
       }
 
       // Update configurations in batch
       const results = await Promise.all(
-        configs.map(config => configService.setConfig(config.key, config.value, config.description))
+        configs.map(config => 
+          configService.setConfig(
+            config.key,
+            config.value,
+            {
+              scope: config.scope as ConfigScope,
+              companyId: config.companyId,
+              userId: config.userId,
+              moduleId: config.moduleId,
+              description: config.description
+            },
+            req.user?.id || 'system'
+          )
+        )
       );
 
       logger.info(`Batch configuration update by user: ${req.user?.id}`);
@@ -231,7 +319,7 @@ export function registerConfigControllerRoutes(app: any, configService: ConfigSe
       logger.error('Error updating configuration settings in batch', error);
       return res.status(500).json({
         success: false,
-        message: 'Internal server error'
+        message: error instanceof Error ? error.message : 'Internal server error'
       });
     }
   });
@@ -245,8 +333,15 @@ export function registerConfigControllerRoutes(app: any, configService: ConfigSe
    */
   app.post(`${BASE_PATH}/reset`, AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.roleGuard(['admin']), async (req: Request, res: Response) => {
     try {
+      const { companyId, userId, moduleId, scope } = req.body;
+
       // Reset configurations to default values
-      await configService.resetToDefaults();
+      await configService.resetToDefaults({
+        companyId,
+        userId,
+        moduleId,
+        scope: scope as ConfigScope | undefined
+      });
 
       logger.info(`Configuration settings reset to defaults by user: ${req.user?.id}`);
 

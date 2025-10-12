@@ -7,18 +7,14 @@
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { configurations } from '../../../../shared/schema/admin.schema';
-import { and, eq, isNull, sql } from 'drizzle-orm';
-import { Express, Request, Response, Router } from 'express';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { and, eq, isNull, sql, like } from 'drizzle-orm';
 import { Logger } from '../../../common/logger';
-import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Configuration scope enum
  */
-enum ConfigScope {
+export enum ConfigScope {
   GLOBAL = 'global',
   COMPANY = 'company',
   USER = 'user',
@@ -44,6 +40,55 @@ export class ConfigService {
   }
 
   /**
+   * Get all configuration settings
+   * @param options Optional filters (scope, companyId, userId, moduleId)
+   * @returns Array of all configuration settings
+   */
+  async getAllConfigs(options?: {
+    scope?: ConfigScope;
+    companyId?: string;
+    userId?: string;
+    moduleId?: string;
+  }): Promise<any[]> {
+    try {
+      this.logger.debug('Getting all configs');
+      
+      const filters = [];
+      
+      if (options?.scope) {
+        filters.push(eq(configurations.scope, options.scope));
+      }
+      
+      if (options?.companyId) {
+        filters.push(eq(configurations.company_id, options.companyId));
+      }
+      
+      if (options?.userId) {
+        filters.push(eq(configurations.user_id, options.userId));
+      }
+      
+      if (options?.moduleId) {
+        filters.push(eq(configurations.module_id, options.moduleId));
+      }
+      
+      let configs;
+      if (filters.length > 0) {
+        configs = await this.db.select()
+          .from(configurations)
+          .where(and(...filters));
+      } else {
+        configs = await this.db.select()
+          .from(configurations);
+      }
+      
+      return configs;
+    } catch (error) {
+      this.logger.error('Error getting all configs:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Set a configuration value
    * @param key Configuration key
    * @param value Configuration value (will be stored as JSON)
@@ -59,12 +104,13 @@ export class ConfigService {
       companyId?: string;
       userId?: string;
       moduleId?: string;
+      description?: string;
     },
     actorId: string
   ) {
     try {
       this.logger.debug(`Setting config: ${key} in scope ${options.scope}`);
-      const { scope, companyId, userId, moduleId } = options;
+      const { scope, companyId, userId, moduleId, description } = options;
       
       // Validate required IDs based on scope
       if (scope === ConfigScope.COMPANY && !companyId) {
@@ -91,7 +137,8 @@ export class ConfigService {
         // Update existing config
         const [updatedConfig] = await this.db.update(configurations)
           .set({
-            value_json: value,
+            value: value,
+            description: description || existingConfigs[0].description,
             updated_at: new Date(),
             updated_by: actorId
           })
@@ -105,11 +152,13 @@ export class ConfigService {
           .values({
             id: uuidv4(),
             key,
-            value_json: value,
+            value: value,
             scope,
             company_id: companyId || null,
             user_id: userId || null,
             module_id: moduleId || null,
+            description: description || null,
+            is_encrypted: false,
             created_by: actorId,
             updated_by: actorId
           })
@@ -120,21 +169,6 @@ export class ConfigService {
       
       // Invalidate cache
       this.invalidateCache(key, options);
-      
-      // Log audit event
-      await AuditService.log({
-        userId: actorId,
-        companyId: companyId || null,
-        action: AuditAction.UPDATE,
-        entity: 'configurations',
-        entityId: config.id,
-        details: {
-          key,
-          scope,
-          // Don't log sensitive values
-          valueType: typeof value
-        }
-      });
       
       return config;
     } catch (error) {
@@ -190,14 +224,14 @@ export class ConfigService {
         .from(configurations)
         .where(whereConditions);
       
-      const value = config ? config.value_json : null;
+      const result = config || null;
       
       // Update cache
       if (useCache) {
-        this.setInCache(cacheKey, value);
+        this.setInCache(cacheKey, result);
       }
       
-      return value;
+      return result;
     } catch (error) {
       this.logger.error(`Error getting config ${key}:`, error);
       throw error;
@@ -312,7 +346,7 @@ export class ConfigService {
         throw new Error('Module ID is required for module scope');
       }
       
-      // Get config for audit log
+      // Get config for verification
       const whereConditions = this.buildWhereConditions(key, options);
       const [config] = await this.db.select()
         .from(configurations)
@@ -329,22 +363,96 @@ export class ConfigService {
       // Invalidate cache
       this.invalidateCache(key, options);
       
-      // Log audit event
-      await AuditService.log({
-        userId: actorId,
-        companyId: companyId || null,
-        action: AuditAction.DELETE,
-        entity: 'configurations',
-        entityId: config.id,
-        details: {
-          key,
-          scope
-        }
-      });
-      
       return true;
     } catch (error) {
       this.logger.error(`Error deleting config ${key}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get configurations by category/module
+   * @param category The category/module ID
+   * @param options Optional filters
+   * @returns Array of configurations for the specified category
+   */
+  async getConfigsByCategory(
+    category: string,
+    options?: {
+      companyId?: string;
+      userId?: string;
+    }
+  ): Promise<any[]> {
+    try {
+      this.logger.debug(`Getting configs for category: ${category}`);
+      
+      const filters = [eq(configurations.module_id, category)];
+      
+      if (options?.companyId) {
+        filters.push(eq(configurations.company_id, options.companyId));
+      }
+      
+      if (options?.userId) {
+        filters.push(eq(configurations.user_id, options.userId));
+      }
+      
+      const configs = await this.db.select()
+        .from(configurations)
+        .where(and(...filters));
+      
+      return configs;
+    } catch (error) {
+      this.logger.error(`Error getting configs for category ${category}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Reset configurations to default values
+   * @param options Optional filters to specify which configs to reset
+   */
+  async resetToDefaults(options?: {
+    companyId?: string;
+    userId?: string;
+    moduleId?: string;
+    scope?: ConfigScope;
+  }): Promise<void> {
+    try {
+      this.logger.info('Resetting configs to defaults');
+      
+      const filters = [];
+      
+      if (options?.companyId) {
+        filters.push(eq(configurations.company_id, options.companyId));
+      }
+      
+      if (options?.userId) {
+        filters.push(eq(configurations.user_id, options.userId));
+      }
+      
+      if (options?.moduleId) {
+        filters.push(eq(configurations.module_id, options.moduleId));
+      }
+      
+      if (options?.scope) {
+        filters.push(eq(configurations.scope, options.scope));
+      }
+      
+      if (filters.length > 0) {
+        await this.db.delete(configurations)
+          .where(and(...filters));
+      } else {
+        // If no filters specified, only delete non-global configs to be safe
+        await this.db.delete(configurations)
+          .where(sql`${configurations.scope} != 'global'`);
+      }
+      
+      // Clear cache
+      this.clearCache();
+      
+      this.logger.info('Configs reset to defaults completed');
+    } catch (error) {
+      this.logger.error('Error resetting configs to defaults:', error);
       throw error;
     }
   }
@@ -368,9 +476,6 @@ export class ConfigService {
     try {
       const { scope, companyId, userId, moduleId, keyPrefix, limit = 100, offset = 0 } = options;
       
-      let query = this.db.select()
-        .from(configurations);
-      
       // Apply filters
       const filters = [];
       
@@ -380,37 +485,36 @@ export class ConfigService {
       
       if (companyId) {
         filters.push(eq(configurations.company_id, companyId));
-      } else if (companyId === null) {
-        filters.push(isNull(configurations.company_id));
       }
       
       if (userId) {
         filters.push(eq(configurations.user_id, userId));
-      } else if (userId === null) {
-        filters.push(isNull(configurations.user_id));
       }
       
       if (moduleId) {
         filters.push(eq(configurations.module_id, moduleId));
-      } else if (moduleId === null) {
-        filters.push(isNull(configurations.module_id));
       }
       
       if (keyPrefix) {
-        filters.push(sql`${configurations.key} LIKE ${keyPrefix + '%'}`);
-      }
-      
-      if (filters.length > 0) {
-        query = query.where(and(...filters));
+        filters.push(like(configurations.key, `${keyPrefix}%`));
       }
       
       // Apply pagination
-      query = query
-        .limit(limit)
-        .offset(offset)
-        .orderBy(configurations.key);
+      let configs;
+      if (filters.length > 0) {
+        configs = await this.db.select()
+          .from(configurations)
+          .where(and(...filters))
+          .limit(limit)
+          .offset(offset);
+      } else {
+        configs = await this.db.select()
+          .from(configurations)
+          .limit(limit)
+          .offset(offset);
+      }
       
-      return await query;
+      return configs;
     } catch (error) {
       this.logger.error('Error listing configurations:', error);
       throw error;
@@ -535,219 +639,5 @@ export class ConfigService {
     this.cache.clear();
     this.cacheTimestamps.clear();
     this.logger.info('Config cache cleared');
-  }
-
-  /**
-   * Register API routes for configuration management
-   * @param app Express application
-   */
-  registerRoutes(app: Express): void {
-    this.logger.info('Registering configuration management routes...');
-    const router = Router();
-
-    // Authentication middleware
-    const requireAuth = AuthGuard.AuthGuard.protect(JwtAuthMode.REQUIRED);
-    const requireAdmin = AuthGuard.requireRoles(['admin']);
-    
-    // GET /api/admin/config - Get a configuration value with fallback
-    router.get('/config', requireAuth, async (req: Request, res: Response) => {
-      try {
-        const { key, userId, companyId, moduleId, useCache } = req.query;
-        
-        if (!key) {
-          return res.status(400).json({
-            success: false,
-            message: 'Key parameter is required'
-          });
-        }
-        
-        const value = await this.getConfigWithFallback(
-          key as string,
-          {
-            userId: userId as string | undefined,
-            companyId: companyId as string | undefined,
-            moduleId: moduleId as string | undefined,
-            useCache: useCache !== 'false'
-          }
-        );
-        
-        res.json({ success: true, data: value });
-      } catch (error) {
-        this.logger.error('Error getting configuration:', error);
-        res.status(500).json({ success: false, message: 'Failed to get configuration' });
-      }
-    });
-
-    // GET /api/admin/config/scoped - Get a configuration value with specific scope
-    router.get('/config/scoped', requireAuth, async (req: Request, res: Response) => {
-      try {
-        const { key, scope, userId, companyId, moduleId, useCache } = req.query;
-        
-        if (!key || !scope) {
-          return res.status(400).json({
-            success: false,
-            message: 'Key and scope parameters are required'
-          });
-        }
-        
-        // Validate scope
-        if (!Object.values(ConfigScope).includes(scope as ConfigScope)) {
-          return res.status(400).json({
-            success: false,
-            message: `Invalid scope. Must be one of: ${Object.values(ConfigScope).join(', ')}`
-          });
-        }
-        
-        const value = await this.getConfig(
-          key as string,
-          {
-            scope: scope as ConfigScope,
-            userId: userId as string | undefined,
-            companyId: companyId as string | undefined,
-            moduleId: moduleId as string | undefined,
-            useCache: useCache !== 'false'
-          }
-        );
-        
-        res.json({ success: true, data: value });
-      } catch (error) {
-        this.logger.error('Error getting scoped configuration:', error);
-        res.status(500).json({ success: false, message: 'Failed to get configuration' });
-      }
-    });
-
-    // POST /api/admin/config - Set a configuration value
-    router.post('/config', requireAdmin, async (req: Request, res: Response) => {
-      try {
-        const { key, value, scope, userId, companyId, moduleId } = req.body;
-        
-        if (!key || value === undefined || !scope) {
-          return res.status(400).json({
-            success: false,
-            message: 'Key, value, and scope are required'
-          });
-        }
-        
-        // Validate scope
-        if (!Object.values(ConfigScope).includes(scope)) {
-          return res.status(400).json({
-            success: false,
-            message: `Invalid scope. Must be one of: ${Object.values(ConfigScope).join(', ')}`
-          });
-        }
-        
-        const config = await this.setConfig(
-          key,
-          value,
-          {
-            scope,
-            userId,
-            companyId,
-            moduleId
-          },
-          req.user?.id
-        );
-        
-        res.json({ success: true, data: config });
-      } catch (error) {
-        this.logger.error('Error setting configuration:', error);
-        res.status(500).json({
-          success: false,
-          message: 'Failed to set configuration',
-          error: (error as Error).message
-        });
-      }
-    });
-
-    // DELETE /api/admin/config - Delete a configuration
-    router.delete('/config', requireAdmin, async (req: Request, res: Response) => {
-      try {
-        const { key, scope, userId, companyId, moduleId } = req.query;
-        
-        if (!key || !scope) {
-          return res.status(400).json({
-            success: false,
-            message: 'Key and scope parameters are required'
-          });
-        }
-        
-        // Validate scope
-        if (!Object.values(ConfigScope).includes(scope as ConfigScope)) {
-          return res.status(400).json({
-            success: false,
-            message: `Invalid scope. Must be one of: ${Object.values(ConfigScope).join(', ')}`
-          });
-        }
-        
-        const success = await this.deleteConfig(
-          key as string,
-          {
-            scope: scope as ConfigScope,
-            userId: userId as string | undefined,
-            companyId: companyId as string | undefined,
-            moduleId: moduleId as string | undefined
-          },
-          req.user?.id
-        );
-        
-        if (success) {
-          res.json({ success: true, message: 'Configuration deleted successfully' });
-        } else {
-          res.status(404).json({ success: false, message: 'Configuration not found' });
-        }
-      } catch (error) {
-        this.logger.error('Error deleting configuration:', error);
-        res.status(500).json({
-          success: false,
-          message: 'Failed to delete configuration',
-          error: (error as Error).message
-        });
-      }
-    });
-
-    // GET /api/admin/config/list - List configurations
-    router.get('/config/list', requireAuth, async (req: Request, res: Response) => {
-      try {
-        const {
-          scope,
-          companyId,
-          userId,
-          moduleId,
-          keyPrefix,
-          limit,
-          offset
-        } = req.query;
-        
-        const configs = await this.listConfigurations({
-          scope: scope as ConfigScope | undefined,
-          companyId: companyId as string | undefined,
-          userId: userId as string | undefined,
-          moduleId: moduleId as string | undefined,
-          keyPrefix: keyPrefix as string | undefined,
-          limit: limit ? parseInt(limit as string) : undefined,
-          offset: offset ? parseInt(offset as string) : undefined
-        });
-        
-        res.json({ success: true, data: configs });
-      } catch (error) {
-        this.logger.error('Error listing configurations:', error);
-        res.status(500).json({ success: false, message: 'Failed to list configurations' });
-      }
-    });
-
-    // POST /api/admin/config/clear-cache - Clear the config cache
-    router.post('/config/clear-cache', requireAdmin, async (req: Request, res: Response) => {
-      try {
-        this.clearCache();
-        res.json({ success: true, message: 'Configuration cache cleared successfully' });
-      } catch (error) {
-        this.logger.error('Error clearing config cache:', error);
-        res.status(500).json({ success: false, message: 'Failed to clear configuration cache' });
-      }
-    });
-
-    // Mount routes
-    app.use('/api/admin', router);
-    this.logger.info('Configuration management routes registered successfully');
   }
 }

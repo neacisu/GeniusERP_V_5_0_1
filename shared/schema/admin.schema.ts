@@ -235,7 +235,7 @@ export const configurations = pgTable('configurations', {
   scope: varchar('scope', { length: 50 }).notNull().default('global'), // 'global', 'company', 'user', 'module'
   company_id: varchar('company_id', { length: 36 }),
   user_id: varchar('user_id', { length: 36 }),
-  module: varchar('module', { length: 100 }),
+  module_id: varchar('module_id', { length: 100 }),
   description: varchar('description', { length: 500 }),
   is_encrypted: boolean('is_encrypted').default(false),
   created_at: timestamp('created_at').defaultNow().notNull(),
