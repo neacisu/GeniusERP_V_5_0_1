@@ -570,7 +570,7 @@ export class HealthCheckService {
    * Start periodic health checks
    * @param intervalMs Optional interval in milliseconds
    */
-  startPeriodicChecks(intervalMs?: number): void {
+  async startPeriodicChecks(intervalMs?: number): Promise<void> {
     if (this.healthCheckTimer) {
       this.logger.warn('Periodic health checks already running');
       return;
@@ -581,9 +581,16 @@ export class HealthCheckService {
       this.healthCheckIntervalMs = intervalMs;
     } else if (this.configService) {
       // Try to get interval from config service if available
-      const configInterval = this.configService.getNumber('health.checkIntervalMs');
-      if (configInterval) {
-        this.healthCheckIntervalMs = configInterval;
+      try {
+        const configInterval = await this.configService.getConfig('health.checkIntervalMs', {
+          scope: 'global' as any
+        });
+        if (configInterval && typeof configInterval === 'number') {
+          this.healthCheckIntervalMs = configInterval;
+        }
+      } catch (error) {
+        // Config not found, use default
+        this.logger.debug('No config found for health.checkIntervalMs, using default');
       }
     }
 
@@ -622,8 +629,8 @@ export class HealthCheckService {
     const router = Router();
 
     // Authentication middleware
-    const requireAuth = AuthGuard.AuthGuard.protect(JwtAuthMode.REQUIRED);
-    const requireAdmin = AuthGuard.requireRoles(['admin']);
+    const requireAuth = AuthGuard.protect(JwtAuthMode.REQUIRED);
+    const requireAdmin = AuthGuard.roleGuard(['admin']);
     
     // Public health check route - simplified status for load balancers, etc.
     router.get('/health', async (req: Request, res: Response) => {
