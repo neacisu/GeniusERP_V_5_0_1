@@ -133,7 +133,7 @@ export class DepreciationCalculationService extends DrizzleService {
         action: 'DEPRECIATION_POSTED' as any,
         severity: 'INFO' as any,
         entityType: 'ledger_entry',
-        entityId: ledgerEntryId,
+        entityId: ledgerEntryId!, // Guaranteed to be set at line 126 within same if block
         description: `Amortizare lunară postată: ${periodMonth}/${periodYear}`,
         metadata: {
           period: `${periodYear}-${periodMonth}`,
