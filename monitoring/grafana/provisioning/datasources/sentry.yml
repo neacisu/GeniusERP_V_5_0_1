@@ -6,11 +6,10 @@ datasources:
     uid: sentry
     orgId: 1
     access: proxy
-    url: https://sentry.io
+    url: https://de.sentry.io
     isDefault: false
     editable: true
     jsonData:
-      orgSlug: "o4510176750665728"
+      orgSlug: "viprom-energy-srl"
     secureJsonData:
       authToken: "${SENTRY_AUTH_TOKEN}"
-
