@@ -9,6 +9,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
+  // Setează envDir pentru a citi .env din directorul root al proiectului
+  envDir: __dirname,
+  
   plugins: [
     react(),
     runtimeErrorOverlay(),

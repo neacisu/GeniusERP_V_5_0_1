@@ -1,5 +1,9 @@
 import * as Sentry from '@sentry/node';
 import { Express } from 'express';
+import { setSentryActive } from '../common/sentry';
+import { createModuleLogger } from '../common/logger/loki-logger';
+
+const logger = createModuleLogger('sentry-middleware');
 
 /**
  * Inițializează Sentry pentru tracking-ul erorilor în backend
@@ -9,13 +13,14 @@ import { Express } from 'express';
 export function initializeSentry(app: Express): void {
   // Verifică dacă SENTRY_DSN este configurat
   if (!process.env.SENTRY_DSN) {
-    console.warn('⚠️  SENTRY_DSN nu este configurat - Sentry error tracking disabled');
-    console.warn('   Pentru a activa Sentry, configurează SENTRY_DSN în fișierul .env');
-    console.warn('   Vizitează https://sentry.io pentru a crea un cont și a obține DSN-ul');
+    logger.warn('SENTRY_DSN nu este configurat - Sentry error tracking disabled');
+    logger.warn('Pentru a activa Sentry, configurează SENTRY_DSN în fișierul .env');
+    logger.warn('Vizitează https://sentry.io pentru a crea un cont și a obține DSN-ul');
+    setSentryActive(false);
     return;
   }
 
-  console.log('🔍 Inițializare Sentry error tracking...');
+  logger.info('Inițializare Sentry error tracking...');
 
   // Configurare Sentry v10+ API
   Sentry.init({
@@ -42,6 +47,8 @@ export function initializeSentry(app: Express): void {
       // Browser errors that shouldn't be tracked on backend
       'Non-Error promise rejection captured',
       'ResizeObserver loop limit exceeded',
+      'NetworkError',
+      'Network request failed',
     ],
 
     // Before send hook - pentru filtrare suplimentară
@@ -51,11 +58,19 @@ export function initializeSentry(app: Express): void {
         return null;
       }
       
+      // Log că trimitem eroare către Sentry
+      logger.debug('Sending error to Sentry', { 
+        message: event.message,
+        level: event.level 
+      });
+      
       return event;
     },
   });
 
-  console.log('✅ Sentry error tracking activat');
+  // Marchează Sentry ca activ
+  setSentryActive(true);
+  logger.info('✅ Sentry error tracking activat');
 }
 
 /**
@@ -76,19 +91,14 @@ export function sentryErrorHandler(app: Express) {
   return (err: any, req: any, res: any, next: any) => next(err);
 }
 
-/**
- * Helper pentru capturarea manuală a excepțiilor
- */
-export function captureException(error: Error, context?: Record<string, any>): void {
-  if (context) {
-    Sentry.setContext('custom', context);
-  }
-  Sentry.captureException(error);
-}
-
-/**
- * Helper pentru capturarea mesajelor custom
- */
-export function captureMessage(message: string, level: Sentry.SeverityLevel = 'info'): void {
-  Sentry.captureMessage(message, level);
-}
+// Re-export helpers from central module
+export { 
+  captureException, 
+  captureMessage,
+  addBreadcrumb,
+  setUserContext,
+  clearUserContext,
+  withSentry,
+  createModuleSentry,
+  isSentryEnabled
+} from '../common/sentry';

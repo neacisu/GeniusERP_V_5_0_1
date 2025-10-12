@@ -1,10 +1,15 @@
 import { Request, Response } from 'express';
+import { captureException, addBreadcrumb } from '../../../common/sentry';
+import { createModuleLogger } from '../../../common/logger/loki-logger';
+
+const logger = createModuleLogger('BaseController');
 
 /**
  * BaseController
  * 
  * Provides common functionality for all accounting controllers
  * Handles error management, request processing, and data extraction
+ * Integrates Sentry error tracking and breadcrumbs
  */
 export class BaseController {
   /**
@@ -13,13 +18,49 @@ export class BaseController {
   protected async handleRequest(
     req: Request, 
     res: Response, 
-    handler: () => Promise<any>
+    handler: () => Promise<any>,
+    context?: {
+      module?: string;
+      operation?: string;
+    }
   ): Promise<void> {
     try {
+      // Add breadcrumb for tracking request flow
+      addBreadcrumb(
+        `Request: ${req.method} ${req.path}`,
+        context?.module || 'accounting',
+        {
+          method: req.method,
+          path: req.path,
+          operation: context?.operation,
+        }
+      );
+
       const result = await handler();
       res.status(200).json(result);
     } catch (error: any) {
-      console.error('Controller error:', error);
+      logger.error('Controller error', error, {
+        method: req.method,
+        path: req.path,
+        operation: context?.operation,
+      });
+      
+      // Capture exception in Sentry with full context
+      captureException(error, {
+        module: context?.module || 'accounting',
+        operation: context?.operation || req.path,
+        // @ts-ignore
+        userId: req.user?.id,
+        // @ts-ignore
+        companyId: req.user?.companyId,
+        extra: {
+          method: req.method,
+          path: req.path,
+          body: req.body,
+          params: req.params,
+          query: req.query,
+        },
+      });
       
       const statusCode = error.statusCode || 500;
       const message = error.message || 'Internal server error';
@@ -61,7 +102,7 @@ export class BaseController {
   /**
    * Extract franchise ID from request (if available)
    */
-  protected getFranchiseId(req: AuthenticatedRequest): string | null {
+  protected getFranchiseId(req: Request): string | null {
     if (!req.user) {
       throw { 
         statusCode: 401, 
@@ -76,7 +117,7 @@ export class BaseController {
   /**
    * Get pagination parameters with defaults
    */
-  protected getPaginationParams(req: AuthenticatedRequest): { page: number, limit: number } {
+  protected getPaginationParams(req: Request): { page: number, limit: number } {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     

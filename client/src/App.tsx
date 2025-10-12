@@ -38,8 +38,10 @@ import SalesModule from "@/modules/sales";
 // SystemGeneralPage, SystemIndexPage, ModuleSettingsPage - unused, removed
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { createLogger } from "@/utils/logger/logger";
 import { createAuditLogger } from "@/utils/audit/audit-logger";
+import TestSentryPage from "@/pages/test-sentry";
 
 // Initialize app loggers
 const logger = createLogger("app");
@@ -348,6 +350,10 @@ function Router() {
       <ProtectedRoute path="/settings" component={SettingsModule} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/login" component={AuthPage} />
+      
+      {/* Sentry Test Page (DOAR în development) */}
+      {import.meta.env.DEV && <Route path="/test-sentry" component={TestSentryPage} />}
+      
       <Route component={NotFound} />
     </Switch>
   );
@@ -364,12 +370,14 @@ function App() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router />
-        <Toaster />
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary moduleName="app-root">
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Router />
+          <Toaster />
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

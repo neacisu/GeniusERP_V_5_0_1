@@ -7,6 +7,7 @@ import {
 import { insertUserSchema, User as SelectUser, InsertUser } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { captureException, setUserContext, clearUserContext, addBreadcrumb } from "@/lib/sentry";
 
 type AuthContextType = {
   user: SelectUser | null;
@@ -105,6 +106,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return response;
       } catch (error) {
         console.error('Login error:', error);
+        
+        // Capture login errors in Sentry
+        captureException(error as Error, {
+          module: 'auth',
+          operation: 'login',
+          username: credentials.username,
+        });
+        
         throw error;
       }
     },
@@ -196,12 +205,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('user', JSON.stringify(user));
       }
       queryClient.setQueryData(["/api/auth/user"], user);
+      
+      // Set user context in Sentry
+      setUserContext({
+        id: user.id,
+        email: user.email,
+        username: user.username,
+      });
+      
+      addBreadcrumb('User logged in successfully', 'auth', {
+        userId: user.id,
+        username: user.username,
+      });
       toast({
         title: "Înregistrare reușită",
         description: "Contul dumneavoastră a fost creat cu succes!",
       });
     },
     onError: (error: Error) => {
+      // Capture registration errors
+      captureException(error, {
+        module: 'auth',
+        operation: 'register',
+      });
+      
       toast({
         title: "Eroare la înregistrare",
         description: error.message || "Nu am putut crea contul. Vă rugăm încercați din nou.",
@@ -220,12 +247,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Remove user data from localStorage on logout
       localStorage.removeItem('user');
       queryClient.setQueryData(["/api/auth/user"], null);
+      
+      // Clear user context in Sentry
+      clearUserContext();
+      addBreadcrumb('User logged out', 'auth');
+      
       toast({
         title: "Delogare reușită",
         description: "Ați fost deconectat din aplicație.",
       });
     },
     onError: (error: Error) => {
+      // Capture logout errors
+      captureException(error, {
+        module: 'auth',
+        operation: 'logout',
+      });
+      
       toast({
         title: "Eroare la delogare",
         description: error.message,

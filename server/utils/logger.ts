@@ -1,26 +1,32 @@
+import { createModuleLogger as createLokiLogger } from '../common/logger/loki-logger';
+
 /**
  * Simple logger utility for consistent logging throughout the application
+ * Integrates with Loki for centralized logging and Sentry for error tracking
  */
 export class Logger {
   private context: string;
+  private lokiLogger: ReturnType<typeof createLokiLogger>;
 
   constructor(context: string) {
     this.context = context;
+    this.lokiLogger = createLokiLogger(context);
   }
 
   info(message: string): void {
-    console.log(`[${new Date().toISOString()}] [INFO] [${this.context}] ${message}`);
+    this.lokiLogger.info(message);
   }
 
   warn(message: string): void {
-    console.log(`[${new Date().toISOString()}] [WARN] [${this.context}] ${message}`);
+    this.lokiLogger.warn(message);
   }
 
   error(message: string, error?: any): void {
-    console.error(`[${new Date().toISOString()}] [ERROR] [${this.context}] ${message}`, error || '');
+    // Use Loki logger which automatically integrates with Sentry
+    this.lokiLogger.error(message, error);
   }
 
   debug(message: string): void {
-    console.log(`[${new Date().toISOString()}] [DEBUG] [${this.context}] ${message}`);
+    this.lokiLogger.debug(message);
   }
 }

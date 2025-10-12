@@ -30,6 +30,8 @@ import { metricsMiddleware, metricsHandler } from './middlewares/metrics.middlew
 import { initializeSentry, sentryErrorHandler } from './middlewares/sentry.middleware';
 // Import logging middleware
 import { loggingMiddleware } from './middlewares/logging.middleware';
+// Import Sentry test routes (DOAR pentru development)
+import testSentryRoutes from './routes/test-sentry.route';
 
 // Create Express app
 const app = express();
@@ -54,8 +56,19 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// SENTRY TEST - Simple error route
+app.get('/test-error', (req, res) => {
+  throw new Error('🧪 TEST: This is a test error for Sentry!');
+});
+
 // Prometheus metrics endpoint
 app.get('/metrics', metricsHandler);
+
+// Sentry test routes (DOAR în development!)
+if (process.env.NODE_ENV === 'development') {
+  app.use('/api/test-sentry', testSentryRoutes);
+  appLogger.info('✅ Sentry test routes enabled at /api/test-sentry/*');
+}
 
 // Request logging middleware
 app.use((req, res, next) => {

@@ -127,6 +127,21 @@ export function createModuleLogger(moduleName: string) {
         stack: error?.stack,
         ...context,
       });
+      
+      // Send to Sentry with module context
+      if (error) {
+        try {
+          const { captureException, isSentryEnabled } = require('../sentry');
+          if (isSentryEnabled()) {
+            captureException(error, {
+              module: moduleName,
+              extra: context,
+            });
+          }
+        } catch (e) {
+          // Sentry integration failed, continue without it
+        }
+      }
     },
     
     http: (message: string, context?: LogContext) => {
@@ -157,6 +172,22 @@ export const log = {
       stack: error?.stack,
       ...context,
     });
+    
+    // Send critical errors to Sentry also
+    if (error) {
+      try {
+        // Dynamic import pentru a evita circular dependency
+        const { captureException, isSentryEnabled } = require('../sentry');
+        if (isSentryEnabled()) {
+          captureException(error, {
+            module: context?.module,
+            extra: context,
+          });
+        }
+      } catch (e) {
+        // Sentry nu e disponibil sau are probleme, continuăm fără
+      }
+    }
   },
   
   http: (message: string, context?: LogContext) => {

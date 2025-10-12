@@ -19,20 +19,20 @@ export function initializeSentry(): void {
     dsn: import.meta.env.VITE_SENTRY_DSN,
     environment: import.meta.env.MODE,
     
-    // Integrations
+    // Integrations (API v10+)
     integrations: [
-      // Browser tracing pentru performance monitoring
-      new Sentry.BrowserTracing({
-        // Set tracing origins pentru a captura request-uri către API
-        tracePropagationTargets: ['localhost', /^https:\/\/[^/]*\.geniuserp\.ro/],
-      }),
+      // Browser tracing pentru performance monitoring (API v10+)
+      Sentry.browserTracingIntegration(),
       
-      // Session Replay pentru înregistrarea sesiunilor cu erori
-      new Sentry.Replay({
+      // Session Replay pentru înregistrarea sesiunilor cu erori (API v10+)
+      Sentry.replayIntegration({
         maskAllText: true,
         blockAllMedia: true,
       }),
     ],
+    
+    // Trace propagation targets (moved to top-level in v10+)
+    tracePropagationTargets: ['localhost', /^https:\/\/[^/]*\.geniuserp\.ro/],
 
     // Performance Monitoring
     tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
@@ -43,6 +43,10 @@ export function initializeSentry(): void {
 
     // Release tracking
     release: import.meta.env.VITE_APP_VERSION || '1.0.0',
+    
+    // Send default PII (Personal Identifiable Information) like IP address
+    // Recommended by Sentry for better error context
+    sendDefaultPii: true,
 
     // Ignore specific errors
     ignoreErrors: [
@@ -75,23 +79,129 @@ export function initializeSentry(): void {
  * Helper pentru capturarea manuală a excepțiilor în frontend
  */
 export function captureException(error: Error, context?: Record<string, any>): void {
-  if (context) {
-    Sentry.setContext('custom', context);
+  if (!import.meta.env.VITE_SENTRY_DSN) {
+    return; // Sentry not configured
   }
-  Sentry.captureException(error);
+
+  Sentry.withScope((scope) => {
+    if (context) {
+      // Add all context as extra data
+      Object.keys(context).forEach((key) => {
+        scope.setExtra(key, context[key]);
+      });
+
+      // Set user if present
+      if (context.userId) {
+        scope.setUser({ id: String(context.userId) });
+      }
+
+      // Set tags for better filtering
+      if (context.module) {
+        scope.setTag('module', context.module);
+      }
+      if (context.operation) {
+        scope.setTag('operation', context.operation);
+      }
+    }
+
+    Sentry.captureException(error);
+  });
 }
 
 /**
- * Helper pentru capturarea mesajelor custom
+ * Capturează un mesaj custom
  */
-export function captureMessage(message: string, level: Sentry.SeverityLevel = 'info'): void {
-  Sentry.captureMessage(message, level);
+export function captureMessage(
+  message: string,
+  level: 'fatal' | 'error' | 'warning' | 'info' | 'debug' = 'info',
+  context?: Record<string, any>
+): void {
+  if (!import.meta.env.VITE_SENTRY_DSN) {
+    return;
+  }
+
+  Sentry.withScope((scope) => {
+    if (context) {
+      Object.keys(context).forEach((key) => {
+        scope.setExtra(key, context[key]);
+      });
+    }
+
+    Sentry.captureMessage(message, level);
+  });
 }
 
 /**
- * Helper pentru setarea user context
+ * Adaugă breadcrumb pentru tracking flow
  */
-export function setUser(user: { id: string; email?: string; username?: string } | null): void {
-  Sentry.setUser(user);
+export function addBreadcrumb(
+  message: string,
+  category: string,
+  data?: Record<string, any>,
+  level: 'fatal' | 'error' | 'warning' | 'info' | 'debug' = 'info'
+): void {
+  if (!import.meta.env.VITE_SENTRY_DSN) {
+    return;
+  }
+
+  Sentry.addBreadcrumb({
+    message,
+    category,
+    data,
+    level,
+    timestamp: Date.now() / 1000,
+  });
 }
 
+/**
+ * Setează user context
+ */
+export function setUserContext(user: {
+  id: string | number;
+  email?: string;
+  username?: string;
+}): void {
+  if (!import.meta.env.VITE_SENTRY_DSN) {
+    return;
+  }
+
+  Sentry.setUser({
+    id: String(user.id),
+    email: user.email,
+    username: user.username,
+  });
+}
+
+/**
+ * Clear user context (logout)
+ */
+export function clearUserContext(): void {
+  if (!import.meta.env.VITE_SENTRY_DSN) {
+    return;
+  }
+
+  Sentry.setUser(null);
+}
+
+/**
+ * Helper pentru module-specific error tracking
+ */
+export function createModuleSentry(moduleName: string) {
+  return {
+    captureException: (error: Error, operation?: string, extra?: Record<string, any>) => {
+      captureException(error, {
+        module: moduleName,
+        operation,
+        ...extra,
+      });
+    },
+
+    captureMessage: (message: string, level: 'fatal' | 'error' | 'warning' | 'info' | 'debug' = 'info') => {
+      captureMessage(message, level, { module: moduleName });
+    },
+
+    addBreadcrumb: (message: string, data?: Record<string, any>) => {
+      addBreadcrumb(message, moduleName, data);
+    },
+  };
+}
