@@ -85,7 +85,7 @@ export class Logger {
   /**
    * Log an error message
    * @param message Message to log
-   * @param error Optional error object
+   * @param error Optional error object or additional parameters
    */
   error(message: string, error?: unknown): void {
     if (this.shouldLog(LogLevel.ERROR)) {
@@ -103,30 +103,33 @@ export class Logger {
   /**
    * Log a warning message
    * @param message Message to log
+   * @param optionalParams Optional additional parameters to log
    */
-  warn(message: string): void {
+  warn(message: string, ...optionalParams: any[]): void {
     if (this.shouldLog(LogLevel.WARN)) {
-      console.warn(this.formatMessage(LogLevel.WARN, message));
+      console.warn(this.formatMessage(LogLevel.WARN, message), ...optionalParams);
     }
   }
 
   /**
    * Log an info message
    * @param message Message to log
+   * @param optionalParams Optional additional parameters to log
    */
-  info(message: string): void {
+  info(message: string, ...optionalParams: any[]): void {
     if (this.shouldLog(LogLevel.INFO)) {
-      console.info(this.formatMessage(LogLevel.INFO, message));
+      console.info(this.formatMessage(LogLevel.INFO, message), ...optionalParams);
     }
   }
 
   /**
    * Log a debug message
    * @param message Message to log
+   * @param optionalParams Optional additional parameters to log
    */
-  debug(message: string): void {
+  debug(message: string, ...optionalParams: any[]): void {
     if (this.shouldLog(LogLevel.DEBUG)) {
-      console.debug(this.formatMessage(LogLevel.DEBUG, message));
+      console.debug(this.formatMessage(LogLevel.DEBUG, message), ...optionalParams);
     }
   }
 
