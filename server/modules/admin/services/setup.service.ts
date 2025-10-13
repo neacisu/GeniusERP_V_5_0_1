@@ -426,16 +426,99 @@ export class SetupService {
   }
 
   /**
-   * Run database migrations
-   * TODO: Implement Drizzle migrations runner
+   * Run database migrations using Drizzle
    */
-  async runDatabaseMigrations(): Promise<{ success: boolean; message: string }> {
+  async runDatabaseMigrations(): Promise<{ success: boolean; message: string; migrations: string[] }> {
     try {
-      this.logger.warn('runDatabaseMigrations() is a STUB - implement proper logic');
-      return {
-        success: true,
-        message: 'Migrations stub executed'
-      };
+      this.logger.info('Running database migrations...');
+      
+      const path = require('path');
+      const fs = require('fs');
+      
+      // Define potential migration directories
+      const migrationDirs = [
+        path.join(process.cwd(), 'drizzle'),
+        path.join(process.cwd(), 'migrations'),
+        path.join(process.cwd(), 'server', 'migrations')
+      ];
+      
+      let migrationsDir = '';
+      for (const dir of migrationDirs) {
+        if (fs.existsSync(dir)) {
+          migrationsDir = dir;
+          break;
+        }
+      }
+      
+      if (!migrationsDir) {
+        this.logger.warn('No migrations directory found. Skipping migrations.');
+        return {
+          success: true,
+          message: 'No migrations directory found',
+          migrations: []
+        };
+      }
+      
+      // Try to import and run migrate() from drizzle-orm
+      try {
+        const { migrate } = require('drizzle-orm/postgres-js/migrator');
+        const postgres = require('postgres');
+        const { drizzle } = require('drizzle-orm/postgres-js');
+        
+        // Get DATABASE_URL from env
+        const databaseUrl = process.env.DATABASE_URL;
+        if (!databaseUrl) {
+          throw new Error('DATABASE_URL is not set');
+        }
+        
+        // Create a migration connection
+        const migrationClient = postgres(databaseUrl, { max: 1 });
+        const migrationDb = drizzle(migrationClient);
+        
+        // Run migrations
+        await migrate(migrationDb, { migrationsFolder: migrationsDir });
+        
+        // Close migration connection
+        await migrationClient.end();
+        
+        // Get list of applied migrations
+        const migrationFiles = fs.readdirSync(migrationsDir)
+          .filter((file: string) => file.endsWith('.sql'))
+          .sort();
+        
+        this.logger.info(`Successfully applied ${migrationFiles.length} migrations`);
+        
+        return {
+          success: true,
+          message: `Successfully applied ${migrationFiles.length} migrations`,
+          migrations: migrationFiles
+        };
+      } catch (migrateError: any) {
+        // If drizzle-orm migration fails, try drizzle-kit push as fallback
+        this.logger.warn('Drizzle migrate failed, attempting drizzle-kit push...', migrateError.message);
+        
+        try {
+          const { execSync } = require('child_process');
+          
+          // Try to run drizzle-kit push
+          const output = execSync('npx drizzle-kit push', {
+            cwd: process.cwd(),
+            encoding: 'utf-8',
+            stdio: 'pipe'
+          });
+          
+          this.logger.info('Drizzle-kit push output:', output);
+          
+          return {
+            success: true,
+            message: 'Database schema pushed successfully via drizzle-kit',
+            migrations: ['drizzle-kit-push']
+          };
+        } catch (pushError) {
+          this.logger.error('Drizzle-kit push also failed:', pushError);
+          throw new Error('Failed to run migrations: Both migrate() and drizzle-kit push failed');
+        }
+      }
     } catch (error) {
       this.logger.error('Error running migrations:', error);
       throw error;
@@ -444,14 +527,125 @@ export class SetupService {
 
   /**
    * Seed database with initial data
-   * TODO: Implement seeding logic
    */
-  async seedDatabase(datasets: string[]): Promise<{ success: boolean; message: string }> {
+  async seedDatabase(datasets: string[]): Promise<{ success: boolean; message: string; seeded: string[] }> {
     try {
-      this.logger.warn('seedDatabase() is a STUB - implement proper logic');
+      this.logger.info(`Seeding database with datasets: ${datasets.join(', ')}`);
+      
+      const path = require('path');
+      const fs = require('fs');
+      
+      // Define potential seed directories
+      const seedDirs = [
+        path.join(process.cwd(), 'seeds'),
+        path.join(process.cwd(), 'server', 'seeds'),
+        path.join(process.cwd(), 'migrations', 'seeds'),
+        path.join(process.cwd(), 'migrations', 'data-population')
+      ];
+      
+      let seedDir = '';
+      for (const dir of seedDirs) {
+        if (fs.existsSync(dir)) {
+          seedDir = dir;
+          break;
+        }
+      }
+      
+      if (!seedDir) {
+        this.logger.warn('No seeds directory found. Skipping seeding.');
+        return {
+          success: true,
+          message: 'No seeds directory found',
+          seeded: []
+        };
+      }
+      
+      const seededDatasets: string[] = [];
+      const errors: string[] = [];
+      
+      for (const dataset of datasets) {
+        try {
+          // Try multiple file extensions
+          const possibleFiles = [
+            path.join(seedDir, `${dataset}.ts`),
+            path.join(seedDir, `${dataset}.js`),
+            path.join(seedDir, `${dataset}.mjs`)
+          ];
+          
+          let seedFile = '';
+          for (const file of possibleFiles) {
+            if (fs.existsSync(file)) {
+              seedFile = file;
+              break;
+            }
+          }
+          
+          if (!seedFile) {
+            this.logger.warn(`Seed file not found for dataset: ${dataset}`);
+            errors.push(`Dataset ${dataset} not found`);
+            continue;
+          }
+          
+          this.logger.info(`Loading seed file: ${seedFile}`);
+          
+          // Dynamic import of the seed file
+          const seedModule = require(seedFile);
+          
+          // Check if seed file exports a default function or named seed function
+          const seedFunction = seedModule.default || seedModule.seed || seedModule;
+          
+          if (typeof seedFunction === 'function') {
+            // Execute the seed function with db instance
+            await seedFunction(this.db);
+            seededDatasets.push(dataset);
+            this.logger.info(`Successfully seeded dataset: ${dataset}`);
+          } else if (typeof seedModule === 'object' && seedModule.data) {
+            // If seed file exports a data object, insert it directly
+            this.logger.info(`Seeding raw data from: ${dataset}`);
+            
+            // Iterate through tables and insert data
+            for (const [tableName, tableData] of Object.entries(seedModule.data)) {
+              if (Array.isArray(tableData) && tableData.length > 0) {
+                this.logger.info(`Inserting ${tableData.length} records into ${tableName}`);
+                
+                // Use raw SQL INSERT for flexibility
+                for (const record of tableData as any[]) {
+                  const columns = Object.keys(record).join(', ');
+                  const placeholders = Object.keys(record).map((_, i) => `$${i + 1}`).join(', ');
+                  const values = Object.values(record);
+                  
+                  await this.db.execute(
+                    `INSERT INTO ${tableName} (${columns}) VALUES (${placeholders}) ON CONFLICT DO NOTHING`,
+                    values
+                  );
+                }
+              }
+            }
+            
+            seededDatasets.push(dataset);
+            this.logger.info(`Successfully seeded dataset: ${dataset}`);
+          } else {
+            this.logger.warn(`Seed file ${dataset} does not export a valid seed function or data`);
+            errors.push(`Dataset ${dataset} has invalid format`);
+          }
+        } catch (error: any) {
+          this.logger.error(`Error seeding dataset ${dataset}:`, error);
+          errors.push(`${dataset}: ${error.message}`);
+        }
+      }
+      
+      const message = seededDatasets.length > 0
+        ? `Successfully seeded ${seededDatasets.length} datasets: ${seededDatasets.join(', ')}`
+        : 'No datasets were seeded';
+      
+      if (errors.length > 0) {
+        this.logger.warn(`Seeding completed with errors: ${errors.join('; ')}`);
+      }
+      
       return {
-        success: true,
-        message: `Seed stub executed for: ${datasets.join(', ')}`
+        success: seededDatasets.length > 0,
+        message: errors.length > 0 ? `${message}. Errors: ${errors.join('; ')}` : message,
+        seeded: seededDatasets
       };
     } catch (error) {
       this.logger.error('Error seeding database:', error);
