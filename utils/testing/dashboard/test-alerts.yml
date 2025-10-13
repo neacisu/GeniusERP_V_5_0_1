@@ -1,0 +1,246 @@
+# Configurație alerting pentru testele GeniusERP
+
+apiVersion: 1
+
+groups:
+  - name: test_suite_alerts
+    interval: 1m
+    rules:
+      # Alert: High Failure Rate
+      - uid: test_high_failure_rate
+        title: Test Suite Failure Rate Ridicat
+        condition: A
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: '(sum(geniuserp_tests_failed_total) / sum(geniuserp_tests_total)) * 100 > 10'
+              refId: A
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        annotations:
+          description: 'Rata de eșec a testelor este {{ $value | humanizePercentage }}% (pragul: 10%)'
+          summary: 'Rata de eșec a testelor GeniusERP este prea mare'
+        labels:
+          severity: warning
+          team: dev
+        isPaused: false
+
+      # Alert: Very High Failure Rate
+      - uid: test_very_high_failure_rate
+        title: Test Suite Failure Rate Critic
+        condition: A
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: '(sum(geniuserp_tests_failed_total) / sum(geniuserp_tests_total)) * 100 > 20'
+              refId: A
+        noDataState: NoData
+        execErrState: Error
+        for: 2m
+        annotations:
+          description: 'Rata de eșec a testelor este {{ $value | humanizePercentage }}%! (pragul critic: 20%)'
+          summary: 'CRITIC: Rata de eșec a testelor GeniusERP este extrem de mare!'
+        labels:
+          severity: critical
+          team: dev
+          alert_type: urgent
+        isPaused: false
+
+      # Alert: Long Test Duration
+      - uid: test_long_duration
+        title: Teste cu Durată Lungă
+        condition: A
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: 'histogram_quantile(0.95, rate(geniuserp_test_duration_seconds_bucket[5m])) > 30'
+              refId: A
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        annotations:
+          description: 'Durata p95 a testelor este {{ $value }}s (pragul: 30s)'
+          summary: 'Testele durează prea mult timp'
+        labels:
+          severity: warning
+          team: dev
+        isPaused: false
+
+      # Alert: High Memory Usage
+      - uid: test_high_memory
+        title: Utilizare Mare Memorie în Teste
+        condition: A
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: 'geniuserp_test_memory_usage_bytes > 2147483648'
+              refId: A
+        noDataState: NoData
+        execErrState: Error
+        for: 3m
+        annotations:
+          description: 'Testele folosesc {{ $value | humanize1024 }}B memorie (pragul: 2GB)'
+          summary: 'Utilizare mare de memorie în timpul testelor'
+        labels:
+          severity: warning
+          team: dev
+        isPaused: false
+
+      # Alert: Module Test Failure
+      - uid: test_module_failure
+        title: Eșec Teste Modul Specific
+        condition: A
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: 'geniuserp_tests_failed_total{module=~".+"} > 5'
+              refId: A
+        noDataState: NoData
+        execErrState: Error
+        for: 2m
+        annotations:
+          description: 'Modulul {{ $labels.module }} are {{ $value }} teste failed'
+          summary: 'Teste failed pentru modul {{ $labels.module }}'
+        labels:
+          severity: warning
+          team: dev
+          module: '{{ $labels.module }}'
+        isPaused: false
+
+      # Alert: No Active Tests
+      - uid: test_no_active_tests
+        title: Nu Sunt Teste Active
+        condition: A
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: 'sum(geniuserp_tests_active) == 0'
+              refId: A
+        noDataState: NoData
+        execErrState: Error
+        for: 15m
+        annotations:
+          description: 'Nu au rulat teste în ultimele 15 minute'
+          summary: 'Orchestrator-ul de teste ar putea avea probleme'
+        labels:
+          severity: info
+          team: dev
+        isPaused: false
+
+      # Alert: Timeout Tests
+      - uid: test_high_timeout
+        title: Rate Mare Timeout Teste
+        condition: A
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: 'sum(geniuserp_tests_timeout_total) > 3'
+              refId: A
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        annotations:
+          description: '{{ $value }} teste au timeout în ultimele 10 minute'
+          summary: 'Număr mare de teste cu timeout'
+        labels:
+          severity: warning
+          team: dev
+        isPaused: false
+
+      # Alert: Error Spike
+      - uid: test_error_spike
+        title: Spike Erori Teste
+        condition: A
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: 'rate(geniuserp_test_errors_total[5m]) > 0.5'
+              refId: A
+        noDataState: NoData
+        execErrState: Error
+        for: 2m
+        annotations:
+          description: 'Creștere bruscă a ratei de erori: {{ $value }}/s'
+          summary: 'Spike de erori detectat în teste'
+        labels:
+          severity: critical
+          team: dev
+          alert_type: spike
+        isPaused: false
+
+# Contact points configuration
+contactPoints:
+  - uid: email_devteam
+    name: Email Dev Team
+    type: email
+    settings:
+      addresses: 'dev-team@geniuserp.com'
+      singleEmail: true
+
+  - uid: slack_alerts
+    name: Slack Alerts
+    type: slack
+    settings:
+      url: '${SLACK_WEBHOOK_URL}'
+      username: 'GeniusERP Test Bot'
+      icon_emoji: ':test_tube:'
+
+# Notification policies
+policies:
+  - receiver: email_devteam
+    group_by: ['alertname', 'module']
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 4h
+    matchers:
+      - severity =~ "warning|critical"
+
+  - receiver: slack_alerts
+    group_by: ['alertname']
+    group_wait: 10s
+    group_interval: 2m
+    repeat_interval: 1h
+    matchers:
+      - severity = "critical"
+

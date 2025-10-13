@@ -1,0 +1,132 @@
+# Configurație Artillery pentru load testing GeniusERP
+
+config:
+  target: "http://localhost:5000"
+  phases:
+    # Warm-up phase
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm-up"
+    
+    # Ramp-up phase
+    - duration: 120
+      arrivalRate: 10
+      rampTo: 50
+      name: "Ramp-up load"
+    
+    # Sustained load phase
+    - duration: 300
+      arrivalRate: 50
+      name: "Sustained load"
+    
+    # Spike phase
+    - duration: 60
+      arrivalRate: 100
+      name: "Spike test"
+    
+    # Cool-down phase
+    - duration: 60
+      arrivalRate: 10
+      name: "Cool-down"
+  
+  # Plugins
+  plugins:
+    expect: {}
+    metrics-by-endpoint: {}
+  
+  # Processor
+  processor: "./artillery-processor.js"
+  
+  # Variables
+  variables:
+    apiPrefix: "/api"
+  
+  # Defaults
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  
+  # Timeouts
+  timeout: 30
+  
+  # Reporting
+  ensure:
+    maxErrorRate: 5  # Max 5% error rate
+    p95: 500         # 95th percentile < 500ms
+    p99: 1000        # 99th percentile < 1000ms
+
+# Scenarios
+scenarios:
+  # Health check scenario
+  - name: "Health Check"
+    weight: 10
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
+  
+  # Authentication scenario
+  - name: "User Authentication"
+    weight: 30
+    flow:
+      - post:
+          url: "{{ apiPrefix }}/auth/login"
+          json:
+            email: "test@example.com"
+            password: "password123"
+          expect:
+            - statusCode: 200
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      
+      - get:
+          url: "{{ apiPrefix }}/auth/me"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+  
+  # Admin operations scenario
+  - name: "Admin Operations"
+    weight: 20
+    flow:
+      - get:
+          url: "{{ apiPrefix }}/admin/users"
+          expect:
+            - statusCode: [200, 401]
+      
+      - get:
+          url: "{{ apiPrefix }}/admin/config"
+          expect:
+            - statusCode: [200, 401]
+  
+  # Inventory operations scenario
+  - name: "Inventory Operations"
+    weight: 20
+    flow:
+      - get:
+          url: "{{ apiPrefix }}/inventory/products"
+          expect:
+            - statusCode: [200, 401]
+      
+      - get:
+          url: "{{ apiPrefix }}/inventory/categories"
+          expect:
+            - statusCode: [200, 401]
+  
+  # Accounting operations scenario
+  - name: "Accounting Operations"
+    weight: 20
+    flow:
+      - get:
+          url: "{{ apiPrefix }}/accounting/journal"
+          expect:
+            - statusCode: [200, 401]
+      
+      - get:
+          url: "{{ apiPrefix }}/accounting/ledger"
+          expect:
+            - statusCode: [200, 401]
+
