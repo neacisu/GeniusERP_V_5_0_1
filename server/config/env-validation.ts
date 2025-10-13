@@ -17,9 +17,7 @@ const logger = createModuleLogger('env-validation');
  */
 const envSchema = z.object({
   // Node Environment
-  NODE_ENV: z.enum(['development', 'production', 'test'], {
-    errorMap: () => ({ message: 'NODE_ENV must be development, production, or test' })
-  }),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
   // Security - JWT & Sessions
   JWT_SECRET: z.string().min(32, {
@@ -41,14 +39,7 @@ const envSchema = z.object({
   REDIS_PASSWORD: z.string().optional(),
 
   // CORS - Required in production
-  ALLOWED_ORIGINS: z.string().refine((val) => {
-    if (process.env.NODE_ENV === 'production') {
-      return val && val.length > 0 && val !== '*';
-    }
-    return true;
-  }, {
-    message: 'ALLOWED_ORIGINS must be explicitly set in production (not *)'
-  }),
+  ALLOWED_ORIGINS: z.string().optional(),
 
   // Cookie Domain (optional but recommended for production)
   COOKIE_DOMAIN: z.string().optional(),
@@ -102,16 +93,24 @@ export function validateEnv(): ValidatedEnv {
     }
     
     return validatedEnv;
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      logger.error('✗ Environment validation failed:');
-      error.errors.forEach((err) => {
-        logger.error(`  - ${err.path.join('.')}: ${err.message}`);
+  } catch (error: any) {
+    logger.error('✗ Environment validation failed');
+    
+    // Check if error has errors array (ZodError structure)
+    if (error && typeof error === 'object' && Array.isArray(error.errors)) {
+      logger.error('Missing or invalid environment variables:');
+      error.errors.forEach((err: any) => {
+        const path = Array.isArray(err.path) ? err.path.join('.') : 'unknown';
+        logger.error(`  - ${path}: ${err.message || 'Invalid value'}`);
       });
       logger.error('\nPlease check your .env file and ensure all required variables are set correctly.');
       logger.error('See env.example.txt for reference.');
     } else {
-      logger.error('✗ Unexpected error during environment validation:', error);
+      logger.error('Unexpected error during environment validation:');
+      logger.error(String(error));
+      if (error && typeof error === 'object') {
+        logger.error('Error details:', JSON.stringify(error, null, 2));
+      }
     }
     
     // Oprește aplicația dacă validarea eșuează

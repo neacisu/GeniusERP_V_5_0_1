@@ -15,19 +15,16 @@ import { z } from 'zod';
 // Create validation schema for API key creation
 const createApiKeySchema = z.object({
   name: z.string().min(2, 'API key name must be at least 2 characters'),
-  description: z.string().optional(),
+  service: z.string().min(2, 'Service name is required'),
   expiresAt: z.string().datetime().optional(),
-  scopes: z.array(z.string()).optional(),
   companyId: z.string().uuid('Invalid company ID format').optional().nullable(),
 });
 
 // Create validation schema for API key update
 const updateApiKeySchema = z.object({
   name: z.string().min(2, 'API key name must be at least 2 characters').optional(),
-  description: z.string().optional(),
+  service: z.string().min(2, 'Service name is required').optional(),
   expiresAt: z.string().datetime().optional(),
-  scopes: z.array(z.string()).optional(),
-  isActive: z.boolean().optional(),
 });
 
 // Create logger instance
@@ -130,9 +127,8 @@ export function registerApiKeyControllerRoutes(app: any, apiKeyService: ApiKeySe
       const apiKeyData = validationResult.data;
       const createdApiKey = await apiKeyService.createApiKey({
         name: apiKeyData.name,
-        description: apiKeyData.description || '',
+        service: apiKeyData.service,
         expiresAt: apiKeyData.expiresAt ? new Date(apiKeyData.expiresAt) : undefined,
-        scope: apiKeyData.scopes || [],
         companyId: req.user?.companyId || apiKeyData.companyId || '',
       }, req.user?.id || 'system');
 
@@ -187,9 +183,8 @@ export function registerApiKeyControllerRoutes(app: any, apiKeyService: ApiKeySe
       const apiKeyData = validationResult.data;
       const updatedApiKey = await apiKeyService.updateApiKey(apiKeyId, {
         name: apiKeyData.name,
-        description: apiKeyData.description,
+        service: apiKeyData.service,
         expiresAt: apiKeyData.expiresAt ? new Date(apiKeyData.expiresAt) : undefined,
-        scope: apiKeyData.scopes,
       }, req.user?.id || 'system');
 
       logger.info(`API key updated: ${existingApiKey.name} by user: ${req.user?.id}`);

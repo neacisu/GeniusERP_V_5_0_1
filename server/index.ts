@@ -36,16 +36,15 @@ import { initializeSentry, sentryErrorHandler } from './middlewares/sentry.middl
 import { loggingMiddleware } from './middlewares/logging.middleware';
 // Import Sentry test routes (DOAR pentru development)
 import testSentryRoutes from './routes/test-sentry.route';
+// Security Headers (Helmet & CORS) - imports at top level
+import helmet from 'helmet';
+import cors from 'cors';
 
 // Create Express app
 const app = express();
 
 // Initialize Sentry FIRST - before any other middleware
 initializeSentry(app);
-
-// Security Headers (Helmet) - MUST be early in middleware chain
-import helmet from 'helmet';
-import cors from 'cors';
 
 // Helmet configuration for security headers
 app.use(helmet({

@@ -310,8 +310,7 @@ export class RoleService {
         await this.db.insert(rolePermissions).values(
           permissionIds.map(permissionId => ({
             roleId,
-            permissionId,
-            id: uuidv4()
+            permissionId
           }))
         );
       }

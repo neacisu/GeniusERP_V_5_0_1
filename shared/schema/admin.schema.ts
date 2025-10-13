@@ -54,14 +54,17 @@ export const api_keys = pgTable('api_keys', {
   id: uuid('id').primaryKey().defaultRandom(),
   company_id: varchar('company_id', { length: 36 }).notNull(),
   name: varchar('name', { length: 100 }).notNull(),
-  service: varchar('service', { length: 100 }).notNull(), // e.g., 'stripe', 'twilio'
-  key_identifier: varchar('key_identifier', { length: 255 }).notNull(), // partial/masked identifier
-  is_active: boolean('is_active').default(true),
+  description: varchar('description', { length: 500 }),
+  prefix: varchar('prefix', { length: 50 }).notNull(), // e.g., 'geniusapi'
+  key_hash: varchar('key_hash', { length: 255 }).notNull(), // SHA256 hash of the secret key
+  scope: json('scope'), // Array of permission scopes
+  status: varchar('status', { length: 20 }).default('active').notNull(), // 'active', 'revoked', 'expired'
   expires_at: timestamp('expires_at'),
-  created_at: timestamp('created_at').defaultNow().notNull(),
-  created_by: varchar('created_by', { length: 36 }).notNull(),
   last_used_at: timestamp('last_used_at'),
-  last_rotated_at: timestamp('last_rotated_at'),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  updated_at: timestamp('updated_at').defaultNow().notNull(),
+  created_by: varchar('created_by', { length: 36 }).notNull(),
+  updated_by: varchar('updated_by', { length: 36 }).notNull(),
 });
 
 /**

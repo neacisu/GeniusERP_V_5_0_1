@@ -175,16 +175,12 @@ export class LicenseService {
       // Parse the license key to determine features
       // In a real implementation, this would be validated with a license server
       const edition = this.getLicenseEditionFromKey(licenseKey);
-      const maxUsers = this.getMaxUsersForEdition(edition);
-      const maxCompanies = this.getMaxCompaniesForEdition(edition);
+      const maxActivations = this.getMaxUsersForEdition(edition);
       const features = this.getFeaturesForEdition(edition);
       
       // Generate expiration date (1 year from now)
       const expiresAt = new Date();
       expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-      
-      // Create hardware identifier (for license binding)
-      const hardwareId = this.generateHardwareId();
       
       // Insert the new license
       const [license] = await this.db.query(async (db) => {
@@ -192,18 +188,17 @@ export class LicenseService {
           .values({
             id: uuidv4(),
             license_key: this.hashLicenseKey(licenseKey),
-            key_identifier: this.generateKeyIdentifier(licenseKey),
             edition,
             status: LicenseStatus.ACTIVE,
-            registered_at: new Date(),
-            activated_at: new Date(),
-            expires_at: expiresAt,
-            max_users: maxUsers,
-            max_companies: maxCompanies,
+            issued_to: actorId,
+            issued_email: 'system@geniuserp.com', // In real implementation would come from user
+            max_activations: maxActivations,
+            current_activations: 1,
             features,
-            hardware_id: hardwareId,
-            registered_by: actorId,
-            activated_by: actorId
+            activation_code: this.generateActivationCode(),
+            issued_at: new Date(),
+            expires_at: expiresAt,
+            last_verified: new Date()
           })
           .returning();
       });
@@ -217,28 +212,29 @@ export class LicenseService {
         entityId: license.id,
         details: {
           edition,
-          keyIdentifier: license.key_identifier,
           event: 'license_registration'
         }
       });
       
       // Set as the active license
       this.activeLicense = license;
-      this.maxUsers = maxUsers;
-      this.maxCompanies = maxCompanies;
+      this.maxUsers = maxActivations;
+      this.maxCompanies = 1;
       this.features = new Map(Object.entries(features));
       
       return {
         id: license.id,
-        keyIdentifier: license.key_identifier,
+        licenseKey: `${licenseKey.substring(0, 8)}...`, // Masked
         edition: license.edition,
         status: license.status,
-        registeredAt: license.registered_at,
-        activatedAt: license.activated_at,
+        issuedTo: license.issued_to,
+        issuedEmail: license.issued_email,
+        issuedAt: license.issued_at,
         expiresAt: license.expires_at,
-        maxUsers: license.max_users,
-        maxCompanies: license.max_companies,
-        features: license.features
+        maxActivations: license.max_activations,
+        currentActivations: license.current_activations,
+        features: license.features,
+        activationCode: license.activation_code
       };
     } catch (error) {
       this.logger.error('Error registering license:', error);
@@ -268,14 +264,14 @@ export class LicenseService {
       if (license.status === LicenseStatus.ACTIVE) {
         return {
           id: license.id,
-          keyIdentifier: license.key_identifier,
           edition: license.edition,
           status: license.status,
-          registeredAt: license.registered_at,
-          activatedAt: license.activated_at,
+          issuedTo: license.issued_to,
+          issuedEmail: license.issued_email,
+          issuedAt: license.issued_at,
           expiresAt: license.expires_at,
-          maxUsers: license.max_users,
-          maxCompanies: license.max_companies,
+          maxActivations: license.max_activations,
+          currentActivations: license.current_activations,
           features: license.features
         };
       }
@@ -305,8 +301,8 @@ export class LicenseService {
         return await db.update(licenses)
           .set({
             status: LicenseStatus.ACTIVE,
-            activated_at: new Date(),
-            activated_by: actorId,
+            current_activations: license.current_activations + 1,
+            last_verified: new Date(),
             updated_at: new Date()
           })
           .where(eq(licenses.id, licenseId))
@@ -327,20 +323,20 @@ export class LicenseService {
       
       // Set as the active license
       this.activeLicense = activatedLicense;
-      this.maxUsers = activatedLicense.max_users || 5;
-      this.maxCompanies = activatedLicense.max_companies || 1;
+      this.maxUsers = activatedLicense.max_activations || 5;
+      this.maxCompanies = 1;
       this.features = new Map(Object.entries(activatedLicense.features || {}));
       
       return {
         id: activatedLicense.id,
-        keyIdentifier: activatedLicense.key_identifier,
         edition: activatedLicense.edition,
         status: activatedLicense.status,
-        registeredAt: activatedLicense.registered_at,
-        activatedAt: activatedLicense.activated_at,
+        issuedTo: activatedLicense.issued_to,
+        issuedEmail: activatedLicense.issued_email,
+        issuedAt: activatedLicense.issued_at,
         expiresAt: activatedLicense.expires_at,
-        maxUsers: activatedLicense.max_users,
-        maxCompanies: activatedLicense.max_companies,
+        maxActivations: activatedLicense.max_activations,
+        currentActivations: activatedLicense.current_activations,
         features: activatedLicense.features
       };
     } catch (error) {
@@ -466,11 +462,26 @@ export class LicenseService {
   async getLicenseUsage() {
     try {
       const license = await this.getActiveLicense();
+      
+      // Query actual user count
+      const [userResult] = await this.db.query(async (db) => {
+        return await db.select({ count: sql<number>`count(*)::int` })
+          .from(sql`users`);
+      });
+      const currentUsers = userResult?.count || 0;
+      
+      // Query actual company count
+      const [companyResult] = await this.db.query(async (db) => {
+        return await db.select({ count: sql<number>`count(*)::int` })
+          .from(sql`companies`);
+      });
+      const currentCompanies = companyResult?.count || 0;
+      
       return {
-        maxUsers: license?.maxUsers || 0,
-        maxCompanies: license?.maxCompanies || 0,
-        currentUsers: 0, // TODO: Query actual user count
-        currentCompanies: 0 // TODO: Query actual company count
+        maxActivations: license?.maxActivations || 0,
+        currentActivations: license?.currentActivations || 0,
+        currentUsers,
+        currentCompanies
       };
     } catch (error) {
       this.logger.error('Error getting license usage:', error);
@@ -560,6 +571,15 @@ export class LicenseService {
    */
   private hashLicenseKey(licenseKey: string): string {
     return crypto.createHash('sha256').update(licenseKey).digest('hex');
+  }
+
+  /**
+   * Generate an activation code for a license
+   * @returns Activation code string
+   */
+  private generateActivationCode(): string {
+    // Generate a 16-character activation code
+    return crypto.randomBytes(8).toString('hex').toUpperCase();
   }
 
   /**

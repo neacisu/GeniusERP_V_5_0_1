@@ -17,15 +17,6 @@ import { v4 as uuidv4 } from 'uuid';
 import * as crypto from 'crypto';
 
 /**
- * API key status
- */
-enum ApiKeyStatus {
-  ACTIVE = 'active',
-  REVOKED = 'revoked',
-  EXPIRED = 'expired'
-}
-
-/**
  * API Key service for the Admin module
  */
 export class ApiKeyService {
@@ -49,9 +40,8 @@ export class ApiKeyService {
   async createApiKey(
     data: {
       name: string;
-      description?: string;
+      service: string;
       expiresAt?: Date;
-      scope?: string[];
       companyId: string;
     },
     createdBy: string
@@ -61,31 +51,27 @@ export class ApiKeyService {
       
       // Generate API key components
       const id = uuidv4();
-      const prefix = 'geniusapi';
       const secretKey = this.generateSecretKey();
-      const displayKey = `${prefix}_${secretKey.substring(0, 16)}`;
-      const hashedKey = this.hashKey(secretKey);
+      const keyIdentifier = `****${secretKey.substring(secretKey.length - 8)}`; // Masked identifier
       
       // Insert the API key
       const [apiKey] = await this.db.insert(api_keys).values({
         id,
         name: data.name,
-        description: data.description || null,
-        prefix,
-        key_hash: hashedKey,
+        service: data.service,
+        key_identifier: keyIdentifier,
+        is_active: true,
         last_used_at: null,
-        expires_at: data.expiresAt || null, 
-        scope: data.scope || null,
-        status: ApiKeyStatus.ACTIVE,
+        expires_at: data.expiresAt || null,
         company_id: data.companyId,
         created_by: createdBy,
-        updated_by: createdBy
+        last_rotated_at: null
       }).returning();
       
       // Return the API key with the full key (only shown once)
       return {
         ...apiKey,
-        full_key: `${prefix}_${secretKey}` // This is only returned once
+        full_key: secretKey // This is only returned once
       };
     } catch (error) {
       this.logger.error('Error creating API key:', error);
@@ -100,22 +86,16 @@ export class ApiKeyService {
    */
   async validateApiKey(apiKey: string): Promise<any | null> {
     try {
-      const [prefix, secretKey] = apiKey.split('_');
+      // Create masked identifier for comparison
+      const keyIdentifier = `****${apiKey.substring(apiKey.length - 8)}`;
       
-      if (!prefix || !secretKey) {
-        return null;
-      }
-      
-      const hashedKey = this.hashKey(secretKey);
-      
-      // Find the API key
+      // Find the API key by key_identifier
       const [key] = await this.db.select()
         .from(api_keys)
         .where(
           and(
-            eq(api_keys.prefix, prefix),
-            eq(api_keys.key_hash, hashedKey),
-            eq(api_keys.status, ApiKeyStatus.ACTIVE)
+            eq(api_keys.key_identifier, keyIdentifier),
+            eq(api_keys.is_active, true)
           )
         );
       
@@ -125,11 +105,10 @@ export class ApiKeyService {
       
       // Check if key is expired
       if (key.expires_at && new Date(key.expires_at) < new Date()) {
-        // Update status to expired
+        // Update status to inactive (expired)
         await this.db.update(api_keys)
           .set({
-            status: ApiKeyStatus.EXPIRED,
-            updated_at: new Date()
+            is_active: false
           })
           .where(eq(api_keys.id, key.id));
         
@@ -139,8 +118,7 @@ export class ApiKeyService {
       // Update last used timestamp
       await this.db.update(api_keys)
         .set({
-          last_used_at: new Date(),
-          updated_at: new Date()
+          last_used_at: new Date()
         })
         .where(eq(api_keys.id, key.id));
       
@@ -161,14 +139,14 @@ export class ApiKeyService {
       return await this.db.select({
         id: api_keys.id,
         name: api_keys.name,
-        description: api_keys.description,
-        prefix: api_keys.prefix,
+        service: api_keys.service,
+        keyIdentifier: api_keys.key_identifier,
+        isActive: api_keys.is_active,
         lastUsedAt: api_keys.last_used_at,
         expiresAt: api_keys.expires_at,
-        scope: api_keys.scope,
-        status: api_keys.status,
         createdAt: api_keys.created_at,
-        createdBy: api_keys.created_by
+        createdBy: api_keys.created_by,
+        lastRotatedAt: api_keys.last_rotated_at
       })
       .from(api_keys)
       .where(eq(api_keys.company_id, companyId));
@@ -188,15 +166,15 @@ export class ApiKeyService {
       const [key] = await this.db.select({
         id: api_keys.id,
         name: api_keys.name,
-        description: api_keys.description,
-        prefix: api_keys.prefix,
+        service: api_keys.service,
+        keyIdentifier: api_keys.key_identifier,
+        isActive: api_keys.is_active,
         lastUsedAt: api_keys.last_used_at,
         expiresAt: api_keys.expires_at,
-        scope: api_keys.scope,
-        status: api_keys.status,
         companyId: api_keys.company_id,
         createdAt: api_keys.created_at,
-        createdBy: api_keys.created_by
+        createdBy: api_keys.created_by,
+        lastRotatedAt: api_keys.last_rotated_at
       })
       .from(api_keys)
       .where(eq(api_keys.id, keyId));
@@ -211,7 +189,7 @@ export class ApiKeyService {
   /**
    * Update an API key
    * @param keyId API key ID
-   * @param updates Fields to update (name, description, expiresAt, scope)
+   * @param updates Fields to update (name, service, expiresAt)
    * @param updatedBy ID of the user making the change
    * @returns Updated API key object
    */
@@ -219,32 +197,24 @@ export class ApiKeyService {
     keyId: string,
     updates: Partial<{
       name: string;
-      description: string;
+      service: string;
       expiresAt: Date | null;
-      scope: string[] | null;
     }>,
     updatedBy: string
   ) {
     try {
-      const updateData: any = {
-        updated_at: new Date(),
-        updated_by: updatedBy
-      };
+      const updateData: any = {};
       
       if (updates.name !== undefined) {
         updateData.name = updates.name;
       }
       
-      if (updates.description !== undefined) {
-        updateData.description = updates.description;
+      if (updates.service !== undefined) {
+        updateData.service = updates.service;
       }
       
       if (updates.expiresAt !== undefined) {
         updateData.expires_at = updates.expiresAt;
-      }
-      
-      if (updates.scope !== undefined) {
-        updateData.scope = updates.scope;
       }
       
       const [apiKey] = await this.db.update(api_keys)
@@ -275,15 +245,15 @@ export class ApiKeyService {
       return {
         id: apiKey.id,
         name: apiKey.name,
-        description: apiKey.description,
-        prefix: apiKey.prefix,
+        service: apiKey.service,
+        keyIdentifier: apiKey.key_identifier,
+        isActive: apiKey.is_active,
         lastUsedAt: apiKey.last_used_at,
         expiresAt: apiKey.expires_at,
-        scope: apiKey.scope,
-        status: apiKey.status,
         companyId: apiKey.company_id,
         createdAt: apiKey.created_at,
-        createdBy: apiKey.created_by
+        createdBy: apiKey.created_by,
+        lastRotatedAt: apiKey.last_rotated_at
       };
     } catch (error) {
       this.logger.error(`Error updating API key ${keyId}:`, error);
@@ -310,14 +280,13 @@ export class ApiKeyService {
       
       // Generate a new secret key
       const secretKey = this.generateSecretKey();
-      const hashedKey = this.hashKey(secretKey);
+      const keyIdentifier = `****${secretKey.substring(secretKey.length - 8)}`;
       
       // Update the API key
       const [apiKey] = await this.db.update(api_keys)
         .set({
-          key_hash: hashedKey,
-          updated_at: new Date(),
-          updated_by: updatedBy
+          key_identifier: keyIdentifier,
+          last_rotated_at: new Date()
         })
         .where(eq(api_keys.id, keyId))
         .returning();
@@ -337,7 +306,7 @@ export class ApiKeyService {
       // Return the API key with the full key (only shown once)
       return {
         ...apiKey,
-        full_key: `${apiKey.prefix}_${secretKey}` // This is only returned once
+        full_key: secretKey // This is only returned once
       };
     } catch (error) {
       this.logger.error(`Error rotating API key ${keyId}:`, error);
@@ -362,12 +331,10 @@ export class ApiKeyService {
         throw new Error(`API key with ID ${keyId} not found`);
       }
       
-      // Update API key status to revoked
+      // Update API key status to inactive (revoked)
       await this.db.update(api_keys)
         .set({
-          status: ApiKeyStatus.REVOKED,
-          updated_at: new Date(),
-          updated_by: updatedBy
+          is_active: false
         })
         .where(eq(api_keys.id, keyId));
       
@@ -399,15 +366,6 @@ export class ApiKeyService {
   }
 
   /**
-   * Hash an API key for storage
-   * @param key The key to hash
-   * @returns Hashed key
-   */
-  private hashKey(key: string): string {
-    return crypto.createHash('sha256').update(key).digest('hex');
-  }
-
-  /**
    * Register API routes for API key management
    * @param app Express application
    */
@@ -415,9 +373,9 @@ export class ApiKeyService {
     this.logger.info('Registering API key management routes...');
     const router = Router();
 
-    // Authentication middleware
-    const requireAuth = AuthGuard.AuthGuard.protect(JwtAuthMode.REQUIRED);
-    const requireAdmin = AuthGuard.requireRoles(['admin']);
+    // Authentication middleware  
+    const requireAuth = AuthGuard.protect(JwtAuthMode.REQUIRED);
+    const requireAdmin = AuthGuard.roleGuard(['admin']);
     
     // GET /api/admin/api-keys/:companyId - Get API keys for a company
     router.get('/api-keys/:companyId', requireAuth, async (req: Request, res: Response) => {
@@ -454,12 +412,12 @@ export class ApiKeyService {
     // POST /api/admin/api-keys - Create a new API key
     router.post('/api-keys', requireAdmin, async (req: Request, res: Response) => {
       try {
-        const { name, description, expiresAt, scope, companyId } = req.body;
+        const { name, service, expiresAt, companyId } = req.body;
         
-        if (!name || !companyId) {
+        if (!name || !service || !companyId) {
           return res.status(400).json({
             success: false,
-            message: 'Missing required fields (name, companyId)'
+            message: 'Missing required fields (name, service, companyId)'
           });
         }
         
@@ -468,12 +426,11 @@ export class ApiKeyService {
         const apiKey = await this.createApiKey(
           {
             name,
-            description,
+            service,
             expiresAt: parsedExpiresAt,
-            scope,
             companyId
           },
-          req.user?.id
+          req.user?.id || 'system'
         );
         
         res.status(201).json({ success: true, data: apiKey });
@@ -487,10 +444,10 @@ export class ApiKeyService {
     router.put('/api-keys/:keyId', requireAdmin, async (req: Request, res: Response) => {
       try {
         const { keyId } = req.params;
-        const { name, description, expiresAt, scope } = req.body;
+        const { name, service, expiresAt } = req.body;
         
         // Require at least one field to update
-        if (!name && description === undefined && expiresAt === undefined && scope === undefined) {
+        if (!name && !service && expiresAt === undefined) {
           return res.status(400).json({
             success: false,
             message: 'At least one field to update is required'
@@ -505,11 +462,10 @@ export class ApiKeyService {
           keyId,
           {
             name,
-            description,
-            expiresAt: parsedExpiresAt,
-            scope: scope === undefined ? undefined : (scope || null)
+            service,
+            expiresAt: parsedExpiresAt
           },
-          req.user?.id
+          req.user?.id || 'system'
         );
         
         res.json({ success: true, data: apiKey });
@@ -524,7 +480,7 @@ export class ApiKeyService {
       try {
         const { keyId } = req.params;
         
-        const apiKey = await this.rotateApiKey(keyId, req.user?.id);
+        const apiKey = await this.rotateApiKey(keyId, req.user?.id || 'system');
         
         res.json({
           success: true,
@@ -542,7 +498,7 @@ export class ApiKeyService {
       try {
         const { keyId } = req.params;
         
-        await this.revokeApiKey(keyId, req.user?.id);
+        await this.revokeApiKey(keyId, req.user?.id || 'system');
         
         res.json({ success: true, message: 'API key revoked successfully' });
       } catch (error) {
