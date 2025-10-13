@@ -1,50 +1,236 @@
-# Custom Falco Rules for GeniusERP
-# Reguli de securitate simplificate fără dependențe de macros externe
+# ================================================================================================
+# Custom Falco Security Rules for GeniusERP v5
+# ================================================================================================
+# Runtime security monitoring pentru detectarea comportamentelor suspecte
+# în containerele aplicației GeniusERP
+#
+# Monitorizare: syscalls, file access, network activity, process execution
+# Output: JSON → Promtail → Loki → Grafana
+# ================================================================================================
+
+# ===== LISTE DE SECURITATE =====
 
 - list: geniuserp_containers
-  items: [geniuserp-app, geniuserp-postgres]
+  items: [geniuserp-app, geniuserp-postgres, geniuserp-adminer]
 
 - list: shell_binaries
-  items: [bash, sh, zsh, ash, csh, tcsh]
+  items: [bash, sh, zsh, ash, csh, tcsh, ksh, fish]
 
 - list: sensitive_files
-  items: [/etc/shadow, /etc/passwd, /etc/sudoers]
+  items: [/etc/shadow, /etc/passwd, /etc/sudoers, /root/.ssh, /home/*/.ssh]
 
-# Detectare acces la fișiere sensibile
-- rule: Sensitive File Access in Container
-  desc: Detect access to sensitive files in containers
+- list: package_managers
+  items: [npm, yarn, pnpm, apt-get, yum, dnf, pip, pip3]
+
+- list: network_tools
+  items: [nc, netcat, ncat, wget, curl, telnet, ssh, scp]
+
+- list: suspicious_commands
+  items: [dd, nc, netcat, nmap, tcpdump, wireshark]
+
+- list: database_files
+  items: [/var/lib/postgresql, /var/lib/mysql, /data/db]
+
+- list: allowed_dev_dirs
+  items: [/app/node_modules, /app/client, /app/server, /tmp, /var/tmp]
+
+# ===== REGULI DE SECURITATE - FILE SYSTEM =====
+
+# 1. Detectare acces la fișiere sensibile
+- rule: GeniusERP - Sensitive File Access
+  desc: Detectare acces write la fișiere sensibile (passwords, SSH keys, sudoers)
   condition: >
     evt.type in (open, openat, openat2) and
     evt.is_open_write=true and
     fd.name pmatch (sensitive_files) and
-    container.id != host
+    container.name in (geniuserp_containers) and
+    not proc.name in (sshd, sudo, passwd)
   output: >
-    Sensitive file accessed (user=%user.name command=%proc.cmdline file=%fd.name container=%container.name)
-  priority: WARNING
-  tags: [filesystem, container]
+    ALERT: Sensitive file accessed in GeniusERP! (user=%user.name command=%proc.cmdline file=%fd.name container=%container.name pid=%proc.pid)
+  priority: CRITICAL
+  tags: [filesystem, security, geniuserp]
 
-# Detectare shell în container
-- rule: Shell Execution in App Container
-  desc: Detect shell execution in application container
-  condition: >
-    evt.type = execve and
-    proc.name in (shell_binaries) and
-    container.name = "geniuserp-app"
-  output: >
-    Shell executed in app container (user=%user.name shell=%proc.name parent=%proc.pname cmdline=%proc.cmdline container=%container.name)
-  priority: NOTICE
-  tags: [process, shell]
-
-# Detectare modificări în /etc
-- rule: Write to Config Directory
-  desc: Detect writes to /etc directory in containers
+# 2. Detectare modificări în /etc (config tampering)
+- rule: GeniusERP - Config Directory Modification
+  desc: Detectare modificări în /etc directory (config tampering)
   condition: >
     evt.type in (open, openat, openat2) and
     evt.is_open_write=true and
     fd.name startswith /etc and
-    container.id != host and
-    not fd.name in (/etc/ld.so.cache, /etc/resolv.conf, /etc/hosts, /etc/hostname)
+    container.name in (geniuserp_containers) and
+    not fd.name in (/etc/ld.so.cache, /etc/resolv.conf, /etc/hosts, /etc/hostname, /etc/localtime) and
+    not proc.name in (node, postgres, npm, yarn)
   output: >
-    Write to /etc directory (user=%user.name file=%fd.name container=%container.name command=%proc.cmdline)
+    ALERT: Config file modification in GeniusERP! (user=%user.name file=%fd.name container=%container.name command=%proc.cmdline)
   priority: WARNING
-  tags: [filesystem, container]
+  tags: [filesystem, configuration, geniuserp]
+
+# 3. Detectare acces la fișiere database în afara procesului database
+- rule: GeniusERP - Unauthorized Database File Access
+  desc: Detectare acces la fișiere database din procese non-database
+  condition: >
+    evt.type in (open, openat, openat2) and
+    fd.name pmatch (database_files) and
+    container.name = "geniuserp-postgres" and
+    not proc.name in (postgres, pg_dump, pg_restore, psql)
+  output: >
+    ALERT: Unauthorized database file access! (user=%user.name process=%proc.name file=%fd.name container=%container.name)
+  priority: CRITICAL
+  tags: [database, security, geniuserp]
+
+# ===== REGULI DE SECURITATE - PROCESS EXECUTION =====
+
+# 4. Detectare shell spawning în app container (potential compromise)
+- rule: GeniusERP - Shell Spawned in App Container
+  desc: Detectare shell spawn în app container (potential backdoor/RCE)
+  condition: >
+    evt.type = execve and
+    proc.name in (shell_binaries) and
+    container.name = "geniuserp-app" and
+    not proc.pname in (node, npm, yarn, docker-entrypoint.sh, entrypoint.sh)
+  output: >
+    ALERT: Shell spawned in app container! (user=%user.name shell=%proc.name parent=%proc.pname cmdline=%proc.cmdline container=%container.name pid=%proc.pid)
+  priority: WARNING
+  tags: [process, shell, security, geniuserp]
+
+# 5. Detectare instalare pachete în runtime (package tampering)
+- rule: GeniusERP - Package Manager Execution
+  desc: Detectare rulare package manager în runtime (npm install, apt-get, etc.)
+  condition: >
+    evt.type = execve and
+    proc.name in (package_managers) and
+    container.name in (geniuserp_containers) and
+    not proc.pname in (docker-entrypoint.sh, entrypoint.sh)
+  output: >
+    ALERT: Package manager executed in runtime! (user=%user.name package_manager=%proc.name command=%proc.cmdline container=%container.name)
+  priority: WARNING
+  tags: [process, package, security, geniuserp]
+
+# 6. Detectare comenzi suspecte (nc, dd, tcpdump, etc.)
+- rule: GeniusERP - Suspicious Command Execution
+  desc: Detectare comenzi suspecte care pot indica attack (nc, dd, nmap, etc.)
+  condition: >
+    evt.type = execve and
+    proc.name in (suspicious_commands) and
+    container.name in (geniuserp_containers)
+  output: >
+    ALERT: Suspicious command executed! (user=%user.name command=%proc.name args=%proc.cmdline container=%container.name pid=%proc.pid)
+  priority: CRITICAL
+  tags: [process, security, attack, geniuserp]
+
+# ===== REGULI DE SECURITATE - NETWORK =====
+
+# 7. Detectare conexiuni outbound suspecte (C&C communication)
+- rule: GeniusERP - Suspicious Outbound Connection
+  desc: Detectare conexiuni outbound către porturi neașteptate
+  condition: >
+    evt.type = connect and
+    evt.dir = > and
+    fd.l4proto = tcp and
+    container.name = "geniuserp-app" and
+    not fd.sport in (80, 443, 5432, 5433, 6379, 3000, 5000, 3100, 9090, 4000) and
+    not fd.sip in (127.0.0.1, 0.0.0.0)
+  output: >
+    ALERT: Suspicious outbound connection! (user=%user.name process=%proc.name connection=%fd.name container=%container.name)
+  priority: WARNING
+  tags: [network, security, geniuserp]
+
+# 8. Detectare download tools usage (wget, curl pentru download malware)
+- rule: GeniusERP - Network Tool Execution
+  desc: Detectare tool-uri de rețea (wget, curl, nc) în runtime
+  condition: >
+    evt.type = execve and
+    proc.name in (network_tools) and
+    container.name in (geniuserp_containers) and
+    not proc.pname in (node, npm, yarn, apt-get)
+  output: >
+    ALERT: Network tool executed! (user=%user.name tool=%proc.name command=%proc.cmdline container=%container.name)
+  priority: NOTICE
+  tags: [network, process, geniuserp]
+
+# ===== REGULI DE SECURITATE - PRIVILEGE ESCALATION =====
+
+# 9. Detectare schimbare privilegii (setuid, setgid, sudo)
+- rule: GeniusERP - Privilege Escalation Attempt
+  desc: Detectare tentative de escaladare privilegii
+  condition: >
+    evt.type in (setuid, setgid, setreuid, setregid) and
+    container.name in (geniuserp_containers) and
+    not proc.name in (sudo, su, passwd)
+  output: >
+    ALERT: Privilege escalation detected! (user=%user.name→%user.loginuid process=%proc.name container=%container.name)
+  priority: CRITICAL
+  tags: [privilege, security, geniuserp]
+
+# 10. Detectare creare fișiere SUID/SGID
+- rule: GeniusERP - SUID/SGID File Creation
+  desc: Detectare creare fișiere cu SUID sau SGID bit (backdoor persistence)
+  condition: >
+    evt.type = chmod and
+    container.name in (geniuserp_containers) and
+    (evt.arg.mode contains "S_ISUID" or evt.arg.mode contains "S_ISGID")
+  output: >
+    ALERT: SUID/SGID file created! (user=%user.name file=%fd.name mode=%evt.arg.mode container=%container.name)
+  priority: CRITICAL
+  tags: [filesystem, privilege, security, geniuserp]
+
+# ===== REGULI DE MONITORING - APPLICATION SPECIFIC =====
+
+# 11. Detectare acces la .env files (secrets exposure)
+- rule: GeniusERP - Environment File Access
+  desc: Detectare citire fișiere .env (potential secrets leak)
+  condition: >
+    evt.type in (open, openat, openat2) and
+    evt.is_open_read=true and
+    fd.name endswith .env and
+    container.name = "geniuserp-app" and
+    not proc.name in (node, npm, yarn, tsx, ts-node)
+  output: >
+    WARNING: .env file accessed! (user=%user.name process=%proc.name file=%fd.name container=%container.name)
+  priority: WARNING
+  tags: [secrets, security, geniuserp]
+
+# 12. Detectare modificări în node_modules (dependency tampering)
+- rule: GeniusERP - Node Modules Modification
+  desc: Detectare modificări în node_modules în runtime
+  condition: >
+    evt.type in (open, openat, openat2) and
+    evt.is_open_write=true and
+    fd.name startswith /app/node_modules and
+    container.name = "geniuserp-app" and
+    not proc.name in (npm, yarn, pnpm, node)
+  output: >
+    ALERT: Node modules modified in runtime! (user=%user.name process=%proc.name file=%fd.name container=%container.name)
+  priority: WARNING
+  tags: [filesystem, dependencies, geniuserp]
+
+# ===== REGULI DE AUDIT - NORMAL OPERATIONS =====
+
+# 13. Audit: Database connections
+- rule: GeniusERP - Database Connection
+  desc: Audit normal database connections pentru monitoring
+  condition: >
+    evt.type = connect and
+    fd.l4proto = tcp and
+    fd.sport = 5432 and
+    container.name = "geniuserp-app"
+  output: >
+    INFO: Database connection established (user=%user.name process=%proc.name connection=%fd.name container=%container.name)
+  priority: INFO
+  tags: [database, audit, geniuserp]
+  enabled: false  # Dezactivat by default - prea multe logs
+
+# 14. Audit: File uploads
+- rule: GeniusERP - File Upload
+  desc: Audit file uploads către /tmp sau /uploads
+  condition: >
+    evt.type in (open, openat, openat2) and
+    evt.is_open_write=true and
+    (fd.name startswith /tmp or fd.name startswith /uploads) and
+    container.name = "geniuserp-app" and
+    proc.name = node
+  output: >
+    INFO: File uploaded (user=%user.name file=%fd.name process=%proc.cmdline container=%container.name)
+  priority: INFO
+  tags: [filesystem, audit, geniuserp]
+  enabled: false  # Dezactivat by default - prea multe logs
