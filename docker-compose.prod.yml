@@ -21,10 +21,12 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_USERNAME=${REDIS_USERNAME}
       
-      # Secrets pentru securitate
-      - JWT_SECRET=${JWT_SECRET:-jwt_secret_key_for_prod_environment}
-      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-jwt_refresh_secret_key_for_prod_environment}
-      - SESSION_SECRET=${SESSION_SECRET:-prod_session_secret_key}
+      # Secrets pentru securitate - OBLIGATORIU să fie setate în producție!
+      # ATENȚIE: Nu folosiți NICIODATĂ valorile default în producție!
+      # Generați secrete puternice cu: openssl rand -base64 32
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set - use: openssl rand -base64 32}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET must be set - use: openssl rand -base64 32}
+      - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET must be set - use: openssl rand -base64 32}
       
       # ANAF API
       - ANAF_API_URL=https://webservicesp.anaf.ro/PlatitorTvaRest/api/v7/ws/tva
@@ -76,8 +78,9 @@ services:
     container_name: geniuserp-postgres
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=${DB_USER:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      # ATENȚIE SECURITATE: Setați parole puternice în producție!
+      - POSTGRES_USER=${DB_USER:?DB_USER must be set in production}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set - use strong password}
       - POSTGRES_DB=${DB_NAME:-geniuserp}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -200,7 +203,8 @@ services:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
       - grafana_data:/var/lib/grafana
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin123}
+      # SECURITATE: Schimbați parola admin în producție!
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set - DO NOT use 'admin123'}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SERVER_ROOT_URL=${GRAFANA_URL:-http://localhost:4000}
       - GF_SERVER_DOMAIN=${GRAFANA_DOMAIN:-localhost}
@@ -304,13 +308,14 @@ services:
     environment:
       - INDEXER_URL=http://wazuh-indexer:9200
       - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=${WAZUH_INDEXER_PASSWORD:-SecretPassword}
+      # SECURITATE CRITICĂ: Setați parole puternice pentru Wazuh!
+      - INDEXER_PASSWORD=${WAZUH_INDEXER_PASSWORD:?WAZUH_INDEXER_PASSWORD must be set}
       - FILEBEAT_SSL_VERIFICATION_MODE=none
       - SSL_CERTIFICATE_AUTHORITIES=""
       - SSL_CERTIFICATE=""
       - SSL_KEY=""
       - API_USERNAME=wazuh-wui
-      - API_PASSWORD=${WAZUH_API_PASSWORD:-MyS3cr37P450r.*-}
+      - API_PASSWORD=${WAZUH_API_PASSWORD:?WAZUH_API_PASSWORD must be set}
     volumes:
       - wazuh_manager_data:/var/ossec/data
       - wazuh_manager_etc:/var/ossec/etc

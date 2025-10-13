@@ -1,11 +1,11 @@
-// TODO: Install express-rate-limit package
-// import rateLimit from 'express-rate-limit';
+/**
+ * Auth Rate Limiting Middleware
+ * 
+ * DEPRECATED: This file is kept for backwards compatibility.
+ * Please use the centralized rate limiting from server/middlewares/rate-limit.middleware.ts
+ */
 
-// Temporary placeholder until express-rate-limit is installed
-const rateLimit = (options: any) => (req: any, res: any, next: any) => next();
+import { authRateLimiter } from '../../../middlewares/rate-limit.middleware';
 
-export const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 failed attempts
-  message: 'Too many login attempts, please try again later'
-});
+// Export the auth rate limiter for backwards compatibility
+export const authLimiter = authRateLimiter;

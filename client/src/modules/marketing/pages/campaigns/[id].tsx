@@ -33,6 +33,7 @@ import { useCampaign } from "../../hooks/useMarketingApi";
 import { CampaignStatus, CampaignType, AudienceType } from "../../types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { SafeHtml } from "@/utils/sanitize";
 import { 
   Tabs, 
   TabsList, 
@@ -694,7 +695,11 @@ const CampaignDetailPage: React.FC<CampaignDetailPageProps> = ({ id }) => {
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          label={(entry: any) => {
+                            const name = entry.name || '';
+                            const percent = entry.percent || 0;
+                            return `${name}: ${(percent * 100).toFixed(0)}%`;
+                          }}
                           outerRadius={100}
                           fill="#8884d8"
                           dataKey="value"
@@ -876,9 +881,10 @@ const CampaignDetailPage: React.FC<CampaignDetailPageProps> = ({ id }) => {
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Previzualizare</h3>
                   <Card className="border-dashed">
                     <CardContent className="p-4">
-                      <div 
+                      <SafeHtml 
+                        html={campaign.contentHtml}
+                        type="email"
                         className="prose max-w-none"
-                        dangerouslySetInnerHTML={{ __html: campaign.contentHtml }}
                       />
                     </CardContent>
                   </Card>

@@ -61,13 +61,23 @@ export const ibanSchema = z
 
 /**
  * Common validation schema for password
+ * 
+ * Cerințe conform OWASP și NIST SP 800-63B:
+ * - Minimum 12 caractere
+ * - Cel puțin o literă mare, una mică, o cifră și un caracter special
  */
 export const passwordSchema = z
   .string()
-  .min(8, "Parola trebuie să aibă cel puțin 8 caractere")
-  .regex(/[A-Z]/, "Parola trebuie să conțină cel puțin o literă mare")
-  .regex(/[a-z]/, "Parola trebuie să conțină cel puțin o literă mică")
-  .regex(/[0-9]/, "Parola trebuie să conțină cel puțin o cifră");
+  .min(12, "Parola trebuie să aibă minimum 12 caractere")
+  .max(128, "Parola nu poate depăși 128 caractere")
+  .regex(/[A-Z]/, "Parola trebuie să conțină cel puțin o literă mare (A-Z)")
+  .regex(/[a-z]/, "Parola trebuie să conțină cel puțin o literă mică (a-z)")
+  .regex(/[0-9]/, "Parola trebuie să conțină cel puțin o cifră (0-9)")
+  .regex(/[^A-Za-z0-9]/, "Parola trebuie să conțină cel puțin un caracter special (!@#$%^&* etc.)")
+  .refine(
+    (password) => !/(.)\1{3,}/.test(password),
+    { message: 'Parola nu poate conține mai mult de 3 caractere consecutive identice' }
+  );
 
 /**
  * Common validation schema for CNP (Romanian personal identification number)

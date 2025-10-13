@@ -122,6 +122,10 @@ export const users = pgTable("users", {
   lastName: text("last_name").notNull(),
   role: text("role").notNull().default("user"),
   companyId: uuid("company_id"),
+  // Multi-Factor Authentication fields
+  mfaEnabled: boolean("mfa_enabled").default(false),
+  mfaSecret: text("mfa_secret"),
+  mfaBackupCodes: text("mfa_backup_codes"), // JSON array of backup codes
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (users) => ({

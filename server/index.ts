@@ -5,6 +5,10 @@ import './monkey-patch';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
+// Validate environment variables FIRST (Security critical)
+import { validateEnv } from './config/env-validation';
+validateEnv();
+
 // Set BullMQ to ignore eviction policy before importing any other modules
 process.env.BULLMQ_IGNORE_EVICTION_POLICY = "true";
 
@@ -38,6 +42,63 @@ const app = express();
 
 // Initialize Sentry FIRST - before any other middleware
 initializeSentry(app);
+
+// Security Headers (Helmet) - MUST be early in middleware chain
+import helmet from 'helmet';
+import cors from 'cors';
+
+// Helmet configuration for security headers
+app.use(helmet({
+  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // unsafe-eval needed for React dev
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
+      connectSrc: ["'self'", "https://webservicesp.anaf.ro", "wss:", "ws:"],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: []
+    }
+  } : false, // Disable CSP in development for HMR
+  hsts: process.env.NODE_ENV === 'production' ? {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  } : false,
+  frameguard: { action: 'deny' },
+  noSniff: true,
+  xssFilter: true,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+}));
+
+// CORS configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'http://0.0.0.0:5000'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      callback(null, true);
+    } else {
+      appLogger.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS policy'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['X-Total-Count', 'X-Page-Count']
+}));
+
+appLogger.info('✓ Security headers (Helmet) and CORS configured');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

@@ -43,10 +43,16 @@ const loginSchema = z.object({
   password: z.string().min(1, "Parola este obligatorie"),
 });
 
-// Registration schema
+// Registration schema with strong password requirements
 const registerSchema = z.object({
   username: z.string().min(3, "Numele de utilizator trebuie să aibă minim 3 caractere"),
-  password: z.string().min(6, "Parola trebuie să aibă minim 6 caractere"),
+  password: z.string()
+    .min(12, "Parola trebuie să aibă minimum 12 caractere")
+    .max(128, "Parola nu poate depăși 128 caractere")
+    .regex(/[A-Z]/, "Parola trebuie să conțină cel puțin o literă mare")
+    .regex(/[a-z]/, "Parola trebuie să conțină cel puțin o literă mică")
+    .regex(/[0-9]/, "Parola trebuie să conțină cel puțin o cifră")
+    .regex(/[^A-Za-z0-9]/, "Parola trebuie să conțină cel puțin un caracter special"),
   email: z.string().email("Adresa de email nu este validă"),
   firstName: z.string().min(1, "Prenumele este obligatoriu"),
   lastName: z.string().min(1, "Numele este obligatoriu"),

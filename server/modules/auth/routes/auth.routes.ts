@@ -10,22 +10,28 @@ import { JwtAuthMode, UserRole } from "../types";
 import { DrizzleService } from "../../../common/drizzle";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import { authRateLimiter } from "../../../middlewares/rate-limit.middleware";
 
 export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
   const router = Router();
   const drizzleService = new DrizzleService();
 
-  // Set up session
+  // Set up session with security best practices
+  // SESSION_SECRET is validated at startup by env-validation.ts
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "default_geniuserp_session_secret",
+    secret: process.env.SESSION_SECRET!,  // Non-null assertion safe after validation
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
     cookie: {
       maxAge: 1000 * 60 * 60 * 24, // 1 day
       secure: process.env.NODE_ENV === "production",
-      httpOnly: true
-    }
+      httpOnly: true,
+      sameSite: 'lax', // CSRF protection
+      domain: process.env.COOKIE_DOMAIN || undefined
+    },
+    name: 'geniuserp.sid', // Custom session name (don't reveal tech stack)
+    proxy: process.env.NODE_ENV === "production" // Trust proxy in production
   };
 
   // Configure Passport strategies
@@ -48,7 +54,7 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
     new JwtStrategy(
       {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: process.env.JWT_SECRET
+        secretOrKey: String(JWT_SECRET)  // Convert to string for passport-jwt
       },
       async (payload: any, done: any) => {
         try {
@@ -79,8 +85,8 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Register route
-  router.post("/register", async (req, res, next) => {
+  // Register route - with rate limiting
+  router.post("/register", authRateLimiter, async (req, res, next) => {
     try {
       const user = await authService.registerUser(req.body);
 
@@ -94,8 +100,8 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
     }
   });
 
-  // Login route
-  router.post("/login", (req, res, next) => {
+  // Login route - with rate limiting
+  router.post("/login", authRateLimiter, (req, res, next) => {
     passport.authenticate("local", (err: any, user: any, info: any) => {
       if (err) return next(err);
       if (!user) {
@@ -161,8 +167,10 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
     AuthGuard.roleGuard([UserRole.ADMIN]),
     async (req, res) => {
       try {
-        // Use DrizzleService to get all users
-        const usersData = await drizzleService.db.select().from(users);
+        // Use DrizzleService to get all users through query method
+        const usersData = await drizzleService.query(async (db) => {
+          return await db.select().from(users);
+        });
         res.json(usersData);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -171,33 +179,39 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
     }
   );
 
-  // Test token generation endpoint
-  router.get('/test-token/:userId', async (req, res) => {
-    try {
-      const user = await authService.getUserById(req.params.userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+  // Test endpoints - ONLY in development
+  // These are security-sensitive and should NEVER be exposed in production
+  if (process.env.NODE_ENV !== 'production') {
+    // Test token generation endpoint
+    router.get('/test-token/:userId', async (req, res) => {
+      try {
+        const user = await authService.getUserById(req.params.userId);
+        
+        if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+        }
+        
+        // Generate token using the standard JWT secret
+        const token = authService.generateToken(user);
+        
+        return res.status(200).json({ token });
+      } catch (error) {
+        console.error('Error in test token endpoint:', error);
+        return res.status(500).json({ message: 'Internal server error' });
       }
-      
-      // Generate token using the standard JWT secret
-      const token = authService.generateToken(user);
-      
-      return res.status(200).json({ token });
-    } catch (error) {
-      console.error('Error in test token endpoint:', error);
-      return res.status(500).json({ message: 'Internal server error' });
-    }
-  });
-  
-  // Test JWT verification endpoint
-  router.get('/verify-token', AuthGuard.protect(JwtAuthMode.REQUIRED), (req, res) => {
-    // If we got here, the token was verified successfully by the middleware
-    return res.status(200).json({ 
-      message: 'Token verified successfully',
-      user: req.user 
     });
-  });
+    
+    // Test JWT verification endpoint
+    router.get('/verify-token', AuthGuard.protect(JwtAuthMode.REQUIRED), (req, res) => {
+      // If we got here, the token was verified successfully by the middleware
+      return res.status(200).json({ 
+        message: 'Token verified successfully',
+        user: req.user 
+      });
+    });
+    
+    console.log('⚠️  Test auth endpoints enabled (development only)');
+  }
   
   // Authentication verification endpoint
   router.get('/verify', AuthGuard.protect(JwtAuthMode.REQUIRED), (req, res) => {
