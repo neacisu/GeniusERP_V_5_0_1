@@ -20,18 +20,6 @@ import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
 /**
- * User Status Enum
- * Represents the possible states of a user account
- */
-export enum UserStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  SUSPENDED = 'suspended',
-  PENDING = 'pending',
-  LOCKED = 'locked'
-}
-
-/**
  * Setup Steps Table
  * Tracks the completion status of various system setup steps
  */
@@ -163,10 +151,10 @@ export const users = pgTable('users', {
   first_name: varchar('first_name', { length: 100 }),
   last_name: varchar('last_name', { length: 100 }),
   role: text('role').notNull().default('user'), // Adăugare câmp role care există în baza de date
-  status: varchar('status', { length: 20 }).default(UserStatus.ACTIVE).notNull(),
   company_id: varchar('company_id', { length: 36 }),
   // franchise_id a fost eliminat, deoarece nu există în baza de date reală
   // last_login_at a fost eliminat, deoarece nu există în baza de date reală
+  // status a fost eliminat, deoarece nu există în baza de date reală
   created_at: timestamp('created_at').defaultNow().notNull(),
   updated_at: timestamp('updated_at').defaultNow().notNull(),
 });

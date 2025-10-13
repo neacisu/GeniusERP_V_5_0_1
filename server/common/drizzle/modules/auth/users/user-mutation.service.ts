@@ -8,8 +8,7 @@
 import { Logger } from '../../../../../common/logger';
 import { BaseDrizzleService } from '../../core/base-drizzle.service';
 import { eq } from 'drizzle-orm';
-import { users } from '@shared/schema/admin.schema';
-import { User, UserStatus } from '@shared/schema/admin.schema';
+import { users, User } from '@shared/schema/admin.schema';
 import { UserQueryService } from './user-query.service';
 
 // Create a logger for user mutation operations
@@ -71,7 +70,6 @@ export class UserMutationService extends BaseDrizzleService {
             first_name: userData.first_name,
             last_name: userData.last_name,
             role: userData.role || 'user',
-            status: userData.status || UserStatus.ACTIVE,
             company_id: userData.company_id
           })
           .returning();

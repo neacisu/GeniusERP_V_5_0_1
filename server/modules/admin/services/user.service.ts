@@ -4,7 +4,6 @@
  * This service handles all user management operations including:
  * - Creating new users with secure password hashing
  * - Updating user details (email, name, password)
- * - Managing user status (active, suspended, etc.)
  * - Assigning roles and permissions
  * - Integrating with audit trail for user activities
  */
@@ -14,7 +13,7 @@ import { eq, and, isNull, asc, desc, sql } from 'drizzle-orm';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { Logger } from '../../../common/logger';
-import { UserStatus, users, roles, userRoles } from '../../../../shared/schema/admin.schema';
+import { users, roles, userRoles } from '../../../../shared/schema/admin.schema';
 
 /**
  * User creation interface
@@ -25,7 +24,6 @@ export interface CreateUserParams {
   firstName?: string;
   lastName?: string;
   companyId?: string | null;
-  status?: UserStatus;
   roleIds?: string[];
 }
 
@@ -37,7 +35,6 @@ export interface UpdateUserParams {
   firstName?: string;
   lastName?: string;
   password?: string;
-  status?: UserStatus;
   companyId?: string | null;
 }
 
@@ -86,7 +83,6 @@ export class UserService {
         last_name: params.lastName || null,
         password: hashedPassword,
         company_id: params.companyId || null,
-        status: params.status || UserStatus.ACTIVE,
         created_at: now,
         updated_at: now
       }).returning();
@@ -130,7 +126,6 @@ export class UserService {
       
       if (updates.firstName !== undefined) updateData.first_name = updates.firstName;
       if (updates.lastName !== undefined) updateData.last_name = updates.lastName;
-      if (updates.status !== undefined) updateData.status = updates.status;
       if (updates.companyId !== undefined) updateData.company_id = updates.companyId;
       
       // Hash the password if provided
@@ -205,7 +200,6 @@ export class UserService {
    */
   async getUsers(options: {
     companyId?: string | null;
-    status?: UserStatus;
     page?: number;
     limit?: number;
     sortBy?: string;
@@ -229,10 +223,6 @@ export class UserService {
         }
       }
       
-      if (options.status !== undefined) {
-        conditions.push(eq(users.status, options.status));
-      }
-      
       // Create the base query
       const query = this.db.select().from(users);
       
@@ -242,8 +232,20 @@ export class UserService {
       }
       
       // Apply sorting
-      if (options.sortBy && options.sortBy in users) {
-        const column = users[options.sortBy as keyof typeof users];
+      const validSortColumns: Record<string, any> = {
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        first_name: users.first_name,
+        last_name: users.last_name,
+        role: users.role,
+        company_id: users.company_id,
+        created_at: users.created_at,
+        updated_at: users.updated_at,
+      };
+      
+      if (options.sortBy && validSortColumns[options.sortBy]) {
+        const column = validSortColumns[options.sortBy];
         query.orderBy(options.sortDirection === 'desc' ? desc(column) : asc(column));
       } else {
         query.orderBy(asc(users.email));
@@ -305,34 +307,6 @@ export class UserService {
     }
   }
 
-  /**
-   * Soft delete a user by marking it as inactive
-   * @param userId User ID
-   * @returns Updated user record
-   */
-  async softDeleteUser(userId: string) {
-    try {
-      this.logger.debug(`Soft deleting user with ID: ${userId}`);
-      
-      const [updatedUser] = await this.db.update(users)
-        .set({ 
-          status: UserStatus.INACTIVE,
-          updated_at: new Date() 
-        })
-        .where(eq(users.id, userId))
-        .returning();
-      
-      if (!updatedUser) {
-        throw new Error(`User with ID ${userId} not found`);
-      }
-      
-      this.logger.info(`User ${updatedUser.email} soft-deleted successfully`);
-      return updatedUser;
-    } catch (error) {
-      this.logger.error(`Failed to soft-delete user with ID ${userId}:`, error);
-      throw error;
-    }
-  }
 
   /**
    * Verify a user's password

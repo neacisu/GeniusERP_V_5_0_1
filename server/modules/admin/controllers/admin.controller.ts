@@ -11,7 +11,6 @@ import { UserService } from '../services/user.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum'; //Import updated for consistency.  Further updates may be necessary based on the full authentication strategy.
 import { z } from 'zod';
-import { UserStatus } from '../../../../shared/schema/admin.schema';
 
 // Create validation schema for user creation
 const createUserSchema = z.object({
@@ -106,7 +105,6 @@ export function registerAdminControllerRoutes(app: any, userService: UserService
       const page = req.query.page ? parseInt(req.query.page as string) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       const companyId = req.query.companyId as string | undefined;
-      const status = req.query.status as string | undefined;
       const sortBy = req.query.sortBy as string | undefined;
       const sortDirection = req.query.sortDirection as 'asc' | 'desc' | undefined;
 
@@ -115,7 +113,6 @@ export function registerAdminControllerRoutes(app: any, userService: UserService
         page,
         limit,
         companyId: companyId === 'null' ? null : companyId,
-        status: status as UserStatus,
         sortBy,
         sortDirection,
       });
@@ -267,8 +264,8 @@ export function registerAdminControllerRoutes(app: any, userService: UserService
         });
       }
 
-      // Soft delete the user
-      const deletedUser = await userService.softDeleteUser(userId);
+      // Delete the user
+      const deletedUser = await userService.deleteUser(userId);
 
       logger.info(`User deleted: ${deletedUser.email} by admin: ${req.user?.id}`);
 

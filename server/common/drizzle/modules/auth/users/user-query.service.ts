@@ -8,7 +8,7 @@
 import { Logger } from '../../../../../common/logger';
 import { BaseDrizzleService } from '../../core/base-drizzle.service';
 import { SQL, eq, and, or, sql } from 'drizzle-orm';
-import { users, User, UserStatus } from '@shared/schema/admin.schema';
+import { users, User } from '@shared/schema/admin.schema';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 // Create a logger for user query operations
@@ -110,18 +110,17 @@ export class UserQueryService extends BaseDrizzleService {
    */
   async getUsers(options: {
     companyId?: string;
-    status?: UserStatus;
     limit?: number;
     offset?: number;
   } = {}): Promise<User[]> {
     const context = 'getUsers';
     try {
-      const { companyId, status, limit = 100, offset = 0 } = options;
+      const { companyId, limit = 100, offset = 0 } = options;
       logger.debug(`[${context}] Getting users with options: ${JSON.stringify(options)}`);
       
       return await this.query(async (db) => {
         // Build query with filters - avoid reassignment to fix type issues
-        logger.debug(`[${context}] Building query with filters: companyId=${companyId}, status=${status}`);
+        logger.debug(`[${context}] Building query with filters: companyId=${companyId}`);
         
         // Build conditions array
         const conditions: SQL<unknown>[] = [];
@@ -129,11 +128,6 @@ export class UserQueryService extends BaseDrizzleService {
         if (companyId) {
           logger.debug(`[${context}] Adding company filter: ${companyId}`);
           conditions.push(eq(users.company_id, companyId));
-        }
-        
-        if (status) {
-          logger.debug(`[${context}] Adding status filter: ${status}`);
-          conditions.push(eq(users.status, status));
         }
         
         logger.debug(`[${context}] Applying pagination: limit=${limit}, offset=${offset}`);

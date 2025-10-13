@@ -14,7 +14,6 @@ import { RolesGuard } from '../../../common/guards';
 import { Roles } from '../../../common/decorators';
 import { Reflector } from '../../../common/reflector/reflector';
 import { z } from 'zod';
-import { UserStatus } from '../../../../shared/schema/admin.schema';
 
 // Create validation schema for user creation
 const createUserSchema = z.object({
@@ -126,7 +125,6 @@ export class UserController {
       const page = req.query.page ? parseInt(req.query.page as string) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       const companyId = req.query.companyId as string | undefined;
-      const status = req.query.status as string | undefined;
       const sortBy = req.query.sortBy as string | undefined;
       const sortDirection = req.query.sortDirection as 'asc' | 'desc' | undefined;
       
@@ -135,7 +133,6 @@ export class UserController {
         page,
         limit,
         companyId: companyId === 'null' ? null : companyId,
-        status: status as UserStatus,
         sortBy,
         sortDirection,
       });
@@ -281,8 +278,8 @@ export class UserController {
         });
       }
       
-      // Soft delete the user
-      const deletedUser = await this.userService.softDeleteUser(userId);
+      // Delete the user
+      const deletedUser = await this.userService.deleteUser(userId);
       
       logger.info(`User deleted: ${deletedUser.email} by admin: ${req.user?.id}`);
       

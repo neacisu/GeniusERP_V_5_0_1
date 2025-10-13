@@ -7,7 +7,7 @@
 
 import { Logger } from '../../../../common/logger';
 import { BaseDrizzleService } from '../core/base-drizzle.service';
-import { User as UserType, UserStatus } from '@shared/schema/admin.schema';
+import { User as UserType } from '@shared/schema/admin.schema';
 import { UserQueryService } from './users/user-query.service';
 import { UserMutationService } from './users/user-mutation.service';
 
@@ -122,7 +122,6 @@ export class AuthDrizzleService extends BaseDrizzleService {
    */
   async getUsers(options: {
     companyId?: string;
-    status?: UserStatus;
     limit?: number;
     offset?: number;
   } = {}): Promise<UserType[]> {
