@@ -121,6 +121,39 @@ if [ "$RUN_MIGRATIONS" = "true" ]; then
   npm run db:push
 fi
 
+# ================================================================================================
+# Code Quality Monitoring Cron Setup
+# ================================================================================================
+echo "📝 Configurare cron jobs pentru monitorizare calitate cod..."
+
+# Facem scripturile executabile
+chmod +x /app/scripts/typescript-errors-collector.py 2>/dev/null || true
+chmod +x /app/scripts/eslint-errors-collector.py 2>/dev/null || true
+
+# Creăm directoare log dacă nu există
+mkdir -p /var/log 2>/dev/null || true
+
+# Instalăm crontab doar dacă fișierul există și cron este disponibil
+if [ -f "/app/scripts/code-quality-crontab" ] && command -v crontab >/dev/null 2>&1; then
+  echo "Instalare crontab pentru monitorizare cod..."
+  crontab /app/scripts/code-quality-crontab
+  
+  # Pornim cron daemon în background (doar dacă există)
+  if command -v cron >/dev/null 2>&1; then
+    echo "Pornire cron daemon..."
+    cron
+  elif command -v crond >/dev/null 2>&1; then
+    echo "Pornire crond daemon..."
+    crond
+  else
+    echo "⚠️ AVERTISMENT: Cron nu este instalat în container. Monitorizarea automată este dezactivată."
+  fi
+else
+  echo "⚠️ AVERTISMENT: Crontab nu este disponibil. Monitorizarea automată este dezactivată."
+fi
+
+echo "✅ Configurare cron jobs finalizată."
+
 # Executăm comanda primită
 echo "Pornire aplicație: $@"
 exec "$@"

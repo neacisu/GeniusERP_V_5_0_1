@@ -26,9 +26,9 @@ FROM node:24.9.0-alpine
 WORKDIR /app
 
 # Instalăm utilitare pentru verificarea serviciilor și pachete esențiale
-# Adăugăm și runtime dependencies pentru PDFKit
+# Adăugăm și runtime dependencies pentru PDFKit + cron pentru monitorizare
 RUN apk add --no-cache postgresql-client redis curl busybox-extras \
-    cairo pango pixman jpeg giflib librsvg
+    cairo pango pixman jpeg giflib librsvg python3 py3-pip dcron
 
 # Instalăm doar dependențele de producție
 COPY package*.json ./
@@ -41,6 +41,10 @@ COPY --from=builder /app/client/dist ./client/dist
 # Copiem fișierele necesare pentru rulare
 COPY --from=builder /app/server ./server
 COPY --from=builder /app/shared ./shared
+COPY --from=builder /app/client ./client
+
+# Copiem scripturile de monitorizare cod
+COPY --from=builder /app/scripts ./scripts
 
 # Copiem TOATE fișierele de configurare
 COPY --from=builder /app/.env* ./

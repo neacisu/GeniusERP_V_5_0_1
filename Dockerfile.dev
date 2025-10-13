@@ -3,10 +3,10 @@ FROM node:24.9.0-alpine
 WORKDIR /app
 
 # Instalăm dependențele pentru build și pentru pachete native
-# cairo, pango, pixman pentru PDFKit font rendering
-RUN apk add --no-cache python3 make g++ git postgresql-client redis \
+# cairo, pango, pixman pentru PDFKit font rendering + cron pentru monitorizare
+RUN apk add --no-cache python3 py3-pip make g++ git postgresql-client redis \
     cairo cairo-dev pango pango-dev pixman pixman-dev \
-    jpeg-dev giflib-dev librsvg-dev
+    jpeg-dev giflib-dev librsvg-dev dcron busybox-extras
 
 # Instalăm nodemon pentru dezvoltare și instrumente utile CLI
 RUN npm install -g nodemon drizzle-kit tsx ts-node
