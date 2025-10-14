@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import AppLayout from "@/components/layout/AppLayout";
+import { useAuth } from "@/hooks/use-auth";
 import TransactionDialog from "@/components/accounting/TransactionDialog";
 import CollabIntegration from "../../collab/components/CollabIntegration";
 import { 
@@ -30,12 +31,14 @@ import {
   ShoppingCart,
   Wallet,
   Receipt,
-  Building as BankIcon
+  Building as BankIcon,
+  Settings
 } from "lucide-react";
 import { Link } from "wouter";
 
 export default function AccountingPage() {
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
+  const { user } = useAuth();
 
   // Fetch financial metrics
   const { data: metrics, isLoading: isLoadingMetrics } = useQuery({
@@ -137,6 +140,13 @@ export default function AccountingPage() {
       link: "/accounting/bank-journal",
       color: "bg-blue-500/10"
     },
+    ...(user?.companyId ? [{
+      title: "Setări Contabilitate", 
+      description: "Configurați modulul de contabilitate", 
+      icon: <Settings className="h-10 w-10 text-gray-500" />,
+      link: `/accounting/settings/${user.companyId}`,
+      color: "bg-gray-500/10"
+    }] : []),
   ];
 
   // Define financial report cards
@@ -512,7 +522,7 @@ export default function AccountingPage() {
                 {isLoadingMetrics ? (
                   <div className="h-7 w-16 bg-gray-200 animate-pulse rounded"></div>
                 ) : (
-                  `${(metrics?.profitMargin * 100 || 0).toFixed(1)}%`
+                  `${((metrics?.profitMargin ?? 0) * 100).toFixed(1)}%`
                 )}
               </div>
               <p className="text-xs text-gray-500 mt-1">

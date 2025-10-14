@@ -17,6 +17,7 @@ import PurchaseJournalPage from "@/modules/accounting/pages/purchase-journal";
 import BankJournalPage from "@/modules/accounting/pages/bank-journal";
 import CashRegisterPage from "@/modules/accounting/pages/cash-register";
 import FinancialReportsPage from "@/modules/accounting/pages/financial-reports";
+import AccountingSettingsPage from "@/modules/accounting/pages/accounting-settings";
 // Import Admin Pages
 import AdminUsersPage from "@/pages/admin/UsersPage";
 import AdminNewUserPage from "@/pages/admin/NewUserPage";
@@ -103,6 +104,10 @@ function Router() {
       <ProtectedRoute
         path="/accounting/financial-reports"
         component={FinancialReportsPage}
+      />
+      <ProtectedRoute
+        path="/accounting/settings/:companyId"
+        component={AccountingSettingsPage}
       />
 
       {/* Admin Module Routes - Protected (direct components) */}

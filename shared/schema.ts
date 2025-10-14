@@ -97,6 +97,9 @@ export * from "./schema/marketing.schema";
 // Export Account Mappings models for shared usage across the application
 export * from "./schema/account-mappings.schema";
 
+// Export Accounting Settings models for shared usage across the application
+export * from "./schema/accounting-settings.schema";
+
 // Export BPM models for shared usage across the application
 export * from "./schema/bpm.schema";
 

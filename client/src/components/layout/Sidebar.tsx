@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Link } from "wouter";
 import { ChevronDown, ChevronRight, Package, Layers, Store, Receipt, RefreshCw, BarChart, BoxesIcon } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
+import { useAuth } from "@/hooks/use-auth";
 
 type SidebarProps = {
   isOpen: boolean;
@@ -19,6 +20,7 @@ type NavItem = {
 export default function Sidebar({ isOpen }: SidebarProps) {
   const [location] = useLocation();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+  const { user } = useAuth();
 
   // Determine which items should be expanded based on the current location
   useEffect(() => {
@@ -98,6 +100,7 @@ export default function Sidebar({ isOpen }: SidebarProps) {
   };
   
   // Define accounting submenu items
+  const companyId = user?.companyId || "";
   const accountingSubitems: NavItem[] = [
     { title: "Plan de Conturi", path: "/accounting/chart-of-accounts", icon: "menu_book" },
     { title: "Registru Jurnal", path: "/accounting/journal-entries", icon: "menu_book" },
@@ -107,6 +110,7 @@ export default function Sidebar({ isOpen }: SidebarProps) {
     { title: "Registru de Casă", path: "/accounting/cash-register", icon: "payments" },
     { title: "Extrase Bancare", path: "/accounting/bank-journal", icon: "account_balance" },
     { title: "Rapoarte Financiare", path: "/accounting/financial-reports", icon: "insert_chart" },
+    ...(companyId ? [{ title: "Setări Contabilitate", path: `/accounting/settings/${companyId}`, icon: "settings" }] : []),
   ];
   
   // Define HR submenu items
