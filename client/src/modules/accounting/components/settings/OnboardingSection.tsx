@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import SettingCard from "@/modules/settings/components/cards/SettingCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,14 +53,10 @@ export default function OnboardingSection({ companyId }: OnboardingSectionProps)
   // Start onboarding mutation
   const startMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/accounting/onboarding/start', {
+      return await apiRequest('/api/accounting/onboarding/start', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId, startDate, fiscalYear }),
-        credentials: 'include',
       });
-      if (!response.ok) throw new Error('Failed to start onboarding');
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/accounting/onboarding/status/${companyId}`] });
@@ -73,14 +70,10 @@ export default function OnboardingSection({ companyId }: OnboardingSectionProps)
   // Import balances mutation
   const importBalancesMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/accounting/onboarding/import-balances', {
+      return await apiRequest('/api/accounting/onboarding/import-balances', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId, csvData, fiscalYear, importSource: 'CSV' }),
-        credentials: 'include',
       });
-      if (!response.ok) throw new Error('Failed to import balances');
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/accounting/onboarding/status/${companyId}`] });
@@ -95,14 +88,10 @@ export default function OnboardingSection({ companyId }: OnboardingSectionProps)
   // Finalize onboarding mutation
   const finalizeMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/accounting/onboarding/finalize', {
+      return await apiRequest('/api/accounting/onboarding/finalize', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId, fiscalYear }),
-        credentials: 'include',
       });
-      if (!response.ok) throw new Error('Failed to finalize onboarding');
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/accounting/onboarding/status/${companyId}`] });
