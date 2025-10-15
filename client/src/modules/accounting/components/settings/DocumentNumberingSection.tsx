@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import SettingCard from "@/modules/settings/components/cards/SettingCard";
 import FormSection from "@/modules/settings/components/forms/FormSection";
 import { Button } from "@/components/ui/button";
@@ -53,14 +54,10 @@ export default function DocumentNumberingSection({ companyId, onChange }: Docume
   // Update counter series mutation
   const updateCounterMutation = useMutation({
     mutationFn: async ({ counterType, series, year }: { counterType: string; series: string; year: number }) => {
-      const response = await fetch(`/api/accounting/settings/${companyId}/document-counters/${counterType}`, {
+      return await apiRequest(`/api/accounting/settings/${companyId}/document-counters/${counterType}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ series, year }),
-        credentials: 'include',
+        body: { series, year },
       });
-      if (!response.ok) throw new Error('Failed to update document counter');
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/accounting/settings/${companyId}/document-counters`] });

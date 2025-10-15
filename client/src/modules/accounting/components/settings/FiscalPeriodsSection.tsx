@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import SettingCard from "@/modules/settings/components/cards/SettingCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -105,17 +106,10 @@ export default function FiscalPeriodsSection({ companyId }: FiscalPeriodsSection
         ? `/api/accounting/fiscal-periods/${selectedPeriod.id}/close`
         : `/api/accounting/fiscal-periods/${selectedPeriod.id}/reopen`;
 
-      const response = await fetch(endpoint, {
+      await apiRequest(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: reason.trim() || undefined }),
-        credentials: 'include',
+        body: { reason: reason.trim() || undefined },
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || `Failed to ${action} period`);
-      }
 
       await queryClient.invalidateQueries({ 
         queryKey: [`/api/accounting/settings/${companyId}/fiscal-periods`] 
