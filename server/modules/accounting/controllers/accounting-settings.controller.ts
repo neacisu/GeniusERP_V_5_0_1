@@ -66,6 +66,22 @@ export class AccountingSettingsController extends BaseController {
   }
 
   /**
+   * GET /api/accounting/settings/:companyId/vat
+   * Get VAT settings
+   */
+  async getVatSettings(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = req.params.companyId;
+      
+      // Verify user has access to this company
+      this.verifyCompanyAccess(req, companyId);
+      
+      const settings = await this.settingsService.getVatSettings(companyId);
+      return settings;
+    });
+  }
+
+  /**
    * PUT /api/accounting/settings/:companyId/vat
    * Update VAT settings
    */

@@ -30,6 +30,9 @@ export function setupAccountingSettingsRoutes(): Router {
   // PUT /api/accounting/settings/:companyId/general - Update general settings
   router.put('/:companyId/general', (req, res) => settingsController.updateGeneralSettings(req as any, res));
 
+  // GET /api/accounting/settings/:companyId/vat - Get VAT settings
+  router.get('/:companyId/vat', (req, res) => settingsController.getVatSettings(req as any, res));
+
   // PUT /api/accounting/settings/:companyId/vat - Update VAT settings
   router.put('/:companyId/vat', (req, res) => settingsController.updateVatSettings(req as any, res));
 
