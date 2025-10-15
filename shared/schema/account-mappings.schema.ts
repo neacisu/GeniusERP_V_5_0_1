@@ -31,6 +31,8 @@ export const accountMappingTypeValues = [
   'EMPLOYEE_PAYROLL',
   'VAT_COLLECTED',
   'VAT_DEDUCTIBLE',
+  'VAT_PAYABLE',
+  'VAT_RECOVERABLE',
   
   // Expense accounts
   'UTILITIES',
