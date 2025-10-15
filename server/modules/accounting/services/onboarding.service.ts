@@ -442,5 +442,116 @@ export class OnboardingService extends DrizzleService {
     
     return balances;
   }
+
+  /**
+   * Generate Excel template with sample data
+   */
+  generateExcelTemplate(): Buffer {
+    // Create a new workbook
+    const workbook = XLSX.utils.book_new();
+    
+    // Define template data with headers and examples
+    const templateData = [
+      // Header row with instructions
+      ['TEMPLATE SOLDURI INIȚIALE - Completați datele mai jos'],
+      [],
+      // Column headers
+      ['Cod Cont', 'Denumire Cont', 'Debit', 'Credit', 'Observații (opțional)'],
+      // Instructions row
+      ['(obligatoriu)', '(obligatoriu)', '(obligatoriu)', '(obligatoriu)', '(facultativ)'],
+      [],
+      // Example data - Active (Class 1-3)
+      ['1012', 'Capital social subscris varsat', '0', '100000', 'Capital social la înființare'],
+      ['1068', 'Alte rezerve', '0', '25000', 'Rezerve legale'],
+      ['2131', 'Echipamente tehnologice', '150000', '0', 'Mașini și utilaje'],
+      ['2814', 'Amortizarea echipamentelor', '0', '45000', 'Amortizare cumulată'],
+      ['3011', 'Materii prime', '75000', '0', 'Stoc materii prime'],
+      ['3021', 'Materiale consumabile', '15000', '0', 'Materiale auxiliare'],
+      [],
+      // Example data - Passive (Class 4)
+      ['4011', 'Furnizori', '0', '35000', 'Furnizori facturi neachitate'],
+      ['4111', 'Clienți', '42000', '0', 'Clienți facturi neîncasate'],
+      ['4211', 'Personal - salarii datorate', '0', '18000', 'Salarii luna precedentă'],
+      ['4311', 'Contribuții asigurări sociale', '0', '6500', 'CAS/CASS/șomaj'],
+      ['4426', 'TVA deductibilă', '9500', '0', 'TVA de recuperat'],
+      ['4427', 'TVA colectată', '0', '11400', 'TVA de plată'],
+      [],
+      // Example data - Banking (Class 5)
+      ['5121', 'Conturi la bănci în lei', '125000', '0', 'Sold curent BCR'],
+      ['5311', 'Casa în lei', '8000', '0', 'Numerar în casă'],
+      [],
+      // Example data - Income/Expenses (Class 6-7)
+      ['6024', 'Cheltuieli cu materiile prime', '0', '0', 'Se va completa la final de an'],
+      ['7011', 'Venituri din vânzarea produselor', '0', '0', 'Se va completa la final de an'],
+      [],
+      // Empty rows for user data
+      ['', '', '', '', ''],
+      ['', '', '', '', ''],
+      ['', '', '', '', ''],
+      ['', '', '', '', ''],
+      ['', '', '', '', ''],
+    ];
+    
+    // Create worksheet
+    const worksheet = XLSX.utils.aoa_to_sheet(templateData);
+    
+    // Set column widths
+    worksheet['!cols'] = [
+      { wch: 12 },  // Cod Cont
+      { wch: 35 },  // Denumire Cont
+      { wch: 15 },  // Debit
+      { wch: 15 },  // Credit
+      { wch: 40 },  // Observații
+    ];
+    
+    // Merge cells for title
+    worksheet['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }
+    ];
+    
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Solduri Inițiale');
+    
+    // Add instructions sheet
+    const instructionsData = [
+      ['INSTRUCȚIUNI DE UTILIZARE'],
+      [],
+      ['1. Completați coloanele obligatorii:'],
+      ['   - Cod Cont: Codul contului sintetic (ex: 1012, 5121)'],
+      ['   - Denumire Cont: Numele complet al contului'],
+      ['   - Debit: Soldul debitor (dacă este cazul, altfel 0)'],
+      ['   - Credit: Soldul creditor (dacă este cazul, altfel 0)'],
+      [],
+      ['2. Coloane facultative:'],
+      ['   - Observații: Note suplimentare despre cont'],
+      [],
+      ['3. Reguli importante:'],
+      ['   - Total Debit TREBUIE să fie egal cu Total Credit'],
+      ['   - Nu introduceți sume negative'],
+      ['   - Folosiți doar cifre pentru Debit și Credit (fără simboluri)'],
+      ['   - Puteți șterge rândurile cu exemple și adăuga propriile date'],
+      [],
+      ['4. După completare:'],
+      ['   - Salvați fișierul'],
+      ['   - Încărcați în aplicație la Pasul 2 - Import Solduri'],
+      ['   - Mapați coloanele (dacă aveți nume diferite)'],
+      ['   - Importați datele'],
+      [],
+      ['5. Exemplu de calcul balanță:'],
+      ['   DEBIT: 150000 + 75000 + 15000 + 42000 + 9500 + 125000 + 8000 = 424,500'],
+      ['   CREDIT: 100000 + 25000 + 45000 + 35000 + 18000 + 6500 + 11400 = 240,900'],
+      ['   ⚠️ În exemplul de mai sus, balanța NU este echilibrată!'],
+      ['   ✅ Asigurați-vă că suma totală Debit = suma totală Credit'],
+    ];
+    
+    const instructionsSheet = XLSX.utils.aoa_to_sheet(instructionsData);
+    instructionsSheet['!cols'] = [{ wch: 80 }];
+    XLSX.utils.book_append_sheet(workbook, instructionsSheet, 'Instrucțiuni');
+    
+    // Convert to buffer
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    
+    return buffer;
+  }
 }
 

@@ -278,6 +278,29 @@ export class OnboardingController extends BaseController {
   }
 
   /**
+   * GET /api/accounting/onboarding/download-template
+   * Download Excel template for opening balances
+   */
+  async downloadTemplate(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const template = this.onboardingService.generateExcelTemplate();
+      
+      // Set headers for file download
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=Template_Solduri_Initiale.xlsx');
+      
+      // Send buffer
+      res.send(template);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Eroare la generarea template-ului';
+      res.status(500).json({
+        error: true,
+        message: errorMsg
+      });
+    }
+  }
+
+  /**
    * Helper: Verify user has access to company
    */
   private verifyCompanyAccess(req: AuthenticatedRequest, companyId: string): void {

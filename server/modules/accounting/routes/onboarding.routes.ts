@@ -66,6 +66,12 @@ export function setupOnboardingRoutes(): Router {
     (req, res) => onboardingController.importBalancesFromExcel(req as any, res)
   );
 
+  // GET /api/accounting/onboarding/download-template - Download Excel template
+  router.get(
+    '/download-template',
+    (req, res) => onboardingController.downloadTemplate(req as any, res)
+  );
+
   // GET /api/accounting/onboarding/status/:companyId - Get onboarding status
   router.get('/status/:companyId', (req, res) => onboardingController.getOnboardingStatus(req as any, res));
 

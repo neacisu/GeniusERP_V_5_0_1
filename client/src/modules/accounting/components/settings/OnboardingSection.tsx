@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, Upload, CheckCircle2, AlertCircle, Download } from "lucide-react";
 
 interface OnboardingStatus {
   started: boolean;
@@ -353,9 +353,25 @@ export default function OnboardingSection({ companyId }: OnboardingSectionProps)
 
                 {/* Excel Upload */}
                 {!showMappingUI && (
-                  <div>
-                    <Label htmlFor="excelFile">Încarcă fișier Excel (.xls, .xlsx)</Label>
-                    <div className="mt-2">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="excelFile">Încarcă fișier Excel (.xls, .xlsx)</Label>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          window.open('/api/accounting/onboarding/download-template', '_blank');
+                        }}
+                        className="text-xs"
+                      >
+                        <Download className="h-3 w-3 mr-1" />
+                        Descarcă Template
+                      </Button>
+                    </div>
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-800">
+                      💡 <strong>Recomandare:</strong> Descărcați template-ul Excel cu exemple și coloane pre-completate pentru a facilita importul.
+                    </div>
+                    <div>
                       <Input
                         id="excelFile"
                         type="file"
@@ -366,7 +382,7 @@ export default function OnboardingSection({ companyId }: OnboardingSectionProps)
                       />
                     </div>
                     {uploadPreviewMutation.isPending && (
-                      <div className="mt-2 flex items-center text-sm text-gray-600">
+                      <div className="flex items-center text-sm text-gray-600">
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         Se procesează fișierul...
                       </div>
