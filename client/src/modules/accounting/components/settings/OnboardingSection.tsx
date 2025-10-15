@@ -55,7 +55,7 @@ export default function OnboardingSection({ companyId }: OnboardingSectionProps)
     mutationFn: async () => {
       return await apiRequest('/api/accounting/onboarding/start', {
         method: 'POST',
-        body: JSON.stringify({ companyId, startDate, fiscalYear }),
+        body: { companyId, startDate, fiscalYear },
       });
     },
     onSuccess: () => {
@@ -72,7 +72,7 @@ export default function OnboardingSection({ companyId }: OnboardingSectionProps)
     mutationFn: async () => {
       return await apiRequest('/api/accounting/onboarding/import-balances', {
         method: 'POST',
-        body: JSON.stringify({ companyId, csvData, fiscalYear, importSource: 'CSV' }),
+        body: { companyId, csvData, fiscalYear, importSource: 'CSV' },
       });
     },
     onSuccess: () => {
@@ -90,7 +90,7 @@ export default function OnboardingSection({ companyId }: OnboardingSectionProps)
     mutationFn: async () => {
       return await apiRequest('/api/accounting/onboarding/finalize', {
         method: 'POST',
-        body: JSON.stringify({ companyId, fiscalYear }),
+        body: { companyId, fiscalYear },
       });
     },
     onSuccess: () => {
