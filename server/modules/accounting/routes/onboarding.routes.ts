@@ -54,6 +54,18 @@ export function setupOnboardingRoutes(): Router {
     (req, res) => onboardingController.finalizeOnboarding(req as any, res)
   );
 
+  // POST /api/accounting/onboarding/upload-preview - Upload Excel and preview columns
+  router.post(
+    '/upload-preview',
+    (req, res) => onboardingController.uploadPreview(req as any, res)
+  );
+
+  // POST /api/accounting/onboarding/import-balances-excel - Import from Excel with mapping
+  router.post(
+    '/import-balances-excel',
+    (req, res) => onboardingController.importBalancesFromExcel(req as any, res)
+  );
+
   // GET /api/accounting/onboarding/status/:companyId - Get onboarding status
   router.get('/status/:companyId', (req, res) => onboardingController.getOnboardingStatus(req as any, res));
 

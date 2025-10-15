@@ -44,6 +44,23 @@ export default function OnboardingSection({ companyId }: OnboardingSectionProps)
   const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [fiscalYear, setFiscalYear] = useState<number>(currentYear);
   const [csvData, setCsvData] = useState<string>("");
+  
+  // Excel import states
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileBase64, setFileBase64] = useState<string>("");
+  const [excelColumns, setExcelColumns] = useState<string[]>([]);
+  const [columnMapping, setColumnMapping] = useState<{
+    accountCode: string;
+    accountName: string;
+    debit: string;
+    credit: string;
+  }>({
+    accountCode: "",
+    accountName: "",
+    debit: "",
+    credit: "",
+  });
+  const [showMappingUI, setShowMappingUI] = useState(false);
 
   // Fetch onboarding status
   const { data: status, isLoading } = useQuery<OnboardingStatus>({
@@ -101,6 +118,75 @@ export default function OnboardingSection({ companyId }: OnboardingSectionProps)
       toast({ title: "Eroare", description: error.message, variant: "destructive" });
     },
   });
+
+  // Excel upload preview mutation
+  const uploadPreviewMutation = useMutation({
+    mutationFn: async (base64: string) => {
+      return await apiRequest('/api/accounting/onboarding/upload-preview', {
+        method: 'POST',
+        body: { fileBase64: base64, fileName: selectedFile?.name },
+      });
+    },
+    onSuccess: (data: any) => {
+      setExcelColumns(data.columns);
+      setShowMappingUI(true);
+      toast({ title: "Succes", description: "Fișierul a fost încărcat. Selectați coloanele." });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Eroare", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Excel import with mapping mutation
+  const importExcelMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('/api/accounting/onboarding/import-balances-excel', {
+        method: 'POST',
+        body: { companyId, fileBase64, columnMapping, fiscalYear },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/accounting/onboarding/status/${companyId}`] });
+      toast({ title: "Succes", description: "Soldurile au fost importate din Excel" });
+      setSelectedFile(null);
+      setFileBase64("");
+      setShowMappingUI(false);
+    },
+    onError: (error: Error) => {
+      toast({ title: "Eroare", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Handle file selection
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = [
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ];
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(xls|xlsx)$/i)) {
+      toast({ 
+        title: "Eroare", 
+        description: "Fișierul trebuie să fie Excel (.xls sau .xlsx)", 
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(',')[1];
+      setFileBase64(base64);
+      uploadPreviewMutation.mutate(base64);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const getProgressPercentage = () => {
     if (!status) return 0;
@@ -252,8 +338,139 @@ export default function OnboardingSection({ companyId }: OnboardingSectionProps)
                 >
                   {importBalancesMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   <Upload className="h-4 w-4 mr-2" />
-                  Importă Solduri
+                  Importă Solduri CSV
                 </Button>
+
+                {/* Divider SAU */}
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-blue-50 text-gray-500">SAU</span>
+                  </div>
+                </div>
+
+                {/* Excel Upload */}
+                {!showMappingUI && (
+                  <div>
+                    <Label htmlFor="excelFile">Încarcă fișier Excel (.xls, .xlsx)</Label>
+                    <div className="mt-2">
+                      <Input
+                        id="excelFile"
+                        type="file"
+                        accept=".xls,.xlsx"
+                        onChange={handleFileSelect}
+                        disabled={uploadPreviewMutation.isPending}
+                        className="cursor-pointer"
+                      />
+                    </div>
+                    {uploadPreviewMutation.isPending && (
+                      <div className="mt-2 flex items-center text-sm text-gray-600">
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Se procesează fișierul...
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Column Mapping UI */}
+                {showMappingUI && excelColumns.length > 0 && (
+                  <div className="mt-4 p-4 bg-white rounded-lg border border-blue-300">
+                    <h5 className="font-semibold text-sm mb-3">
+                      Mapare Coloane din {selectedFile?.name}
+                    </h5>
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="accountCode">Coloana pentru Cod Cont</Label>
+                        <select
+                          id="accountCode"
+                          value={columnMapping.accountCode}
+                          onChange={(e) => setColumnMapping({ ...columnMapping, accountCode: e.target.value })}
+                          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md"
+                        >
+                          <option value="">Selectează coloana...</option>
+                          {excelColumns.map((col) => (
+                            <option key={col} value={col}>{col}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="accountName">Coloana pentru Denumire Cont</Label>
+                        <select
+                          id="accountName"
+                          value={columnMapping.accountName}
+                          onChange={(e) => setColumnMapping({ ...columnMapping, accountName: e.target.value })}
+                          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md"
+                        >
+                          <option value="">Selectează coloana...</option>
+                          {excelColumns.map((col) => (
+                            <option key={col} value={col}>{col}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="debit">Coloana pentru Debit</Label>
+                        <select
+                          id="debit"
+                          value={columnMapping.debit}
+                          onChange={(e) => setColumnMapping({ ...columnMapping, debit: e.target.value })}
+                          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md"
+                        >
+                          <option value="">Selectează coloana...</option>
+                          {excelColumns.map((col) => (
+                            <option key={col} value={col}>{col}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="credit">Coloana pentru Credit</Label>
+                        <select
+                          id="credit"
+                          value={columnMapping.credit}
+                          onChange={(e) => setColumnMapping({ ...columnMapping, credit: e.target.value })}
+                          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md"
+                        >
+                          <option value="">Selectează coloana...</option>
+                          {excelColumns.map((col) => (
+                            <option key={col} value={col}>{col}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex space-x-2 pt-2">
+                        <Button
+                          onClick={() => importExcelMutation.mutate()}
+                          disabled={
+                            importExcelMutation.isPending ||
+                            !columnMapping.accountCode ||
+                            !columnMapping.accountName ||
+                            !columnMapping.debit ||
+                            !columnMapping.credit
+                          }
+                          className="flex-1"
+                        >
+                          {importExcelMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                          Importă din Excel
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setShowMappingUI(false);
+                            setSelectedFile(null);
+                            setFileBase64("");
+                          }}
+                          disabled={importExcelMutation.isPending}
+                        >
+                          Anulează
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

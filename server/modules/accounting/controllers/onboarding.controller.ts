@@ -206,6 +206,78 @@ export class OnboardingController extends BaseController {
   }
 
   /**
+   * POST /api/accounting/onboarding/upload-preview
+   * Upload Excel file and get column preview
+   */
+  async uploadPreview(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const { fileBase64, fileName } = req.body;
+      
+      if (!fileBase64) {
+        throw { statusCode: 400, message: 'fileBase64 is required' };
+      }
+      
+      // Convert base64 to buffer
+      const buffer = Buffer.from(fileBase64, 'base64');
+      
+      // Parse Excel headers and preview
+      const result = this.onboardingService.parseExcelHeaders(buffer);
+      
+      return {
+        fileName: fileName || 'unknown.xlsx',
+        columns: result.columns,
+        preview: result.preview,
+      };
+    });
+  }
+
+  /**
+   * POST /api/accounting/onboarding/import-balances-excel
+   * Import opening balances from Excel with column mapping
+   */
+  async importBalancesFromExcel(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const { companyId, fileBase64, columnMapping, fiscalYear } = req.body;
+      
+      if (!companyId || !fileBase64 || !columnMapping || !fiscalYear) {
+        throw { 
+          statusCode: 400, 
+          message: 'companyId, fileBase64, columnMapping, and fiscalYear are required' 
+        };
+      }
+      
+      // Verify user has access to this company
+      this.verifyCompanyAccess(req, companyId);
+      
+      const userId = req.user?.id;
+      if (!userId) {
+        throw { statusCode: 401, message: 'User not authenticated' };
+      }
+      
+      // Convert base64 to buffer
+      const buffer = Buffer.from(fileBase64, 'base64');
+      
+      // Parse Excel with mapping
+      const balances = this.onboardingService.parseExcelWithMapping(buffer, columnMapping);
+      
+      // Import balances
+      const imported = await this.onboardingService.importOpeningBalances(
+        companyId,
+        balances,
+        fiscalYear,
+        'EXCEL',
+        userId
+      );
+      
+      return {
+        message: `Successfully imported ${imported.length} opening balances from Excel`,
+        count: imported.length,
+        balances: imported,
+      };
+    });
+  }
+
+  /**
    * Helper: Verify user has access to company
    */
   private verifyCompanyAccess(req: AuthenticatedRequest, companyId: string): void {

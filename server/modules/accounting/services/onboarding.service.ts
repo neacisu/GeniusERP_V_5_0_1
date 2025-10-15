@@ -20,6 +20,7 @@ import {
   InsertSyntheticAccount,
 } from '@shared/schema';
 import { AccountingSettingsService } from './accounting-settings.service';
+import * as XLSX from 'xlsx';
 
 export interface OnboardingStatus {
   started: boolean;
@@ -352,6 +353,93 @@ export class OnboardingService extends DrizzleService {
       });
     }
 
+    return balances;
+  }
+
+  /**
+   * Parse Excel file and extract column headers
+   */
+  parseExcelHeaders(fileBuffer: Buffer): { columns: string[]; preview: any[][] } {
+    const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
+    
+    // Convert to JSON with header row
+    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+    
+    if (data.length === 0) {
+      throw new Error('Fișierul Excel este gol');
+    }
+    
+    // First row is headers
+    const columns = data[0].map((col: any) => String(col || '').trim());
+    
+    // Get first 5 rows as preview (excluding header)
+    const preview = data.slice(1, 6);
+    
+    return { columns, preview };
+  }
+
+  /**
+   * Parse Excel file with column mapping for opening balances
+   */
+  parseExcelWithMapping(
+    fileBuffer: Buffer,
+    columnMapping: {
+      accountCode: string;
+      accountName: string;
+      debit: string;
+      credit: string;
+    }
+  ): ImportBalanceData[] {
+    const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
+    
+    // Convert to JSON with headers
+    const data = XLSX.utils.sheet_to_json(worksheet) as Record<string, any>[];
+    
+    if (data.length === 0) {
+      throw new Error('Fișierul Excel nu conține date');
+    }
+    
+    const balances: ImportBalanceData[] = [];
+    
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      
+      try {
+        const accountCode = String(row[columnMapping.accountCode] || '').trim();
+        const accountName = String(row[columnMapping.accountName] || '').trim();
+        const debit = String(row[columnMapping.debit] || '0').trim();
+        const credit = String(row[columnMapping.credit] || '0').trim();
+        
+        // Skip empty rows
+        if (!accountCode && !accountName) {
+          continue;
+        }
+        
+        // Skip if both debit and credit are zero
+        if (parseFloat(debit) === 0 && parseFloat(credit) === 0) {
+          continue;
+        }
+        
+        balances.push({
+          accountCode,
+          accountName,
+          debitBalance: debit,
+          creditBalance: credit,
+        });
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Eroare necunoscută';
+        throw new Error(`Eroare la procesarea rândului ${i + 2}: ${errorMsg}`);
+      }
+    }
+    
+    if (balances.length === 0) {
+      throw new Error('Nu s-au găsit înregistrări valide în fișierul Excel');
+    }
+    
     return balances;
   }
 }
