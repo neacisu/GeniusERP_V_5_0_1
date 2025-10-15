@@ -377,8 +377,8 @@ export default function AccountMappingsSection({ companyId, onChange }: AccountM
         <div className="space-y-2">
           <Label>TVA de Recuperat (4424)</Label>
           <Select
-            value={getMappingValue("VAT_RECEIVABLE")}
-            onValueChange={(value) => handleMappingChange("VAT_RECEIVABLE", value)}
+            value={getMappingValue("VAT_RECOVERABLE")}
+            onValueChange={(value) => handleMappingChange("VAT_RECOVERABLE", value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Selectează cont" />
