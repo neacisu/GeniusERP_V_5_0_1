@@ -12,9 +12,12 @@
  * - Progress tracking
  * - Retry logic automat
  * - Error handling granular
+ * 
+ * Enhanced cu Redis caching (TTL: 10min pentru batch job results)
  */
 
 import { accountingQueueService } from './accounting-queue.service';
+import { RedisService } from '../../../services/redis.service';
 import { log } from '../../../vite';
 
 /**
@@ -109,6 +112,43 @@ export interface BulkPaymentData {
  * Bulk Operations Service
  */
 export class BulkOperationsService {
+  private redisService: RedisService;
+
+  constructor() {
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
+  }
+
+  /**
+   * Get cached bulk operation result by job ID
+   */
+  async getBulkOperationResult(jobId: string): Promise<BulkOperationResult | null> {
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:bulk-op:result:${jobId}`;
+    if (this.redisService.isConnected()) {
+      return await this.redisService.getCached<BulkOperationResult>(cacheKey);
+    }
+    return null;
+  }
+
+  /**
+   * Cache bulk operation result
+   */
+  async cacheBulkOperationResult(jobId: string, result: BulkOperationResult): Promise<void> {
+    await this.ensureRedisConnection();
+    
+    if (this.redisService.isConnected()) {
+      const cacheKey = `acc:bulk-op:result:${jobId}`;
+      await this.redisService.setCached(cacheKey, result, 600); // 10 minutes TTL
+    }
+  }
+
   /**
    * ============================================================================
    * BULK INVOICE OPERATIONS
