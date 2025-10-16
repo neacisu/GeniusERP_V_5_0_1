@@ -24,6 +24,18 @@ export class PurchaseJournalExportService {
    * TOATE coloanele conform OMFP 2634/2015
    */
   public async exportToExcel(report: PurchaseJournalReport): Promise<Buffer> {
+    await this.ensureRedisConnection();
+    
+    const periodKey = `${new Date(report.periodStart).toISOString().split('T')[0]}_${new Date(report.periodEnd).toISOString().split('T')[0]}`;
+    const cacheKey = `acc:purchase-journal-excel:${report.companyId}:${periodKey}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<string>(cacheKey);
+      if (cached) {
+        return Buffer.from(cached, 'base64');
+      }
+    }
+    
     const csvLines: string[] = [];
     csvLines.push(`JURNAL DE CUMPĂRĂRI - ${report.periodLabel}`);
     csvLines.push(`Companie: ${report.companyName}`);
@@ -103,7 +115,13 @@ export class PurchaseJournalExportService {
       }
     }
     
-    return Buffer.from('\ufeff' + csvLines.join('\n'), 'utf-8');
+    const buffer = Buffer.from('\ufeff' + csvLines.join('\n'), 'utf-8');
+    
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, buffer.toString('base64'), 900); // 15min TTL
+    }
+    
+    return buffer;
   }
   
   public async exportToPDF(report: PurchaseJournalReport): Promise<Buffer> {
