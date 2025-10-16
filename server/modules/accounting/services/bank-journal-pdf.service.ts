@@ -40,6 +40,19 @@ export class BankJournalPDFService {
     companyName: string,
     initialBalance: number = 0
   ): Promise<string> {
+    await this.ensureRedisConnection();
+    
+    // Check cache first
+    const dateStr = `${startDate.toISOString().split('T')[0]}_${endDate.toISOString().split('T')[0]}`;
+    const cacheKey = `acc:bank-journal-pdf:${bankAccount.id}:${dateStr}`;
+    
+    if (this.redisService.isConnected()) {
+      const cachedPath = await this.redisService.getCached<string>(cacheKey);
+      if (cachedPath && fs.existsSync(cachedPath)) {
+        return cachedPath;
+      }
+    }
+    
     // RECOMANDARE 1: IMPLEMENTARE COMPLETĂ cu PDFKit
     const reportsDir = path.join(process.cwd(), 'reports', 'bank-journals');
     if (!fs.existsSync(reportsDir)) {
@@ -143,8 +156,14 @@ export class BankJournalPDFService {
         
         doc.end();
         
-        stream.on('finish', () => {
+        stream.on('finish', async () => {
           console.log(`✅ PDF jurnal bancă generat: ${filePath}`);
+          
+          // Cache the file path for 15 minutes
+          if (this.redisService.isConnected()) {
+            await this.redisService.setCached(cacheKey, filePath, 900); // 15min TTL
+          }
+          
           resolve(filePath);
         });
         
