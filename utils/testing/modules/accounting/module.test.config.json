@@ -1,0 +1,530 @@
+{
+  "moduleName": "accounting",
+  "displayName": "Accounting Module",
+  "description": "Suite de testare completă pentru modulul de contabilitate - contabilitate românească OMFP 1802/2014, jurnale, rapoarte financiare, închideri fiscale",
+  "version": "1.0.0",
+  "enabled": true,
+  "priority": 1,
+  "testTypes": {
+    "unit": {
+      "enabled": true,
+      "timeout": 10000,
+      "retry": 1,
+      "coverage": {
+        "target": 90,
+        "statements": 90,
+        "branches": 85,
+        "functions": 90,
+        "lines": 90
+      }
+    },
+    "integration": {
+      "enabled": true,
+      "timeout": 30000,
+      "retry": 2,
+      "requiresDb": true,
+      "requiresRedis": true,
+      "requiresBullMQ": true,
+      "setupTimeout": 60000
+    },
+    "e2e": {
+      "enabled": true,
+      "timeout": 120000,
+      "retry": 2,
+      "requiresServer": true,
+      "headless": true,
+      "slowMo": 0
+    },
+    "performance": {
+      "enabled": true,
+      "tools": ["k6", "artillery", "jmeter"],
+      "thresholds": {
+        "responseTime": {
+          "p50": 200,
+          "p95": 1000,
+          "p99": 3000
+        },
+        "errorRate": 1,
+        "throughput": 500
+      }
+    },
+    "security": {
+      "enabled": true,
+      "timeout": 20000,
+      "criticalOnly": false
+    }
+  },
+  "components": {
+    "services": [
+      {
+        "name": "AccountingService",
+        "file": "accounting.service.ts",
+        "testFile": "unit/services/accounting.service.test.ts",
+        "priority": "critical",
+        "coverage": 0,
+        "description": "Plan de conturi (clase, grupe, conturi sintetice/analitice)"
+      },
+      {
+        "name": "AccountingSettingsService",
+        "file": "accounting-settings.service.ts",
+        "testFile": "unit/services/accounting-settings.service.test.ts",
+        "priority": "high",
+        "coverage": 0,
+        "description": "Setări modul contabilitate (TVA, mapping-uri, perioade)"
+      },
+      {
+        "name": "FXRevaluationService",
+        "file": "fx-revaluation.service.ts",
+        "testFile": "unit/services/fx-revaluation.service.ts",
+        "priority": "high",
+        "coverage": 0,
+        "description": "Reevaluare sold în valută (BNR exchange rates)"
+      },
+      {
+        "name": "AccountMappingService",
+        "file": "account-mapping.service.ts",
+        "testFile": "unit/services/account-mapping.service.test.ts",
+        "priority": "high",
+        "coverage": 0,
+        "description": "Mapping-uri automate conturi contabile"
+      },
+      {
+        "name": "JournalService",
+        "file": "journal.service.ts",
+        "testFile": "unit/services/journal.service.test.ts",
+        "priority": "critical",
+        "coverage": 0,
+        "description": "Core - înregistrări contabile, tranzacții, ledger entries"
+      },
+      {
+        "name": "DepreciationCalculationService",
+        "file": "depreciation-calculation.service.ts",
+        "testFile": "unit/services/depreciation-calculation.service.test.ts",
+        "priority": "high",
+        "coverage": 0,
+        "description": "Calcul amortizare lunară mijloace fixe"
+      },
+      {
+        "name": "AccountingPeriodsService",
+        "file": "accounting-periods.service.ts",
+        "testFile": "unit/services/accounting-periods.service.test.ts",
+        "priority": "high",
+        "coverage": 0,
+        "description": "Gestionare perioade fiscale (lună/an)"
+      },
+      {
+        "name": "AccountingTemplatesService",
+        "file": "accounting-templates.service.ts",
+        "testFile": "unit/services/accounting-templates.service.test.ts",
+        "priority": "medium",
+        "coverage": 0,
+        "description": "Template-uri înregistrări contabile recurente"
+      },
+      {
+        "name": "PeriodLockService",
+        "file": "period-lock.service.ts",
+        "testFile": "unit/services/period-lock.service.test.ts",
+        "priority": "critical",
+        "coverage": 0,
+        "description": "Blocare perioade închise (prevent posting)"
+      },
+      {
+        "name": "OnboardingService",
+        "file": "onboarding.service.ts",
+        "testFile": "unit/services/onboarding.service.test.ts",
+        "priority": "high",
+        "coverage": 0,
+        "description": "Onboarding companie - import plan conturi + solduri inițiale"
+      },
+      {
+        "name": "BulkOperationsService",
+        "file": "bulk-operations.service.ts",
+        "testFile": "unit/services/bulk-operations.service.test.ts",
+        "priority": "high",
+        "coverage": 0,
+        "description": "Operații în bulk (facturi, plăți) - 100-10000 items"
+      },
+      {
+        "name": "SAFTExportService",
+        "file": "saft-export.service.ts",
+        "testFile": "unit/services/saft-export.service.test.ts",
+        "priority": "high",
+        "coverage": 0,
+        "description": "Export SAF-T (D406) XML pentru ANAF"
+      },
+      {
+        "name": "BankJournalPDFService",
+        "file": "bank-journal-pdf.service.ts",
+        "testFile": "unit/services/bank-journal-pdf.service.test.ts",
+        "priority": "medium",
+        "coverage": 0,
+        "description": "Generare PDF pentru jurnal de bancă"
+      },
+      {
+        "name": "CashRegisterPDFService",
+        "file": "cash-register-pdf.service.ts",
+        "testFile": "unit/services/cash-register-pdf.service.test.ts",
+        "priority": "medium",
+        "coverage": 0,
+        "description": "Generare PDF pentru registrul de casă"
+      },
+      {
+        "name": "SalesJournalExportService",
+        "file": "sales-journal-export.service.ts",
+        "testFile": "unit/services/sales-journal-export.service.test.ts",
+        "priority": "high",
+        "coverage": 0,
+        "description": "Export jurnal vânzări (Excel/PDF)"
+      },
+      {
+        "name": "PurchaseJournalExportService",
+        "file": "purchase-journal-export.service.ts",
+        "testFile": "unit/services/purchase-journal-export.service.test.ts",
+        "priority": "high",
+        "coverage": 0,
+        "description": "Export jurnal cumpărări (Excel/PDF)"
+      },
+      {
+        "name": "JournalExportService",
+        "file": "journal-export.service.ts",
+        "testFile": "unit/services/journal-export.service.test.ts",
+        "priority": "high",
+        "coverage": 0,
+        "description": "Export jurnal general (PDF/Excel)"
+      },
+      {
+        "name": "GeneralJournalPDFService",
+        "file": "general-journal-pdf.service.ts",
+        "testFile": "unit/services/general-journal-pdf.service.test.ts",
+        "priority": "medium",
+        "coverage": 0,
+        "description": "Generare PDF jurnal general"
+      },
+      {
+        "name": "GeneralJournalExcelService",
+        "file": "general-journal-excel.service.ts",
+        "testFile": "unit/services/general-journal-excel.service.test.ts",
+        "priority": "medium",
+        "coverage": 0,
+        "description": "Generare Excel jurnal general"
+      }
+    ],
+    "controllers": [
+      {
+        "name": "AccountingController",
+        "file": "accounting.controller.ts",
+        "testFile": "unit/controllers/accounting.controller.test.ts",
+        "priority": "critical",
+        "coverage": 0,
+        "description": "Plan conturi + rapoarte financiare (balanță, bilanț, profit/pierdere)"
+      },
+      {
+        "name": "AccountingSettingsController",
+        "file": "accounting-settings.controller.ts",
+        "testFile": "unit/controllers/accounting-settings.controller.test.ts",
+        "priority": "high",
+        "coverage": 0
+      },
+      {
+        "name": "BankJournalController",
+        "file": "bank-journal.controller.ts",
+        "testFile": "unit/controllers/bank-journal.controller.test.ts",
+        "priority": "high",
+        "coverage": 0
+      },
+      {
+        "name": "CashRegisterController",
+        "file": "cash-register.controller.ts",
+        "testFile": "unit/controllers/cash-register.controller.test.ts",
+        "priority": "high",
+        "coverage": 0
+      },
+      {
+        "name": "FiscalClosureController",
+        "file": "fiscal-closure.controller.ts",
+        "testFile": "unit/controllers/fiscal-closure.controller.test.ts",
+        "priority": "critical",
+        "coverage": 0
+      },
+      {
+        "name": "GeneralJournalController",
+        "file": "general-journal.controller.ts",
+        "testFile": "unit/controllers/general-journal.controller.test.ts",
+        "priority": "high",
+        "coverage": 0
+      },
+      {
+        "name": "JournalController",
+        "file": "journal.controller.ts",
+        "testFile": "unit/controllers/journal.controller.test.ts",
+        "priority": "critical",
+        "coverage": 0
+      },
+      {
+        "name": "ManualEntriesController",
+        "file": "manual-entries.controller.ts",
+        "testFile": "unit/controllers/manual-entries.controller.test.ts",
+        "priority": "high",
+        "coverage": 0
+      },
+      {
+        "name": "NoteContabilController",
+        "file": "note-contabil.controller.ts",
+        "testFile": "unit/controllers/note-contabil.controller.test.ts",
+        "priority": "medium",
+        "coverage": 0
+      },
+      {
+        "name": "OnboardingController",
+        "file": "onboarding.controller.ts",
+        "testFile": "unit/controllers/onboarding.controller.test.ts",
+        "priority": "high",
+        "coverage": 0
+      },
+      {
+        "name": "PurchaseJournalController",
+        "file": "purchase-journal.controller.ts",
+        "testFile": "unit/controllers/purchase-journal.controller.test.ts",
+        "priority": "high",
+        "coverage": 0
+      },
+      {
+        "name": "SalesJournalController",
+        "file": "sales-journal.controller.ts",
+        "testFile": "unit/controllers/sales-journal.controller.test.ts",
+        "priority": "high",
+        "coverage": 0
+      }
+    ],
+    "workers": [
+      {
+        "name": "AccountingWorkerProcessor",
+        "file": "accounting-worker.processor.ts",
+        "testFile": "unit/workers/accounting-worker.processor.test.ts",
+        "priority": "critical",
+        "coverage": 0,
+        "description": "BullMQ worker - procesare 19 job types async"
+      }
+    ]
+  },
+  "integrationTests": [
+    {
+      "name": "Fiscal Closure Flow (Monthly)",
+      "file": "integration/fiscal-monthly-closure.test.ts",
+      "description": "Închidere fiscală lunară: depreciere + FX revaluation + VAT closure + period lock"
+    },
+    {
+      "name": "Fiscal Closure Flow (Yearly)",
+      "file": "integration/fiscal-yearly-closure.test.ts",
+      "description": "Închidere fiscală anuală: 12 luni + year-end closure entries"
+    },
+    {
+      "name": "Invoice-Payment Flow",
+      "file": "integration/invoice-payment-flow.test.ts",
+      "description": "Flux complet: creare factură → înregistrare contabilă → încasare → reconciliere"
+    },
+    {
+      "name": "Journal Generation Flow",
+      "file": "integration/journal-generation-flow.test.ts",
+      "description": "Generare jurnale: sales + purchase + general + export PDF/Excel"
+    },
+    {
+      "name": "Onboarding Flow",
+      "file": "integration/onboarding-flow.test.ts",
+      "description": "Onboarding complet: import plan conturi + solduri inițiale + validare + finalizare"
+    },
+    {
+      "name": "Bulk Operations Flow",
+      "file": "integration/bulk-operations-flow.test.ts",
+      "description": "Operații bulk: 1000 facturi + 1000 plăți cu progress tracking"
+    },
+    {
+      "name": "Redis Caching Integration",
+      "file": "integration/redis-caching.test.ts",
+      "description": "Testare Redis cache: hits/misses, TTL, invalidation pentru toate cele 19 servicii"
+    },
+    {
+      "name": "BullMQ Queue Integration",
+      "file": "integration/bullmq-queue.test.ts",
+      "description": "Testare BullMQ: job processing, retry logic, error handling pentru 19 job types"
+    }
+  ],
+  "e2eTests": [
+    {
+      "name": "Monthly Closing Workflow",
+      "file": "e2e/monthly-closing.test.ts",
+      "description": "Workflow complet închidere fiscală lunară în UI"
+    },
+    {
+      "name": "Bulk Invoice Creation",
+      "file": "e2e/bulk-invoice-creation.test.ts",
+      "description": "Upload Excel + procesare 100+ facturi + verificare rezultate"
+    },
+    {
+      "name": "Financial Reports Generation",
+      "file": "e2e/financial-reports-generation.test.ts",
+      "description": "Generare balanță de verificare + bilanț + profit/pierdere + export"
+    },
+    {
+      "name": "Chart of Accounts Management",
+      "file": "e2e/chart-of-accounts-management.test.ts",
+      "description": "CRUD plan de conturi: clase, grupe, sintetice, analitice"
+    }
+  ],
+  "performanceTests": {
+    "k6": [
+      {
+        "name": "Bulk Invoice Creation",
+        "file": "performance/k6/bulk-invoice-creation.js",
+        "vus": 50,
+        "duration": "10m",
+        "description": "Load test: 100-1000-10000 invoices"
+      },
+      {
+        "name": "Fiscal Closure Stress",
+        "file": "performance/k6/fiscal-closure-stress.js",
+        "vus": 20,
+        "duration": "15m",
+        "description": "Monthly/yearly closure cu 10K+ transactions"
+      },
+      {
+        "name": "Journal Export Load",
+        "file": "performance/k6/journal-export-load.js",
+        "vus": 100,
+        "duration": "5m",
+        "description": "Exports concurente PDF/Excel pentru 1K-10K transactions"
+      },
+      {
+        "name": "Financial Reports Generation",
+        "file": "performance/k6/financial-reports.js",
+        "vus": 50,
+        "duration": "5m",
+        "description": "Balanță + Bilanț + Profit/Pierdere cu 1000+ conturi"
+      }
+    ]
+  },
+  "securityTests": [
+    {
+      "name": "Rate Limiting Enforcement",
+      "file": "security/rate-limiting.test.ts",
+      "severity": "critical",
+      "description": "Verificare 7 tipuri de rate limiters: read, heavy, invoice, payment, reconciliation, fiscal, export"
+    },
+    {
+      "name": "Authorization & RBAC",
+      "file": "security/authorization.test.ts",
+      "severity": "critical",
+      "description": "Verificare permisiuni: accountant, admin, citire/scriere pe toate endpoint-urile"
+    },
+    {
+      "name": "Input Validation",
+      "file": "security/input-validation.test.ts",
+      "severity": "high",
+      "description": "Validare Zod: SQL injection, XSS, invalid amounts, dates"
+    },
+    {
+      "name": "Period Lock Security",
+      "file": "security/period-lock.test.ts",
+      "severity": "critical",
+      "description": "Imposibilitate posting în perioade închise"
+    }
+  ],
+  "dependencies": {
+    "modules": ["auth", "company"],
+    "external": [
+      "drizzle-orm",
+      "pdfkit",
+      "xlsx",
+      "archiver",
+      "bullmq",
+      "ioredis",
+      "zod",
+      "bcrypt"
+    ]
+  },
+  "environment": {
+    "variables": {
+      "TEST_DATABASE_URL": "required",
+      "TEST_REDIS_URL": "required",
+      "TEST_API_URL": "http://localhost:5000",
+      "TEST_COMPANY_ID": "1",
+      "TEST_ACCOUNTANT_TOKEN": "required",
+      "TEST_BNR_API_URL": "https://www.bnr.ro/nbrfxrates.xml"
+    }
+  },
+  "monitoring": {
+    "grafana": {
+      "dashboard": "accounting-module-tests",
+      "url": "http://localhost:3000/d/accounting-tests"
+    },
+    "loki": {
+      "enabled": true,
+      "labels": {
+        "module": "accounting",
+        "environment": "test"
+      }
+    },
+    "sentry": {
+      "enabled": true,
+      "dsn": "${SENTRY_DSN}",
+      "environment": "test"
+    },
+    "prometheus": {
+      "enabled": true,
+      "port": 9090,
+      "metrics": [
+        "test_duration_seconds",
+        "test_success_total",
+        "test_failure_total",
+        "test_coverage_percent",
+        "accounting_job_duration_seconds",
+        "redis_cache_hit_rate",
+        "bullmq_job_success_rate"
+      ]
+    }
+  },
+  "reporting": {
+    "formats": ["html", "json", "junit", "markdown"],
+    "outputDir": "utils/testing/modules/accounting/reports",
+    "screenshots": {
+      "onFailure": true,
+      "onSuccess": false
+    },
+    "video": {
+      "enabled": false,
+      "onFailure": true
+    }
+  },
+  "hooks": {
+    "beforeAll": [
+      "./hooks/setup-test-db.ts",
+      "./hooks/setup-redis.ts",
+      "./hooks/setup-bullmq.ts"
+    ],
+    "afterAll": [
+      "./hooks/cleanup-test-db.ts",
+      "./hooks/cleanup-redis.ts",
+      "./hooks/cleanup-bullmq.ts"
+    ],
+    "beforeEach": [
+      "./hooks/reset-mocks.ts",
+      "./hooks/clear-redis-cache.ts"
+    ],
+    "afterEach": [
+      "./hooks/clear-bullmq-jobs.ts"
+    ]
+  },
+  "metadata": {
+    "author": "Testing Team",
+    "created": "2025-10-16",
+    "lastUpdated": "2025-10-16",
+    "tags": ["accounting", "romanian-accounting", "OMFP-1802", "fiscal-closure", "journals", "financial-reports", "bullmq", "redis"],
+    "documentation": "README.md",
+    "totalServices": 19,
+    "totalControllers": 12,
+    "totalWorkers": 1,
+    "totalJobTypes": 19,
+    "totalRoutes": 14
+  }
+}
+
