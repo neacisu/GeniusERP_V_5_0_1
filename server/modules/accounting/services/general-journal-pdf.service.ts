@@ -3,12 +3,14 @@
  * 
  * Generează rapoarte PDF pentru Registrul Jurnal (General Journal) conform OMFP 2634/2015
  * Format: Registru cronologic cu toate coloanele obligatorii conform standardelor contabile
+ * Enhanced cu Redis caching pentru query-uri grele (TTL: 10min)
  */
 
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import { getClient } from '../../../common/drizzle';
+import { RedisService } from '../../../services/redis.service';
 
 /**
  * Interface pentru înregistrările din Registrul Jurnal
@@ -53,6 +55,17 @@ interface GeneralJournalReportOptions {
  * Serviciu pentru generarea PDF-ului Registrului Jurnal conform OMFP 2634/2015
  */
 export class GeneralJournalPDFService {
+  private redisService: RedisService;
+
+  constructor() {
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
+  }
 
   /**
    * Generează PDF pentru Registrul Jurnal conform OMFP 2634/2015
@@ -116,6 +129,21 @@ export class GeneralJournalPDFService {
    * Obține înregistrările din jurnal pentru perioada specificată
    */
   private async getJournalEntries(options: GeneralJournalReportOptions): Promise<JournalEntry[]> {
+    await this.ensureRedisConnection();
+    
+    // Create cache key
+    const dateStr = `${options.startDate.toISOString().split('T')[0]}_${options.endDate.toISOString().split('T')[0]}`;
+    const typesStr = options.journalTypes?.join('_') || 'all';
+    const cacheKey = `acc:general-journal:${options.companyId}:${dateStr}:${typesStr}:${options.detailLevel}`;
+    
+    // Check cache first (TTL: 10 minutes)
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<JournalEntry[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
     const sql = getClient();
 
     // Construiește query-ul în funcție de opțiuni
@@ -167,7 +195,7 @@ export class GeneralJournalPDFService {
 
     const result = await sql.unsafe(query, params);
 
-    return result.map(row => ({
+    const entries = result.map(row => ({
       id: row.id,
       journalNumber: row.journal_number || 'N/A',
       entryDate: new Date(row.entry_date),
@@ -179,6 +207,13 @@ export class GeneralJournalPDFService {
       type: row.type,
       lines: row.lines || []
     }));
+    
+    // Cache for 10 minutes
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, entries, 600);
+    }
+    
+    return entries;
   }
 
   /**

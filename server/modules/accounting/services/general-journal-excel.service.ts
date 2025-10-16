@@ -3,11 +3,13 @@
  * 
  * Generează rapoarte Excel pentru Registrul Jurnal compatible cu pivot tables
  * Implementează export-ul în format Excel conform OMFP 2634/2015
+ * Enhanced cu Redis caching pentru query-uri grele (TTL: 10min)
  */
 
 import fs from 'fs';
 import path from 'path';
 import { getClient } from '../../../common/drizzle';
+import { RedisService } from '../../../services/redis.service';
 
 // Dynamic import pentru XLSX (pattern existent în proiect)
 let XLSX: any;
@@ -55,6 +57,17 @@ interface ExcelJournalEntry {
  * Serviciu pentru export Excel al Registrului Jurnal
  */
 export class GeneralJournalExcelService {
+  private redisService: RedisService;
+
+  constructor() {
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
+  }
 
   /**
    * Generează fișier Excel pentru Registrul Jurnal
@@ -99,6 +112,21 @@ export class GeneralJournalExcelService {
    * Obține datele pentru export Excel (format plat pentru pivot tables)
    */
   private async getJournalEntriesForExcel(options: ExcelExportOptions): Promise<ExcelJournalEntry[]> {
+    await this.ensureRedisConnection();
+    
+    // Create cache key
+    const dateStr = `${options.startDate.toISOString().split('T')[0]}_${options.endDate.toISOString().split('T')[0]}`;
+    const typesStr = options.journalTypes?.join('_') || 'all';
+    const cacheKey = `acc:general-journal-excel:${options.companyId}:${dateStr}:${typesStr}`;
+    
+    // Check cache first (TTL: 10 minutes)
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<ExcelJournalEntry[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
     const sql = getClient();
 
     let whereClause = `
