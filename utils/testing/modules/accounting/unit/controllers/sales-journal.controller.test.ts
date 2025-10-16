@@ -296,7 +296,7 @@ describe('SalesJournalController', () => {
       ];
 
       mockSalesJournalService.getCustomerInvoice.mockResolvedValue(mockInvoice as any);
-      (mockSalesJournalService as any).getInvoicePayments = jest.fn().mockResolvedValue(mockPayments);
+      (mockSalesJournalService as any).getInvoicePayments = jest.fn<any>().mockResolvedValue(mockPayments);
 
       await controller.getInvoicePayments(mockReq as AuthenticatedRequest, mockRes as Response);
 

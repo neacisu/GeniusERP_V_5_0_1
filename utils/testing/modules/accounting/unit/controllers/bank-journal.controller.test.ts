@@ -93,7 +93,7 @@ describe('BankJournalController', () => {
   });
 
   describe('Bank Transactions', () => {
-    it('should record bank deposit', async () => {
+    it('should create bank deposit', async () => {
       mockReq.body = {
         bankAccountId: 'account-1',
         amount: 10000,
@@ -102,14 +102,14 @@ describe('BankJournalController', () => {
       };
 
       const mockTransactionId = 'transaction-789';
-      mockBankJournalService.recordDeposit = jest.fn().mockResolvedValue(mockTransactionId);
+      (mockBankJournalService as any).createDeposit = jest.fn().mockResolvedValue(mockTransactionId);
 
-      await controller.recordDeposit(mockReq as AuthenticatedRequest, mockRes as Response);
+      await controller.createDeposit(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(mockRes.status).toHaveBeenCalledWith(200);
     });
 
-    it('should record bank payment', async () => {
+    it('should create bank payment', async () => {
       mockReq.body = {
         bankAccountId: 'account-1',
         amount: 5000,
@@ -118,9 +118,9 @@ describe('BankJournalController', () => {
       };
 
       const mockTransactionId = 'transaction-790';
-      mockBankJournalService.recordPayment = jest.fn().mockResolvedValue(mockTransactionId);
+      (mockBankJournalService as any).createPayment = jest.fn().mockResolvedValue(mockTransactionId);
 
-      await controller.recordPayment(mockReq as AuthenticatedRequest, mockRes as Response);
+      await controller.createPayment(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(mockRes.status).toHaveBeenCalledWith(200);
     });

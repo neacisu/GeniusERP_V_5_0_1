@@ -100,9 +100,9 @@ describe('CashRegisterController', () => {
       };
 
       const mockTransactionId = 'transaction-456';
-      mockCashRegisterService.recordReceipt = jest.fn().mockResolvedValue(mockTransactionId);
+      (mockCashRegisterService as any).recordCashReceipt = jest.fn().mockResolvedValue(mockTransactionId);
 
-      await controller.recordReceipt(mockReq as AuthenticatedRequest, mockRes as Response);
+      await controller.recordCashReceipt(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(mockRes.status).toHaveBeenCalledWith(200);
     });
@@ -116,31 +116,27 @@ describe('CashRegisterController', () => {
       };
 
       const mockTransactionId = 'transaction-457';
-      mockCashRegisterService.recordPayment = jest.fn().mockResolvedValue(mockTransactionId);
+      (mockCashRegisterService as any).recordCashPayment = jest.fn().mockResolvedValue(mockTransactionId);
 
-      await controller.recordPayment(mockReq as AuthenticatedRequest, mockRes as Response);
+      await controller.recordCashPayment(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(mockRes.status).toHaveBeenCalledWith(200);
     });
   });
 
-  describe('Daily Closing', () => {
-    it('should get daily closing report', async () => {
+  describe('Cash Register Balance', () => {
+    it('should get cash register balance', async () => {
       mockReq.params = { id: 'register-1' };
-      mockReq.query = { date: '2024-01-15' };
 
-      const mockClosing = {
+      const mockBalance = {
         registerId: 'register-1',
-        date: '2024-01-15',
-        openingBalance: 5000,
-        receipts: 3000,
-        payments: 1000,
-        closingBalance: 7000
+        currentBalance: 7000,
+        currency: 'RON'
       };
 
-      mockCashRegisterService.getDailyClosing = jest.fn().mockResolvedValue(mockClosing);
+      (mockCashRegisterService as any).getRegisterBalance = jest.fn().mockResolvedValue(mockBalance);
 
-      await controller.getDailyClosing(mockReq as AuthenticatedRequest, mockRes as Response);
+      await (controller as any).getRegisterBalance(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(mockRes.status).toHaveBeenCalledWith(200);
     });
