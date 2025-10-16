@@ -30,6 +30,19 @@ export class SalesJournalExportService {
    * Generează fișier .xlsx conform modelului ANAF
    */
   public async exportToExcel(report: SalesJournalReport): Promise<Buffer> {
+    await this.ensureRedisConnection();
+    
+    // Check cache first
+    const periodKey = `${new Date(report.periodStart).toISOString().split('T')[0]}_${new Date(report.periodEnd).toISOString().split('T')[0]}`;
+    const cacheKey = `acc:sales-journal-excel:${report.companyId}:${periodKey}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<string>(cacheKey);
+      if (cached) {
+        return Buffer.from(cached, 'base64');
+      }
+    }
+    
     try {
       // NOTE: Acest export generează un CSV pentru moment
       // Pentru Excel real (.xlsx) trebuie instalat: npm install xlsx
@@ -144,7 +157,14 @@ export class SalesJournalExportService {
       }
       
       const csvContent = csvLines.join('\n');
-      return Buffer.from('\ufeff' + csvContent, 'utf-8'); // BOM pentru Excel românesc
+      const buffer = Buffer.from('\ufeff' + csvContent, 'utf-8'); // BOM pentru Excel românesc
+      
+      // Cache the buffer for 15 minutes
+      if (this.redisService.isConnected()) {
+        await this.redisService.setCached(cacheKey, buffer.toString('base64'), 900); // 15min TTL
+      }
+      
+      return buffer;
     } catch (error) {
       console.error('Error exporting to Excel:', error);
       throw new Error('Failed to export to Excel');
@@ -156,7 +176,20 @@ export class SalesJournalExportService {
    * Generează fișier PDF conform modelului ANAF
    */
   public async exportToPDF(report: SalesJournalReport): Promise<Buffer> {
-    try {
+    await this.ensureRedisConnection();
+    
+    // Check cache first
+    const periodKey = `${new Date(report.periodStart).toISOString().split('T')[0]}_${new Date(report.periodEnd).toISOString().split('T')[0]}`;
+    const cacheKey = `acc:sales-journal-pdf:${report.companyId}:${periodKey}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<string>(cacheKey);
+      if (cached) {
+        return Buffer.from(cached, 'base64');
+      }
+    }
+    
+    try{
       // NOTE: Pentru PDF real trebuie instalat: npm install pdfkit
       // Placeholder implementation - returnează HTML
       
@@ -164,7 +197,14 @@ export class SalesJournalExportService {
       
       // Returnează HTML ca buffer pentru moment
       // În versiune completă ar folosi pdfkit sau puppeteer pentru PDF real
-      return Buffer.from(html, 'utf-8');
+      const buffer = Buffer.from(html, 'utf-8');
+      
+      // Cache the buffer for 15 minutes
+      if (this.redisService.isConnected()) {
+        await this.redisService.setCached(cacheKey, buffer.toString('base64'), 900); // 15min TTL
+      }
+      
+      return buffer;
     } catch (error) {
       console.error('Error exporting to PDF:', error);
       throw new Error('Failed to export to PDF');
