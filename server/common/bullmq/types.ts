@@ -259,6 +259,26 @@ export interface GenerateIncomeStatementJob extends BaseJobPayload {
   userId: string;
 }
 
+export interface ImportChartOfAccountsJob extends BaseJobPayload {
+  companyId: string;
+  chartType: 'default' | 'custom';
+  userId: string;
+}
+
+export interface ImportOpeningBalancesJob extends BaseJobPayload {
+  companyId: string;
+  balances: any[];
+  fiscalYear: number;
+  userId: string;
+}
+
+export interface ImportBalancesExcelJob extends BaseJobPayload {
+  companyId: string;
+  fileContent: string; // Base64 encoded
+  fiscalYear: number;
+  userId: string;
+}
+
 /**
  * Job name to payload type mapping
  * 
@@ -307,6 +327,11 @@ export interface JobTypeMap {
   'generate-trial-balance': GenerateTrialBalanceJob;
   'generate-balance-sheet': GenerateBalanceSheetJob;
   'generate-income-statement': GenerateIncomeStatementJob;
+  
+  // Onboarding jobs
+  'import-chart-of-accounts': ImportChartOfAccountsJob;
+  'import-opening-balances': ImportOpeningBalancesJob;
+  'import-balances-excel': ImportBalancesExcelJob;
   
   // Reporting
   'generate-report': ReportGenerationJob;

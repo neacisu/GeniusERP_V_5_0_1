@@ -1,18 +1,19 @@
 /**
  * Accounting Settings Service
  * 
- * Consolidated service for managing all accounting settings:
- * - General settings
- * - VAT settings
- * - Account mappings
- * - Account relationships
- * - Document counters
- * - Fiscal periods
- * - Opening balances
+ * Consolidated service for managing all accounting settings with Redis caching:
+ * - General settings (TTL: 6h)
+ * - VAT settings (TTL: 6h)
+ * - Account mappings (TTL: 24h)
+ * - Account relationships (TTL: 12h)
+ * - Document counters (TTL: 1h)
+ * - Fiscal periods (TTL: 24h)
+ * - Opening balances (no cache - frequently updated)
  */
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 import { eq, and, desc, sql, like, or } from 'drizzle-orm';
+import { RedisService } from '../../../services/redis.service';
 import {
   accountingSettings,
   vatSettings,
@@ -55,10 +56,36 @@ export interface OpeningBalancesValidation {
 }
 
 export class AccountingSettingsService extends DrizzleService {
+  private redisService: RedisService;
+
+  constructor() {
+    super();
+    this.redisService = new RedisService();
+  }
+
   /**
-   * Get all accounting settings for a company
+   * Ensure Redis connection
+   */
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
+  }
+
+  /**
+   * Get all accounting settings for a company with Redis caching
    */
   async getSettings(companyId: string): Promise<AllAccountingSettings> {
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:settings:all:${companyId}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<AllAccountingSettings>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
     // Fetch all settings in parallel
     const [
       generalSettings,
@@ -76,7 +103,7 @@ export class AccountingSettingsService extends DrizzleService {
       this.getFiscalPeriods(companyId),
     ]);
 
-    return {
+    const settings = {
       generalSettings,
       vatSettings: vatSettingsData,
       accountMappings: accountMappingsData,
@@ -84,17 +111,52 @@ export class AccountingSettingsService extends DrizzleService {
       documentCounters: documentCountersData,
       fiscalPeriods: fiscalPeriodsData,
     };
+
+    // Cache for 6 hours
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, settings, 21600);
+    }
+
+    return settings;
   }
 
   /**
-   * Get general accounting settings
+   * Get general accounting settings with Redis caching
    */
   async getGeneralSettings(companyId: string): Promise<AccountingSettings | null> {
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:settings:general:${companyId}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<AccountingSettings | null>(cacheKey);
+      if (cached !== undefined) {
+        return cached;
+      }
+    }
     const [settings] = await this.query((db) =>
       db.select().from(accountingSettings).where(eq(accountingSettings.companyId, companyId)).limit(1)
     );
 
-    return settings || null;
+    const result = settings || null;
+
+    // Cache for 6 hours
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, result, 21600);
+    }
+
+    return result;
+  }
+
+  /**
+   * Invalidate all settings cache for a company
+   */
+  async invalidateSettingsCache(companyId: string): Promise<void> {
+    await this.ensureRedisConnection();
+    
+    if (this.redisService.isConnected()) {
+      await this.redisService.invalidatePattern(`acc:settings:*:${companyId}`);
+    }
   }
 
   /**
@@ -117,6 +179,10 @@ export class AccountingSettingsService extends DrizzleService {
           .where(eq(accountingSettings.companyId, companyId))
           .returning()
       );
+      
+      // Invalidate cache
+      await this.invalidateSettingsCache(companyId);
+      
       return updated;
     } else {
       // Create new settings
@@ -130,6 +196,10 @@ export class AccountingSettingsService extends DrizzleService {
           } as InsertAccountingSettings)
           .returning()
       );
+      
+      // Invalidate cache
+      await this.invalidateSettingsCache(companyId);
+      
       return created;
     }
   }
