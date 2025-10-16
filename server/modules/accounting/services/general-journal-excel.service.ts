@@ -171,7 +171,7 @@ export class GeneralJournalExcelService {
 
     const result = await sql.unsafe(query, params);
 
-    return result.map(row => ({
+    const entries = result.map(row => ({
       rowNumber: row.row_number,
       journalNumber: row.journal_number || 'N/A',
       entryDate: new Date(row.entry_date).toLocaleDateString('ro-RO'),
@@ -187,6 +187,13 @@ export class GeneralJournalExcelService {
       journalType: row.journal_type,
       entryId: row.entry_id
     }));
+    
+    // Cache for 10 minutes
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, entries, 600);
+    }
+    
+    return entries;
   }
 
   /**
