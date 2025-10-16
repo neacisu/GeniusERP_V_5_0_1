@@ -8,6 +8,7 @@ import { AuthenticatedRequest } from "../../../common/middleware/auth-types";
 import { Response } from "express";
 import { 
   accountingReadRateLimiter,
+  accountingHeavyRateLimiter,
   reconciliationRateLimiter
 } from "../../../middlewares/rate-limit.middleware";
 
@@ -34,7 +35,7 @@ export function setupBankJournalRoutes() {
   /**
    * Get bank account by ID
    */
-  router.get("/bank-accounts/:id", (req, res) => {
+  router.get("/bank-accounts/:id", accountingReadRateLimiter, (req, res) => {
     bankJournalController.getBankAccount(req as AuthenticatedRequest, res);
   });
   
@@ -44,6 +45,7 @@ export function setupBankJournalRoutes() {
    */
   router.post(
     "/bank-accounts", 
+    accountingHeavyRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       bankJournalController.createBankAccount(req as AuthenticatedRequest, res);
@@ -56,6 +58,7 @@ export function setupBankJournalRoutes() {
    */
   router.put(
     "/bank-accounts/:id", 
+    accountingHeavyRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       bankJournalController.updateBankAccount(req as AuthenticatedRequest, res);
@@ -82,6 +85,7 @@ export function setupBankJournalRoutes() {
    */
   router.post(
     "/bank-transactions/deposits", 
+    accountingHeavyRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       bankJournalController.createDeposit(req as AuthenticatedRequest, res);
@@ -94,6 +98,7 @@ export function setupBankJournalRoutes() {
    */
   router.post(
     "/bank-transactions/payments", 
+    accountingHeavyRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       bankJournalController.createPayment(req as AuthenticatedRequest, res);
@@ -106,6 +111,7 @@ export function setupBankJournalRoutes() {
    */
   router.post(
     "/bank-transactions/transfers", 
+    accountingHeavyRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       bankJournalController.createBankTransfer(req as AuthenticatedRequest, res);
@@ -118,6 +124,7 @@ export function setupBankJournalRoutes() {
    */
   router.post(
     "/bank-statements/import/:bankAccountId", 
+    accountingHeavyRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       bankJournalController.importBankStatement(req as AuthenticatedRequest, res);
@@ -139,7 +146,7 @@ export function setupBankJournalRoutes() {
   /**
    * Get bank account balance as of specific date
    */
-  router.get("/bank-accounts/:id/balance", (req, res) => {
+  router.get("/bank-accounts/:id/balance", accountingReadRateLimiter, (req, res) => {
     bankJournalController.getBankAccountBalance(req as AuthenticatedRequest, res);
   });
   
