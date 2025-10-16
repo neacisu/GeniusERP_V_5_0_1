@@ -29,14 +29,14 @@ export function setupPurchaseJournalRoutes() {
   /**
    * Get all supplier invoices with pagination and filtering
    */
-  router.get("/invoices", (req, res) => {
+  router.get("/invoices", accountingReadRateLimiter, (req, res) => {
     purchaseJournalController.getSupplierInvoices(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get supplier invoice by ID
    */
-  router.get("/invoices/:id", (req, res) => {
+  router.get("/invoices/:id", accountingReadRateLimiter, (req, res) => {
     purchaseJournalController.getSupplierInvoice(req as AuthenticatedRequest, res);
   });
   

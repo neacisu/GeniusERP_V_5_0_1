@@ -24,6 +24,7 @@ const requireAccountant = AuthGuard.roleGuard(['admin', 'administrator', 'accoun
  */
 router.post(
   '/reopen/:periodId',
+  fiscalClosureRateLimiter,
   AuthGuard.roleGuard(['admin', 'administrator']),
   fiscalClosureController.reopenPeriod.bind(fiscalClosureController)
 );
@@ -35,6 +36,7 @@ router.post(
  */
 router.get(
   '/periods',
+  accountingReadRateLimiter,
   requireAccountant,
   fiscalClosureController.getPeriods.bind(fiscalClosureController)
 );
@@ -46,6 +48,7 @@ router.get(
  */
 router.get(
   '/period/:periodId',
+  accountingReadRateLimiter,
   requireAccountant,
   fiscalClosureController.getPeriod.bind(fiscalClosureController)
 );
@@ -57,6 +60,7 @@ router.get(
  */
 router.post(
   '/generate-periods',
+  fiscalClosureRateLimiter,
   requireAccountant,
   fiscalClosureController.generateYearlyPeriods.bind(fiscalClosureController)
 );
@@ -68,6 +72,7 @@ router.post(
  */
 router.post(
   '/validate-period',
+  accountingReadRateLimiter,
   requireAccountant,
   fiscalClosureController.validatePeriodConsistency.bind(fiscalClosureController)
 );

@@ -29,14 +29,14 @@ export function setupSalesJournalRoutes() {
   /**
    * Get all customer invoices with pagination and filtering
    */
-  router.get("/invoices", (req, res) => {
+  router.get("/invoices", accountingReadRateLimiter, (req, res) => {
     salesJournalController.getCustomerInvoices(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get invoice by ID
    */
-  router.get("/invoices/:id", (req, res) => {
+  router.get("/invoices/:id", accountingReadRateLimiter, (req, res) => {
     salesJournalController.getCustomerInvoice(req as AuthenticatedRequest, res);
   });
   
