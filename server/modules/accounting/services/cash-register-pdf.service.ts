@@ -175,8 +175,14 @@ export class CashRegisterPDFService {
         
         doc.end();
         
-        stream.on('finish', () => {
+        stream.on('finish', async () => {
           console.log(`✅ PDF generat: ${filePath}`);
+          
+          // Cache the file path for 15 minutes
+          if (this.redisService.isConnected()) {
+            await this.redisService.setCached(cacheKey, filePath, 900); // 15min TTL
+          }
+          
           resolve(filePath);
         });
         
