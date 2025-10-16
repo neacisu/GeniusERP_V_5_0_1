@@ -5,7 +5,7 @@ import { JwtAuthMode } from "../../auth/constants/auth-mode.enum";
 import { AuthenticatedRequest } from "../../../common/middleware/auth-types";
 import { Response } from "express";
 import { JournalController } from "../controllers/journal.controller";
-import { accountingReadRateLimiter } from "../../../middlewares/rate-limit.middleware";
+import { accountingReadRateLimiter, accountingHeavyRateLimiter } from "../../../middlewares/rate-limit.middleware";
 
 /**
  * Setup ledger routes for direct transaction recording and management
@@ -22,7 +22,7 @@ export function setupLedgerRoutes() {
    * Record a new transaction
    * POST /api/accounting/ledger/transactions
    */
-  router.post("/transactions", (req, res) => {
+  router.post("/transactions", accountingHeavyRateLimiter, (req, res) => {
     journalController.recordTransaction(req as AuthenticatedRequest, res);
   });
   
@@ -30,7 +30,7 @@ export function setupLedgerRoutes() {
    * Get transaction details
    * GET /api/accounting/ledger/transactions/:id
    */
-  router.get("/transactions/:id", (req, res) => {
+  router.get("/transactions/:id", accountingReadRateLimiter, (req, res) => {
     journalController.getTransaction(req as AuthenticatedRequest, res);
   });
   
@@ -46,7 +46,7 @@ export function setupLedgerRoutes() {
    * Create a ledger entry
    * POST /api/accounting/ledger/entry
    */
-  router.post("/entry", (req, res) => {
+  router.post("/entry", accountingHeavyRateLimiter, (req, res) => {
     journalController.createLedgerEntry(req as AuthenticatedRequest, res);
   });
   
@@ -54,7 +54,7 @@ export function setupLedgerRoutes() {
    * Alias for creating ledger entry (to maintain backward compatibility)
    * POST /api/accounting/ledger/entries
    */
-  router.post("/entries", (req, res) => {
+  router.post("/entries", accountingHeavyRateLimiter, (req, res) => {
     journalController.createLedgerEntry(req as AuthenticatedRequest, res);
   });
   
@@ -62,7 +62,7 @@ export function setupLedgerRoutes() {
    * Get a specific ledger entry with full details
    * GET /api/accounting/ledger/entries/:id
    */
-  router.get("/entries/:id", (req, res) => {
+  router.get("/entries/:id", accountingReadRateLimiter, (req, res) => {
     journalController.getLedgerEntry(req as AuthenticatedRequest, res);
   });
 
@@ -72,6 +72,7 @@ export function setupLedgerRoutes() {
    * Requires: accountant or admin role
    */
   router.post("/entries/:id/post", 
+    accountingHeavyRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]),
     (req, res) => {
       journalController.postLedgerEntry(req as AuthenticatedRequest, res);
@@ -85,6 +86,7 @@ export function setupLedgerRoutes() {
    * Use with caution - should only be allowed in specific scenarios
    */
   router.post("/entries/:id/unpost", 
+    accountingHeavyRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]),
     (req, res) => {
       journalController.unpostLedgerEntry(req as AuthenticatedRequest, res);
@@ -98,6 +100,7 @@ export function setupLedgerRoutes() {
    * Only posted entries can be reversed
    */
   router.post("/entries/:id/reverse", 
+    accountingHeavyRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]),
     (req, res) => {
       journalController.reverseLedgerEntry(req as AuthenticatedRequest, res);
