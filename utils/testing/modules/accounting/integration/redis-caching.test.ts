@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, jest } from '@jest/globals';
-import { RedisService } from '../../../services/redis.service';
+import { RedisService } from '../../../../../server/services/redis.service';
 
 // Mock Redis pentru testing
 jest.mock('../../../services/redis.service');
@@ -28,7 +28,7 @@ describe('Redis Cache Integration Tests - Accounting Module', () => {
 
   beforeEach(async () => {
     // Clear all cache before each test
-    await redisService.flushAll();
+    await redisService.invalidatePattern('accounting:*');
   });
 
   describe('1. AccountingService - Chart of Accounts Caching', () => {
@@ -78,7 +78,7 @@ describe('Redis Cache Integration Tests - Accounting Module', () => {
       await redisService.setCached(cacheKey, ['old data'], 86400);
       
       // Simulate cache invalidation
-      await redisService.invalidate(cacheKey);
+      await redisService.del(cacheKey);
       const cached = await redisService.getCached(cacheKey);
       
       expect(cached).toBeNull();
@@ -295,7 +295,7 @@ describe('Redis Cache Integration Tests - Accounting Module', () => {
     it('should invalidate onboarding cache on progress', async () => {
       await redisService.setCached('accounting:onboarding:status:1', { old: true }, 300);
       
-      await redisService.invalidate('accounting:onboarding:status:1');
+      await redisService.del('accounting:onboarding:status:1');
       const cached = await redisService.getCached('accounting:onboarding:status:1');
       
       expect(cached).toBeNull();

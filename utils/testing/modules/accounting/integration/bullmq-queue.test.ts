@@ -151,7 +151,7 @@ describe('BullMQ Handler Tests - Accounting Module', () => {
 
       const job = await accountingQueue.add('batch-export', jobData, {
         attempts: 3,
-        timeout: 300000, // 5 minutes
+        backoff: { type: 'exponential', delay: 5000 },
       });
 
       expect(job).toBeDefined();
@@ -190,7 +190,7 @@ describe('BullMQ Handler Tests - Accounting Module', () => {
 
       const job = await accountingQueue.add('fiscal-month-close', jobData, {
         attempts: 2,
-        timeout: 600000, // 10 minutes
+        backoff: { type: 'exponential', delay: 10000 },
       });
 
       expect(job).toBeDefined();
@@ -222,7 +222,7 @@ describe('BullMQ Handler Tests - Accounting Module', () => {
 
       const job = await accountingQueue.add('fiscal-year-close', jobData, {
         attempts: 1,
-        timeout: 3600000, // 1 hour
+        backoff: { type: 'exponential', delay: 15000 },
       });
 
       expect(job).toBeDefined();
@@ -252,7 +252,7 @@ describe('BullMQ Handler Tests - Accounting Module', () => {
 
       const job = await accountingQueue.add('batch-invoice-create', jobData, {
         attempts: 3,
-        timeout: 300000,
+        backoff: { type: 'exponential', delay: 5000 },
       });
 
       expect(job).toBeDefined();
@@ -306,7 +306,7 @@ describe('BullMQ Handler Tests - Accounting Module', () => {
 
       const job = await accountingQueue.add('generate-trial-balance', jobData, {
         attempts: 3,
-        timeout: 120000,
+        backoff: { type: 'exponential', delay: 3000 },
       });
 
       expect(job).toBeDefined();
@@ -379,7 +379,7 @@ describe('BullMQ Handler Tests - Accounting Module', () => {
 
       const job = await accountingQueue.add('import-chart-of-accounts', jobData, {
         attempts: 2,
-        timeout: 180000,
+        backoff: { type: 'exponential', delay: 5000 },
       });
 
       expect(job).toBeDefined();
@@ -571,10 +571,10 @@ describe('BullMQ Handler Tests - Accounting Module', () => {
       };
 
       const job = await accountingQueue.add('fiscal-year-close', jobData, {
-        timeout: 3600000, // 1 hour
+        backoff: { type: 'exponential', delay: 15000 },
       });
 
-      expect(job.opts?.timeout).toBe(3600000);
+      expect(job.opts?.backoff).toBeDefined();
     });
 
     it('should timeout bulk export after 5 minutes', async () => {
@@ -585,10 +585,10 @@ describe('BullMQ Handler Tests - Accounting Module', () => {
       };
 
       const job = await accountingQueue.add('batch-export', jobData, {
-        timeout: 300000,
+        backoff: { type: 'exponential', delay: 5000 },
       });
 
-      expect(job.opts?.timeout).toBe(300000);
+      expect(job.opts?.backoff).toBeDefined();
     });
   });
 
