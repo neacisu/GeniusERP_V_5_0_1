@@ -17,7 +17,7 @@ describe('OnboardingController', () => {
   let mockRes: Partial<Response>;
 
   beforeEach(() => {
-    mockOnboardingService = new OnboardingService({} as any, {} as any) as jest.Mocked<OnboardingService>;
+    mockOnboardingService = new OnboardingService() as jest.Mocked<OnboardingService>;
     controller = new OnboardingController(mockOnboardingService);
 
     mockReq = {

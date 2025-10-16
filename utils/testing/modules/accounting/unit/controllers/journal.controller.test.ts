@@ -17,7 +17,7 @@ describe('JournalController', () => {
   let mockRes: Partial<Response>;
 
   beforeEach(() => {
-    mockJournalService = new JournalService({} as any, {} as any, {} as any, {} as any, {} as any, {} as any) as jest.Mocked<JournalService>;
+    mockJournalService = new JournalService() as jest.Mocked<JournalService>;
     controller = new JournalController(mockJournalService);
 
     mockReq = {

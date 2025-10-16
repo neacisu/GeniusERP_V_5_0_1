@@ -57,7 +57,7 @@ describe('AccountingSettingsController', () => {
       fiscalYearStartMonth: 2
     };
 
-    mockSettingsService.updateGeneralSettings.mockResolvedValue(undefined);
+    jest.spyOn(mockSettingsService, 'updateGeneralSettings').mockResolvedValue(undefined as any);
 
     await (controller as any).updateSettings(mockReq as AuthenticatedRequest, mockRes as Response);
 
