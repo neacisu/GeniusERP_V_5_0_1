@@ -214,6 +214,12 @@ export class OnboardingService extends DrizzleService {
   }> {
     const validation = await this.settingsService.validateOpeningBalances(companyId, fiscalYear);
 
+    // Invalidate onboarding status cache
+    await this.ensureRedisConnection();
+    if (this.redisService.isConnected()) {
+      await this.redisService.invalidatePattern(`acc:onboarding:status:${companyId}:*`);
+    }
+
     return {
       isValid: validation.isBalanced,
       totalDebit: validation.totalDebit,
@@ -221,14 +227,6 @@ export class OnboardingService extends DrizzleService {
       difference: validation.difference,
       errors: validation.errors,
     };
-
-    // Invalidate onboarding status cache
-    await this.ensureRedisConnection();
-    if (this.redisService.isConnected()) {
-      await this.redisService.invalidatePattern(`acc:onboarding:status:${companyId}:*`);
-    }
-
-    return result;
   }
 
   /**
