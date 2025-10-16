@@ -3,16 +3,42 @@
  * 
  * TASK 685: Blocare perioade contabile închise
  * Previne postarea de note contabile în perioade fiscale închise
+ * Enhanced cu Redis caching (TTL: 1h pentru period status checks - apelat la FIECARE entry!)
  */
 
 import { getDrizzle } from '../../../common/drizzle';
 import { eq, and, gte, lte } from 'drizzle-orm';
+import { RedisService } from '../../../services/redis.service';
 
 export class PeriodLockService {
+  private redisService: RedisService;
+
+  constructor() {
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
+  }
   /**
    * Verifică dacă o perioadă este închisă
+   * Redis cache: 1h TTL (apelat la FIECARE entry contabil!)
    */
   public async isPeriodClosed(companyId: string, date: Date): Promise<boolean> {
+    await this.ensureRedisConnection();
+    
+    const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+    const cacheKey = `acc:period-lock:${companyId}:${dateKey}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<boolean>(cacheKey);
+      if (cached !== null && cached !== undefined) {
+        return cached;
+      }
+    }
+
     const db = getDrizzle();
     
     try {
@@ -25,12 +51,17 @@ export class PeriodLockService {
         LIMIT 1
       `, [companyId, date]);
       
+      let isClosed = false;
       if (result && result.length > 0) {
-        return result[0].is_closed === true || result[0].status === 'closed';
+        isClosed = result[0].is_closed === true || result[0].status === 'closed';
       }
       
-      // Dacă nu există fiscal_periods, nu blocăm
-      return false;
+      // Cache result for 1 hour (periods don't change often, but need fresh data)
+      if (this.redisService.isConnected()) {
+        await this.redisService.setCached(cacheKey, isClosed, 3600);
+      }
+      
+      return isClosed;
     } catch (error) {
       console.error('Error checking period lock:', error);
       // Dacă tabelul nu există, nu blocăm
@@ -77,6 +108,12 @@ export class PeriodLockService {
         AND end_date = $4
       `, [userId, companyId, startDate, endDate]);
       
+      // Invalidate cache for this period (all dates in range)
+      await this.ensureRedisConnection();
+      if (this.redisService.isConnected()) {
+        await this.redisService.invalidatePattern(`acc:period-lock:${companyId}:*`);
+      }
+      
       console.log(`✅ Perioadă închisă: ${startDate.toLocaleDateString('ro-RO')} - ${endDate.toLocaleDateString('ro-RO')}`);
     } catch (error) {
       console.error('❌ Error closing period:', error);
@@ -109,6 +146,12 @@ export class PeriodLockService {
         AND start_date = $4 
         AND end_date = $5
       `, [userId, reason, companyId, startDate, endDate]);
+      
+      // Invalidate cache for this period (all dates in range)
+      await this.ensureRedisConnection();
+      if (this.redisService.isConnected()) {
+        await this.redisService.invalidatePattern(`acc:period-lock:${companyId}:*`);
+      }
       
       console.log(`✅ Perioadă redeschisă: ${startDate.toLocaleDateString('ro-RO')} - ${endDate.toLocaleDateString('ro-RO')}`);
     } catch (error) {
