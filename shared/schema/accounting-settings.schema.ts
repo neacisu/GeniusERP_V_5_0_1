@@ -245,7 +245,6 @@ export const updateVatSettingsSchema = insertVatSettingsSchema.partial().omit({
   companyId: true,
   createdAt: true,
   updatedAt: true,
-  createdBy: true,
 });
 
 // Account Relationships Schemas
@@ -264,7 +263,6 @@ export const updateAccountRelationshipsSchema = insertAccountRelationshipsSchema
   companyId: true,
   createdAt: true,
   updatedAt: true,
-  createdBy: true,
 });
 
 // Opening Balances Schemas

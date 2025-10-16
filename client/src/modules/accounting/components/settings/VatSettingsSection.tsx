@@ -85,7 +85,7 @@ export default function VatSettingsSection({ companyId, onChange }: VatSettingsS
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Exclude read-only audit fields before sending to backend
-    const { id, companyId: _, createdAt, updatedAt, createdBy, ...dataToSend } = formData as any;
+    const { id, companyId: _, createdAt, updatedAt, ...dataToSend } = formData as any;
     updateMutation.mutate(dataToSend);
   };
 
