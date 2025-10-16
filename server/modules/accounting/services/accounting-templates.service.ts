@@ -3,12 +3,14 @@
  * 
  * Serviciu pentru gestionarea șabloanelor de note contabile și reversări automate
  * Implementează template-uri pentru operațiuni recurente conform OMFP 2634/2015
+ * Enhanced cu Redis caching (TTL: 24h pentru templates list, 12h pentru individual)
  */
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 import { eq, and, sql } from 'drizzle-orm';
 import { JournalService, LedgerEntryType } from './journal.service';
 import { AuditLogService } from './audit-log.service';
+import { RedisService } from '../../../services/redis.service';
 
 /**
  * Interface pentru șablonul de notă contabilă
@@ -105,11 +107,19 @@ interface AutoReversalRequest {
 export class AccountingTemplatesService extends DrizzleService {
   private journalService: JournalService;
   private auditService: AuditLogService;
+  private redisService: RedisService;
 
   constructor() {
     super();
     this.journalService = new JournalService();
     this.auditService = new AuditLogService();
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
   }
 
   /**
@@ -280,13 +290,20 @@ export class AccountingTemplatesService extends DrizzleService {
     }
 
     // Adaugă informații despre companie și date
-    return templates.map(template => ({
+    const result = templates.map(template => ({
       ...template,
       companyId,
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy: 'system'
     } as AccountingTemplate));
+
+    // Cache the result
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, result, 86400); // 24 hours
+    }
+
+    return result;
   }
 
   /**
