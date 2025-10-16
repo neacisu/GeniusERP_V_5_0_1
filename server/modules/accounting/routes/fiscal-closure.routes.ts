@@ -17,12 +17,6 @@ const router = Router();
 // Toate rutele necesită autentificare și rol de admin sau contabil
 const requireAccountant = AuthGuard.roleGuard(['admin', 'administrator', 'accountant', 'contabil']);
 
-// DEPRECATED: Use /month/async instead (better performance with BullMQ)
-// router.post('/month', fiscalClosureRateLimiter, requireAccountant, fiscalClosureController.closeMonth.bind(fiscalClosureController));
-
-// DEPRECATED: Use /year/async instead (better performance with BullMQ)
-// router.post('/year', fiscalClosureRateLimiter, requireAccountant, fiscalClosureController.closeYear.bind(fiscalClosureController));
-
 /**
  * @route POST /api/accounting/fiscal-closure/reopen/:periodId
  * @desc Redeschide o perioadă închisă

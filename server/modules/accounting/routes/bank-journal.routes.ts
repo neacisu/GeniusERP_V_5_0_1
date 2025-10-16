@@ -143,11 +143,6 @@ export function setupBankJournalRoutes() {
     bankJournalController.getBankAccountBalance(req as AuthenticatedRequest, res);
   });
   
-  // DEPRECATED: Use /bank-accounts/:id/statement/cached instead (async with Redis cache)
-  // router.get("/bank-accounts/:id/statement", accountingReadRateLimiter, (req, res) => {
-  //   bankJournalController.generateBankStatement(req as AuthenticatedRequest, res);
-  // });
-  
   /**
    * ASYNC OPERATIONS
    */

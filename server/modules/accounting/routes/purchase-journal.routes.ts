@@ -148,21 +148,6 @@ export function setupPurchaseJournalRoutes() {
   router.get("/suppliers/:id/balance", (req, res) => {
     purchaseJournalController.getSupplierBalance(req as AuthenticatedRequest, res);
   });
-  
-  // DEPRECATED: Use /journal/generate-async instead
-  // router.get("/journal", accountingReadRateLimiter, (req, res) => {
-  //   purchaseJournalController.generatePurchaseJournal(req as AuthenticatedRequest, res);
-  // });
-  
-  // DEPRECATED: Use /journal/generate-async with format param instead  
-  // router.get("/journal/export/excel", exportRateLimiter, (req, res) => {
-  //   purchaseJournalController.exportPurchaseJournalExcel(req as AuthenticatedRequest, res);
-  // });
-  
-  // DEPRECATED: Use /journal/generate-async with format param instead
-  // router.get("/journal/export/pdf", exportRateLimiter, (req, res) => {
-  //   purchaseJournalController.exportPurchaseJournalPDF(req as AuthenticatedRequest, res);
-  // });
 
   /**
    * Complete missing supplier details for existing purchase invoices

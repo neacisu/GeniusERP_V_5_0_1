@@ -155,11 +155,6 @@ export function setupCashRegisterRoutes() {
     }
   );
   
-  // DEPRECATED: Use /reports/daily/cached instead (async with Redis cache)
-  // router.get("/reports/:registerId", accountingReadRateLimiter, (req, res) => {
-  //   cashRegisterController.generateCashRegisterReport(req as AuthenticatedRequest, res);
-  // });
-  
   /**
    * Get daily closing report for a cash register
    */

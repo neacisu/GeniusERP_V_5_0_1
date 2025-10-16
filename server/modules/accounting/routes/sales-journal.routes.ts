@@ -214,22 +214,7 @@ export function setupSalesJournalRoutes() {
    * - includeCanceled: true/false (opțional, default: false)
    * - customerId: Filtrare după client (opțional)
    * - category: Filtrare după categorie fiscală (opțional)
-   */
-  // DEPRECATED: Use /journal/generate-async instead
-  // router.get("/journal", accountingReadRateLimiter, (req, res) => {
-  //   salesJournalController.generateSalesJournal(req as AuthenticatedRequest, res);
-  // });
-  
-  // DEPRECATED: Use /journal/generate-async with format param instead
-  // router.get("/journal/export/excel", exportRateLimiter, (req, res) => {
-  //   salesJournalController.exportSalesJournalExcel(req as AuthenticatedRequest, res);
-  // });
-  
-  // DEPRECATED: Use /journal/generate-async with format param instead
-  // router.get("/journal/export/pdf", exportRateLimiter, (req, res) => {
-  //   salesJournalController.exportSalesJournalPDF(req as AuthenticatedRequest, res);
-  // });
-  
+   */  
   /**
    * =========================================================================
    * ASYNC OPERATIONS & BULLMQ INTEGRATION

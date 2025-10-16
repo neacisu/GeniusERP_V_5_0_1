@@ -85,21 +85,6 @@ export function setupAccountingRoutes() {
       await accountingController.createJournalEntry(req as AuthenticatedRequest, res as Response);
     }
   );
-  
-  // DEPRECATED: Use async versions instead (/trial-balance/async, /balance-sheet/async, /income-statement/async)
-  // Financial reports - SYNC versions removed, use ASYNC for better performance
-  // router.get("/trial-balance", accountingHeavyRateLimiter, AuthGuard.roleGuard(["accountant", "admin", "manager"]), AuthGuard.companyGuard('companyId'), async (req, res) => {
-  //   await accountingController.getTrialBalance(req as AuthenticatedRequest, res as Response);
-  // });
-  
-  // router.get("/balance-sheet", accountingHeavyRateLimiter, AuthGuard.roleGuard(["accountant", "admin", "manager"]), async (req, res) => {
-  //   await accountingController.getBalanceSheet(req as AuthenticatedRequest, res as Response);
-  // });
-  
-  // router.get("/income-statement", accountingHeavyRateLimiter, AuthGuard.roleGuard(["accountant", "admin", "manager"]), async (req, res) => {
-  //   await accountingController.getIncomeStatement(req as AuthenticatedRequest, res as Response);
-  // });
-  
   // Financial reports ASYNC endpoints (via BullMQ)
   router.get(
     "/trial-balance/async",
