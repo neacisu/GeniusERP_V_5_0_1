@@ -246,7 +246,7 @@ describe('Input Sanitization', () => {
       expect(cuiRegex.test(validCUI)).toBe(true);
     });
 
-    it('should reject invalid CUI formats', async (): {
+    it('should reject invalid CUI formats', async () => {
       const invalidCUIs = [
         'RO',           // Too short
         'RO123456789012', // Too long
