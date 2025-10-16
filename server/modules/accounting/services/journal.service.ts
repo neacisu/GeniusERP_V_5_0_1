@@ -108,6 +108,18 @@ export interface CreateLedgerLineOptions {
  * Journal service for accounting operations
  */
 export class JournalService {
+  private redisService: RedisService;
+
+  constructor() {
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
+  }
+
   /**
    * Create a ledger entry with lines
    * @param options Ledger entry options
@@ -769,10 +781,23 @@ export class JournalService {
 
   /**
    * Get a single ledger entry with its lines
+   * Enhanced cu Redis caching (TTL: 10min)
    * @param ledgerEntryId ID of the ledger entry
    * @returns Ledger entry with lines
    */
   async getLedgerEntry(ledgerEntryId: string): Promise<LedgerEntryData> {
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:ledger-entry:${ledgerEntryId}`;
+    
+    // Check cache first
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<LedgerEntryData>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
     const sql = getClient();
     
     const result = await sql`
