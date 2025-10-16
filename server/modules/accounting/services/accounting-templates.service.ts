@@ -124,8 +124,19 @@ export class AccountingTemplatesService extends DrizzleService {
 
   /**
    * Obține șabloanele predefinite pentru o companie
+   * Redis cache: 24h TTL
    */
   async getTemplatesForCompany(companyId: string, category?: TemplateCategory): Promise<AccountingTemplate[]> {
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:templates:${companyId}:category:${category || 'all'}`;
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<AccountingTemplate[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+
     // Pentru început, returnez șabloane hardcode-ate
     // În viitor acestea vor fi stocate în baza de date
     const predefinedTemplates: Partial<AccountingTemplate>[] = [
