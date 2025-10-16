@@ -5,11 +5,11 @@
  */
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { AccountMappingService } from '../../../../../server/modules/accounting/services/account-mapping.service';
-import { RedisService } from '../../../../../server/services/redis.service';
+import { AccountMappingService } from '../../../../../../server/modules/accounting/services/account-mapping.service';
+import { RedisService } from '../../../../../../server/services/redis.service';
 
 // Mock RedisService
-jest.mock('../../../../../server/services/redis.service');
+jest.mock('../../../../../../server/services/redis.service');
 
 describe('AccountMappingService Unit Tests', () => {
   let accountMappingService: AccountMappingService;

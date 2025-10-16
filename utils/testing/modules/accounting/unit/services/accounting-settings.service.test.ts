@@ -5,11 +5,11 @@
  */
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { AccountingSettingsService } from '../../../../../server/modules/accounting/services/accounting-settings.service';
-import { RedisService } from '../../../../../server/services/redis.service';
+import { AccountingSettingsService } from '../../../../../../server/modules/accounting/services/accounting-settings.service';
+import { RedisService } from '../../../../../../server/services/redis.service';
 
 // Mock RedisService
-jest.mock('../../../../../server/services/redis.service');
+jest.mock('../../../../../../server/services/redis.service');
 
 describe('AccountingSettingsService Unit Tests', () => {
   let accountingSettingsService: AccountingSettingsService;
@@ -85,12 +85,14 @@ describe('AccountingSettingsService Unit Tests', () => {
 
     it('should update general settings', async () => {
       const companyId = 'company-1';
+      const userId = 'user-1';
       const updates = {
-        fiscalYearStart: '2024-01-01',
-        defaultCurrency: 'RON'
+        fiscalYearStartMonth: 1,
+        requireApproval: true,
+        enableMultiCurrency: true
       };
 
-      await accountingSettingsService.updateGeneralSettings(companyId, updates);
+      await accountingSettingsService.updateGeneralSettings(companyId, updates, userId);
 
       // Verify cache invalidation was triggered
       expect(mockRedisService.del).toHaveBeenCalled();

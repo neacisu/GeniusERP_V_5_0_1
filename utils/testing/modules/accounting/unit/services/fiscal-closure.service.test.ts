@@ -5,15 +5,15 @@
  */
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { FiscalClosureService } from '../../../../../server/modules/accounting/services/fiscal-closure.service';
+import { FiscalClosureService } from '../../../../../../server/modules/accounting/services/fiscal-closure.service';
 
 // Mock dependencies
-jest.mock('../../../../../server/modules/accounting/services/accounting-periods.service');
-jest.mock('../../../../../server/modules/accounting/services/depreciation-calculation.service');
-jest.mock('../../../../../server/modules/accounting/services/fx-revaluation.service');
-jest.mock('../../../../../server/modules/accounting/services/vat-closure.service');
-jest.mock('../../../../../server/modules/accounting/services/year-end-closure.service');
-jest.mock('../../../../../server/modules/accounting/services/audit-log.service');
+jest.mock('../../../../../../server/modules/accounting/services/accounting-periods.service');
+jest.mock('../../../../../../server/modules/accounting/services/depreciation-calculation.service');
+jest.mock('../../../../../../server/modules/accounting/services/fx-revaluation.service');
+jest.mock('../../../../../../server/modules/accounting/services/vat-closure.service');
+jest.mock('../../../../../../server/modules/accounting/services/year-end-closure.service');
+jest.mock('../../../../../../server/modules/accounting/services/audit-log.service');
 
 describe('FiscalClosureService Unit Tests', () => {
   let fiscalClosureService: FiscalClosureService;
@@ -108,17 +108,13 @@ describe('FiscalClosureService Unit Tests', () => {
         companyId: 'company-1',
         fiscalYear: 2024,
         userId: 'user-1',
-        profitDistribution: {
-          dividends: 10000,
-          reserves: 5000,
-          retained: 15000
-        },
         dryRun: true
       };
 
       const result = await fiscalClosureService.closeYear(request);
 
       expect(result).toBeDefined();
+      // Profit distribution is handled internally by YearEndClosureService
     });
   });
 

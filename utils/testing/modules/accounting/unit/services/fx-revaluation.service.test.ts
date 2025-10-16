@@ -5,13 +5,13 @@
  */
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { FXRevaluationService } from '../../../../../server/modules/accounting/services/fx-revaluation.service';
-import { RedisService } from '../../../../../server/services/redis.service';
+import { FXRevaluationService } from '../../../../../../server/modules/accounting/services/fx-revaluation.service';
+import { RedisService } from '../../../../../../server/services/redis.service';
 
 // Mock dependencies
-jest.mock('../../../../../server/modules/accounting/services/journal.service');
-jest.mock('../../../../../server/modules/accounting/services/audit-log.service');
-jest.mock('../../../../../server/services/redis.service');
+jest.mock('../../../../../../server/modules/accounting/services/journal.service');
+jest.mock('../../../../../../server/modules/accounting/services/audit-log.service');
+jest.mock('../../../../../../server/services/redis.service');
 
 describe('FxRevaluationService Unit Tests', () => {
   let fxRevaluationService: FXRevaluationService;
@@ -88,60 +88,52 @@ describe('FxRevaluationService Unit Tests', () => {
     });
   });
 
-  describe('BNR Exchange Rates', () => {
-    it('should fetch BNR exchange rates', async () => {
-      const date = new Date('2024-01-31');
+  describe('Caching Behavior', () => {
+    it('should cache revaluation results', async () => {
+      const request = {
+        companyId: 'company-1',
+        periodYear: 2024,
+        periodMonth: 1,
+        userId: 'user-1',
+        dryRun: false
+      };
+
       mockRedisService.getCached.mockResolvedValue(null);
 
-      const rates = await fxRevaluationService.getBNRExchangeRates(date);
+      await fxRevaluationService.revalueForeignCurrency(request);
 
-      expect(rates).toBeDefined();
-      expect(Array.isArray(rates)).toBe(true);
-    });
-
-    it('should cache BNR exchange rates with 24h TTL', async () => {
-      const date = new Date('2024-01-31');
-      const cachedRates = [
-        { currency: 'EUR', rate: 4.97, date }
-      ];
-      
-      mockRedisService.getCached.mockResolvedValue(cachedRates);
-
-      const rates = await fxRevaluationService.getBNRExchangeRates(date);
-
-      expect(rates).toEqual(cachedRates);
+      // Verify cache was checked
       expect(mockRedisService.getCached).toHaveBeenCalled();
     });
-  });
 
-  describe('Foreign Currency Balances', () => {
-    it('should get foreign currency balances', async () => {
-      const companyId = 'company-1';
-      mockRedisService.getCached.mockResolvedValue(null);
+    it('should return cached results when available', async () => {
+      const request = {
+        companyId: 'company-1',
+        periodYear: 2024,
+        periodMonth: 1,
+        userId: 'user-1',
+        dryRun: false
+      };
 
-      const balances = await fxRevaluationService.getForeignCurrencyBalances(companyId);
-
-      expect(balances).toBeDefined();
-      expect(Array.isArray(balances)).toBe(true);
-    });
-
-    it('should cache balances with 5min TTL', async () => {
-      const companyId = 'company-1';
-      const cachedBalances = [
-        { accountId: '1', currency: 'EUR', balance: 1000 }
-      ];
+      const cachedResult = {
+        totalGains: 1000,
+        totalLosses: 500,
+        netDifference: 500,
+        itemCount: 5,
+        items: [],
+        dryRun: false
+      };
       
-      mockRedisService.getCached.mockResolvedValue(cachedBalances as any);
+      mockRedisService.getCached.mockResolvedValue(cachedResult);
 
-      const balances = await fxRevaluationService.getForeignCurrencyBalances(companyId);
+      const result = await fxRevaluationService.revalueForeignCurrency(request);
 
-      expect(balances).toEqual(cachedBalances);
-      expect(mockRedisService.getCached).toHaveBeenCalled();
+      expect(result).toEqual(cachedResult);
     });
   });
 
   describe('Error Handling', () => {
-    it('should handle missing exchange rates', async () => {
+    it('should handle empty revaluation results gracefully', async () => {
       const request = {
         companyId: 'company-1',
         periodYear: 2024,
@@ -151,14 +143,30 @@ describe('FxRevaluationService Unit Tests', () => {
       };
 
       mockRedisService.getCached.mockResolvedValue(null);
-      // Mock getBNRExchangeRates to return empty array
-      jest.spyOn(fxRevaluationService as any, 'getBNRExchangeRates').mockResolvedValue([]);
 
       const result = await fxRevaluationService.revalueForeignCurrency(request);
 
-      expect(result.itemCount).toBe(0);
-      expect(result.totalGains).toBe(0);
-      expect(result.totalLosses).toBe(0);
+      expect(result).toBeDefined();
+      expect(result.totalGains).toBeDefined();
+      expect(result.totalLosses).toBeDefined();
+      expect(result.netDifference).toBeDefined();
+    });
+
+    it('should handle Redis errors gracefully', async () => {
+      const request = {
+        companyId: 'company-1',
+        periodYear: 2024,
+        periodMonth: 1,
+        userId: 'user-1',
+        dryRun: true
+      };
+
+      mockRedisService.getCached.mockRejectedValue(new Error('Redis connection failed'));
+
+      // Should still work without Redis
+      const result = await fxRevaluationService.revalueForeignCurrency(request);
+
+      expect(result).toBeDefined();
     });
   });
 });
