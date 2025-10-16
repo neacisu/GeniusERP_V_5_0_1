@@ -41,20 +41,22 @@ describe('FiscalClosureController', () => {
     mockVATService = (controller as any).vatService;
 
     mockReq = {
-      user: {
-        id: 'user-1',
-        companyId: 'company-1',
-        email: 'test@test.com',
-        role: 'admin'
-      } as any,
       body: {},
       params: {}
+    } as any;
+
+    (mockReq as any).user = {
+      id: 'user-1',
+      username: 'testuser',
+      companyId: 'company-1',
+      email: 'test@test.com',
+      role: 'admin'
     };
 
     mockRes = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis()
-    };
+      status: jest.fn<any, any>().mockReturnThis(),
+      json: jest.fn<any, any>().mockReturnThis()
+    } as any;
   });
 
   describe('Monthly Closure', () => {
@@ -166,7 +168,7 @@ describe('FiscalClosureController', () => {
     });
 
     it('should handle unauthorized request', async () => {
-      mockReq.user = undefined;
+      (mockReq as any).user = undefined;
 
       await controller.closeMonth(mockReq as Request, mockRes as Response);
 

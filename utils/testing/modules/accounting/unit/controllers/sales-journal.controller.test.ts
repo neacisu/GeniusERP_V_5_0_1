@@ -33,6 +33,7 @@ describe('SalesJournalController', () => {
     mockReq = {
       user: {
         id: 'user-1',
+        username: 'testuser',
         companyId: 'company-1',
         email: 'test@test.com',
         role: 'admin'
@@ -43,9 +44,9 @@ describe('SalesJournalController', () => {
     };
 
     mockRes = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis()
-    };
+      status: jest.fn<any, any>().mockReturnThis(),
+      json: jest.fn<any, any>().mockReturnThis()
+    } as any;
   });
 
   describe('Get Customer Invoices', () => {
@@ -295,7 +296,7 @@ describe('SalesJournalController', () => {
       ];
 
       mockSalesJournalService.getCustomerInvoice.mockResolvedValue(mockInvoice as any);
-      mockSalesJournalService.getInvoicePayments = jest.fn().mockResolvedValue(mockPayments);
+      (mockSalesJournalService as any).getInvoicePayments = jest.fn<any, any>().mockResolvedValue(mockPayments);
 
       await controller.getInvoicePayments(mockReq as AuthenticatedRequest, mockRes as Response);
 

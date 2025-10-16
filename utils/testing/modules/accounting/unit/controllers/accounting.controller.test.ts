@@ -29,6 +29,7 @@ describe('AccountingController', () => {
     mockReq = {
       user: {
         id: 'user-1',
+        username: 'testuser',
         companyId: 'company-1',
         email: 'test@test.com',
         role: 'admin'
@@ -39,9 +40,9 @@ describe('AccountingController', () => {
     };
 
     mockRes = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis()
-    };
+      status: jest.fn<any, any>().mockReturnThis(),
+      json: jest.fn<any, any>().mockReturnThis()
+    } as any;
   });
 
   describe('Account Classes', () => {
@@ -216,23 +217,34 @@ describe('AccountingController', () => {
         description: 'Client principal'
       };
 
-      const mockAccountId = 'new-account-id';
-      mockAccountingService.createAnalyticAccount.mockResolvedValue(mockAccountId);
+      const mockAccount = {
+        id: 'new-account-id',
+        code: '40111001',
+        name: 'Client ABC SRL',
+        description: 'Client principal',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        accountFunction: 'receivables',
+        isActive: true,
+        syntheticId: 'synthetic-1'
+      };
+
+      mockAccountingService.createAnalyticAccount.mockResolvedValue(mockAccount as any);
 
       await controller.createAnalyticAccount(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(mockAccountingService.createAnalyticAccount).toHaveBeenCalledWith(
-        'company-1',
         expect.objectContaining({
           code: '40111001',
           name: 'Client ABC SRL',
-          syntheticId: 'synthetic-1'
+          syntheticId: 'synthetic-1',
+          companyId: 'company-1'
         })
       );
       expect(mockRes.status).toHaveBeenCalledWith(201);
       expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
         success: true,
-        data: { id: mockAccountId }
+        data: mockAccount
       }));
     });
   });
