@@ -5,72 +5,334 @@ import {
   JournalEntry, JournalLine,
   InsertJournalEntry, InsertJournalLine
 } from "@shared/schema";
+import { RedisService } from "../../../services/redis.service";
 
+/**
+ * Accounting Service with Redis caching for Chart of Accounts
+ * Cache TTLs:
+ * - Account classes: 24h (86400s) - rarely change
+ * - Account groups: 24h (86400s) - rarely change
+ * - Synthetic accounts: 12h (43200s) - occasionally updated
+ * - Analytic accounts: 12h (43200s) - frequently updated
+ */
 export class AccountingService {
   private drizzleService: DrizzleService;
+  private redisService: RedisService;
 
   constructor(private storage: IStorage) {
     this.drizzleService = new DrizzleService();
+    this.redisService = new RedisService();
+  }
+  
+  /**
+   * Initialize Redis connection (call before first use)
+   */
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
   }
   
   // Account Classes
   async getAccountClasses(): Promise<AccountClass[]> {
-    return this.storage.getAccountClasses();
+    await this.ensureRedisConnection();
+    
+    const cacheKey = 'acc:chart:classes:all';
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<AccountClass[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    const classes = await this.storage.getAccountClasses();
+    
+    // Cache for 24 hours
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, classes, 86400);
+    }
+    
+    return classes;
   }
   
   async getAccountClass(id: string): Promise<AccountClass | undefined> {
-    return this.storage.getAccountClass(id);
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:chart:class:${id}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<AccountClass>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    const accountClass = await this.storage.getAccountClass(id);
+    
+    // Cache for 24 hours
+    if (accountClass && this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, accountClass, 86400);
+    }
+    
+    return accountClass;
   }
   
   async getAccountClassByCode(code: string): Promise<AccountClass | undefined> {
-    return this.storage.getAccountClassByCode(code);
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:chart:class:code:${code}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<AccountClass>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    const accountClass = await this.storage.getAccountClassByCode(code);
+    
+    // Cache for 24 hours
+    if (accountClass && this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, accountClass, 86400);
+    }
+    
+    return accountClass;
   }
   
   // Account Groups
   async getAccountGroups(): Promise<AccountGroup[]> {
-    return this.storage.getAccountGroups();
+    await this.ensureRedisConnection();
+    
+    const cacheKey = 'acc:chart:groups:all';
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<AccountGroup[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    const groups = await this.storage.getAccountGroups();
+    
+    // Cache for 24 hours
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, groups, 86400);
+    }
+    
+    return groups;
   }
   
   async getAccountGroupsByClass(classId: string): Promise<AccountGroup[]> {
-    return this.storage.getAccountGroupsByClass(classId);
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:chart:groups:class:${classId}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<AccountGroup[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    const groups = await this.storage.getAccountGroupsByClass(classId);
+    
+    // Cache for 24 hours
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, groups, 86400);
+    }
+    
+    return groups;
   }
   
   async getAccountGroup(id: string): Promise<AccountGroup | undefined> {
-    return this.storage.getAccountGroup(id);
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:chart:group:${id}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<AccountGroup>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    const group = await this.storage.getAccountGroup(id);
+    
+    // Cache for 24 hours
+    if (group && this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, group, 86400);
+    }
+    
+    return group;
   }
   
   // Synthetic Accounts
   async getSyntheticAccounts(): Promise<SyntheticAccount[]> {
-    return this.storage.getSyntheticAccounts();
+    await this.ensureRedisConnection();
+    
+    const cacheKey = 'acc:chart:synthetic:all';
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<SyntheticAccount[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    const accounts = await this.storage.getSyntheticAccounts();
+    
+    // Cache for 12 hours
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, accounts, 43200);
+    }
+    
+    return accounts;
   }
   
   async getSyntheticAccountsByGroup(groupId: string): Promise<SyntheticAccount[]> {
-    return this.storage.getSyntheticAccountsByGroup(groupId);
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:chart:synthetic:group:${groupId}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<SyntheticAccount[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    const accounts = await this.storage.getSyntheticAccountsByGroup(groupId);
+    
+    // Cache for 12 hours
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, accounts, 43200);
+    }
+    
+    return accounts;
   }
   
   async getSyntheticAccountsByGrade(grade: number): Promise<SyntheticAccount[]> {
-    return this.storage.getSyntheticAccountsByGrade(grade);
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:chart:synthetic:grade:${grade}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<SyntheticAccount[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    const accounts = await this.storage.getSyntheticAccountsByGrade(grade);
+    
+    // Cache for 12 hours
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, accounts, 43200);
+    }
+    
+    return accounts;
   }
   
   async getSyntheticAccount(id: string): Promise<SyntheticAccount | undefined> {
-    return this.storage.getSyntheticAccount(id);
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:chart:synthetic:${id}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<SyntheticAccount>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    const account = await this.storage.getSyntheticAccount(id);
+    
+    // Cache for 12 hours
+    if (account && this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, account, 43200);
+    }
+    
+    return account;
   }
   
   // Analytic Accounts
   async getAnalyticAccounts(): Promise<AnalyticAccount[]> {
-    return this.storage.getAnalyticAccounts();
+    await this.ensureRedisConnection();
+    
+    const cacheKey = 'acc:chart:analytic:all';
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<AnalyticAccount[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    const accounts = await this.storage.getAnalyticAccounts();
+    
+    // Cache for 12 hours
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, accounts, 43200);
+    }
+    
+    return accounts;
   }
   
   async getAnalyticAccountsBySynthetic(syntheticId: string): Promise<AnalyticAccount[]> {
-    return this.storage.getAnalyticAccountsBySynthetic(syntheticId);
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:chart:analytic:synthetic:${syntheticId}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<AnalyticAccount[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    const accounts = await this.storage.getAnalyticAccountsBySynthetic(syntheticId);
+    
+    // Cache for 12 hours
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, accounts, 43200);
+    }
+    
+    return accounts;
   }
   
   async getAnalyticAccount(id: string): Promise<AnalyticAccount | undefined> {
-    return this.storage.getAnalyticAccount(id);
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:chart:analytic:${id}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<AnalyticAccount>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
+    const account = await this.storage.getAnalyticAccount(id);
+    
+    // Cache for 12 hours
+    if (account && this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, account, 43200);
+    }
+    
+    return account;
   }
   
   async createAnalyticAccount(accountData: any): Promise<AnalyticAccount> {
-    return this.storage.createAnalyticAccount(accountData);
+    const account = await this.storage.createAnalyticAccount(accountData);
+    
+    // Invalidate cache after create
+    await this.ensureRedisConnection();
+    if (this.redisService.isConnected()) {
+      await this.redisService.invalidatePattern('acc:chart:analytic:*');
+    }
+    
+    return account;
   }
   
   // All Accounts (legacy accounts table - for forms and dropdowns)

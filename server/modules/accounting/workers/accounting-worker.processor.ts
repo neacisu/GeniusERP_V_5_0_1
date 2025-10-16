@@ -84,6 +84,21 @@ export async function processAccountingJob(job: Job<JobTypeMap[keyof JobTypeMap]
       case 'vat-transfer':
         return await handleVATTransfer(job);
       
+      case 'generate-note-contabil':
+        return await handleGenerateNoteContabil(job);
+      
+      case 'generate-note-pdf':
+        return await handleGenerateNotePdf(job);
+      
+      case 'generate-trial-balance':
+        return await handleGenerateTrialBalance(job);
+      
+      case 'generate-balance-sheet':
+        return await handleGenerateBalanceSheet(job);
+      
+      case 'generate-income-statement':
+        return await handleGenerateIncomeStatement(job);
+      
       default:
         log(`Unknown accounting job type: ${job.name}`, 'accounting-job-error');
         throw new Error(`Unknown job type: ${job.name}`);
@@ -158,38 +173,72 @@ async function handleAccountReconciliation(job: Job): Promise<any> {
   await job.updateProgress(10);
   
   try {
-    // NOTE: AccountingService requires IStorage which is not available in worker context
-    // Reconciliation logic will be implemented directly using Drizzle
+    const { getDrizzle } = await import('../../../common/drizzle');
+    const db = getDrizzle();
     
-    await job.updateProgress(30);
+    await job.updateProgress(20);
     
-    // Calculate expected balance
+    // 1. Citește toate entries din perioada
     log(`Calculating balance for account ${data.accountId} from ${data.startDate} to ${data.endDate}`, 'accounting-job');
     
-    // TODO: Implementare logică de reconciliere
-    // 1. Citește toate entries din perioada
-    // 2. Calculează sold așteptat
-    // 3. Compară cu sold efectiv din account_balances
-    // 4. Creează raport de diferențe
+    const entriesResult = await db.$client.unsafe(`
+      SELECT 
+        ll.debit_amount,
+        ll.credit_amount,
+        le.entry_date
+      FROM ledger_lines ll
+      JOIN ledger_entries le ON le.id = ll.ledger_entry_id
+      WHERE ll.account_id = $1
+      AND le.entry_date >= $2
+      AND le.entry_date <= $3
+      AND le.deleted_at IS NULL
+      ORDER BY le.entry_date
+    `, [data.accountId, data.startDate, data.endDate]);
+    
+    await job.updateProgress(50);
+    
+    // 2. Calculează sold așteptat (suma debit - suma credit)
+    let expectedBalance = 0;
+    for (const entry of entriesResult) {
+      expectedBalance += (entry.debit_amount || 0) - (entry.credit_amount || 0);
+    }
     
     await job.updateProgress(70);
     
-    // Placeholder pentru implementare completă
-    const reconciliationResult = {
-      accountId: data.accountId,
-      startDate: data.startDate,
-      endDate: data.endDate,
-      expectedBalance: 0, // TODO: calculate
-      actualBalance: 0,   // TODO: fetch from DB
-      difference: 0,
-      reconciled: true
-    };
+    // 3. Compară cu sold efectiv din account_balances
+    const balanceResult = await db.$client.unsafe(`
+      SELECT balance
+      FROM account_balances
+      WHERE account_id = $1
+      AND company_id = $2
+      AND balance_date <= $3
+      ORDER BY balance_date DESC
+      LIMIT 1
+    `, [data.accountId, data.companyId, data.endDate]);
+    
+    const actualBalance = balanceResult.length > 0 ? (balanceResult[0].balance || 0) : 0;
+    const difference = Math.abs(expectedBalance - actualBalance);
+    const reconciled = difference < 0.01; // Tolerance de 1 ban
+    
+    await job.updateProgress(90);
+    
+    // 4. Log rezultat
+    if (!reconciled) {
+      log(`WARNING: Reconciliation mismatch for account ${data.accountId}: expected=${expectedBalance}, actual=${actualBalance}, diff=${difference}`, 'accounting-job-warning');
+    }
     
     await job.updateProgress(100);
     
     return {
       success: true,
-      ...reconciliationResult
+      accountId: data.accountId,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      expectedBalance,
+      actualBalance,
+      difference,
+      reconciled,
+      entriesCount: entriesResult.length
     };
   } catch (error: any) {
     log(`Error reconciling account: ${error.message}`, 'accounting-job-error');
@@ -314,12 +363,68 @@ async function handleJournalExport(job: Job): Promise<any> {
   await job.updateProgress(10);
   
   try {
-    // TODO: Implementare export Excel/PDF
-    // Va folosi librării precum ExcelJS sau PDFKit
+    let exportPath: string;
     
-    await job.updateProgress(50);
+    await job.updateProgress(20);
     
-    const exportPath = `/tmp/export-${job.id}.${data.format}`;
+    if (data.format === 'excel') {
+      // Export Excel
+      const { GeneralJournalExcelService } = await import('../services/general-journal-excel.service');
+      const excelService = new GeneralJournalExcelService();
+      
+      await job.updateProgress(40);
+      
+      const { getDrizzle } = await import('../../../common/drizzle');
+      const db = getDrizzle();
+      
+      // Get company name
+      const companyResult = await db.$client.unsafe(`
+        SELECT name FROM companies WHERE id = $1 LIMIT 1
+      `, [data.companyId]);
+      const companyName = companyResult.length > 0 ? companyResult[0].name : 'Unknown Company';
+      
+      await job.updateProgress(60);
+      
+      exportPath = await excelService.generateGeneralJournalExcel({
+        companyId: data.companyId,
+        companyName,
+        startDate: new Date(data.periodStart),
+        endDate: new Date(data.periodEnd),
+        journalTypes: data.journalType ? [data.journalType] : undefined,
+        includeReversals: true,
+        includeMetadata: true
+      });
+    } else {
+      // Export PDF
+      const { GeneralJournalPDFService } = await import('../services/general-journal-pdf.service');
+      const pdfService = new GeneralJournalPDFService();
+      
+      await job.updateProgress(40);
+      
+      const { getDrizzle } = await import('../../../common/drizzle');
+      const db = getDrizzle();
+      
+      // Get company name
+      const companyResult = await db.$client.unsafe(`
+        SELECT name FROM companies WHERE id = $1 LIMIT 1
+      `, [data.companyId]);
+      const companyName = companyResult.length > 0 ? companyResult[0].name : 'Unknown Company';
+      
+      await job.updateProgress(60);
+      
+      exportPath = await pdfService.generateGeneralJournalPDF({
+        companyId: data.companyId,
+        companyName,
+        startDate: new Date(data.periodStart),
+        endDate: new Date(data.periodEnd),
+        journalTypes: data.journalType ? [data.journalType] : undefined,
+        detailLevel: 'detailed',
+        includeReversals: true
+      });
+    }
+    
+    await job.updateProgress(90);
+    
     log(`Export saved to: ${exportPath}`, 'accounting-job');
     
     await job.updateProgress(100);
@@ -328,7 +433,9 @@ async function handleJournalExport(job: Job): Promise<any> {
       success: true,
       exportPath,
       format: data.format,
-      journalType: data.journalType
+      journalType: data.journalType,
+      periodStart: data.periodStart,
+      periodEnd: data.periodEnd
     };
   } catch (error: any) {
     log(`Error exporting journal: ${error.message}`, 'accounting-job-error');
@@ -343,14 +450,115 @@ async function handleBatchExport(job: Job): Promise<any> {
   await job.updateProgress(10);
   
   try {
-    // TODO: Implementare batch export cu ZIP compression
+    const fs = await import('fs');
+    const path = await import('path');
+    // @ts-ignore - archiver types might not be available
+    const archiver = (await import('archiver')).default;
+    
+    const { getDrizzle } = await import('../../../common/drizzle');
+    const db = getDrizzle();
+    
+    // Get company name
+    const companyResult = await db.$client.unsafe(`
+      SELECT name FROM companies WHERE id = $1 LIMIT 1
+    `, [data.companyId]);
+    const companyName = companyResult.length > 0 ? companyResult[0].name : 'Unknown Company';
+    
+    await job.updateProgress(20);
+    
+    // Generate individual journal files
+    const exportedFiles: string[] = [];
+    const progressPerJournal = 60 / data.journals.length;
+    
+    for (let i = 0; i < data.journals.length; i++) {
+      const journalType = data.journals[i];
+      log(`Exporting ${journalType} journal (${i + 1}/${data.journals.length})`, 'accounting-job');
+      
+      let filePath: string;
+      
+      if (data.format === 'excel') {
+        const { GeneralJournalExcelService } = await import('../services/general-journal-excel.service');
+        const excelService = new GeneralJournalExcelService();
+        
+        filePath = await excelService.generateGeneralJournalExcel({
+          companyId: data.companyId,
+          companyName,
+          startDate: new Date(data.periodStart),
+          endDate: new Date(data.periodEnd),
+          journalTypes: [journalType],
+          includeReversals: true,
+          includeMetadata: false
+        });
+      } else {
+        const { GeneralJournalPDFService } = await import('../services/general-journal-pdf.service');
+        const pdfService = new GeneralJournalPDFService();
+        
+        filePath = await pdfService.generateGeneralJournalPDF({
+          companyId: data.companyId,
+          companyName,
+          startDate: new Date(data.periodStart),
+          endDate: new Date(data.periodEnd),
+          journalTypes: [journalType],
+          detailLevel: 'detailed',
+          includeReversals: true
+        });
+      }
+      
+      exportedFiles.push(filePath);
+      await job.updateProgress(20 + Math.round((i + 1) * progressPerJournal));
+    }
+    
+    await job.updateProgress(85);
+    
+    // Create ZIP archive
+    const reportsDir = path.join(process.cwd(), 'reports', 'batch-exports');
+    if (!fs.existsSync(reportsDir)) {
+      fs.mkdirSync(reportsDir, { recursive: true });
+    }
+    
+    const zipFileName = `batch-export-${data.periodStart}-${data.periodEnd}-${Date.now()}.zip`;
+    const zipFilePath = path.join(reportsDir, zipFileName);
+    
+    const output = fs.createWriteStream(zipFilePath);
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    
+    archive.pipe(output);
+    
+    // Add each file to ZIP
+    for (const filePath of exportedFiles) {
+      const fileName = path.basename(filePath);
+      archive.file(filePath, { name: fileName });
+    }
+    
+    await archive.finalize();
+    
+    // Wait for ZIP to finish
+    await new Promise<void>((resolve, reject) => {
+      output.on('close', () => resolve());
+      archive.on('error', reject);
+    });
+    
+    await job.updateProgress(95);
+    
+    // Clean up individual files
+    for (const filePath of exportedFiles) {
+      try {
+        fs.unlinkSync(filePath);
+      } catch (err) {
+        log(`Warning: Could not delete temp file ${filePath}`, 'accounting-job-warning');
+      }
+    }
+    
+    log(`Batch export ZIP created: ${zipFilePath}`, 'accounting-job');
     
     await job.updateProgress(100);
     
     return {
       success: true,
       journalsExported: data.journals.length,
-      format: data.format
+      format: data.format,
+      zipFilePath,
+      filesIncluded: exportedFiles.length
     };
   } catch (error: any) {
     log(`Error in batch export: ${error.message}`, 'accounting-job-error');
@@ -371,37 +579,96 @@ async function handleFiscalMonthClose(job: Job): Promise<any> {
   await job.updateProgress(5);
   
   try {
-    const { FiscalClosureService } = await import('../services/fiscal-closure.service');
-    const fiscalClosureService = new FiscalClosureService();
+    const results: any = {
+      depreciation: null,
+      fxRevaluation: null,
+      vatClosure: null,
+      periodLocked: false
+    };
     
     await job.updateProgress(10);
     
     // Step 1: Depreciation (if not skipped)
     if (!data.skipDepreciation) {
       log(`Running depreciation for ${data.year}-${data.month}`, 'accounting-job');
-      await job.updateProgress(20);
-      // TODO: Call depreciation service
+      await job.updateProgress(15);
+      
+      const { DepreciationCalculationService } = await import('../services/depreciation-calculation.service');
+      const depreciationService = new DepreciationCalculationService();
+      
+      results.depreciation = await depreciationService.calculateMonthlyDepreciation({
+        companyId: data.companyId,
+        periodYear: data.year,
+        periodMonth: data.month,
+        userId: data.userId,
+        dryRun: data.dryRun || false
+      });
+      
+      log(`Depreciation complete: ${results.depreciation.itemCount} assets, total ${results.depreciation.totalDepreciation} RON`, 'accounting-job');
+      await job.updateProgress(30);
     }
     
     // Step 2: FX Revaluation (if not skipped)
     if (!data.skipFXRevaluation) {
       log(`Running FX revaluation for ${data.year}-${data.month}`, 'accounting-job');
-      await job.updateProgress(40);
-      // TODO: Call FX revaluation service
+      await job.updateProgress(35);
+      
+      const { FXRevaluationService } = await import('../services/fx-revaluation.service');
+      const fxRevaluationService = new FXRevaluationService();
+      
+      results.fxRevaluation = await fxRevaluationService.revalueForeignCurrency({
+        companyId: data.companyId,
+        periodYear: data.year,
+        periodMonth: data.month,
+        userId: data.userId,
+        dryRun: data.dryRun || false
+      });
+      
+      log(`FX revaluation complete: net difference ${results.fxRevaluation.netDifference} RON`, 'accounting-job');
+      await job.updateProgress(55);
     }
     
     // Step 3: VAT Closure (if not skipped)
     if (!data.skipVAT) {
       log(`Running VAT closure for ${data.year}-${data.month}`, 'accounting-job');
       await job.updateProgress(60);
-      // TODO: Call VAT closure service
+      
+      const { VATClosureService } = await import('../services/vat-closure.service');
+      const vatClosureService = new VATClosureService();
+      
+      results.vatClosure = await vatClosureService.closeVATPeriod({
+        companyId: data.companyId,
+        periodYear: data.year,
+        periodMonth: data.month,
+        userId: data.userId
+      });
+      
+      log(`VAT closure complete`, 'accounting-job');
+      await job.updateProgress(75);
     }
     
-    // Step 4: Lock period
+    // Step 4: Lock period (if not dry run)
     if (!data.dryRun) {
       log(`Locking period ${data.year}-${data.month}`, 'accounting-job');
       await job.updateProgress(80);
-      // TODO: Lock period in database
+      
+      const { PeriodLockService } = await import('../services/period-lock.service');
+      const periodLockService = new PeriodLockService();
+      
+      // Calculate start and end date of the month
+      const startDate = new Date(data.year, data.month - 1, 1);
+      const endDate = new Date(data.year, data.month, 0);
+      
+      await periodLockService.closePeriod(
+        data.companyId,
+        startDate,
+        endDate,
+        data.userId
+      );
+      
+      results.periodLocked = true;
+      log(`Period ${data.year}-${data.month} locked`, 'accounting-job');
+      await job.updateProgress(95);
     }
     
     await job.updateProgress(100);
@@ -411,7 +678,8 @@ async function handleFiscalMonthClose(job: Job): Promise<any> {
       companyId: data.companyId,
       year: data.year,
       month: data.month,
-      dryRun: data.dryRun || false
+      dryRun: data.dryRun || false,
+      results
     };
   } catch (error: any) {
     log(`Error in fiscal month close: ${error.message}`, 'accounting-job-error');
@@ -426,22 +694,49 @@ async function handleFiscalYearClose(job: Job): Promise<any> {
   await job.updateProgress(5);
   
   try {
-    // Year close este un proces lung care include:
-    // 1. Close all months (1-12)
-    // 2. Calculate annual tax
-    // 3. Close P&L to retained earnings
-    // 4. Generate annual reports
+    const monthResults: any[] = [];
     
+    // 1. Close all months (1-12)
     for (let month = 1; month <= 12; month++) {
       log(`Closing month ${month}/${data.fiscalYear}`, 'accounting-job');
+      
+      const monthCloseResult = await handleFiscalMonthClose({
+        ...job,
+        data: {
+          companyId: data.companyId,
+          year: data.fiscalYear,
+          month,
+          userId: data.userId,
+          skipDepreciation: false,
+          skipFXRevaluation: false,
+          skipVAT: false,
+          dryRun: data.dryRun || false
+        }
+      } as Job);
+      
+      monthResults.push(monthCloseResult);
+      
       await job.updateProgress(5 + (month * 7)); // Progress from 5% to 89%
-      // TODO: Call month close for each month
     }
     
-    await job.updateProgress(95);
+    await job.updateProgress(90);
     
-    // Final year-end entries
-    log(`Creating year-end entries for ${data.fiscalYear}`, 'accounting-job');
+    // 2. Create year-end closing entries (121 -> 117)
+    if (!data.dryRun) {
+      log(`Creating year-end closing entries for ${data.fiscalYear}`, 'accounting-job');
+      
+      const { YearEndClosureService } = await import('../services/year-end-closure.service');
+      const yearEndService = new YearEndClosureService();
+      
+      await yearEndService.closeFiscalYear({
+        companyId: data.companyId,
+        fiscalYear: data.fiscalYear,
+        userId: data.userId,
+        dryRun: false
+      });
+      
+      log(`Year-end closing entries created for ${data.fiscalYear}`, 'accounting-job');
+    }
     
     await job.updateProgress(100);
     
@@ -449,7 +744,9 @@ async function handleFiscalYearClose(job: Job): Promise<any> {
       success: true,
       companyId: data.companyId,
       fiscalYear: data.fiscalYear,
-      dryRun: data.dryRun || false
+      dryRun: data.dryRun || false,
+      monthsClosed: monthResults.length,
+      monthResults
     };
   } catch (error: any) {
     log(`Error in fiscal year close: ${error.message}`, 'accounting-job-error');
@@ -525,37 +822,46 @@ async function handleBulkInvoiceCreate(job: Job): Promise<any> {
     for (let i = 0; i < data.invoices.length; i++) {
       try {
         const invoice = data.invoices[i];
-        // TODO: Decompose invoice object into required parameters
-        // createCustomerInvoice needs: invoiceData, customer, items, taxRates, paymentTerms, notes?
-        // For now, we'll skip actual creation and just track the attempt
         log(`Processing bulk invoice ${i + 1}/${data.invoices.length}`, 'accounting-job');
         
-        // Placeholder - actual implementation needs proper parameter extraction
-        // const result = await salesJournalService.createCustomerInvoice(
-        //   invoice.invoiceData,
-        //   invoice.customer,
-        //   invoice.items,
-        //   invoice.taxRates,
-        //   invoice.paymentTerms,
-        //   invoice.notes
-        // );
-        results.push({ id: `invoice-${i}`, status: 'pending' });
+        // Extract invoice parameters
+        const invoiceId = await salesJournalService.createCustomerInvoice(
+          invoice.invoiceData || invoice,
+          invoice.customer || null,
+          invoice.items || [],
+          invoice.taxRates || [],
+          invoice.paymentTerms || null,
+          invoice.notes || null
+        );
+        
+        results.push({ 
+          index: i, 
+          invoiceId, 
+          invoiceNumber: invoice.invoiceData?.invoiceNumber || invoice.invoiceNumber,
+          status: 'success' 
+        });
         
         // Update progress
         const progress = 10 + ((i + 1) / data.invoices.length) * 85;
         await job.updateProgress(Math.round(progress));
       } catch (error: any) {
-        errors.push({ index: i, error: error.message });
+        log(`Error creating invoice ${i + 1}: ${error.message}`, 'accounting-job-error');
+        errors.push({ 
+          index: i, 
+          invoiceNumber: data.invoices[i].invoiceData?.invoiceNumber || data.invoices[i].invoiceNumber,
+          error: error.message 
+        });
       }
     }
     
     await job.updateProgress(100);
     
     return {
-      success: true,
+      success: errors.length === 0,
       totalInvoices: data.invoices.length,
       successCount: results.length,
       errorCount: errors.length,
+      results,
       errors: errors.length > 0 ? errors : undefined
     };
   } catch (error: any) {
@@ -571,13 +877,51 @@ async function handleBulkPaymentRecord(job: Job): Promise<any> {
   await job.updateProgress(10);
   
   try {
-    // TODO: Implementare bulk payment recording
+    const { SalesJournalService } = await import('../services/sales-journal.service');
+    const salesJournalService = new SalesJournalService();
+    
+    const results: any[] = [];
+    const errors: any[] = [];
+    
+    for (let i = 0; i < data.payments.length; i++) {
+      try {
+        const payment = data.payments[i];
+        log(`Processing payment ${i + 1}/${data.payments.length} for invoice ${payment.invoiceId}`, 'accounting-job');
+        
+        // Record payment
+        const paymentId = await salesJournalService.recordInvoicePayment(payment);
+        
+        results.push({
+          index: i,
+          paymentId,
+          invoiceId: payment.invoiceId,
+          amount: payment.amount,
+          status: 'success'
+        });
+        
+        // Update progress
+        const progress = 10 + ((i + 1) / data.payments.length) * 85;
+        await job.updateProgress(Math.round(progress));
+      } catch (error: any) {
+        log(`Error recording payment ${i + 1}: ${error.message}`, 'accounting-job-error');
+        errors.push({
+          index: i,
+          invoiceId: data.payments[i].invoiceId,
+          amount: data.payments[i].amount,
+          error: error.message
+        });
+      }
+    }
     
     await job.updateProgress(100);
     
     return {
-      success: true,
-      totalPayments: data.payments.length
+      success: errors.length === 0,
+      totalPayments: data.payments.length,
+      successCount: results.length,
+      errorCount: errors.length,
+      results,
+      errors: errors.length > 0 ? errors : undefined
     };
   } catch (error: any) {
     log(`Error in bulk payment record: ${error.message}`, 'accounting-job-error');
@@ -598,8 +942,32 @@ async function handleDepreciationCalculate(job: Job): Promise<any> {
   await job.updateProgress(10);
   
   try {
-    // TODO: Implementare calcul amortizare
-    // Va interacționa cu modulul de active fixe
+    const { DepreciationCalculationService } = await import('../services/depreciation-calculation.service');
+    const depreciationService = new DepreciationCalculationService();
+    
+    await job.updateProgress(30);
+    
+    // Calculate monthly depreciation
+    const result = await depreciationService.calculateMonthlyDepreciation({
+      companyId: data.companyId,
+      periodYear: data.periodYear,
+      periodMonth: data.periodMonth,
+      userId: data.userId,
+      dryRun: data.dryRun || false
+    });
+    
+    await job.updateProgress(90);
+    
+    log(`Depreciation calculated: ${result.itemCount} assets, total ${result.totalDepreciation} RON`, 'accounting-job');
+    
+    // Cache result
+    const redisService = new RedisService();
+    await redisService.connect();
+    
+    if (redisService.isConnected()) {
+      const cacheKey = `acc:depreciation:${data.companyId}:${data.periodYear}-${data.periodMonth}`;
+      await redisService.setCached(cacheKey, result, 3600); // 1h TTL
+    }
     
     await job.updateProgress(100);
     
@@ -607,6 +975,10 @@ async function handleDepreciationCalculate(job: Job): Promise<any> {
       success: true,
       periodYear: data.periodYear,
       periodMonth: data.periodMonth,
+      totalDepreciation: result.totalDepreciation,
+      itemCount: result.itemCount,
+      ledgerEntryId: result.ledgerEntryId,
+      journalNumber: result.journalNumber,
       dryRun: data.dryRun || false
     };
   } catch (error: any) {
@@ -622,7 +994,32 @@ async function handleFXRevaluation(job: Job): Promise<any> {
   await job.updateProgress(10);
   
   try {
-    // TODO: Implementare reevaluare valutară
+    const { FXRevaluationService } = await import('../services/fx-revaluation.service');
+    const fxRevaluationService = new FXRevaluationService();
+    
+    await job.updateProgress(30);
+    
+    // Perform FX revaluation
+    const result = await fxRevaluationService.revalueForeignCurrency({
+      companyId: data.companyId,
+      periodYear: data.periodYear,
+      periodMonth: data.periodMonth,
+      userId: data.userId,
+      dryRun: data.dryRun || false
+    });
+    
+    await job.updateProgress(90);
+    
+    log(`FX revaluation complete: gains ${result.totalGains} RON, losses ${result.totalLosses} RON, net ${result.netDifference} RON`, 'accounting-job');
+    
+    // Cache result
+    const redisService = new RedisService();
+    await redisService.connect();
+    
+    if (redisService.isConnected()) {
+      const cacheKey = `acc:fx-revaluation:${data.companyId}:${data.periodYear}-${data.periodMonth}`;
+      await redisService.setCached(cacheKey, result, 3600); // 1h TTL
+    }
     
     await job.updateProgress(100);
     
@@ -630,6 +1027,12 @@ async function handleFXRevaluation(job: Job): Promise<any> {
       success: true,
       periodYear: data.periodYear,
       periodMonth: data.periodMonth,
+      totalGains: result.totalGains,
+      totalLosses: result.totalLosses,
+      netDifference: result.netDifference,
+      itemCount: result.itemCount,
+      ledgerEntryId: result.ledgerEntryId,
+      journalNumber: result.journalNumber,
       dryRun: data.dryRun || false
     };
   } catch (error: any) {
@@ -667,6 +1070,322 @@ async function handleVATTransfer(job: Job): Promise<any> {
     };
   } catch (error: any) {
     log(`Error in VAT transfer: ${error.message}`, 'accounting-job-error');
+    throw error;
+  }
+}
+
+/**
+ * Generate Note Contabil Handler
+ * Generates an accounting note from a document (invoice, etc.)
+ */
+async function handleGenerateNoteContabil(job: Job): Promise<any> {
+  const data = job.data as JobTypeMap['generate-note-contabil'];
+  log(`Generating note contabil for document ${data.documentId} (type: ${data.documentType})`, 'accounting-job');
+  
+  await job.updateProgress(10);
+  
+  try {
+    // Dynamically import service to avoid circular dependencies
+    const NoteContabilService = (await import('../services/note-contabil.service')).default;
+    const noteContabilService = new NoteContabilService();
+    
+    await job.updateProgress(30);
+    
+    // Generate note from document
+    const result = await noteContabilService.generateNoteContabil(
+      data.documentType,
+      data.documentId,
+      data.companyId,
+      data.userId
+    );
+    
+    await job.updateProgress(80);
+    
+    // Invalidate cache for this company's notes
+    const redisService = new RedisService();
+    await redisService.connect();
+    if (redisService.isConnected()) {
+      await redisService.invalidatePattern(`acc:note-contabil:company:${data.companyId}`);
+      if (result.data?.id) {
+        await redisService.invalidatePattern(`acc:note-contabil:${result.data.id}`);
+      }
+    }
+    
+    await job.updateProgress(100);
+    
+    return {
+      success: result.success,
+      noteId: result.data?.id,
+      noteNumber: result.data?.number,
+      errors: result.errors
+    };
+  } catch (error: any) {
+    log(`Error generating note contabil: ${error.message}`, 'accounting-job-error');
+    throw error;
+  }
+}
+
+/**
+ * Generate Note Contabil PDF Handler
+ * Generates a PDF for an existing accounting note
+ */
+async function handleGenerateNotePdf(job: Job): Promise<any> {
+  const data = job.data as JobTypeMap['generate-note-pdf'];
+  log(`Generating PDF for note contabil ${data.noteId}`, 'accounting-job');
+  
+  await job.updateProgress(10);
+  
+  try {
+    // Dynamically import service
+    const NoteContabilService = (await import('../services/note-contabil.service')).default;
+    const noteContabilService = new NoteContabilService();
+    
+    await job.updateProgress(30);
+    
+    // Generate PDF
+    const pdfBuffer = await noteContabilService.generateNoteContabilPdf(
+      data.noteId,
+      data.companyId
+    );
+    
+    await job.updateProgress(80);
+    
+    if (!pdfBuffer) {
+      throw new Error('Failed to generate PDF');
+    }
+    
+    // Cache PDF in Redis (TTL: 1 hour)
+    const redisService = new RedisService();
+    await redisService.connect();
+    if (redisService.isConnected()) {
+      const cacheKey = `acc:note-pdf:${data.noteId}`;
+      await redisService.setCached(cacheKey, pdfBuffer.toString('base64'), 3600);
+    }
+    
+    await job.updateProgress(100);
+    
+    return {
+      success: true,
+      noteId: data.noteId,
+      pdfBuffer: pdfBuffer.toString('base64'), // Return as base64 for serialization
+      size: pdfBuffer.length
+    };
+  } catch (error: any) {
+    log(`Error generating note PDF: ${error.message}`, 'accounting-job-error');
+    throw error;
+  }
+}
+
+/**
+ * Generate Trial Balance Handler
+ * Generates a trial balance report with Redis caching
+ */
+async function handleGenerateTrialBalance(job: Job): Promise<any> {
+  const data = job.data as JobTypeMap['generate-trial-balance'];
+  log(`Generating trial balance for company ${data.companyId} (${data.startDate} - ${data.endDate})`, 'accounting-job');
+  
+  await job.updateProgress(10);
+  
+  try {
+    // Import accounting controller
+    const { AccountingController } = await import('../controllers/accounting.controller');
+    const { AccountingService } = await import('../services/accounting.service');
+    const { storage } = await import('../../../storage');
+    
+    await job.updateProgress(30);
+    
+    const accountingService = new AccountingService(storage);
+    const accountingController = new AccountingController(accountingService);
+    
+    // Create mock request/response for controller
+    const mockReq: any = {
+      query: {
+        companyId: data.companyId,
+        startDate: data.startDate,
+        endDate: data.endDate
+      },
+      user: {
+        id: data.userId,
+        companyId: data.companyId
+      }
+    };
+    
+    let trialBalance: any;
+    const mockRes: any = {
+      json: (result: any) => {
+        trialBalance = result;
+      },
+      status: (code: number) => mockRes
+    };
+    
+    await job.updateProgress(50);
+    
+    // Call controller method
+    await accountingController.getTrialBalance(mockReq, mockRes);
+    
+    await job.updateProgress(80);
+    
+    // Cache result in Redis
+    const redisService = new RedisService();
+    await redisService.connect();
+    if (redisService.isConnected()) {
+      const cacheKey = `acc:trial-balance:${data.companyId}:${data.startDate}:${data.endDate}`;
+      await redisService.setCached(cacheKey, trialBalance, 3600); // 1 hour TTL
+    }
+    
+    await job.updateProgress(100);
+    
+    return {
+      success: true,
+      companyId: data.companyId,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      data: trialBalance
+    };
+  } catch (error: any) {
+    log(`Error generating trial balance: ${error.message}`, 'accounting-job-error');
+    throw error;
+  }
+}
+
+/**
+ * Generate Balance Sheet Handler
+ * Generates a balance sheet report with Redis caching
+ */
+async function handleGenerateBalanceSheet(job: Job): Promise<any> {
+  const data = job.data as JobTypeMap['generate-balance-sheet'];
+  log(`Generating balance sheet for company ${data.companyId} at ${data.date}`, 'accounting-job');
+  
+  await job.updateProgress(10);
+  
+  try {
+    // Import accounting controller
+    const { AccountingController } = await import('../controllers/accounting.controller');
+    const { AccountingService } = await import('../services/accounting.service');
+    const { storage } = await import('../../../storage');
+    
+    await job.updateProgress(30);
+    
+    const accountingService = new AccountingService(storage);
+    const accountingController = new AccountingController(accountingService);
+    
+    // Create mock request/response for controller
+    const mockReq: any = {
+      query: {
+        companyId: data.companyId,
+        date: data.date
+      },
+      user: {
+        id: data.userId,
+        companyId: data.companyId
+      }
+    };
+    
+    let balanceSheet: any;
+    const mockRes: any = {
+      json: (result: any) => {
+        balanceSheet = result;
+      },
+      status: (code: number) => mockRes
+    };
+    
+    await job.updateProgress(50);
+    
+    // Call controller method
+    await accountingController.getBalanceSheet(mockReq, mockRes);
+    
+    await job.updateProgress(80);
+    
+    // Cache result in Redis
+    const redisService = new RedisService();
+    await redisService.connect();
+    if (redisService.isConnected()) {
+      const cacheKey = `acc:balance-sheet:${data.companyId}:${data.date}`;
+      await redisService.setCached(cacheKey, balanceSheet, 3600); // 1 hour TTL
+    }
+    
+    await job.updateProgress(100);
+    
+    return {
+      success: true,
+      companyId: data.companyId,
+      date: data.date,
+      data: balanceSheet
+    };
+  } catch (error: any) {
+    log(`Error generating balance sheet: ${error.message}`, 'accounting-job-error');
+    throw error;
+  }
+}
+
+/**
+ * Generate Income Statement Handler
+ * Generates an income statement report with Redis caching
+ */
+async function handleGenerateIncomeStatement(job: Job): Promise<any> {
+  const data = job.data as JobTypeMap['generate-income-statement'];
+  log(`Generating income statement for company ${data.companyId} (${data.startDate} - ${data.endDate})`, 'accounting-job');
+  
+  await job.updateProgress(10);
+  
+  try {
+    // Import accounting controller
+    const { AccountingController } = await import('../controllers/accounting.controller');
+    const { AccountingService } = await import('../services/accounting.service');
+    const { storage } = await import('../../../storage');
+    
+    await job.updateProgress(30);
+    
+    const accountingService = new AccountingService(storage);
+    const accountingController = new AccountingController(accountingService);
+    
+    // Create mock request/response for controller
+    const mockReq: any = {
+      query: {
+        companyId: data.companyId,
+        startDate: data.startDate,
+        endDate: data.endDate
+      },
+      user: {
+        id: data.userId,
+        companyId: data.companyId
+      }
+    };
+    
+    let incomeStatement: any;
+    const mockRes: any = {
+      json: (result: any) => {
+        incomeStatement = result;
+      },
+      status: (code: number) => mockRes
+    };
+    
+    await job.updateProgress(50);
+    
+    // Call controller method
+    await accountingController.getIncomeStatement(mockReq, mockRes);
+    
+    await job.updateProgress(80);
+    
+    // Cache result in Redis
+    const redisService = new RedisService();
+    await redisService.connect();
+    if (redisService.isConnected()) {
+      const cacheKey = `acc:income-statement:${data.companyId}:${data.startDate}:${data.endDate}`;
+      await redisService.setCached(cacheKey, incomeStatement, 3600); // 1 hour TTL
+    }
+    
+    await job.updateProgress(100);
+    
+    return {
+      success: true,
+      companyId: data.companyId,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      data: incomeStatement
+    };
+  } catch (error: any) {
+    log(`Error generating income statement: ${error.message}`, 'accounting-job-error');
     throw error;
   }
 }

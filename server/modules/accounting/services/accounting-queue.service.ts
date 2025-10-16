@@ -147,6 +147,50 @@ export interface BatchExportJob {
   userId: string;
 }
 
+// Note Contabil Jobs
+export interface GenerateNoteContabilJob {
+  id: string;
+  timestamp: string;
+  companyId: string;
+  documentType: string;
+  documentId: string;
+  userId: string;
+}
+
+export interface GenerateNotePdfJob {
+  id: string;
+  timestamp: string;
+  companyId: string;
+  noteId: string;
+  userId: string;
+}
+
+export interface GenerateTrialBalanceJob {
+  id: string;
+  timestamp: string;
+  companyId: string;
+  startDate: string;
+  endDate: string;
+  userId: string;
+}
+
+export interface GenerateBalanceSheetJob {
+  id: string;
+  timestamp: string;
+  companyId: string;
+  date: string;
+  userId: string;
+}
+
+export interface GenerateIncomeStatementJob {
+  id: string;
+  timestamp: string;
+  companyId: string;
+  startDate: string;
+  endDate: string;
+  userId: string;
+}
+
 /**
  * Job priority levels
  */
@@ -412,6 +456,83 @@ export class AccountingQueueService {
     };
 
     return await accountingQueue.add('vat-transfer', job, this.getDefaultOptions(JobPriority.HIGH));
+  }
+
+  /**
+   * ============================================================================
+   * NOTE CONTABIL JOBS
+   * ============================================================================
+   */
+
+  /**
+   * Queue note contabil generation
+   */
+  async queueGenerateNoteContabil(data: Omit<GenerateNoteContabilJob, 'id' | 'timestamp'>): Promise<Job> {
+    const job: GenerateNoteContabilJob = {
+      id: this.generateId(),
+      timestamp: new Date().toISOString(),
+      ...data
+    };
+
+    return await accountingQueue.add('generate-note-contabil', job, this.getDefaultOptions(JobPriority.HIGH));
+  }
+
+  /**
+   * Queue note contabil PDF generation
+   */
+  async queueGenerateNotePdf(data: Omit<GenerateNotePdfJob, 'id' | 'timestamp'>): Promise<Job> {
+    const job: GenerateNotePdfJob = {
+      id: this.generateId(),
+      timestamp: new Date().toISOString(),
+      ...data
+    };
+
+    return await accountingQueue.add('generate-note-pdf', job, this.getDefaultOptions(JobPriority.LOW));
+  }
+
+  /**
+   * ============================================================================
+   * FINANCIAL REPORTS JOBS
+   * ============================================================================
+   */
+
+  /**
+   * Queue trial balance generation
+   */
+  async queueGenerateTrialBalance(data: Omit<GenerateTrialBalanceJob, 'id' | 'timestamp'>): Promise<Job> {
+    const job: GenerateTrialBalanceJob = {
+      id: this.generateId(),
+      timestamp: new Date().toISOString(),
+      ...data
+    };
+
+    return await accountingQueue.add('generate-trial-balance', job, this.getDefaultOptions(JobPriority.NORMAL));
+  }
+
+  /**
+   * Queue balance sheet generation
+   */
+  async queueGenerateBalanceSheet(data: Omit<GenerateBalanceSheetJob, 'id' | 'timestamp'>): Promise<Job> {
+    const job: GenerateBalanceSheetJob = {
+      id: this.generateId(),
+      timestamp: new Date().toISOString(),
+      ...data
+    };
+
+    return await accountingQueue.add('generate-balance-sheet', job, this.getDefaultOptions(JobPriority.NORMAL));
+  }
+
+  /**
+   * Queue income statement generation
+   */
+  async queueGenerateIncomeStatement(data: Omit<GenerateIncomeStatementJob, 'id' | 'timestamp'>): Promise<Job> {
+    const job: GenerateIncomeStatementJob = {
+      id: this.generateId(),
+      timestamp: new Date().toISOString(),
+      ...data
+    };
+
+    return await accountingQueue.add('generate-income-statement', job, this.getDefaultOptions(JobPriority.NORMAL));
   }
 
   /**

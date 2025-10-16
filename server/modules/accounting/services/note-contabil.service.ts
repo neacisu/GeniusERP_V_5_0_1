@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DrizzleService, getDrizzle } from '../../../common/drizzle';
 import { AuditService } from '../../audit/services/audit.service';
 import { Service } from '../../../../shared/types';
+import { RedisService } from '../../../services/redis.service';
 
 interface AccountEntry {
   accountCode: string;
@@ -202,6 +203,7 @@ export default class NoteContabilService {
 
   /**
    * Get an accounting note by ID
+   * Enhanced with Redis caching (TTL: 10 minutes)
    * 
    * @param noteId Note ID
    * @param companyId Company ID
@@ -210,6 +212,19 @@ export default class NoteContabilService {
    */
   async getNoteById(noteId: string, companyId: string, userId: string): Promise<any> {
     try {
+      // Check cache first
+      const redisService = new RedisService();
+      await redisService.connect();
+      
+      const cacheKey = `acc:note-contabil:${noteId}`;
+      
+      if (redisService.isConnected()) {
+        const cached = await redisService.getCached<any>(cacheKey);
+        if (cached) {
+          return cached;
+        }
+      }
+      
       // In a real implementation, we would fetch the note from the database
       // For now, we just return a dummy note
       
@@ -227,7 +242,7 @@ export default class NoteContabilService {
         }
       });
       
-      return {
+      const note = {
         id: noteId,
         number: 'NC-202504-1234',
         date: new Date(),
@@ -255,6 +270,13 @@ export default class NoteContabilService {
           }
         ]
       };
+      
+      // Cache for 10 minutes
+      if (redisService.isConnected()) {
+        await redisService.setCached(cacheKey, note, 600);
+      }
+      
+      return note;
     } catch (error) {
       console.error('Error getting accounting note:', error);
       throw error;
@@ -264,12 +286,26 @@ export default class NoteContabilService {
   /**
    * Get all accounting notes for a company
    * Uses journal_entries table adapted for Romanian Accounting Standards
+   * Enhanced with Redis caching (TTL: 5 minutes)
    * 
    * @param companyId Company ID
    * @returns Array of accounting notes (journal entries)
    */
   async getNotesByCompany(companyId: string): Promise<any[]> {
     try {
+      // Check cache first
+      const redisService = new RedisService();
+      await redisService.connect();
+      
+      const cacheKey = `acc:note-contabil:company:${companyId}`;
+      
+      if (redisService.isConnected()) {
+        const cached = await redisService.getCached<any[]>(cacheKey);
+        if (cached) {
+          return cached;
+        }
+      }
+      
       // Query direct din PostgreSQL ledger_entries
       const db = getDrizzle();
       
@@ -285,7 +321,7 @@ export default class NoteContabilService {
       `;
       
       // Transform to Note Contabilă format
-      return entries.map((entry: any) => ({
+      const notes = entries.map((entry: any) => ({
         id: entry.id,
         number: entry.reference_number || 'N/A',
         date: entry.created_at,
@@ -303,6 +339,13 @@ export default class NoteContabilService {
         currencyCode: 'RON',
         exchangeRate: 1.0,
       }));
+      
+      // Cache for 5 minutes
+      if (redisService.isConnected()) {
+        await redisService.setCached(cacheKey, notes, 300);
+      }
+      
+      return notes;
     } catch (error) {
       console.error('Error getting accounting notes:', error);
       throw error;

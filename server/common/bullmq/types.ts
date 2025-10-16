@@ -226,6 +226,39 @@ export interface BatchExportJob extends BaseJobPayload {
   userId: string;
 }
 
+export interface GenerateNoteContabilJob extends BaseJobPayload {
+  companyId: string;
+  documentType: string;
+  documentId: string;
+  userId: string;
+}
+
+export interface GenerateNotePdfJob extends BaseJobPayload {
+  companyId: string;
+  noteId: string;
+  userId: string;
+}
+
+export interface GenerateTrialBalanceJob extends BaseJobPayload {
+  companyId: string;
+  startDate: string;
+  endDate: string;
+  userId: string;
+}
+
+export interface GenerateBalanceSheetJob extends BaseJobPayload {
+  companyId: string;
+  date: string;
+  userId: string;
+}
+
+export interface GenerateIncomeStatementJob extends BaseJobPayload {
+  companyId: string;
+  startDate: string;
+  endDate: string;
+  userId: string;
+}
+
 /**
  * Job name to payload type mapping
  * 
@@ -265,6 +298,15 @@ export interface JobTypeMap {
   'depreciation-calculate': DepreciationCalculateJob;
   'fx-revaluation': FXRevaluationJob;
   'vat-transfer': VATTransferJob;
+  
+  // Note contabil jobs
+  'generate-note-contabil': GenerateNoteContabilJob;
+  'generate-note-pdf': GenerateNotePdfJob;
+  
+  // Financial reports jobs
+  'generate-trial-balance': GenerateTrialBalanceJob;
+  'generate-balance-sheet': GenerateBalanceSheetJob;
+  'generate-income-statement': GenerateIncomeStatementJob;
   
   // Reporting
   'generate-report': ReportGenerationJob;
