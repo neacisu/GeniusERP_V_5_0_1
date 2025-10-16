@@ -12,6 +12,7 @@ import { getDrizzle } from '../../../common/drizzle';
 import { JournalService, LedgerEntryType } from './journal.service';
 import { AuditLogService } from './audit-log.service';
 import { eq, and, sql, ne, isNull } from 'drizzle-orm';
+import { RedisService } from '../../../services/redis.service';
 
 export interface FXRevaluationRequest {
   companyId: string;
@@ -57,6 +58,7 @@ interface BNRExchangeRate {
 export class FXRevaluationService extends DrizzleService {
   private journalService: JournalService;
   private auditService: AuditLogService;
+  private redisService: RedisService;
 
   // Conturi conform OMFP 1802/2014
   private readonly FX_GAIN_ACCOUNT = '765'; // Venituri din diferențe de curs valutar
@@ -66,6 +68,16 @@ export class FXRevaluationService extends DrizzleService {
     super();
     this.journalService = new JournalService();
     this.auditService = new AuditLogService();
+    this.redisService = new RedisService();
+  }
+
+  /**
+   * Ensure Redis connection
+   */
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
   }
 
   /**
@@ -209,6 +221,22 @@ export class FXRevaluationService extends DrizzleService {
     date: Date,
     specificCurrency?: string
   ): Promise<BNRExchangeRate[]> {
+    await this.ensureRedisConnection();
+    
+    // Create cache key based on date and currency
+    const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
+    const cacheKey = specificCurrency 
+      ? `acc:fx:bnr-rates:${dateStr}:${specificCurrency}`
+      : `acc:fx:bnr-rates:${dateStr}:all`;
+    
+    // Check cache first (TTL: 24h - rates update daily)
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<BNRExchangeRate[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
     // TODO: Implementare API BNR real
     // Pentru moment, returnez cursuri hardcoded pentru testare
     
@@ -218,11 +246,19 @@ export class FXRevaluationService extends DrizzleService {
       { currency: 'GBP', rate: 5.7234, date }
     ];
 
+    let rates: BNRExchangeRate[];
     if (specificCurrency) {
-      return mockRates.filter(r => r.currency === specificCurrency);
+      rates = mockRates.filter(r => r.currency === specificCurrency);
+    } else {
+      rates = mockRates;
+    }
+    
+    // Cache for 24 hours
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, rates, 86400);
     }
 
-    return mockRates;
+    return rates;
 
     /* IMPLEMENTARE REALĂ - DE ACTIVAT CÂND API BNR ESTE DISPONIBIL:
     
@@ -265,12 +301,29 @@ export class FXRevaluationService extends DrizzleService {
 
   /**
    * Obține soldurile în valută pentru toate conturile relevante
+   * Enhanced cu Redis caching (TTL: 5 minute)
    */
   private async getForeignCurrencyBalances(
     companyId: string,
     asOfDate: Date,
     specificCurrency?: string
   ): Promise<any[]> {
+    await this.ensureRedisConnection();
+    
+    // Create cache key
+    const dateStr = asOfDate.toISOString().split('T')[0];
+    const cacheKey = specificCurrency
+      ? `acc:fx:balances:${companyId}:${dateStr}:${specificCurrency}`
+      : `acc:fx:balances:${companyId}:${dateStr}:all`;
+    
+    // Check cache first (TTL: 5 minutes)
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<any[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+    
     const db = getDrizzle();
 
     // Conturi care pot avea solduri în valută:
@@ -318,7 +371,14 @@ export class FXRevaluationService extends DrizzleService {
         : [companyId, asOfDate]);
 
       // Combinăm rezultatele
-      return [...(bankBalances || []), ...(customerBalances || [])];
+      const balances = [...(bankBalances || []), ...(customerBalances || [])];
+      
+      // Cache for 5 minutes
+      if (this.redisService.isConnected()) {
+        await this.redisService.setCached(cacheKey, balances, 300);
+      }
+      
+      return balances;
     } catch (error) {
       console.error('Error fetching foreign currency balances:', error);
       return [];
