@@ -102,7 +102,7 @@ describe('BankJournalController', () => {
       };
 
       const mockTransactionId = 'transaction-789';
-      (mockBankJournalService as any).createDeposit = jest.fn().mockResolvedValue(mockTransactionId) as any;
+      jest.spyOn(mockBankJournalService as any, 'createDeposit').mockResolvedValue(mockTransactionId);
 
       await controller.createDeposit(mockReq as AuthenticatedRequest, mockRes as Response);
 
@@ -118,7 +118,7 @@ describe('BankJournalController', () => {
       };
 
       const mockTransactionId = 'transaction-790';
-      (mockBankJournalService as any).createPayment = jest.fn().mockResolvedValue(mockTransactionId) as any;
+      jest.spyOn(mockBankJournalService as any, 'createPayment').mockResolvedValue(mockTransactionId);
 
       await controller.createPayment(mockReq as AuthenticatedRequest, mockRes as Response);
 

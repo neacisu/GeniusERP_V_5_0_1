@@ -100,7 +100,7 @@ describe('CashRegisterController', () => {
       };
 
       const mockTransactionId = 'transaction-456';
-      (mockCashRegisterService as any).recordCashReceipt = jest.fn().mockResolvedValue(mockTransactionId) as any;
+      jest.spyOn(mockCashRegisterService as any, 'recordCashReceipt').mockResolvedValue(mockTransactionId);
 
       await controller.recordCashReceipt(mockReq as AuthenticatedRequest, mockRes as Response);
 
@@ -116,7 +116,7 @@ describe('CashRegisterController', () => {
       };
 
       const mockTransactionId = 'transaction-457';
-      (mockCashRegisterService as any).recordCashPayment = jest.fn().mockResolvedValue(mockTransactionId) as any;
+      jest.spyOn(mockCashRegisterService as any, 'recordCashPayment').mockResolvedValue(mockTransactionId);
 
       await controller.recordCashPayment(mockReq as AuthenticatedRequest, mockRes as Response);
 
@@ -134,7 +134,7 @@ describe('CashRegisterController', () => {
         currency: 'RON'
       };
 
-      (mockCashRegisterService as any).getRegisterBalance = jest.fn().mockResolvedValue(mockBalance) as any;
+      jest.spyOn(mockCashRegisterService as any, 'getRegisterBalance').mockResolvedValue(mockBalance);
 
       await (controller as any).getRegisterBalance(mockReq as AuthenticatedRequest, mockRes as Response);
 
