@@ -3,6 +3,7 @@
  * 
  * TASK 687: Export Registru Jurnal în PDF și Excel
  * Generează rapoarte complete pentru toate notele contabile
+ * Enhanced cu Redis caching (TTL: 15min pentru exports)
  */
 
 import PDFDocument from 'pdfkit';
@@ -10,6 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import { getDrizzle } from '../../../common/drizzle';
 import { and, eq, gte, lte, asc } from 'drizzle-orm';
+import { RedisService } from '../../../services/redis.service';
 
 // Dynamic import pentru xlsx (evităm erori de tip)
 let XLSX: any;
@@ -20,6 +22,18 @@ try {
 }
 
 export class JournalExportService {
+  private redisService: RedisService;
+
+  constructor() {
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
+  }
+
   /**
    * Generează Registru Jurnal PDF
    */

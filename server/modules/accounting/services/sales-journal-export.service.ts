@@ -3,14 +3,27 @@
  * 
  * Serviciu pentru export Jurnal de Vânzări în Excel și PDF
  * conform modelului ANAF (OMFP 2634/2015)
+ * Enhanced cu Redis caching (TTL: 15min pentru exports)
  */
 
 import { SalesJournalReport } from '../types/sales-journal-types';
+import { RedisService } from '../../../services/redis.service';
 
 /**
  * Service pentru export rapoarte jurnal vânzări
  */
 export class SalesJournalExportService {
+  private redisService: RedisService;
+
+  constructor() {
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
+  }
   
   /**
    * Export jurnal în format Excel

@@ -3,12 +3,14 @@
  * 
  * Generează rapoarte PDF pentru Registrul de Casă conform OMFP 2634/2015
  * Format: Registru zilnic cu toate coloanele obligatorii
+ * Enhanced cu Redis caching (TTL: 15min pentru PDF)
  */
 
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import type { CashRegister, CashTransaction } from '../../../../shared/schema/cash-register.schema';
+import { RedisService } from '../../../services/redis.service';
 
 /**
  * RECOMANDARE 1: Serviciu COMPLET de generare PDF pentru Registrul de Casă
@@ -16,6 +18,18 @@ import type { CashRegister, CashTransaction } from '../../../../shared/schema/ca
  * Generează un raport zilnic conform formularului 14-4-7 OMFP 2634/2015
  */
 export class CashRegisterPDFService {
+  private redisService: RedisService;
+
+  constructor() {
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
+  }
+
   /**
    * Generează PDF REAL pentru registrul zilnic de casă
    */

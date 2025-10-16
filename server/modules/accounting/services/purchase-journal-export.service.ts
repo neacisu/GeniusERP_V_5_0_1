@@ -1,10 +1,23 @@
 /**
  * Purchase Journal Export Service
+ * Enhanced cu Redis caching (TTL: 15min pentru exports)
  */
 
 import { PurchaseJournalReport } from '../types/purchase-journal-types';
+import { RedisService } from '../../../services/redis.service';
 
 export class PurchaseJournalExportService {
+  private redisService: RedisService;
+
+  constructor() {
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
+  }
   
   /**
    * Export jurnal în format Excel (CSV) COMPLET

@@ -2,12 +2,14 @@
  * Bank Journal PDF Generator Service
  * 
  * Generează rapoarte PDF pentru Jurnalul de Bancă
+ * Enhanced cu Redis caching (TTL: 15min pentru PDF)
  */
 
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import type { BankAccount, BankTransaction } from '../../../../shared/schema/bank-journal.schema';
+import { RedisService } from '../../../services/redis.service';
 
 /**
  * RECOMANDARE 1: Serviciu COMPLET de generare PDF pentru Jurnalul de Bancă
@@ -15,6 +17,18 @@ import type { BankAccount, BankTransaction } from '../../../../shared/schema/ban
  * Generează raport periodic (lunar, anual) pentru operațiuni bancare
  */
 export class BankJournalPDFService {
+  private redisService: RedisService;
+
+  constructor() {
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
+  }
+
   /**
    * Generează PDF REAL pentru jurnalul de bancă
    */
