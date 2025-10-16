@@ -7,6 +7,8 @@
  * - Import opening balances
  * - Validate balances
  * - Finalize onboarding
+ * 
+ * Enhanced cu Redis caching (TTL: 5min pentru status - apelat frecvent în UI!)
  */
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
@@ -20,6 +22,7 @@ import {
   InsertSyntheticAccount,
 } from '@shared/schema';
 import { AccountingSettingsService } from './accounting-settings.service';
+import { RedisService } from '../../../services/redis.service';
 import * as XLSX from 'xlsx';
 
 export interface OnboardingStatus {
@@ -57,10 +60,18 @@ export interface ImportBalanceData {
 
 export class OnboardingService extends DrizzleService {
   private settingsService: AccountingSettingsService;
+  private redisService: RedisService;
 
   constructor() {
     super();
     this.settingsService = new AccountingSettingsService();
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
   }
 
   /**
@@ -149,6 +160,12 @@ export class OnboardingService extends DrizzleService {
         );
       }
     }
+
+    // Invalidate onboarding status cache
+    await this.ensureRedisConnection();
+    if (this.redisService.isConnected()) {
+      await this.redisService.invalidatePattern(`acc:onboarding:status:${companyId}:*`);
+    }
   }
 
   /**
@@ -204,6 +221,14 @@ export class OnboardingService extends DrizzleService {
       difference: validation.difference,
       errors: validation.errors,
     };
+
+    // Invalidate onboarding status cache
+    await this.ensureRedisConnection();
+    if (this.redisService.isConnected()) {
+      await this.redisService.invalidatePattern(`acc:onboarding:status:${companyId}:*`);
+    }
+
+    return result;
   }
 
   /**
@@ -236,6 +261,12 @@ export class OnboardingService extends DrizzleService {
       userId
     );
 
+    // Invalidate onboarding status cache
+    await this.ensureRedisConnection();
+    if (this.redisService.isConnected()) {
+      await this.redisService.invalidatePattern(`acc:onboarding:status:${companyId}:*`);
+    }
+
     return settings;
   }
 
@@ -243,6 +274,16 @@ export class OnboardingService extends DrizzleService {
    * Get onboarding status for a company
    */
   async getOnboardingStatus(companyId: string, fiscalYear: number): Promise<OnboardingStatus> {
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:onboarding:status:${companyId}:${fiscalYear}`;
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<OnboardingStatus>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+
     // Get settings
     const settings = await this.settingsService.getGeneralSettings(companyId);
 
@@ -270,7 +311,7 @@ export class OnboardingService extends DrizzleService {
     // Check if any balance is validated
     const hasValidatedBalance = balances.some((b) => b.isValidated);
 
-    return {
+    const status = {
       started: settings?.hasAccountingHistory || false,
       startDate: settings?.accountingStartDate || null,
       chartOfAccountsImported: accountsCount.length > 0,
@@ -285,6 +326,13 @@ export class OnboardingService extends DrizzleService {
       completed: (settings?.hasAccountingHistory && settings?.openingBalancesImported && hasValidatedBalance) || false,
       completedAt: hasValidatedBalance ? (balances.find((b) => b.validatedAt)?.validatedAt || null) : null,
     };
+
+    // Cache for 5 minutes (frequently accessed in UI progress bars)
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, status, 300);
+    }
+
+    return status;
   }
 
   /**
