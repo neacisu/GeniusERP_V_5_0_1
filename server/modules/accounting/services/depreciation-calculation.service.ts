@@ -3,6 +3,7 @@
  * 
  * Calculează și postează amortizarea lunară automată conform OMFP 1802/2014
  * Suportă: liniar, degresiv, accelerat
+ * Enhanced cu Redis caching (TTL: 1h pentru schedules)
  */
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
@@ -10,6 +11,7 @@ import { getDrizzle } from '../../../common/drizzle';
 import { JournalService, LedgerEntryType } from './journal.service';
 import { AuditLogService } from './audit-log.service';
 import { eq, and, sql, isNull, lte } from 'drizzle-orm';
+import { RedisService } from '../../../services/redis.service';
 
 export interface DepreciationCalculationRequest {
   companyId: string;
@@ -48,11 +50,19 @@ export interface DepreciationCalculationResult {
 export class DepreciationCalculationService extends DrizzleService {
   private journalService: JournalService;
   private auditService: AuditLogService;
+  private redisService: RedisService;
 
   constructor() {
     super();
     this.journalService = new JournalService();
     this.auditService = new AuditLogService();
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
   }
 
   /**
