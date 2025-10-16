@@ -94,7 +94,9 @@ export default function GeneralSettingsSection({ companyId, onChange }: GeneralS
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateMutation.mutate(formData);
+    // Exclude read-only audit fields before sending to backend
+    const { id, companyId: _, createdAt, updatedAt, createdBy, ...dataToSend } = formData as any;
+    updateMutation.mutate(dataToSend);
   };
 
   const handleChange = (field: keyof AccountingSettings, value: any) => {

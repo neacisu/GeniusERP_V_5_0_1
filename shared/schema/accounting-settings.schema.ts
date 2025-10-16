@@ -225,6 +225,7 @@ export const updateAccountingSettingsSchema = insertAccountingSettingsSchema.par
   id: true,
   companyId: true,
   createdAt: true,
+  updatedAt: true,
   createdBy: true,
 });
 
@@ -243,6 +244,8 @@ export const updateVatSettingsSchema = insertVatSettingsSchema.partial().omit({
   id: true,
   companyId: true,
   createdAt: true,
+  updatedAt: true,
+  createdBy: true,
 });
 
 // Account Relationships Schemas
@@ -260,6 +263,8 @@ export const updateAccountRelationshipsSchema = insertAccountRelationshipsSchema
   id: true,
   companyId: true,
   createdAt: true,
+  updatedAt: true,
+  createdBy: true,
 });
 
 // Opening Balances Schemas
@@ -278,6 +283,7 @@ export const updateOpeningBalancesSchema = insertOpeningBalancesSchema.partial()
   id: true,
   companyId: true,
   createdAt: true,
+  updatedAt: true,
   createdBy: true,
 });
 
