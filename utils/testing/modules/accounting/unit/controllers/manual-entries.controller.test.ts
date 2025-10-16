@@ -18,7 +18,7 @@ describe('ManualEntriesController', () => {
 
   beforeEach(() => {
     mockJournalService = new JournalService() as jest.Mocked<JournalService>;
-    controller = new ManualEntriesController(mockJournalService);
+    controller = new ManualEntriesController();
 
     mockReq = {
       user: {
