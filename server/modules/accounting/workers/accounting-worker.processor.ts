@@ -856,7 +856,7 @@ async function handleBulkInvoiceCreate(job: Job): Promise<any> {
     
     await job.updateProgress(100);
     
-    return {
+    const result = {
       success: errors.length === 0,
       totalInvoices: data.invoices.length,
       successCount: results.length,
@@ -864,6 +864,18 @@ async function handleBulkInvoiceCreate(job: Job): Promise<any> {
       results,
       errors: errors.length > 0 ? errors : undefined
     };
+    
+    // Cache result for 10 minutes using BulkOperationsService
+    try {
+      const { BulkOperationsService } = await import('../services/bulk-operations.service');
+      const bulkOpsService = new BulkOperationsService();
+      await bulkOpsService.cacheBulkOperationResult(job.id as string, result);
+      log(`Bulk invoice result cached for job ${job.id}`, 'accounting-job');
+    } catch (cacheError: any) {
+      log(`Warning: Failed to cache bulk invoice result: ${cacheError.message}`, 'accounting-job-warning');
+    }
+    
+    return result;
   } catch (error: any) {
     log(`Error in bulk invoice create: ${error.message}`, 'accounting-job-error');
     throw error;
@@ -915,7 +927,7 @@ async function handleBulkPaymentRecord(job: Job): Promise<any> {
     
     await job.updateProgress(100);
     
-    return {
+    const result = {
       success: errors.length === 0,
       totalPayments: data.payments.length,
       successCount: results.length,
@@ -923,6 +935,18 @@ async function handleBulkPaymentRecord(job: Job): Promise<any> {
       results,
       errors: errors.length > 0 ? errors : undefined
     };
+    
+    // Cache result for 10 minutes using BulkOperationsService
+    try {
+      const { BulkOperationsService } = await import('../services/bulk-operations.service');
+      const bulkOpsService = new BulkOperationsService();
+      await bulkOpsService.cacheBulkOperationResult(job.id as string, result);
+      log(`Bulk payment result cached for job ${job.id}`, 'accounting-job');
+    } catch (cacheError: any) {
+      log(`Warning: Failed to cache bulk payment result: ${cacheError.message}`, 'accounting-job-warning');
+    }
+    
+    return result;
   } catch (error: any) {
     log(`Error in bulk payment record: ${error.message}`, 'accounting-job-error');
     throw error;
