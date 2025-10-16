@@ -3,28 +3,43 @@
  * 
  * RECOMANDARE 5: Serviciu pentru gestionarea conturilor configurabile
  * Înlocuiește hardcodarea conturilor din CASH_ACCOUNTS și BANK_ACCOUNTS
+ * Enhanced cu Redis caching (TTL: 24h)
  */
 
 import { getDrizzle } from '../../../common/drizzle';
 import { eq, and } from 'drizzle-orm';
 import { accountMappings } from '../../../../shared/schema/account-mappings.schema';
-
-/**
- * Cache pentru conturi (pentru performanță)
- */
-const accountCache = new Map<string, Map<string, string>>();
+import { RedisService } from '../../../services/redis.service';
 
 export class AccountMappingService {
+  private redisService: RedisService;
+
+  constructor() {
+    this.redisService = new RedisService();
+  }
+
+  /**
+   * Ensure Redis connection
+   */
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
+  }
   /**
    * Obține contul contabil pentru un tip de operațiune
+   * Enhanced cu Redis caching (TTL: 24h)
    */
   public async getAccount(companyId: string, mappingType: string): Promise<string> {
-    // Check cache first
-    const cacheKey = `${companyId}-${mappingType}`;
-    if (accountCache.has(companyId)) {
-      const companyCache = accountCache.get(companyId)!;
-      if (companyCache.has(mappingType)) {
-        return companyCache.get(mappingType)!;
+    await this.ensureRedisConnection();
+    
+    // Check Redis cache first
+    const cacheKey = `acc:mapping:${companyId}:${mappingType}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<string>(cacheKey);
+      if (cached) {
+        return cached;
       }
     }
     
@@ -42,17 +57,23 @@ export class AccountMappingService {
         .limit(1);
       
       if (mapping) {
-        // Cache result
-        if (!accountCache.has(companyId)) {
-          accountCache.set(companyId, new Map());
+        // Cache result in Redis for 24 hours
+        if (this.redisService.isConnected()) {
+          await this.redisService.setCached(cacheKey, mapping.accountCode, 86400);
         }
-        accountCache.get(companyId)!.set(mappingType, mapping.accountCode);
         
         return mapping.accountCode;
       }
       
       // Fallback la conturi default RO dacă nu e configurat
-      return this.getDefaultAccount(mappingType);
+      const defaultAccount = this.getDefaultAccount(mappingType);
+      
+      // Cache default account too (shorter TTL: 1h)
+      if (this.redisService.isConnected()) {
+        await this.redisService.setCached(cacheKey, defaultAccount, 3600);
+      }
+      
+      return defaultAccount;
     } catch (error) {
       console.error(`Error getting account mapping for ${mappingType}:`, error);
       return this.getDefaultAccount(mappingType);
@@ -109,12 +130,21 @@ export class AccountMappingService {
   
   /**
    * Invalidează cache-ul pentru o companie (după modificări)
+   * Enhanced cu Redis invalidation
    */
-  public clearCache(companyId?: string): void {
+  public async clearCache(companyId?: string): Promise<void> {
+    await this.ensureRedisConnection();
+    
+    if (!this.redisService.isConnected()) {
+      return;
+    }
+    
     if (companyId) {
-      accountCache.delete(companyId);
+      // Invalidate only for specific company
+      await this.redisService.invalidatePattern(`acc:mapping:${companyId}:*`);
     } else {
-      accountCache.clear();
+      // Invalidate all account mappings
+      await this.redisService.invalidatePattern(`acc:mapping:*`);
     }
   }
   
