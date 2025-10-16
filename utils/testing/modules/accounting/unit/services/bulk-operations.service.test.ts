@@ -62,8 +62,8 @@ describe('BulkOperationsService Unit Tests', () => {
   describe('Bulk Payment Recording', () => {
     it('should queue bulk payment recording', async () => {
       const payments = [
-        { invoiceId: 'invoice-1', amount: 1190, paymentMethod: 'bank_transfer', paymentDate: '2024-01-15' },
-        { invoiceId: 'invoice-2', amount: 1000, paymentMethod: 'cash', paymentDate: '2024-01-16' }
+        { invoiceId: 'invoice-1', paymentAmount: 1190, paymentMethod: 'BANK_TRANSFER' as const, paymentDate: '2024-01-15' },
+        { invoiceId: 'invoice-2', paymentAmount: 1000, paymentMethod: 'CASH' as const, paymentDate: '2024-01-16' }
       ];
 
       const result = await bulkOperationsService.bulkRecordPayments('company-1', payments, 'user-1');
