@@ -72,22 +72,22 @@ describe('JournalService - Unit Tests', () => {
     it('should create simple transaction', async () => {
       const result = await journalService.recordTransaction({
         companyId: 'company-1',
-        debitAccountId: '411',
-        creditAccountId: '707',
+        debitAccount: '411',
+        creditAccount: '707',
         amount: 1000,
         description: 'Sale transaction',
       });
 
       expect(result).toBeDefined();
-      expect(result.id).toBeDefined();
+      expect(typeof result).toBe('string'); // Returns entry ID as string
     });
 
     it('should validate transaction amounts', async () => {
       await expect(
         journalService.recordTransaction({
           companyId: 'company-1',
-          debitAccountId: '411',
-          creditAccountId: '707',
+          debitAccount: '411',
+          creditAccount: '707',
           amount: -1000, // Negative amount!
           description: 'Invalid',
         })

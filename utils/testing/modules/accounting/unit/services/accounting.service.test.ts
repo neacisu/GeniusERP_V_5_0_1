@@ -28,11 +28,27 @@ describe('AccountingService - Unit Tests', () => {
   describe('Account Classes', () => {
     it('should get all account classes', async () => {
       const mockClasses = [
-        { id: '1', code: '1', name: 'ACTIVE IMOBILIZATE' },
-        { id: '2', code: '2', name: 'ACTIVE CIRCULANTE' },
+        { 
+          id: '1', 
+          code: '1', 
+          name: 'ACTIVE IMOBILIZATE',
+          description: null,
+          defaultAccountFunction: 'asset',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        { 
+          id: '2', 
+          code: '2', 
+          name: 'ACTIVE CIRCULANTE',
+          description: null,
+          defaultAccountFunction: 'asset',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
       ];
 
-      mockStorage.getAccountClasses.mockResolvedValue(mockClasses);
+      mockStorage.getAccountClasses.mockResolvedValue(mockClasses as any);
 
       const result = await accountingService.getAccountClasses();
 
@@ -41,8 +57,16 @@ describe('AccountingService - Unit Tests', () => {
     });
 
     it('should cache account classes with 24h TTL', async () => {
-      const mockClasses = [{ id: '1', code: '1', name: 'Test' }];
-      mockStorage.getAccountClasses.mockResolvedValue(mockClasses);
+      const mockClasses = [{ 
+        id: '1', 
+        code: '1', 
+        name: 'Test',
+        description: null,
+        defaultAccountFunction: 'asset',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }];
+      mockStorage.getAccountClasses.mockResolvedValue(mockClasses as any);
 
       await accountingService.getAccountClasses();
 
@@ -51,8 +75,16 @@ describe('AccountingService - Unit Tests', () => {
     });
 
     it('should get single account class by ID', async () => {
-      const mockClass = { id: '1', code: '1', name: 'ACTIVE IMOBILIZATE' };
-      mockStorage.getAccountClass.mockResolvedValue(mockClass);
+      const mockClass = { 
+        id: '1', 
+        code: '1', 
+        name: 'ACTIVE IMOBILIZATE',
+        description: null,
+        defaultAccountFunction: 'asset',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      mockStorage.getAccountClass.mockResolvedValue(mockClass as any);
 
       const result = await accountingService.getAccountClass('1');
 
@@ -61,8 +93,16 @@ describe('AccountingService - Unit Tests', () => {
     });
 
     it('should get account class by code', async () => {
-      const mockClass = { id: '4', code: '4', name: 'FURNIZORI SI CONTURI ASIMILATE' };
-      mockStorage.getAccountClassByCode.mockResolvedValue(mockClass);
+      const mockClass = { 
+        id: '4', 
+        code: '4', 
+        name: 'FURNIZORI SI CONTURI ASIMILATE',
+        description: null,
+        defaultAccountFunction: 'liability',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      mockStorage.getAccountClassByCode.mockResolvedValue(mockClass as any);
 
       const result = await accountingService.getAccountClassByCode('4');
 
@@ -74,10 +114,26 @@ describe('AccountingService - Unit Tests', () => {
   describe('Account Groups', () => {
     it('should get all account groups', async () => {
       const mockGroups = [
-        { id: '40', code: '40', name: 'FURNIZORI' },
-        { id: '41', code: '41', name: 'CLIENTI' },
+        { 
+          id: '40', 
+          code: '40', 
+          name: 'FURNIZORI',
+          description: null,
+          classId: '4',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        { 
+          id: '41', 
+          code: '41', 
+          name: 'CLIENTI',
+          description: null,
+          classId: '4',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
       ];
-      mockStorage.getAccountGroups.mockResolvedValue(mockGroups);
+      mockStorage.getAccountGroups.mockResolvedValue(mockGroups as any);
 
       const result = await accountingService.getAccountGroups();
 
@@ -88,10 +144,34 @@ describe('AccountingService - Unit Tests', () => {
   describe('Synthetic Accounts', () => {
     it('should get all synthetic accounts', async () => {
       const mockAccounts = [
-        { id: '401', code: '401', name: 'Furnizori' },
-        { id: '411', code: '411', name: 'Clienți' },
+        { 
+          id: '401', 
+          code: '401', 
+          name: 'Furnizori',
+          description: null,
+          accountFunction: 'payable',
+          grade: 3,
+          groupId: '40',
+          parentId: null,
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        { 
+          id: '411', 
+          code: '411', 
+          name: 'Clienți',
+          description: null,
+          accountFunction: 'receivable',
+          grade: 3,
+          groupId: '41',
+          parentId: null,
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
       ];
-      mockStorage.getSyntheticAccounts.mockResolvedValue(mockAccounts);
+      mockStorage.getSyntheticAccounts.mockResolvedValue(mockAccounts as any);
 
       const result = await accountingService.getSyntheticAccounts();
 
@@ -102,9 +182,19 @@ describe('AccountingService - Unit Tests', () => {
   describe('Analytic Accounts', () => {
     it('should get all analytic accounts', async () => {
       const mockAccounts = [
-        { id: '1', code: '401.001', name: 'Supplier Test' },
+        { 
+          id: '1', 
+          code: '401.001', 
+          name: 'Supplier Test',
+          description: null,
+          accountFunction: 'payable',
+          syntheticId: '401',
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
       ];
-      mockStorage.getAnalyticAccounts.mockResolvedValue(mockAccounts);
+      mockStorage.getAnalyticAccounts.mockResolvedValue(mockAccounts as any);
 
       const result = await accountingService.getAnalyticAccounts();
 
