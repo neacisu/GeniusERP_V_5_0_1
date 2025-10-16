@@ -4,6 +4,7 @@
     "module": "CommonJS",
     "lib": ["esnext"],
     "types": ["node", "jest"],
+    "typeRoots": ["../../node_modules/@types"],
     "noEmit": true,
     "strict": true,
     "esModuleInterop": true,
@@ -18,10 +19,16 @@
     }
   },
   "include": [
-    "./**/*.ts"
+    "./**/*.ts",
+    "../../server/**/*.ts",
+    "../../shared/**/*.ts",
+    "./jest-global.d.ts"
   ],
   "exclude": [
-    "node_modules"
+    "../../node_modules",
+    "../../build",
+    "../../dist",
+    "../../client"
   ]
 }
 
