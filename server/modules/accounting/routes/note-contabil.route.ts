@@ -60,10 +60,8 @@ router.get(
   }
 );
 
-/**
- * Generate a Note Contabil for a document
- * POST /api/accounting/note-contabil/generate
- */
+// DEPRECATED: Use /generate/async instead (better performance with BullMQ)
+/*
 router.post(
   '/generate',
   accountingHeavyRateLimiter,
@@ -140,6 +138,7 @@ router.post(
     }
   }
 );
+*/
 
 /**
  * Generate a Note Contabil ASYNC (via BullMQ)
@@ -348,10 +347,8 @@ router.get(
   }
 );
 
-/**
- * Get Note Contabil PDF
- * GET /api/accounting/note-contabil/:id/pdf
- */
+// DEPRECATED: Use /:id/pdf/async instead (better performance with BullMQ + Redis cache)
+/*
 router.get(
   '/:id/pdf',
   exportRateLimiter,
@@ -413,6 +410,7 @@ router.get(
     }
   }
 );
+*/
 
 /**
  * Generate Note Contabil PDF ASYNC (via BullMQ)
