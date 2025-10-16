@@ -72,6 +72,17 @@ export class DepreciationCalculationService extends DrizzleService {
     request: DepreciationCalculationRequest
   ): Promise<DepreciationCalculationResult> {
     const { companyId, periodYear, periodMonth, userId, dryRun = false } = request;
+    
+    await this.ensureRedisConnection();
+    
+    // Check cache first (only for non-dryRun calculations)
+    if (!dryRun && this.redisService.isConnected()) {
+      const cacheKey = `acc:depreciation:${companyId}:${periodYear}:${periodMonth}`;
+      const cached = await this.redisService.getCached<DepreciationCalculationResult>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
 
     // Calculează data perioadei
     const periodDate = new Date(periodYear, periodMonth - 1, 1);
