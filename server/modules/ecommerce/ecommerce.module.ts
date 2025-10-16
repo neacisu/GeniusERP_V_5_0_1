@@ -30,6 +30,8 @@ import { CartController } from './controllers/cart.controller';
 import { CheckoutController } from './controllers/checkout.controller';
 import { IntegrationService } from '../../common/services/integration.service';
 import { AuditService } from '../audit/services/audit.service';
+import { registerModule } from '../../common/services/registry';
+import { getDrizzleInstance } from '../../common/drizzle/db';
 
 // Create a logger for the module
 const logger = new Logger('ECommerceModule');
@@ -44,24 +46,27 @@ export function initECommerceModule(app: Express, drizzleService: DrizzleService
   logger.info('Initializing E-Commerce module');
   
   try {
+    // Get the PostgresJsDatabase instance for services that need it
+    const db = getDrizzleInstance() as any;
+    
     // Initialize core services with drizzleService
     const ordersService = new OrdersService(drizzleService);
     const transactionsService = new TransactionsService(drizzleService);
     
-    // Initialize integration service and required services
-    const integrationService = new IntegrationService(drizzleService);
-    const auditService = new AuditService(drizzleService);
+    // Initialize integration service and required services (these need PostgresJsDatabase)
+    const integrationService = new IntegrationService(db);
+    const auditService = new AuditService();
     
-    // Initialize payment service
-    const paymentService = new PaymentService(integrationService, auditService);
+    // Initialize payment service (expects db and integrationService)
+    const paymentService = new PaymentService(db, integrationService);
     
     // Initialize cart and checkout services
     const cartService = new CartService(drizzleService);
     const checkoutService = new CheckoutService(drizzleService, ordersService, transactionsService, cartService, paymentService);
     
-    // Initialize integration services
-    const shopifyService = new ShopifyIntegrationService(drizzleService, ordersService, transactionsService);
-    const posService = new POSIntegrationService(drizzleService, ordersService, transactionsService);
+    // Initialize integration services (these need PostgresJsDatabase)
+    const shopifyService = new ShopifyIntegrationService(db, ordersService, transactionsService);
+    const posService = new POSIntegrationService(db, ordersService, transactionsService);
     
     // Initialize integration routers
     const shopifyRouter = new ShopifyRouter(shopifyService);
@@ -124,9 +129,8 @@ export const ECommerceModule = {
   register: (app: Express, drizzleService: DrizzleService) => {
     const moduleInfo = initECommerceModule(app, drizzleService);
     
-    // Register module with service registry if available
+    // Register module with service registry
     try {
-      const { registerModule } = require('../../common/services');
       registerModule('ecommerce', {
         name: ECommerceModule.name,
         version: ECommerceModule.version,
@@ -135,7 +139,7 @@ export const ECommerceModule = {
       });
       logger.info('E-Commerce module registered with service registry');
     } catch (error) {
-      logger.warn('Service registry not available, module services will not be globally accessible', error);
+      logger.warn('Failed to register E-Commerce module with service registry', error);
     }
     
     return moduleInfo;

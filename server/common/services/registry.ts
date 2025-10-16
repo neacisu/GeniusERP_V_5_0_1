@@ -69,3 +69,55 @@ export async function logAction(params: {
 }): Promise<string> {
   return AuditService.log(params as any);
 }
+
+/**
+ * Module registry for tracking registered application modules
+ */
+const moduleRegistry = new Map<string, ModuleRegistration>();
+
+/**
+ * Module registration information
+ */
+export interface ModuleRegistration {
+  name: string;
+  version: string;
+  services?: Record<string, any>;
+  permissions?: string[];
+}
+
+/**
+ * Register a module with the service registry
+ * This allows modules to expose their services globally and track module information
+ * 
+ * @param moduleId - Unique identifier for the module
+ * @param moduleInfo - Module registration information
+ */
+export function registerModule(moduleId: string, moduleInfo: ModuleRegistration): void {
+  moduleRegistry.set(moduleId, moduleInfo);
+  
+  // If the module provides services, add them to the global Services object
+  if (moduleInfo.services) {
+    Object.keys(moduleInfo.services).forEach(serviceKey => {
+      (Services as any)[serviceKey] = moduleInfo.services![serviceKey];
+    });
+  }
+}
+
+/**
+ * Get information about a registered module
+ * 
+ * @param moduleId - Unique identifier for the module
+ * @returns Module registration information or undefined if not found
+ */
+export function getModule(moduleId: string): ModuleRegistration | undefined {
+  return moduleRegistry.get(moduleId);
+}
+
+/**
+ * Get all registered modules
+ * 
+ * @returns Array of all registered modules
+ */
+export function getAllModules(): ModuleRegistration[] {
+  return Array.from(moduleRegistry.values());
+}

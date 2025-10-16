@@ -10,6 +10,7 @@ import { CompanyService } from './services/company.service';
 import { CompanyRouter, createCompanyRouter } from './routes';
 import { createCompanyController } from './controllers';
 import { Logger } from '../../common/logger';
+import { registerModule } from '../../common/services/registry';
 
 // Create a logger for the module
 const logger = new Logger('CompanyModule');
@@ -33,9 +34,8 @@ export const CompanyModule = {
   register: (app: Express, drizzleService: DrizzleService) => {
     const moduleInfo = initCompanyModule(app, drizzleService);
     
-    // Register module with service registry if available
+    // Register module with service registry
     try {
-      const { registerModule } = require('../../common/services');
       registerModule('company', {
         name: CompanyModule.name,
         version: CompanyModule.version,
@@ -44,7 +44,7 @@ export const CompanyModule = {
       });
       logger.info('Company module registered with service registry');
     } catch (error) {
-      logger.warn('Service registry not available, module services will not be globally accessible');
+      logger.warn('Failed to register Company module with service registry', error);
     }
     
     return moduleInfo;

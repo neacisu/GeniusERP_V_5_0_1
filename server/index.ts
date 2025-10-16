@@ -1,4 +1,7 @@
-// Import monkey patch first before any other imports
+// Import Sentry instrumentation FIRST - for proper ESM instrumentation
+import './instrument';
+
+// Import monkey patch before other imports
 import './monkey-patch';
 
 // Load environment variables
@@ -28,10 +31,10 @@ import { initializeServiceRegistry } from './common/services/registry.init';
 import { createModuleLogger } from './common/logger/loki-logger';
 const appLogger = createModuleLogger('app');
 
+// Import Sentry for Express error handling
+import * as Sentry from '@sentry/node';
 // Import metrics middleware
 import { metricsMiddleware, metricsHandler } from './middlewares/metrics.middleware';
-// Import Sentry middleware
-import { initializeSentry, sentryErrorHandler } from './middlewares/sentry.middleware';
 // Import logging middleware
 import { loggingMiddleware } from './middlewares/logging.middleware';
 // Import Sentry test routes (DOAR pentru development)
@@ -43,8 +46,8 @@ import cors from 'cors';
 // Create Express app
 const app = express();
 
-// Initialize Sentry FIRST - before any other middleware
-initializeSentry(app);
+// Note: Sentry is initialized via instrument.ts (loaded with --import flag)
+// This ensures proper instrumentation in ESM context
 
 // Helmet configuration for security headers
 app.use(helmet({
@@ -181,8 +184,11 @@ const httpServer = createServer(app);
     
     appLogger.info('Essential services initialized successfully');
 
-    // Sentry error handler - MUST be before the default error handler (v10+ API)
-    sentryErrorHandler(app);
+    // Sentry error handler - MUST be before the default error handler
+    // Only setup if Sentry is configured
+    if (process.env.SENTRY_DSN) {
+      Sentry.setupExpressErrorHandler(app);
+    }
 
     // Error handling middleware
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

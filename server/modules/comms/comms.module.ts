@@ -24,6 +24,8 @@ import { ChannelConfigsRouter } from './routes/channel-configs.routes';
 import { ThreadAccessRouter } from './routes/thread-access.routes';
 import { MessageAccessRouter } from './routes/message-access.routes';
 import { MessagesController, createMessagesController } from './controllers';
+import { registerModule } from '../../common/services/registry';
+import { getDrizzleInstance } from '../../common/drizzle/db';
 
 // Create a logger for the module
 const logger = new Logger('CommsModule');
@@ -47,9 +49,8 @@ export const CommsModule = {
   register: (app: Express, drizzleService: DrizzleService) => {
     const moduleInfo = initCommsModule(app, drizzleService);
     
-    // Register module with service registry if available
+    // Register module with service registry
     try {
-      const { registerModule } = require('../../common/services');
       registerModule('communications', {
         name: CommsModule.name,
         version: CommsModule.version,
@@ -58,7 +59,7 @@ export const CommsModule = {
       });
       logger.info('Communications module registered with service registry');
     } catch (error) {
-      logger.warn('Service registry not available, module services will not be globally accessible');
+      logger.warn('Failed to register Communications module with service registry', error);
     }
     
     return moduleInfo;
@@ -138,13 +139,16 @@ export function initCommsModule(app: Express, drizzleService: DrizzleService) {
   logger.info('Initializing Communications module');
   
   try {
-    // Initialize core services
-    const threadsService = new ThreadsService(drizzleService);
-    const messagesService = new MessagesService(drizzleService);
-    const contactsService = new ContactsService(drizzleService);
-    const channelConfigsService = new ChannelConfigsService(drizzleService);
-    const threadAccessService = new ThreadAccessService(drizzleService);
-    const messageAccessService = new MessageAccessService(drizzleService);
+    // Get the PostgresJsDatabase instance for services that need it
+    const db = getDrizzleInstance() as any;
+    
+    // Initialize core services (these services expect PostgresJsDatabase)
+    const threadsService = new ThreadsService(db);
+    const messagesService = new MessagesService(db);
+    const contactsService = new ContactsService(db);
+    const channelConfigsService = new ChannelConfigsService(db);
+    const threadAccessService = new ThreadAccessService(db);
+    const messageAccessService = new MessageAccessService(db);
     
     // Initialize controllers
     const messagesController = createMessagesController(messagesService);
