@@ -3,6 +3,10 @@
  * 
  * Serviciu pentru închiderea automată a TVA-ului lunar/trimestrial
  * Conform Codul Fiscal (Legea 227/2015) și Procedură ANAF
+ * 
+ * ENHANCED WITH:
+ * - BullMQ async processing
+ * - Cache D300 reports
  */
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
@@ -10,6 +14,9 @@ import { getDrizzle } from '../../../common/drizzle';
 import { JournalService, LedgerEntryType } from './journal.service';
 import { AuditLogService } from './audit-log.service';
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
+import { accountingQueueService } from './accounting-queue.service';
+import { accountingCacheService } from './accounting-cache.service';
+import { log } from '../../../vite';
 
 export interface VATClosureRequest {
   companyId: string;
@@ -323,6 +330,91 @@ export class VATClosureService extends DrizzleService {
       box60: Math.max(0, balances.vatCollected - balances.vatDeductible), // TVA de plată
       box70: Math.max(0, balances.vatDeductible - balances.vatCollected) // TVA de recuperat
     };
+  }
+  
+  /**
+   * ============================================================================
+   * CACHING & ASYNC OPERATIONS
+   * ============================================================================
+   */
+  
+  /**
+   * Get D300 report with caching
+   */
+  async getD300ReportCached(
+    companyId: string,
+    year: number,
+    month: number,
+    useCache: boolean = true
+  ): Promise<any> {
+    // Check cache first
+    if (useCache) {
+      await accountingCacheService.connect();
+      
+      if (accountingCacheService.isConnected()) {
+        const cached = await accountingCacheService.getVATReport(companyId, year, month);
+        
+        if (cached) {
+          log(`VAT D300 report cache hit for ${companyId} ${year}-${month}`, 'vat-cache');
+          return cached;
+        }
+      }
+    }
+    
+    // Generate report
+    log(`Generating VAT D300 report for ${companyId} ${year}-${month}`, 'vat-closure');
+    const report = await this.calculateD300Report(companyId, year, month);
+    
+    // Cache result
+    if (useCache && accountingCacheService.isConnected()) {
+      await accountingCacheService.setVATReport(companyId, year, month, report);
+      log(`VAT D300 report cached for ${companyId}`, 'vat-cache');
+    }
+    
+    return report;
+  }
+  
+  /**
+   * Queue VAT closure as async job
+   */
+  async closeVATPeriodAsync(request: VATClosureRequest): Promise<{ jobId: string; message: string }> {
+    try {
+      log(`Queueing async VAT closure for ${request.periodYear}-${request.periodMonth}`, 'vat-closure-async');
+      
+      const job = await accountingQueueService.queueVATClosure({
+        companyId: request.companyId,
+        periodYear: request.periodYear,
+        periodMonth: request.periodMonth,
+        userId: request.userId,
+        dryRun: request.dryRun
+      });
+      
+      return {
+        jobId: job.id!,
+        message: `VAT closure queued. Job ID: ${job.id}`
+      };
+    } catch (error: any) {
+      log(`Error queueing VAT closure: ${error.message}`, 'vat-closure-error');
+      throw error;
+    }
+  }
+  
+  /**
+   * Invalidate VAT report cache
+   */
+  async invalidateVATCache(companyId: string, year?: number, month?: number): Promise<void> {
+    try {
+      await accountingCacheService.connect();
+      
+      if (!accountingCacheService.isConnected()) {
+        return;
+      }
+      
+      await accountingCacheService.invalidateVATReport(companyId, year, month);
+      log(`Invalidated VAT cache for ${companyId}`, 'vat-cache');
+    } catch (error: any) {
+      log(`Error invalidating VAT cache: ${error.message}`, 'vat-cache-error');
+    }
   }
 }
 

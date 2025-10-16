@@ -6,6 +6,10 @@ import { cashRegisterService } from "..";
 import { CashRegisterController } from "../controllers/cash-register.controller";
 import { AuthenticatedRequest } from "../../../common/middleware/auth-types";
 import { Response } from "express";
+import { 
+  accountingReadRateLimiter,
+  reconciliationRateLimiter
+} from "../../../middlewares/rate-limit.middleware";
 
 /**
  * Setup routes for the Romanian Cash Register (Registru de Casă)
@@ -154,16 +158,40 @@ export function setupCashRegisterRoutes() {
   /**
    * Get cash register report
    */
-  router.get("/reports/:registerId", (req, res) => {
+  router.get("/reports/:registerId", accountingReadRateLimiter, (req, res) => {
     cashRegisterController.generateCashRegisterReport(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get daily closing report for a cash register
    */
-  router.get("/registers/:id/daily-closing", (req, res) => {
+  router.get("/registers/:id/daily-closing", accountingReadRateLimiter, (req, res) => {
     cashRegisterController.getDailyClosingReport(req as AuthenticatedRequest, res);
   });
+  
+  /**
+   * ASYNC OPERATIONS
+   */
+  
+  /**
+   * Get daily cash report with caching (ASYNC)
+   */
+  router.get("/reports/daily/cached", accountingReadRateLimiter, (req, res) => {
+    cashRegisterController.getDailyCashReportCached(req as AuthenticatedRequest, res);
+  });
+  
+  /**
+   * Queue cash reconciliation (ASYNC)
+   * Requires accountant or admin role
+   */
+  router.post(
+    "/reconciliations/:registerId/async", 
+    reconciliationRateLimiter,
+    AuthGuard.roleGuard(["accountant", "admin"]), 
+    (req, res) => {
+      cashRegisterController.reconcileCashRegisterAsync(req as AuthenticatedRequest, res);
+    }
+  );
   
   return router;
 }

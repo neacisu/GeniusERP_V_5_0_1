@@ -5,6 +5,13 @@ import { salesJournalService } from "..";
 import { SalesJournalController } from "../controllers/sales-journal.controller";
 import { AuthenticatedRequest } from "../../../common/middleware/auth-types";
 import { Response } from "express";
+import { 
+  invoiceCreateRateLimiter,
+  paymentRecordRateLimiter,
+  accountingHeavyRateLimiter,
+  exportRateLimiter,
+  accountingReadRateLimiter
+} from "../../../middlewares/rate-limit.middleware";
 
 /**
  * Setup routes for the Romanian Sales Journal
@@ -39,6 +46,7 @@ export function setupSalesJournalRoutes() {
    */
   router.post(
     "/invoices", 
+    invoiceCreateRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       salesJournalController.createCustomerInvoice(req as AuthenticatedRequest, res);
@@ -75,6 +83,7 @@ export function setupSalesJournalRoutes() {
    */
   router.post(
     "/invoices/:id/payments", 
+    paymentRecordRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       salesJournalController.recordInvoicePayment(req as AuthenticatedRequest, res);
@@ -206,7 +215,7 @@ export function setupSalesJournalRoutes() {
    * - customerId: Filtrare după client (opțional)
    * - category: Filtrare după categorie fiscală (opțional)
    */
-  router.get("/journal", (req, res) => {
+  router.get("/journal", accountingReadRateLimiter, (req, res) => {
     salesJournalController.generateSalesJournal(req as AuthenticatedRequest, res);
   });
   
@@ -214,7 +223,7 @@ export function setupSalesJournalRoutes() {
    * Export Jurnal de Vânzări în Excel (CSV)
    * Endpoint: GET /api/accounting/sales/journal/export/excel
    */
-  router.get("/journal/export/excel", (req, res) => {
+  router.get("/journal/export/excel", exportRateLimiter, (req, res) => {
     salesJournalController.exportSalesJournalExcel(req as AuthenticatedRequest, res);
   });
   
@@ -222,9 +231,109 @@ export function setupSalesJournalRoutes() {
    * Export Jurnal de Vânzări în PDF (HTML printabil)
    * Endpoint: GET /api/accounting/sales/journal/export/pdf
    */
-  router.get("/journal/export/pdf", (req, res) => {
+  router.get("/journal/export/pdf", exportRateLimiter, (req, res) => {
     salesJournalController.exportSalesJournalPDF(req as AuthenticatedRequest, res);
   });
+  
+  /**
+   * =========================================================================
+   * ASYNC OPERATIONS & BULLMQ INTEGRATION
+   * =========================================================================
+   */
+  
+  /**
+   * Generate sales journal asynchronously (via BullMQ)
+   * POST /api/accounting/sales/journal/generate-async
+   * 
+   * Body:
+   * - startDate: Data început (YYYY-MM-DD)
+   * - endDate: Data sfârșit (YYYY-MM-DD)
+   * - reportType: 'DETAILED' sau 'SUMMARY'
+   */
+  router.post(
+    "/journal/generate-async",
+    accountingHeavyRateLimiter,
+    AuthGuard.roleGuard(["accountant", "admin"]),
+    (req, res) => {
+      salesJournalController.generateSalesJournalAsync(req as AuthenticatedRequest, res);
+    }
+  );
+  
+  /**
+   * =========================================================================
+   * BULK OPERATIONS
+   * =========================================================================
+   */
+  
+  /**
+   * Bulk create customer invoices
+   * POST /api/accounting/sales/bulk-create-invoices
+   * 
+   * Body:
+   * - invoices: Array of invoice data (max 1000)
+   */
+  router.post(
+    "/bulk-create-invoices",
+    accountingHeavyRateLimiter,
+    AuthGuard.roleGuard(["accountant", "admin"]),
+    (req, res) => {
+      salesJournalController.bulkCreateInvoices(req as AuthenticatedRequest, res);
+    }
+  );
+  
+  /**
+   * Bulk record payments
+   * POST /api/accounting/sales/bulk-record-payments
+   * 
+   * Body:
+   * - payments: Array of payment data (max 1000)
+   */
+  router.post(
+    "/bulk-record-payments",
+    accountingHeavyRateLimiter,
+    AuthGuard.roleGuard(["accountant", "admin"]),
+    (req, res) => {
+      salesJournalController.bulkRecordPayments(req as AuthenticatedRequest, res);
+    }
+  );
+  
+  /**
+   * =========================================================================
+   * JOB STATUS & TRACKING
+   * =========================================================================
+   */
+  
+  /**
+   * Get job status
+   * GET /api/accounting/jobs/:jobId
+   */
+  router.get("/jobs/:jobId", accountingReadRateLimiter, (req, res) => {
+    salesJournalController.getJobStatus(req as AuthenticatedRequest, res);
+  });
+  
+  /**
+   * Cancel a running job
+   * POST /api/accounting/jobs/:jobId/cancel
+   */
+  router.post(
+    "/jobs/:jobId/cancel",
+    AuthGuard.roleGuard(["accountant", "admin"]),
+    (req, res) => {
+      salesJournalController.cancelJob(req as AuthenticatedRequest, res);
+    }
+  );
+  
+  /**
+   * Get queue metrics
+   * GET /api/accounting/jobs/metrics
+   */
+  router.get(
+    "/jobs/metrics",
+    AuthGuard.roleGuard(["accountant", "admin"]),
+    (req, res) => {
+      salesJournalController.getQueueMetrics(req as AuthenticatedRequest, res);
+    }
+  );
   
   return router;
 }

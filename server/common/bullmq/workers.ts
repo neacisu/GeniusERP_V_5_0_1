@@ -179,31 +179,9 @@ export function createAllWorkers() {
     
     // Accounting worker - handles accounting-related jobs
     accountingWorker: createWorker<JobTypeMap[keyof JobTypeMap]>(QueueName.Accounting, async (job) => {
-      log(`Processing accounting job: ${job.name}`, 'accounting-job');
-      
-      try {
-        switch (job.name) {
-          case 'update-balance': {
-            const data = job.data as JobTypeMap['update-balance'];
-            log(`Balance update for journal entry ${data.journalEntryId}`, 'accounting-job');
-            // Implementation would be here
-            break;
-          }
-          case 'account-reconciliation': {
-            const data = job.data as JobTypeMap['account-reconciliation'];
-            log(`Account reconciliation for account ${data.accountId}`, 'accounting-job');
-            // Implementation would be here
-            break;
-          }
-          default:
-            log(`Unknown job type: ${job.name}`, 'accounting-job-error');
-        }
-        
-        return { success: true, jobName: job.name, jobId: job.id };
-      } catch (error: any) {
-        log(`Error processing accounting job: ${error.message}`, 'accounting-job-error');
-        throw error; // Re-throw to mark the job as failed
-      }
+      // Import processor dinamically to avoid circular dependencies
+      const { processAccountingJob } = await import('../../modules/accounting/workers/accounting-worker.processor');
+      return await processAccountingJob(job);
     }),
     
     // Reporting worker - handles report generation jobs

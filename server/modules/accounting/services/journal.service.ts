@@ -4,6 +4,10 @@
  * Core service for journal entries in the accounting system.
  * Handles creating and managing ledger entries and lines.
  * Also provides direct recordTransaction method for simpler double-entry transaction recording.
+ * 
+ * ENHANCED WITH:
+ * - Redis caching for ledger queries
+ * - BullMQ async processing for balance updates
  */
 
 import { v4 as uuidv4 } from 'uuid';
@@ -13,6 +17,9 @@ import { eq, and } from 'drizzle-orm';
 import { AuditService, AuditAction } from '../../audit/services/audit.service';
 import { JournalNumberingService } from './journal-numbering.service';
 import { AccountingPeriodsService } from './accounting-periods.service';
+import { accountingQueueService } from './accounting-queue.service';
+import { RedisService } from '../../../services/redis.service';
+import { log } from '../../../vite';
 
 /**
  * Ledger entry type
@@ -823,6 +830,43 @@ export class JournalService {
           description: row.line_description
         }))
     } as any;
+  }
+  
+  /**
+   * ============================================================================
+   * REDIS CACHING & BULLMQ ASYNC OPERATIONS
+   * ============================================================================
+   */
+  
+  /**
+   * Queue balance update after journal entry creation
+   */
+  public async queueBalanceUpdate(journalEntryId: string, companyId: string): Promise<void> {
+    try {
+      log(`Queueing balance update for journal entry ${journalEntryId}`, 'journal-async');
+      await accountingQueueService.queueBalanceUpdate({ journalEntryId, companyId });
+    } catch (error: any) {
+      log(`Error queueing balance update: ${error.message}`, 'journal-error');
+    }
+  }
+  
+  /**
+   * Invalidate ledger cache for a company
+   */
+  public async invalidateLedgerCache(companyId: string): Promise<void> {
+    try {
+      const redisService = new RedisService();
+      await redisService.connect();
+      
+      if (!redisService.isConnected()) {
+        return;
+      }
+      
+      await redisService.invalidatePattern(`acc:ledger:${companyId}:*`);
+      log(`Invalidated ledger cache for ${companyId}`, 'journal-cache');
+    } catch (error: any) {
+      log(`Error invalidating ledger cache: ${error.message}`, 'journal-error');
+    }
   }
 }
 

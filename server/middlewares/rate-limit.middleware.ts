@@ -86,7 +86,7 @@ export const authRateLimiter = rateLimit({
       retryAfter: 15 * 60 // seconds
     });
   }
-} as Options);
+});
 
 /**
  * Rate limiter global pentru API
@@ -111,7 +111,7 @@ export const apiRateLimiter = rateLimit({
       retryAfter: 60 // seconds
     });
   }
-} as Options);
+});
 
 /**
  * Rate limiter pentru operațiuni costisitoare (export, rapoarte, etc.)
@@ -135,7 +135,7 @@ export const heavyOperationRateLimiter = rateLimit({
       retryAfter: 60 // seconds
     });
   }
-} as Options);
+});
 
 /**
  * Rate limiter moderat pentru operațiuni standard
@@ -158,7 +158,7 @@ export const moderateRateLimiter = rateLimit({
       retryAfter: 60
     });
   }
-} as Options);
+});
 
 /**
  * Rate limiter pentru crearea de conținut
@@ -183,7 +183,179 @@ export const createResourceRateLimiter = rateLimit({
       retryAfter: 60
     });
   }
-} as Options);
+});
+
+/**
+ * ============================================================================
+ * ACCOUNTING MODULE RATE LIMITERS
+ * ============================================================================
+ */
+
+/**
+ * Rate limiter pentru creare facturi
+ * 20 facturi per minut per utilizator
+ */
+export const invoiceCreateRateLimiter = rateLimit({
+  store,
+  windowMs: 1 * 60 * 1000, // 1 minut
+  max: 20,
+  message: {
+    error: 'Prea multe facturi create. Vă rugăm încercați din nou mai târziu.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  handler: (req, res) => {
+    logger.warn(`Invoice creation rate limit exceeded for IP: ${req.ip}`);
+    res.status(429).json({
+      error: 'Prea multe facturi create',
+      message: 'Ați depășit limita de creări de facturi. Pentru bulk operations, folosiți endpoint-ul dedicat.',
+      retryAfter: 60
+    });
+  }
+});
+
+/**
+ * Rate limiter pentru operațiuni grele de contabilitate
+ * (generare jurnale, reconcilieri, etc.)
+ * 5 requests per minut per utilizator
+ */
+export const accountingHeavyRateLimiter = rateLimit({
+  store,
+  windowMs: 1 * 60 * 1000, // 1 minut
+  max: 5,
+  message: {
+    error: 'Prea multe operațiuni grele de contabilitate solicitate.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    logger.warn(`Accounting heavy operation rate limit exceeded for IP: ${req.ip}, path: ${req.path}`);
+    res.status(429).json({
+      error: 'Prea multe operațiuni grele',
+      message: 'Ați depășit limita pentru operațiuni complexe de contabilitate. Acestea rulează asincron, verificați status-ul job-urilor existente.',
+      retryAfter: 60
+    });
+  }
+});
+
+/**
+ * Rate limiter pentru export-uri (Excel, PDF)
+ * 3 export-uri per minut per utilizator
+ */
+export const exportRateLimiter = rateLimit({
+  store,
+  windowMs: 1 * 60 * 1000, // 1 minut
+  max: 3,
+  message: {
+    error: 'Prea multe exporturi solicitate.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    logger.warn(`Export rate limit exceeded for IP: ${req.ip}, path: ${req.path}`);
+    res.status(429).json({
+      error: 'Prea multe exporturi solicitate',
+      message: 'Ați depășit limita de exporturi. Vă rugăm așteptați finalizarea export-urilor curente.',
+      retryAfter: 60
+    });
+  }
+});
+
+/**
+ * Rate limiter pentru închideri fiscale (FOARTE RESTRICTIV)
+ * 2 închideri per 10 minute per companie
+ * Operațiune critică care nu trebuie să fie abuzată
+ */
+export const fiscalClosureRateLimiter = rateLimit({
+  store,
+  windowMs: 10 * 60 * 1000, // 10 minute
+  max: 2,
+  message: {
+    error: 'Prea multe închideri fiscale solicitate.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    logger.error(`Fiscal closure rate limit exceeded for IP: ${req.ip} - CRITICAL`);
+    res.status(429).json({
+      error: 'Prea multe închideri fiscale',
+      message: 'Ați depășit limita de închideri fiscale. Aceasta este o operațiune critică care trebuie executată cu atenție.',
+      retryAfter: 10 * 60
+    });
+  }
+});
+
+/**
+ * Rate limiter pentru operațiuni de înregistrare plăți
+ * 30 plăți per minut per utilizator
+ */
+export const paymentRecordRateLimiter = rateLimit({
+  store,
+  windowMs: 1 * 60 * 1000, // 1 minut
+  max: 30,
+  message: {
+    error: 'Prea multe plăți înregistrate.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  handler: (req, res) => {
+    logger.warn(`Payment record rate limit exceeded for IP: ${req.ip}`);
+    res.status(429).json({
+      error: 'Prea multe plăți înregistrate',
+      message: 'Ați depășit limita de înregistrări de plăți. Pentru bulk operations, folosiți endpoint-ul dedicat.',
+      retryAfter: 60
+    });
+  }
+});
+
+/**
+ * Rate limiter pentru reconcilieri
+ * 10 reconcilieri per minut per utilizator
+ */
+export const reconciliationRateLimiter = rateLimit({
+  store,
+  windowMs: 1 * 60 * 1000, // 1 minut
+  max: 10,
+  message: {
+    error: 'Prea multe reconcilieri solicitate.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    logger.warn(`Reconciliation rate limit exceeded for IP: ${req.ip}`);
+    res.status(429).json({
+      error: 'Prea multe reconcilieri',
+      message: 'Ați depășit limita de reconcilieri. Aceste operațiuni rulează asincron.',
+      retryAfter: 60
+    });
+  }
+});
+
+/**
+ * Rate limiter pentru citire date accounting (GET requests)
+ * Mai permisiv decât crearea de conținut
+ * 50 requests per minut per utilizator
+ */
+export const accountingReadRateLimiter = rateLimit({
+  store,
+  windowMs: 1 * 60 * 1000, // 1 minut
+  max: 50,
+  message: {
+    error: 'Prea multe cereri de citire date.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    logger.warn(`Accounting read rate limit exceeded for IP: ${req.ip}, path: ${req.path}`);
+    res.status(429).json({
+      error: 'Prea multe cereri',
+      message: 'Ați depășit limita de cereri. Datele sunt cached, reîncercați în câteva secunde.',
+      retryAfter: 60
+    });
+  }
+});
 
 logger.info('✓ Rate limiting middleware initialized');
 

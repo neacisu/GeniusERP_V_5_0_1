@@ -567,4 +567,50 @@ export class CashRegisterController extends BaseController {
       return report;
     });
   }
+  
+  /**
+   * Get daily cash report with caching (ASYNC)
+   */
+  async getDailyCashReportCached(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      const { cashRegisterId, date } = req.query;
+      
+      if (!cashRegisterId) {
+        throw new Error('Cash register ID is required');
+      }
+      
+      const reportDate = date ? new Date(date as string) : new Date();
+      
+      return await this.cashRegisterService.getDailyCashReportCached(
+        companyId,
+        cashRegisterId as string,
+        reportDate,
+        true // use cache
+      );
+    });
+  }
+  
+  /**
+   * Queue cash reconciliation (ASYNC)
+   */
+  async reconcileCashRegisterAsync(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      const userId = req.user?.id || '';
+      const { cashRegisterId, startDate, endDate } = req.body;
+      
+      if (!cashRegisterId || !startDate || !endDate) {
+        throw new Error('Cash register ID, start date, and end date are required');
+      }
+      
+      return await this.cashRegisterService.reconcileCashRegisterAsync(
+        companyId,
+        cashRegisterId,
+        startDate,
+        endDate,
+        userId
+      );
+    });
+  }
 }

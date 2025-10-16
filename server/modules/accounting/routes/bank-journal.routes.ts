@@ -6,6 +6,10 @@ import { bankJournalService } from "..";
 import { BankJournalController } from "../controllers/bank-journal.controller";
 import { AuthenticatedRequest } from "../../../common/middleware/auth-types";
 import { Response } from "express";
+import { 
+  accountingReadRateLimiter,
+  reconciliationRateLimiter
+} from "../../../middlewares/rate-limit.middleware";
 
 /**
  * Setup routes for the Romanian Bank Journal
@@ -23,7 +27,7 @@ export function setupBankJournalRoutes() {
   /**
    * Get all bank accounts
    */
-  router.get("/bank-accounts", (req, res) => {
+  router.get("/bank-accounts", accountingReadRateLimiter, (req, res) => {
     bankJournalController.getBankAccounts(req as AuthenticatedRequest, res);
   });
   
@@ -142,22 +146,33 @@ export function setupBankJournalRoutes() {
   /**
    * Get bank account statement for a period
    */
-  router.get("/bank-accounts/:id/statement", (req, res) => {
+  router.get("/bank-accounts/:id/statement", accountingReadRateLimiter, (req, res) => {
     bankJournalController.generateBankStatement(req as AuthenticatedRequest, res);
   });
   
   /**
-   * Create a bank transaction entry (ledger entry)
-   * Requires accountant or admin role
-   * TODO: Implement createBankTransactionEntry in BankJournalController
+   * ASYNC OPERATIONS
    */
-  // router.post(
-  //   "/bank-transactions/entry", 
-  //   AuthGuard.roleGuard(["accountant", "admin"]), 
-  //   (req, res) => {
-  //     bankJournalController.createBankTransactionEntry(req as AuthenticatedRequest, res);
-  //   }
-  // );
+  
+  /**
+   * Get bank statement with caching (ASYNC)
+   */
+  router.get("/bank-accounts/:id/statement/cached", accountingReadRateLimiter, (req, res) => {
+    bankJournalController.getBankStatementCached(req as AuthenticatedRequest, res);
+  });
+  
+  /**
+   * Queue bank reconciliation (ASYNC)
+   * Requires accountant or admin role
+   */
+  router.post(
+    "/bank-reconciliations/:bankAccountId/async", 
+    reconciliationRateLimiter,
+    AuthGuard.roleGuard(["accountant", "admin"]), 
+    (req, res) => {
+      bankJournalController.reconcileBankAccountAsync(req as AuthenticatedRequest, res);
+    }
+  );
   
   return router;
 }

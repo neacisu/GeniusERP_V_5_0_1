@@ -4,6 +4,8 @@ import { SalesJournalExportService } from '../services/sales-journal-export.serv
 import { BaseController } from './base.controller';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
 import { trackJournalEntry, accountingMetrics } from '../../../middlewares/business-metrics.middleware';
+import { bulkOperationsService } from '../services/bulk-operations.service';
+import { accountingQueueService } from '../services/accounting-queue.service';
 
 /**
  * SalesJournalController
@@ -589,5 +591,207 @@ export class SalesJournalController extends BaseController {
       console.error('Error exporting to PDF:', error);
       res.status(500).json({ error: 'Failed to export to PDF' });
     }
+  }
+  
+  /**
+   * ============================================================================
+   * ASYNC OPERATIONS & BULLMQ INTEGRATION
+   * ============================================================================
+   */
+  
+  /**
+   * Generate sales journal asynchronously via BullMQ
+   * Returns job ID for progress tracking
+   * 
+   * POST /api/accounting/sales-journal/generate-async
+   */
+  async generateSalesJournalAsync(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      const userId = this.getUserId(req);
+      
+      const startDate = this.parseDate(req.body.startDate);
+      const endDate = this.parseDate(req.body.endDate);
+      
+      if (!startDate || !endDate) {
+        throw new Error('Start date and end date are required');
+      }
+      
+      const result = await this.salesJournalService.generateSalesJournalAsync(
+        {
+          companyId,
+          periodStart: startDate,
+          periodEnd: endDate,
+          reportType: req.body.reportType || 'DETAILED'
+        },
+        userId
+      );
+      
+      return {
+        success: true,
+        ...result,
+        statusUrl: `/api/accounting/jobs/${result.jobId}`
+      };
+    });
+  }
+  
+  /**
+   * ============================================================================
+   * BULK OPERATIONS
+   * ============================================================================
+   */
+  
+  /**
+   * Bulk create customer invoices
+   * Processes multiple invoices in a single async job
+   * 
+   * POST /api/accounting/sales-journal/bulk-create-invoices
+   */
+  async bulkCreateInvoices(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      const userId = this.getUserId(req);
+      const { invoices } = req.body;
+      
+      if (!Array.isArray(invoices) || invoices.length === 0) {
+        throw new Error('Invoices array is required and must not be empty');
+      }
+      
+      // Validare limită
+      if (invoices.length > 1000) {
+        throw new Error('Maximum 1000 invoices per bulk operation');
+      }
+      
+      const result = await bulkOperationsService.bulkCreateInvoices(
+        companyId,
+        invoices,
+        userId
+      );
+      
+      if (result.jobId) {
+        return {
+          success: true,
+          jobId: result.jobId,
+          totalInvoices: result.totalItems,
+          message: result.message,
+          statusUrl: `/api/accounting/jobs/${result.jobId}`
+        };
+      }
+      
+      return result;
+    });
+  }
+  
+  /**
+   * Bulk record payments
+   * Processes multiple payment recordings in a single async job
+   * 
+   * POST /api/accounting/sales-journal/bulk-record-payments
+   */
+  async bulkRecordPayments(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      const userId = this.getUserId(req);
+      const { payments } = req.body;
+      
+      if (!Array.isArray(payments) || payments.length === 0) {
+        throw new Error('Payments array is required and must not be empty');
+      }
+      
+      // Validare limită
+      if (payments.length > 1000) {
+        throw new Error('Maximum 1000 payments per bulk operation');
+      }
+      
+      const result = await bulkOperationsService.bulkRecordPayments(
+        companyId,
+        payments,
+        userId
+      );
+      
+      if (result.jobId) {
+        return {
+          success: true,
+          jobId: result.jobId,
+          totalPayments: result.totalItems,
+          message: result.message,
+          statusUrl: `/api/accounting/jobs/${result.jobId}`
+        };
+      }
+      
+      return result;
+    });
+  }
+  
+  /**
+   * ============================================================================
+   * JOB STATUS & TRACKING
+   * ============================================================================
+   */
+  
+  /**
+   * Get job status and progress
+   * 
+   * GET /api/accounting/jobs/:jobId
+   */
+  async getJobStatus(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const { jobId } = req.params;
+      
+      if (!jobId) {
+        throw new Error('Job ID is required');
+      }
+      
+      const progress = await bulkOperationsService.getBulkOperationProgress(jobId);
+      
+      if (!progress) {
+        throw new Error('Job not found');
+      }
+      
+      return {
+        success: true,
+        job: progress
+      };
+    });
+  }
+  
+  /**
+   * Cancel a running job
+   * 
+   * POST /api/accounting/jobs/:jobId/cancel
+   */
+  async cancelJob(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const { jobId } = req.params;
+      
+      if (!jobId) {
+        throw new Error('Job ID is required');
+      }
+      
+      const success = await bulkOperationsService.cancelBulkOperation(jobId);
+      
+      return {
+        success,
+        message: success 
+          ? 'Job cancelled successfully' 
+          : 'Failed to cancel job'
+      };
+    });
+  }
+  
+  /**
+   * Get queue metrics
+   * 
+   * GET /api/accounting/jobs/metrics
+   */
+  async getQueueMetrics(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const metrics = await accountingQueueService.getQueueMetrics();
+      
+      return {
+        success: true,
+        metrics
+      };
+    });
   }
 }

@@ -381,4 +381,52 @@ export class BankJournalController extends BaseController {
       return await this.bankJournalService.getBankAccountsWithBalances(companyId);
     });
   }
+  
+  /**
+   * Get bank statement with caching (ASYNC)
+   */
+  async getBankStatementCached(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      const { bankAccountId, startDate, endDate } = req.query;
+      
+      if (!bankAccountId) {
+        throw new Error('Bank account ID is required');
+      }
+      
+      const start = this.parseDate(startDate as string) || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      const end = this.parseDate(endDate as string) || new Date();
+      
+      return await this.bankJournalService.getBankStatementCached(
+        companyId,
+        bankAccountId as string,
+        start,
+        end,
+        true // use cache
+      );
+    });
+  }
+  
+  /**
+   * Queue bank reconciliation (ASYNC)
+   */
+  async reconcileBankAccountAsync(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      const userId = req.user?.id || '';
+      const { bankAccountId, startDate, endDate } = req.body;
+      
+      if (!bankAccountId || !startDate || !endDate) {
+        throw new Error('Bank account ID, start date, and end date are required');
+      }
+      
+      return await this.bankJournalService.reconcileBankAccountAsync(
+        companyId,
+        bankAccountId,
+        startDate,
+        endDate,
+        userId
+      );
+    });
+  }
 }

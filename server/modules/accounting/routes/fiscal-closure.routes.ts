@@ -7,6 +7,10 @@
 import { Router } from 'express';
 import fiscalClosureController from '../controllers/fiscal-closure.controller';
 import { AuthGuard } from '../../auth/guards/auth.guard';
+import { 
+  fiscalClosureRateLimiter,
+  accountingReadRateLimiter
+} from '../../../middlewares/rate-limit.middleware';
 
 const router = Router();
 
@@ -20,6 +24,7 @@ const requireAccountant = AuthGuard.roleGuard(['admin', 'administrator', 'accoun
  */
 router.post(
   '/month',
+  fiscalClosureRateLimiter,
   requireAccountant,
   fiscalClosureController.closeMonth.bind(fiscalClosureController)
 );
@@ -31,6 +36,7 @@ router.post(
  */
 router.post(
   '/year',
+  fiscalClosureRateLimiter,
   requireAccountant,
   fiscalClosureController.closeYear.bind(fiscalClosureController)
 );
@@ -88,6 +94,60 @@ router.post(
   '/validate-period',
   requireAccountant,
   fiscalClosureController.validatePeriodConsistency.bind(fiscalClosureController)
+);
+
+/**
+ * ============================================================================
+ * ASYNC OPERATIONS (VIA BULLMQ)
+ * ============================================================================
+ */
+
+/**
+ * @route POST /api/accounting/fiscal-closure/month/async
+ * @desc Închide luna fiscală ASYNC (via BullMQ)
+ * @access Private (Admin, Accountant)
+ */
+router.post(
+  '/month/async',
+  fiscalClosureRateLimiter,
+  requireAccountant,
+  fiscalClosureController.closeMonthAsync.bind(fiscalClosureController)
+);
+
+/**
+ * @route POST /api/accounting/fiscal-closure/year/async
+ * @desc Închide anul fiscal ASYNC (via BullMQ)
+ * @access Private (Admin, Accountant)
+ */
+router.post(
+  '/year/async',
+  fiscalClosureRateLimiter,
+  requireAccountant,
+  fiscalClosureController.closeYearAsync.bind(fiscalClosureController)
+);
+
+/**
+ * @route POST /api/accounting/fiscal-closure/vat/async
+ * @desc Închide perioada TVA ASYNC (via BullMQ)
+ * @access Private (Admin, Accountant)
+ */
+router.post(
+  '/vat/async',
+  fiscalClosureRateLimiter,
+  requireAccountant,
+  fiscalClosureController.closeVATAsync.bind(fiscalClosureController)
+);
+
+/**
+ * @route GET /api/accounting/fiscal-closure/vat/d300
+ * @desc Get D300 report (cu caching)
+ * @access Private (Admin, Accountant)
+ */
+router.get(
+  '/vat/d300',
+  accountingReadRateLimiter,
+  requireAccountant,
+  fiscalClosureController.getD300Report.bind(fiscalClosureController)
 );
 
 export default router;

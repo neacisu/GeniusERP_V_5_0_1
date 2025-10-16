@@ -3,6 +3,8 @@ import { PurchaseJournalService } from '../services/purchase-journal.service';
 import { PurchaseJournalExportService } from '../services/purchase-journal-export.service';
 import { BaseController } from './base.controller';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
+import { bulkOperationsService } from '../services/bulk-operations.service';
+import { accountingQueueService } from '../services/accounting-queue.service';
 
 /**
  * PurchaseJournalController
@@ -439,5 +441,127 @@ export class PurchaseJournalController extends BaseController {
     } catch (error) {
       res.status(500).json({ error: 'Failed to export' });
     }
+  }
+  
+  /**
+   * ============================================================================
+   * ASYNC OPERATIONS & BULLMQ INTEGRATION
+   * ============================================================================
+   */
+  
+  /**
+   * Generate purchase journal asynchronously via BullMQ
+   * POST /api/accounting/purchases/journal/generate-async
+   */
+  async generatePurchaseJournalAsync(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      const userId = this.getUserId(req);
+      
+      const startDate = this.parseDate(req.body.startDate);
+      const endDate = this.parseDate(req.body.endDate);
+      
+      if (!startDate || !endDate) {
+        throw new Error('Start date and end date are required');
+      }
+      
+      const result = await this.purchaseJournalService.generatePurchaseJournalAsync(
+        {
+          companyId,
+          periodStart: startDate,
+          periodEnd: endDate,
+          reportType: req.body.reportType || 'DETAILED'
+        },
+        userId
+      );
+      
+      return {
+        success: true,
+        ...result,
+        statusUrl: `/api/accounting/jobs/${result.jobId}`
+      };
+    });
+  }
+  
+  /**
+   * ============================================================================
+   * BULK OPERATIONS
+   * ============================================================================
+   */
+  
+  /**
+   * Bulk create supplier invoices
+   * POST /api/accounting/purchases/bulk-create-invoices
+   */
+  async bulkCreateSupplierInvoices(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      const userId = this.getUserId(req);
+      const { invoices } = req.body;
+      
+      if (!Array.isArray(invoices) || invoices.length === 0) {
+        throw new Error('Invoices array is required and must not be empty');
+      }
+      
+      if (invoices.length > 1000) {
+        throw new Error('Maximum 1000 invoices per bulk operation');
+      }
+      
+      const result = await bulkOperationsService.bulkCreateInvoices(
+        companyId,
+        invoices,
+        userId
+      );
+      
+      if (result.jobId) {
+        return {
+          success: true,
+          jobId: result.jobId,
+          totalInvoices: result.totalItems,
+          message: result.message,
+          statusUrl: `/api/accounting/jobs/${result.jobId}`
+        };
+      }
+      
+      return result;
+    });
+  }
+  
+  /**
+   * Bulk record supplier payments
+   * POST /api/accounting/purchases/bulk-record-payments
+   */
+  async bulkRecordSupplierPayments(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = this.getCompanyId(req);
+      const userId = this.getUserId(req);
+      const { payments } = req.body;
+      
+      if (!Array.isArray(payments) || payments.length === 0) {
+        throw new Error('Payments array is required and must not be empty');
+      }
+      
+      if (payments.length > 1000) {
+        throw new Error('Maximum 1000 payments per bulk operation');
+      }
+      
+      const result = await bulkOperationsService.bulkRecordPayments(
+        companyId,
+        payments,
+        userId
+      );
+      
+      if (result.jobId) {
+        return {
+          success: true,
+          jobId: result.jobId,
+          totalPayments: result.totalItems,
+          message: result.message,
+          statusUrl: `/api/accounting/jobs/${result.jobId}`
+        };
+      }
+      
+      return result;
+    });
   }
 }

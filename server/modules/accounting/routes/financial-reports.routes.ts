@@ -2,12 +2,13 @@ import { Router } from "express";
 import { AuthGuard } from "../../auth/guards/auth.guard";
 import { JwtAuthMode } from "../../auth/constants/auth-mode.enum";
 import { getDrizzle } from "../../../common/drizzle";
+import { accountingReadRateLimiter } from "../../../middlewares/rate-limit.middleware";
 
 export function setupFinancialReportsRoutes() {
   const router = Router();
   router.use(AuthGuard.protect(JwtAuthMode.REQUIRED));
   
-  router.get("/financial-reports", async (req: any, res) => {
+  router.get("/financial-reports", accountingReadRateLimiter, async (req: any, res) => {
     const db = getDrizzle();
     const companyId = req.user?.companyId;
     
@@ -20,7 +21,7 @@ export function setupFinancialReportsRoutes() {
     ]);
   });
   
-  router.get("/financial-indicators", async (req: any, res) => {
+  router.get("/financial-indicators", accountingReadRateLimiter, async (req: any, res) => {
     const db = getDrizzle();
     const companyId = req.user?.companyId;
     

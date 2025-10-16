@@ -128,17 +128,147 @@ export type JobPayload =
   | DocumentProcessingJob;
 
 /**
+ * Extended Accounting Job Types
+ */
+export interface GenerateSalesJournalJob extends BaseJobPayload {
+  companyId: string;
+  periodStart: string;
+  periodEnd: string;
+  reportType?: 'DETAILED' | 'SUMMARY';
+  userId: string;
+}
+
+export interface GeneratePurchaseJournalJob extends BaseJobPayload {
+  companyId: string;
+  periodStart: string;
+  periodEnd: string;
+  reportType?: 'DETAILED' | 'SUMMARY';
+  userId: string;
+}
+
+export interface ExportJournalJob extends BaseJobPayload {
+  companyId: string;
+  journalType: 'sales' | 'purchase' | 'bank' | 'cash';
+  periodStart: string;
+  periodEnd: string;
+  format: 'excel' | 'pdf';
+  userId: string;
+}
+
+export interface FiscalMonthCloseJob extends BaseJobPayload {
+  companyId: string;
+  year: number;
+  month: number;
+  userId: string;
+  skipDepreciation?: boolean;
+  skipFXRevaluation?: boolean;
+  skipVAT?: boolean;
+  dryRun?: boolean;
+}
+
+export interface FiscalYearCloseJob extends BaseJobPayload {
+  companyId: string;
+  fiscalYear: number;
+  userId: string;
+  dryRun?: boolean;
+}
+
+export interface VATClosureJob extends BaseJobPayload {
+  companyId: string;
+  periodYear: number;
+  periodMonth: number;
+  userId: string;
+  dryRun?: boolean;
+}
+
+export interface BulkInvoiceCreateJob extends BaseJobPayload {
+  companyId: string;
+  invoices: any[];
+  userId: string;
+}
+
+export interface BulkPaymentRecordJob extends BaseJobPayload {
+  companyId: string;
+  payments: any[];
+  userId: string;
+}
+
+export interface DepreciationCalculateJob extends BaseJobPayload {
+  companyId: string;
+  periodYear: number;
+  periodMonth: number;
+  userId: string;
+  dryRun?: boolean;
+}
+
+export interface FXRevaluationJob extends BaseJobPayload {
+  companyId: string;
+  periodYear: number;
+  periodMonth: number;
+  userId: string;
+  dryRun?: boolean;
+}
+
+export interface VATTransferJob extends BaseJobPayload {
+  invoiceId: string;
+  companyId: string;
+  paymentAmount: number;
+  paymentDate: string;
+  userId?: string;
+}
+
+export interface BatchExportJob extends BaseJobPayload {
+  companyId: string;
+  journals: ('sales' | 'purchase' | 'bank' | 'cash')[];
+  periodStart: string;
+  periodEnd: string;
+  format: 'excel' | 'pdf';
+  userId: string;
+}
+
+/**
  * Job name to payload type mapping
  * 
  * This provides a way to get the correct payload type for a given job name.
  */
 export interface JobTypeMap {
+  // Inventory jobs
   'low-stock-alert': LowStockAlertJob;
   'scheduled-stock-check': ScheduledStockCheckJob;
   'stock-transfer': StockTransferJob;
-  'update-balance': BalanceUpdateJob;
-  'account-reconciliation': AccountReconciliationJob;
-  'generate-report': ReportGenerationJob;
-  'document-processing': DocumentProcessingJob;
   'alert': InventoryAlertJob;
+  
+  // Accounting core jobs
+  'update-balance': BalanceUpdateJob;
+  'balance-update': BalanceUpdateJob;
+  'account-reconciliation': AccountReconciliationJob;
+  
+  // Journal generation jobs
+  'generate-sales-journal': GenerateSalesJournalJob;
+  'generate-purchase-journal': GeneratePurchaseJournalJob;
+  
+  // Export jobs
+  'export-journal-excel': ExportJournalJob;
+  'export-journal-pdf': ExportJournalJob;
+  'batch-export': BatchExportJob;
+  
+  // Fiscal closure jobs
+  'fiscal-month-close': FiscalMonthCloseJob;
+  'fiscal-year-close': FiscalYearCloseJob;
+  'vat-closure': VATClosureJob;
+  
+  // Bulk operations
+  'batch-invoice-create': BulkInvoiceCreateJob;
+  'batch-payment-record': BulkPaymentRecordJob;
+  
+  // Periodic calculations
+  'depreciation-calculate': DepreciationCalculateJob;
+  'fx-revaluation': FXRevaluationJob;
+  'vat-transfer': VATTransferJob;
+  
+  // Reporting
+  'generate-report': ReportGenerationJob;
+  
+  // Document processing
+  'document-processing': DocumentProcessingJob;
 }

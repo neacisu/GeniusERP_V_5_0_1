@@ -7,6 +7,10 @@
 import { Router } from 'express';
 import { GeneralJournalController } from '../controllers/general-journal.controller';
 import { AuthGuard } from '../../auth/guards/auth.guard';
+import { 
+  accountingReadRateLimiter,
+  exportRateLimiter
+} from '../../../middlewares/rate-limit.middleware';
 
 const router = Router();
 const controller = new GeneralJournalController();
@@ -25,6 +29,7 @@ const controller = new GeneralJournalController();
 const requireAccountingRole = AuthGuard.roleGuard(['accountant', 'admin', 'manager']);
 
 router.get('/pdf', 
+  exportRateLimiter,
   requireAccountingRole,
   controller.generatePDF.bind(controller)
 );
@@ -35,6 +40,7 @@ router.get('/pdf',
  * @access Private (accountant, admin, manager)
  */
 router.get('/excel',
+  exportRateLimiter,
   requireAccountingRole,
   controller.generateExcel.bind(controller)
 );
@@ -46,6 +52,7 @@ router.get('/excel',
  * @query Aceiași parametri ca PDF dar limitați la 30 zile
  */
 router.get('/preview',
+  accountingReadRateLimiter,
   requireAccountingRole,
   controller.previewData.bind(controller)
 );
@@ -56,6 +63,7 @@ router.get('/preview',
  * @access Private (accountant, admin, manager)
  */
 router.get('/periods',
+  accountingReadRateLimiter,
   requireAccountingRole,
   controller.getAvailablePeriods.bind(controller)
 );

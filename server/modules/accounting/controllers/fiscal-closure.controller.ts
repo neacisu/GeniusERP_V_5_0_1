@@ -2,19 +2,26 @@
  * Fiscal Closure Controller
  * 
  * API endpoints pentru închiderea fiscală lunară și anuală
+ * 
+ * ENHANCED WITH:
+ * - Async closure operations via BullMQ
  */
 
 import { Request, Response } from 'express';
 import FiscalClosureService from '../services/fiscal-closure.service';
 import AccountingPeriodsService from '../services/accounting-periods.service';
+import VATClosureService from '../services/vat-closure.service';
+import { bulkOperationsService } from '../services/bulk-operations.service';
 
 export class FiscalClosureController {
   private closureService: FiscalClosureService;
   private periodsService: AccountingPeriodsService;
+  private vatService: VATClosureService;
 
   constructor() {
     this.closureService = new FiscalClosureService();
     this.periodsService = new AccountingPeriodsService();
+    this.vatService = new VATClosureService();
   }
 
   /**
@@ -317,6 +324,190 @@ export class FiscalClosureController {
       console.error('Error validating periods:', error);
       res.status(500).json({
         error: 'Eroare la validarea perioadelor',
+        details: (error as Error).message
+      });
+    }
+  }
+  
+  /**
+   * ============================================================================
+   * ASYNC OPERATIONS
+   * ============================================================================
+   */
+  
+  /**
+   * POST /api/accounting/fiscal-closure/month/async
+   * Închide luna fiscală ASYNC (via BullMQ)
+   */
+  async closeMonthAsync(req: Request, res: Response): Promise<void> {
+    try {
+      const { year, month, skipDepreciation, skipFXRevaluation, skipVAT, dryRun } = req.body;
+      const companyId = req.user?.companyId;
+      const userId = req.user?.id;
+
+      if (!companyId || !userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      if (!year || !month) {
+        res.status(400).json({ error: 'Anul și luna sunt obligatorii' });
+        return;
+      }
+
+      console.log(`📅 Request închidere lună ASYNC: ${month}/${year} pentru compania ${companyId}`);
+
+      const result = await this.closureService.closeMonthAsync({
+        companyId,
+        year: parseInt(year),
+        month: parseInt(month),
+        userId,
+        skipDepreciation: skipDepreciation === true,
+        skipFXRevaluation: skipFXRevaluation === true,
+        skipVAT: skipVAT === true,
+        dryRun: dryRun === true
+      });
+
+      res.status(202).json({
+        success: true,
+        message: `Închidere lunară ${month}/${year} a fost pusă în coadă`,
+        jobId: result.jobId,
+        statusUrl: `/api/accounting/jobs/${result.jobId}`
+      });
+    } catch (error) {
+      console.error('Error queueing month closure:', error);
+      res.status(500).json({
+        error: 'Eroare la programarea închiderii lunii',
+        details: (error as Error).message
+      });
+    }
+  }
+  
+  /**
+   * POST /api/accounting/fiscal-closure/year/async
+   * Închide anul fiscal ASYNC (via BullMQ)
+   */
+  async closeYearAsync(req: Request, res: Response): Promise<void> {
+    try {
+      const { fiscalYear, taxAdjustments, profitDistribution, dryRun } = req.body;
+      const companyId = req.user?.companyId;
+      const userId = req.user?.id;
+
+      if (!companyId || !userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      if (!fiscalYear) {
+        res.status(400).json({ error: 'Anul fiscal este obligatoriu' });
+        return;
+      }
+
+      console.log(`📅 Request închidere an ASYNC: ${fiscalYear} pentru compania ${companyId}`);
+
+      const result = await this.closureService.closeYearAsync({
+        companyId,
+        fiscalYear: parseInt(fiscalYear),
+        userId,
+        taxAdjustments,
+        profitDistribution,
+        dryRun: dryRun === true
+      });
+
+      res.status(202).json({
+        success: true,
+        message: `Închidere anuală ${fiscalYear} a fost pusă în coadă`,
+        jobId: result.jobId,
+        statusUrl: `/api/accounting/jobs/${result.jobId}`
+      });
+    } catch (error) {
+      console.error('Error queueing year closure:', error);
+      res.status(500).json({
+        error: 'Eroare la programarea închiderii anului',
+        details: (error as Error).message
+      });
+    }
+  }
+  
+  /**
+   * POST /api/accounting/fiscal-closure/vat/async
+   * Închide perioada TVA ASYNC (via BullMQ)
+   */
+  async closeVATAsync(req: Request, res: Response): Promise<void> {
+    try {
+      const { year, month, dryRun } = req.body;
+      const companyId = req.user?.companyId;
+      const userId = req.user?.id;
+
+      if (!companyId || !userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      if (!year || !month) {
+        res.status(400).json({ error: 'Anul și luna sunt obligatorii' });
+        return;
+      }
+
+      console.log(`📅 Request închidere TVA ASYNC: ${month}/${year} pentru compania ${companyId}`);
+
+      const result = await this.vatService.closeVATPeriodAsync({
+        companyId,
+        periodYear: parseInt(year),
+        periodMonth: parseInt(month),
+        userId,
+        dryRun: dryRun === true
+      });
+
+      res.status(202).json({
+        success: true,
+        message: `Închidere TVA ${month}/${year} a fost pusă în coadă`,
+        jobId: result.jobId,
+        statusUrl: `/api/accounting/jobs/${result.jobId}`
+      });
+    } catch (error) {
+      console.error('Error queueing VAT closure:', error);
+      res.status(500).json({
+        error: 'Eroare la programarea închiderii TVA',
+        details: (error as Error).message
+      });
+    }
+  }
+  
+  /**
+   * GET /api/accounting/fiscal-closure/vat/d300
+   * Get D300 report (cu caching)
+   */
+  async getD300Report(req: Request, res: Response): Promise<void> {
+    try {
+      const { year, month } = req.query;
+      const companyId = req.user?.companyId;
+
+      if (!companyId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      if (!year || !month) {
+        res.status(400).json({ error: 'Anul și luna sunt obligatorii' });
+        return;
+      }
+
+      const report = await this.vatService.getD300ReportCached(
+        companyId,
+        parseInt(year as string),
+        parseInt(month as string),
+        true // use cache
+      );
+
+      res.status(200).json({
+        success: true,
+        data: report
+      });
+    } catch (error) {
+      console.error('Error getting D300 report:', error);
+      res.status(500).json({
+        error: 'Eroare la generarea raportului D300',
         details: (error as Error).message
       });
     }

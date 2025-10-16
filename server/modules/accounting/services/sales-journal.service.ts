@@ -3,6 +3,11 @@
  * 
  * Specialized journal service for sales-related accounting operations.
  * Handles creating and managing sales invoice entries.
+ * 
+ * ENHANCED WITH:
+ * - Redis caching for journal reports
+ * - BullMQ async processing for heavy operations
+ * - Cache invalidation on data modifications
  */
 
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
@@ -17,6 +22,9 @@ import {
   SalesJournalTotals,
   GenerateSalesJournalParams 
 } from '../types/sales-journal-types';
+import { accountingCacheService } from './accounting-cache.service';
+import { accountingQueueService } from './accounting-queue.service';
+import { log } from '../../../vite';
 
 /**
  * Sales journal entry interface
@@ -2114,6 +2122,137 @@ export class SalesJournalService {
       c.toLowerCase() === country.toLowerCase() ||
       country.toLowerCase() === c.substring(0, 2).toLowerCase()
     );
+  }
+  
+  /**
+   * ============================================================================
+   * REDIS CACHING & BULLMQ ASYNC OPERATIONS
+   * ============================================================================
+   */
+  
+  /**
+   * Generate sales journal with caching
+   * Checks cache first, generates if not found, then caches result
+   * 
+   * @param params Generation parameters
+   * @param useCache Whether to use cache (default: true)
+   * @returns Sales journal report
+   */
+  public async generateSalesJournalCached(
+    params: GenerateSalesJournalParams,
+    useCache: boolean = true
+  ): Promise<SalesJournalReport> {
+    // Build cache key
+    const periodStart = params.periodStart.toISOString().split('T')[0];
+    const periodEnd = params.periodEnd.toISOString().split('T')[0];
+    
+    // Check cache if enabled
+    if (useCache) {
+      await accountingCacheService.connect();
+      
+      if (accountingCacheService.isConnected()) {
+        const cached = await accountingCacheService.getSalesJournal(
+          params.companyId,
+          periodStart,
+          periodEnd
+        );
+        
+        if (cached) {
+          log(`Sales journal cache hit for ${params.companyId} ${periodStart}-${periodEnd}`, 'sales-journal-cache');
+          return cached;
+        }
+      }
+    }
+    
+    // Generate report (cache miss or disabled)
+    log(`Generating sales journal for ${params.companyId} ${periodStart}-${periodEnd}`, 'sales-journal');
+    const report = await this.generateSalesJournal(params);
+    
+    // Cache result
+    if (useCache && accountingCacheService.isConnected()) {
+      await accountingCacheService.setSalesJournal(
+        params.companyId,
+        periodStart,
+        periodEnd,
+        report
+      );
+      log(`Sales journal cached for ${params.companyId}`, 'sales-journal-cache');
+    }
+    
+    return report;
+  }
+  
+  /**
+   * Queue sales journal generation for async processing
+   * Returns job ID for tracking progress
+   * 
+   * @param params Generation parameters
+   * @param userId User ID requesting the generation
+   * @returns Job ID for tracking
+   */
+  public async generateSalesJournalAsync(
+    params: GenerateSalesJournalParams,
+    userId: string
+  ): Promise<{ jobId: string; message: string }> {
+    try {
+      const periodStart = params.periodStart.toISOString().split('T')[0];
+      const periodEnd = params.periodEnd.toISOString().split('T')[0];
+      
+      log(`Queueing async sales journal generation for ${params.companyId}`, 'sales-journal-async');
+      
+      const job = await accountingQueueService.queueSalesJournalGeneration({
+        companyId: params.companyId,
+        periodStart,
+        periodEnd,
+        reportType: params.reportType,
+        userId
+      });
+      
+      return {
+        jobId: job.id!,
+        message: `Sales journal generation queued. Job ID: ${job.id}`
+      };
+    } catch (error: any) {
+      log(`Error queueing sales journal generation: ${error.message}`, 'sales-journal-error');
+      throw error;
+    }
+  }
+  
+  /**
+   * Invalidate sales journal cache after invoice modifications
+   * Should be called after creating, updating, or deleting invoices
+   * 
+   * @param companyId Company ID
+   * @param invoiceDate Invoice date (to determine which periods to invalidate)
+   */
+  public async invalidateSalesJournalCache(
+    companyId: string,
+    invoiceDate?: Date
+  ): Promise<void> {
+    try {
+      await accountingCacheService.connect();
+      
+      if (!accountingCacheService.isConnected()) {
+        return;
+      }
+      
+      if (invoiceDate) {
+        // Invalidate specific period
+        const year = invoiceDate.getFullYear();
+        const month = String(invoiceDate.getMonth() + 1).padStart(2, '0');
+        const period = `${year}-${month}`;
+        
+        await accountingCacheService.invalidateSalesJournal(companyId, period);
+        log(`Invalidated sales journal cache for ${companyId} period ${period}`, 'sales-journal-cache');
+      } else {
+        // Nuclear option - invalidate all periods for company
+        await accountingCacheService.invalidateSalesJournal(companyId);
+        log(`Invalidated all sales journal cache for ${companyId}`, 'sales-journal-cache');
+      }
+    } catch (error: any) {
+      log(`Error invalidating sales journal cache: ${error.message}`, 'sales-journal-error');
+      // Don't throw - cache invalidation failures shouldn't break the main operation
+    }
   }
 }
 

@@ -3,6 +3,11 @@
  * 
  * Specialized journal service for purchase-related accounting operations.
  * Handles creating and managing purchase invoice entries according to Romanian accounting standards.
+ * 
+ * ENHANCED WITH:
+ * - Redis caching for journal reports
+ * - BullMQ async processing for heavy operations
+ * - Cache invalidation on data modifications
  */
 
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
@@ -15,6 +20,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { VATCategory, determineVATCategory } from '../types/vat-categories';
 import pg from 'pg';
 const { Client } = pg;
+
+import { accountingCacheService } from './accounting-cache.service';
+import { accountingQueueService } from './accounting-queue.service';
+import { log } from '../../../vite';
 
 /**
  * Purchase invoice data interface for entry creation
@@ -1593,6 +1602,137 @@ export class PurchaseJournalService {
     } catch (error) {
       console.error('Error getting supplier balance:', error);
       throw new Error(`Failed to get supplier balance: ${(error as Error).message}`);
+    }
+  }
+  
+  /**
+   * ============================================================================
+   * REDIS CACHING & BULLMQ ASYNC OPERATIONS
+   * ============================================================================
+   */
+  
+  /**
+   * Generate purchase journal with caching
+   * Checks cache first, generates if not found, then caches result
+   * 
+   * @param params Generation parameters
+   * @param useCache Whether to use cache (default: true)
+   * @returns Purchase journal report
+   */
+  public async generatePurchaseJournalCached(
+    params: any,
+    useCache: boolean = true
+  ): Promise<any> {
+    // Build cache key
+    const periodStart = params.periodStart.toISOString().split('T')[0];
+    const periodEnd = params.periodEnd.toISOString().split('T')[0];
+    
+    // Check cache if enabled
+    if (useCache) {
+      await accountingCacheService.connect();
+      
+      if (accountingCacheService.isConnected()) {
+        const cached = await accountingCacheService.getPurchaseJournal(
+          params.companyId,
+          periodStart,
+          periodEnd
+        );
+        
+        if (cached) {
+          log(`Purchase journal cache hit for ${params.companyId} ${periodStart}-${periodEnd}`, 'purchase-journal-cache');
+          return cached;
+        }
+      }
+    }
+    
+    // Generate report (cache miss or disabled)
+    log(`Generating purchase journal for ${params.companyId} ${periodStart}-${periodEnd}`, 'purchase-journal');
+    const report = await this.generatePurchaseJournal(params);
+    
+    // Cache result
+    if (useCache && accountingCacheService.isConnected()) {
+      await accountingCacheService.setPurchaseJournal(
+        params.companyId,
+        periodStart,
+        periodEnd,
+        report
+      );
+      log(`Purchase journal cached for ${params.companyId}`, 'purchase-journal-cache');
+    }
+    
+    return report;
+  }
+  
+  /**
+   * Queue purchase journal generation for async processing
+   * Returns job ID for tracking progress
+   * 
+   * @param params Generation parameters
+   * @param userId User ID requesting the generation
+   * @returns Job ID for tracking
+   */
+  public async generatePurchaseJournalAsync(
+    params: any,
+    userId: string
+  ): Promise<{ jobId: string; message: string }> {
+    try {
+      const periodStart = params.periodStart.toISOString().split('T')[0];
+      const periodEnd = params.periodEnd.toISOString().split('T')[0];
+      
+      log(`Queueing async purchase journal generation for ${params.companyId}`, 'purchase-journal-async');
+      
+      const job = await accountingQueueService.queuePurchaseJournalGeneration({
+        companyId: params.companyId,
+        periodStart,
+        periodEnd,
+        reportType: params.reportType,
+        userId
+      });
+      
+      return {
+        jobId: job.id!,
+        message: `Purchase journal generation queued. Job ID: ${job.id}`
+      };
+    } catch (error: any) {
+      log(`Error queueing purchase journal generation: ${error.message}`, 'purchase-journal-error');
+      throw error;
+    }
+  }
+  
+  /**
+   * Invalidate purchase journal cache after invoice modifications
+   * Should be called after creating, updating, or deleting supplier invoices
+   * 
+   * @param companyId Company ID
+   * @param invoiceDate Invoice date (to determine which periods to invalidate)
+   */
+  public async invalidatePurchaseJournalCache(
+    companyId: string,
+    invoiceDate?: Date
+  ): Promise<void> {
+    try {
+      await accountingCacheService.connect();
+      
+      if (!accountingCacheService.isConnected()) {
+        return;
+      }
+      
+      if (invoiceDate) {
+        // Invalidate specific period
+        const year = invoiceDate.getFullYear();
+        const month = String(invoiceDate.getMonth() + 1).padStart(2, '0');
+        const period = `${year}-${month}`;
+        
+        await accountingCacheService.invalidatePurchaseJournal(companyId, period);
+        log(`Invalidated purchase journal cache for ${companyId} period ${period}`, 'purchase-journal-cache');
+      } else {
+        // Nuclear option - invalidate all periods for company
+        await accountingCacheService.invalidatePurchaseJournal(companyId);
+        log(`Invalidated all purchase journal cache for ${companyId}`, 'purchase-journal-cache');
+      }
+    } catch (error: any) {
+      log(`Error invalidating purchase journal cache: ${error.message}`, 'purchase-journal-error');
+      // Don't throw - cache invalidation failures shouldn't break the main operation
     }
   }
 }

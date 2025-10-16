@@ -5,6 +5,7 @@ import { JwtAuthMode } from "../../auth/constants/auth-mode.enum";
 import { AuthenticatedRequest } from "../../../common/middleware/auth-types";
 import { Response } from "express";
 import { JournalController } from "../controllers/journal.controller";
+import { accountingReadRateLimiter } from "../../../middlewares/rate-limit.middleware";
 
 /**
  * Setup ledger routes for direct transaction recording and management
@@ -37,7 +38,7 @@ export function setupLedgerRoutes() {
    * Get all ledger entries (with optional filtering)
    * GET /api/accounting/ledger/entries
    */
-  router.get("/entries", (req, res) => {
+  router.get("/entries", accountingReadRateLimiter, (req, res) => {
     journalController.getLedgerEntries(req as AuthenticatedRequest, res);
   });
   

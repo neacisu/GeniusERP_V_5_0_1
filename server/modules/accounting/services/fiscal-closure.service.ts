@@ -3,6 +3,10 @@
  * 
  * Coordonează procesul complet de închidere fiscală lunară și anuală
  * conform OMFP 1802/2014 și Legii Contabilității nr. 82/1991
+ * 
+ * ENHANCED WITH:
+ * - BullMQ async processing for long-running closures
+ * - Progress tracking via job status
  */
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
@@ -12,6 +16,8 @@ import { FXRevaluationService } from './fx-revaluation.service';
 import { VATClosureService } from './vat-closure.service';
 import { YearEndClosureService, ProfitTaxAdjustments, ProfitDistribution } from './year-end-closure.service';
 import { AuditLogService } from './audit-log.service';
+import { accountingQueueService } from './accounting-queue.service';
+import { log } from '../../../vite';
 
 export interface MonthEndClosureRequest {
   companyId: string;
@@ -490,6 +496,66 @@ export class FiscalClosureService extends DrizzleService {
         success: false,
         error: (error as Error).message
       };
+    }
+  }
+  
+  /**
+   * ============================================================================
+   * BULLMQ ASYNC OPERATIONS
+   * ============================================================================
+   */
+  
+  /**
+   * Queue month-end closure as async job
+   * Returns job ID for tracking
+   */
+  async closeMonthAsync(request: MonthEndClosureRequest): Promise<{ jobId: string; message: string }> {
+    try {
+      log(`Queueing async month-end closure for ${request.year}-${request.month}`, 'fiscal-closure-async');
+      
+      const job = await accountingQueueService.queueMonthClose({
+        companyId: request.companyId,
+        year: request.year,
+        month: request.month,
+        userId: request.userId,
+        skipDepreciation: request.skipDepreciation,
+        skipFXRevaluation: request.skipFXRevaluation,
+        skipVAT: request.skipVAT,
+        dryRun: request.dryRun
+      });
+      
+      return {
+        jobId: job.id!,
+        message: `Month-end closure queued. Job ID: ${job.id}`
+      };
+    } catch (error: any) {
+      log(`Error queueing month-end closure: ${error.message}`, 'fiscal-closure-error');
+      throw error;
+    }
+  }
+  
+  /**
+   * Queue year-end closure as async job
+   * Returns job ID for tracking
+   */
+  async closeYearAsync(request: YearEndClosureRequest): Promise<{ jobId: string; message: string }> {
+    try {
+      log(`Queueing async year-end closure for fiscal year ${request.fiscalYear}`, 'fiscal-closure-async');
+      
+      const job = await accountingQueueService.queueYearClose({
+        companyId: request.companyId,
+        fiscalYear: request.fiscalYear,
+        userId: request.userId,
+        dryRun: request.dryRun
+      });
+      
+      return {
+        jobId: job.id!,
+        message: `Year-end closure queued. Job ID: ${job.id}`
+      };
+    } catch (error: any) {
+      log(`Error queueing year-end closure: ${error.message}`, 'fiscal-closure-error');
+      throw error;
     }
   }
 }

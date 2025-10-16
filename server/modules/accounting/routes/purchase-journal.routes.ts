@@ -5,6 +5,13 @@ import { purchaseJournalService } from "..";
 import { PurchaseJournalController } from "../controllers/purchase-journal.controller";
 import { AuthenticatedRequest } from "../../../common/middleware/auth-types";
 import { Response } from "express";
+import { 
+  invoiceCreateRateLimiter,
+  paymentRecordRateLimiter,
+  accountingHeavyRateLimiter,
+  exportRateLimiter,
+  accountingReadRateLimiter
+} from "../../../middlewares/rate-limit.middleware";
 
 /**
  * Setup routes for the Romanian Purchase Journal
@@ -39,6 +46,7 @@ export function setupPurchaseJournalRoutes() {
    */
   router.post(
     "/invoices", 
+    invoiceCreateRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       purchaseJournalController.recordSupplierInvoice(req as AuthenticatedRequest, res);
@@ -75,6 +83,7 @@ export function setupPurchaseJournalRoutes() {
    */
   router.post(
     "/invoices/:id/payments", 
+    paymentRecordRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       purchaseJournalController.recordInvoicePayment(req as AuthenticatedRequest, res);
@@ -140,15 +149,15 @@ export function setupPurchaseJournalRoutes() {
     purchaseJournalController.getSupplierBalance(req as AuthenticatedRequest, res);
   });
   
-  router.get("/journal", (req, res) => {
+  router.get("/journal", accountingReadRateLimiter, (req, res) => {
     purchaseJournalController.generatePurchaseJournal(req as AuthenticatedRequest, res);
   });
   
-  router.get("/journal/export/excel", (req, res) => {
+  router.get("/journal/export/excel", exportRateLimiter, (req, res) => {
     purchaseJournalController.exportPurchaseJournalExcel(req as AuthenticatedRequest, res);
   });
   
-  router.get("/journal/export/pdf", (req, res) => {
+  router.get("/journal/export/pdf", exportRateLimiter, (req, res) => {
     purchaseJournalController.exportPurchaseJournalPDF(req as AuthenticatedRequest, res);
   });
 
@@ -161,6 +170,57 @@ export function setupPurchaseJournalRoutes() {
     AuthGuard.roleGuard(["admin"]),
     (req, res) => {
       purchaseJournalController.completeMissingSupplierDetails(req as AuthenticatedRequest, res);
+    }
+  );
+  
+  /**
+   * =========================================================================
+   * ASYNC OPERATIONS & BULLMQ INTEGRATION
+   * =========================================================================
+   */
+  
+  /**
+   * Generate purchase journal asynchronously (via BullMQ)
+   * POST /api/accounting/purchases/journal/generate-async
+   */
+  router.post(
+    "/journal/generate-async",
+    accountingHeavyRateLimiter,
+    AuthGuard.roleGuard(["accountant", "admin"]),
+    (req, res) => {
+      purchaseJournalController.generatePurchaseJournalAsync(req as AuthenticatedRequest, res);
+    }
+  );
+  
+  /**
+   * =========================================================================
+   * BULK OPERATIONS
+   * =========================================================================
+   */
+  
+  /**
+   * Bulk create supplier invoices
+   * POST /api/accounting/purchases/bulk-create-invoices
+   */
+  router.post(
+    "/bulk-create-invoices",
+    accountingHeavyRateLimiter,
+    AuthGuard.roleGuard(["accountant", "admin"]),
+    (req, res) => {
+      purchaseJournalController.bulkCreateSupplierInvoices(req as AuthenticatedRequest, res);
+    }
+  );
+  
+  /**
+   * Bulk record supplier payments
+   * POST /api/accounting/purchases/bulk-record-payments
+   */
+  router.post(
+    "/bulk-record-payments",
+    accountingHeavyRateLimiter,
+    AuthGuard.roleGuard(["accountant", "admin"]),
+    (req, res) => {
+      purchaseJournalController.bulkRecordSupplierPayments(req as AuthenticatedRequest, res);
     }
   );
 

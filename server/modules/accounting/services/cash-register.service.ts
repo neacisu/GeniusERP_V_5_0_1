@@ -3,6 +3,10 @@
  * 
  * Specialized journal service for cash register operations.
  * Handles creating and managing cash receipts and payments according to Romanian accounting standards.
+ * 
+ * ENHANCED WITH:
+ * - Redis caching for daily cash reports
+ * - BullMQ async processing for reconciliations
  */
 
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
@@ -12,6 +16,9 @@ import { cashRegisters, cashTransactions, CashRegister, CashTransaction } from '
 import { companies } from '../../../../shared/schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditLogService, AuditAction, AuditSeverity } from './audit-log.service';
+import { accountingQueueService } from './accounting-queue.service';
+import { RedisService } from '../../../services/redis.service';
+import { log } from '../../../vite';
 
 /**
  * Cash transaction type enum
@@ -1738,6 +1745,115 @@ export class CashRegisterService {
       console.error('Error generating receipt number:', error);
       // Fallback la random dacă eșuează
       return `${series}/${year}/${Math.floor(Math.random() * 999999).toString().padStart(6, '0')}`;
+    }
+  }
+  
+  /**
+   * ============================================================================
+   * REDIS CACHING & BULLMQ ASYNC OPERATIONS
+   * ============================================================================
+   */
+  
+  /**
+   * Get daily cash report with caching
+   */
+  public async getDailyCashReportCached(
+    companyId: string,
+    cashRegisterId: string,
+    date: Date,
+    useCache: boolean = true
+  ): Promise<any> {
+    const dateStr = date.toISOString().split('T')[0];
+    const cacheKey = `acc:cash-report:${companyId}:${cashRegisterId}:${dateStr}`;
+    
+    // Check cache
+    if (useCache) {
+      const redisService = new RedisService();
+      await redisService.connect();
+      
+      if (redisService.isConnected()) {
+        const cached = await redisService.getCached<any>(cacheKey);
+        
+        if (cached) {
+          log(`Daily cash report cache hit for ${cashRegisterId}`, 'cash-register-cache');
+          return cached;
+        }
+      }
+    }
+    
+    // Generate report
+    log(`Generating daily cash report for ${cashRegisterId}`, 'cash-register');
+    const report = await this.generateCashRegisterReport(companyId, cashRegisterId, date, date);
+    
+    // Cache result (1 day TTL for historical data, 5 min for today)
+    if (useCache) {
+      const isToday = dateStr === new Date().toISOString().split('T')[0];
+      const ttl = isToday ? 300 : 86400;
+      
+      const redisService = new RedisService();
+      await redisService.connect();
+      if (redisService.isConnected()) {
+        await redisService.setCached(cacheKey, report, ttl);
+        log(`Daily cash report cached for ${cashRegisterId}`, 'cash-register-cache');
+      }
+    }
+    
+    return report;
+  }
+  
+  /**
+   * Queue cash register reconciliation as async job
+   */
+  public async reconcileCashRegisterAsync(
+    companyId: string,
+    cashRegisterId: string,
+    startDate: string,
+    endDate: string,
+    userId: string
+  ): Promise<{ jobId: string; message: string }> {
+    try {
+      log(`Queueing async cash reconciliation for ${cashRegisterId}`, 'cash-register-async');
+      
+      const job = await accountingQueueService.queueAccountReconciliation({
+        accountId: cashRegisterId,
+        companyId,
+        startDate,
+        endDate
+      });
+      
+      return {
+        jobId: job.id!,
+        message: `Cash reconciliation queued. Job ID: ${job.id}`
+      };
+    } catch (error: any) {
+      log(`Error queueing cash reconciliation: ${error.message}`, 'cash-register-error');
+      throw error;
+    }
+  }
+  
+  /**
+   * Invalidate cash report cache
+   */
+  public async invalidateCashReportCache(
+    companyId: string,
+    cashRegisterId?: string
+  ): Promise<void> {
+    try {
+      const redisService = new RedisService();
+      await redisService.connect();
+      
+      if (!redisService.isConnected()) {
+        return;
+      }
+      
+      const pattern = cashRegisterId
+        ? `acc:cash-report:${companyId}:${cashRegisterId}:*`
+        : `acc:cash-report:${companyId}:*`;
+      
+      await redisService.invalidatePattern(pattern);
+      log(`Invalidated cash report cache for ${companyId}`, 'cash-register-cache');
+    } catch (error: any) {
+      log(`Error invalidating cash report cache: ${error.message}`, 'cash-register-error');
     }
   }
 }

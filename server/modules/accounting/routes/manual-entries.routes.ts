@@ -7,6 +7,7 @@
 import { Router } from 'express';
 import { ManualEntriesController } from '../controllers/manual-entries.controller';
 import { AuthGuard } from '../../auth/guards/auth.guard';
+import { accountingReadRateLimiter } from '../../../middlewares/rate-limit.middleware';
 
 const router = Router();
 const controller = new ManualEntriesController();
@@ -33,6 +34,7 @@ router.post('/',
  * @query startDate?, endDate?, page?, limit?, includeStorno?
  */
 router.get('/',
+  accountingReadRateLimiter,
   requireAccountingRole,
   controller.getManualEntries.bind(controller)
 );

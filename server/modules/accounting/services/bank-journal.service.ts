@@ -3,6 +3,10 @@
  * 
  * Specialized journal service for banking operations.
  * Handles creating and managing bank transaction entries according to Romanian accounting standards.
+ * 
+ * ENHANCED WITH:
+ * - Redis caching for bank statements
+ * - BullMQ async processing for reconciliations
  */
 
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
@@ -10,6 +14,9 @@ import { getDrizzle } from '../../../common/drizzle';
 import { and, desc, eq, gte, lte } from 'drizzle-orm';
 import { bankAccounts, bankTransactions, BankAccount, BankTransaction } from '../../../../shared/schema';
 import { v4 as uuidv4 } from 'uuid';
+import { accountingQueueService } from './accounting-queue.service';
+import { RedisService } from '../../../services/redis.service';
+import { log } from '../../../vite';
 
 /**
  * Bank transaction type enum
@@ -943,6 +950,112 @@ export class BankJournalService {
       currentBalance: account.currentBalance,
       isActive: account.isActive
     }));
+  }
+  
+  /**
+   * ============================================================================
+   * REDIS CACHING & BULLMQ ASYNC OPERATIONS
+   * ============================================================================
+   */
+  
+  /**
+   * Get bank statement with caching
+   */
+  public async getBankStatementCached(
+    companyId: string,
+    bankAccountId: string,
+    startDate: Date,
+    endDate: Date,
+    useCache: boolean = true
+  ): Promise<any> {
+    const cacheKey = `acc:bank-statement:${companyId}:${bankAccountId}:${startDate.toISOString().split('T')[0]}:${endDate.toISOString().split('T')[0]}`;
+    
+    // Check cache
+    if (useCache) {
+      const redisService = new RedisService();
+      await redisService.connect();
+      
+      if (redisService.isConnected()) {
+        const cached = await redisService.getCached<any>(cacheKey);
+        
+        if (cached) {
+          log(`Bank statement cache hit for ${bankAccountId}`, 'bank-journal-cache');
+          return cached;
+        }
+      }
+    }
+    
+    // Generate statement
+    log(`Generating bank statement for ${bankAccountId}`, 'bank-journal');
+    const statement = await this.generateBankStatement(companyId, bankAccountId, startDate, endDate);
+    
+    // Cache result (30 min TTL)
+    if (useCache) {
+      const redisService = new RedisService();
+      await redisService.connect();
+      if (redisService.isConnected()) {
+        await redisService.setCached(cacheKey, statement, 1800);
+        log(`Bank statement cached for ${bankAccountId}`, 'bank-journal-cache');
+      }
+    }
+    
+    return statement;
+  }
+  
+  /**
+   * Queue bank reconciliation as async job
+   */
+  public async reconcileBankAccountAsync(
+    companyId: string,
+    bankAccountId: string,
+    startDate: string,
+    endDate: string,
+    userId: string
+  ): Promise<{ jobId: string; message: string }> {
+    try {
+      log(`Queueing async bank reconciliation for ${bankAccountId}`, 'bank-journal-async');
+      
+      const job = await accountingQueueService.queueAccountReconciliation({
+        accountId: bankAccountId,
+        companyId,
+        startDate,
+        endDate
+      });
+      
+      return {
+        jobId: job.id!,
+        message: `Bank reconciliation queued. Job ID: ${job.id}`
+      };
+    } catch (error: any) {
+      log(`Error queueing bank reconciliation: ${error.message}`, 'bank-journal-error');
+      throw error;
+    }
+  }
+  
+  /**
+   * Invalidate bank statement cache
+   */
+  public async invalidateBankStatementCache(
+    companyId: string,
+    bankAccountId?: string
+  ): Promise<void> {
+    try {
+      const redisService = new RedisService();
+      await redisService.connect();
+      
+      if (!redisService.isConnected()) {
+        return;
+      }
+      
+      const pattern = bankAccountId
+        ? `acc:bank-statement:${companyId}:${bankAccountId}:*`
+        : `acc:bank-statement:${companyId}:*`;
+      
+      await redisService.invalidatePattern(pattern);
+      log(`Invalidated bank statement cache for ${companyId}`, 'bank-journal-cache');
+    } catch (error: any) {
+      log(`Error invalidating bank statement cache: ${error.message}`, 'bank-journal-error');
+    }
   }
 }
 
