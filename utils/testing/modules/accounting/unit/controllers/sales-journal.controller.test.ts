@@ -44,8 +44,8 @@ describe('SalesJournalController', () => {
     };
 
     mockRes = {
-      status: jest.fn<any, any>().mockReturnThis(),
-      json: jest.fn<any, any>().mockReturnThis()
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis()
     } as any;
   });
 
@@ -296,7 +296,7 @@ describe('SalesJournalController', () => {
       ];
 
       mockSalesJournalService.getCustomerInvoice.mockResolvedValue(mockInvoice as any);
-      (mockSalesJournalService as any).getInvoicePayments = jest.fn<any, any>().mockResolvedValue(mockPayments);
+      (mockSalesJournalService as any).getInvoicePayments = jest.fn().mockResolvedValue(mockPayments);
 
       await controller.getInvoicePayments(mockReq as AuthenticatedRequest, mockRes as Response);
 

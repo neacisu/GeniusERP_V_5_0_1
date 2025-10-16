@@ -40,8 +40,8 @@ describe('AccountingController', () => {
     };
 
     mockRes = {
-      status: jest.fn<any, any>().mockReturnThis(),
-      json: jest.fn<any, any>().mockReturnThis()
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis()
     } as any;
   });
 
@@ -263,19 +263,17 @@ describe('AccountingController', () => {
     });
 
     it('should handle custom errors with status codes', async () => {
-      mockAccountingService.getAnalyticAccount.mockRejectedValue({
+      mockAccountingService.getAnalyticAccounts.mockRejectedValue({
         statusCode: 404,
-        message: 'Account not found'
+        message: 'Accounts not found'
       });
-
-      mockReq.params = { id: 'nonexistent-id' };
       
-      await controller.getAnalyticAccount(mockReq as AuthenticatedRequest, mockRes as Response);
+      await controller.getAnalyticAccounts(mockReq as AuthenticatedRequest, mockRes as Response);
 
       expect(mockRes.status).toHaveBeenCalledWith(404);
       expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
         success: false,
-        error: 'Account not found'
+        error: 'Accounts not found'
       }));
     });
   });

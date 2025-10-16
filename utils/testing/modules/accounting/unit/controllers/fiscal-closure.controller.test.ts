@@ -54,8 +54,8 @@ describe('FiscalClosureController', () => {
     };
 
     mockRes = {
-      status: jest.fn<any, any>().mockReturnThis(),
-      json: jest.fn<any, any>().mockReturnThis()
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis()
     } as any;
   });
 
