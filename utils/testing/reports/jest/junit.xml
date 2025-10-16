@@ -1,43 +1,446 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="19" failures="0" errors="0" time="1.207">
-  <testsuite name="AccountingCacheService" errors="0" failures="0" skipped="0" timestamp="2025-10-16T06:13:28" time="0.813" tests="19">
-    <testcase classname="AccountingCacheService › Chart of Accounts Caching" name="should cache and retrieve account classes" time="0.006">
+<testsuites name="jest tests" tests="105" failures="28" errors="0" time="15.487">
+  <testsuite name="FinancialReportsService" errors="0" failures="3" skipped="0" timestamp="2025-10-16T06:40:02" time="5.916" tests="7">
+    <testcase classname="FinancialReportsService › getFinancialReports" name="should return cached reports if available" time="0.013">
+    </testcase>
+    <testcase classname="FinancialReportsService › getFinancialReports" name="should calculate reports from DB if cache miss" time="0.009">
+      <failure>Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+Expected: &quot;acc:financial-reports:company-1&quot;, [{&quot;id&quot;: &quot;1&quot;, &quot;name&quot;: &quot;Vânzări&quot;, &quot;type&quot;: &quot;income&quot;, &quot;value&quot;: 100000}, {&quot;id&quot;: &quot;2&quot;, &quot;name&quot;: &quot;Achiziții&quot;, &quot;type&quot;: &quot;expense&quot;, &quot;value&quot;: 50000}, {&quot;id&quot;: &quot;3&quot;, &quot;name&quot;: &quot;Sold Casă&quot;, &quot;type&quot;: &quot;asset&quot;, &quot;value&quot;: 10000}, {&quot;id&quot;: &quot;4&quot;, &quot;name&quot;: &quot;Sold Bancă&quot;, &quot;type&quot;: &quot;asset&quot;, &quot;value&quot;: 90000}], 300
+
+Number of calls: 0
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/financial-reports.service.test.ts:69:42)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="FinancialReportsService › getFinancialReports" name="should handle zero values from DB" time="0.004">
+    </testcase>
+    <testcase classname="FinancialReportsService › getFinancialIndicators" name="should return cached indicators if available" time="0.003">
+    </testcase>
+    <testcase classname="FinancialReportsService › getFinancialIndicators" name="should calculate indicators from DB if cache miss" time="0.006">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200000
+Received: 100000
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/financial-reports.service.test.ts:131:34)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="FinancialReportsService › getFinancialIndicators" name="should handle zero revenue for profit margin calculation" time="0.052">
+    </testcase>
+    <testcase classname="FinancialReportsService › invalidateCache" name="should invalidate both reports and indicators cache" time="0.003">
+      <failure>Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+Expected: &quot;acc:financial-reports:company-1&quot;
+
+Number of calls: 0
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/financial-reports.service.test.ts:162:50)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="AccountingAttachmentsService" errors="0" failures="1" skipped="0" timestamp="2025-10-16T06:40:02" time="7.202" tests="21">
+    <testcase classname="AccountingAttachmentsService › uploadAttachment" name="should successfully upload a valid PDF attachment" time="0.142">
+      <failure>Error: expect(received).toMatchObject(expected)
+
+- Expected  - 1
++ Received  + 1
+
+@@ -1,11 +1,11 @@
+  Object {
+    &quot;attachmentType&quot;: &quot;supporting_document&quot;,
+    &quot;companyId&quot;: &quot;company-1&quot;,
+    &quot;description&quot;: &quot;Factura justificativă&quot;,
+    &quot;fileSize&quot;: 102400,
+-   &quot;id&quot;: &quot;mock-uuid-123&quot;,
++   &quot;id&quot;: undefined,
+    &quot;isActive&quot;: true,
+    &quot;ledgerEntryId&quot;: &quot;ledger-1&quot;,
+    &quot;mimeType&quot;: &quot;application/pdf&quot;,
+    &quot;originalFileName&quot;: &quot;test-invoice.pdf&quot;,
+    &quot;uploadedBy&quot;: &quot;user-1&quot;,
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/accounting-attachments.service.test.ts:77:22)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › uploadAttachment" name="should reject file that exceeds max size" time="0.04">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › uploadAttachment" name="should reject file with invalid MIME type" time="0.043">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › uploadAttachment" name="should reject file with invalid extension" time="0.02">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › uploadAttachment" name="should reject file with dangerous characters in name" time="0.015">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › uploadAttachment" name="should clean up file if database save fails" time="0.028">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › uploadAttachment" name="should accept all allowed file types" time="0.034">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › getAttachmentsForEntry" name="should return attachments for a ledger entry" time="0.015">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › downloadAttachment" name="should download an existing attachment" time="0.016">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › downloadAttachment" name="should throw error if file does not exist on disk" time="0.014">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › deleteAttachment" name="should delete an attachment with audit trail" time="0.018">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › deleteAttachment" name="should handle errors during deletion" time="0.016">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › deleteAttachment" name="should not throw if file already deleted from disk" time="0.013">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › getAttachmentsSummary" name="should return summary statistics" time="0.013">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › cleanupOrphanedFiles" name="should clean up orphaned files" time="0.016">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › cleanupOrphanedFiles" name="should handle errors during cleanup" time="0.029">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › Directory Initialization" name="should create upload directory if it does not exist" time="0.035">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › Directory Initialization" name="should not create directory if it already exists" time="0.039">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › File Validation Edge Cases" name="should validate empty file names" time="0.015">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › File Validation Edge Cases" name="should handle zero-byte files" time="0.035">
+    </testcase>
+    <testcase classname="AccountingAttachmentsService › Attachment Types" name="should accept all valid attachment types" time="0.062">
+    </testcase>
+  </testsuite>
+  <testsuite name="AccountingService - Unit Tests" errors="0" failures="0" skipped="0" timestamp="2025-10-16T06:40:08" time="1.541" tests="8">
+    <testcase classname="AccountingService - Unit Tests › Account Classes" name="should get all account classes" time="0.217">
+    </testcase>
+    <testcase classname="AccountingService - Unit Tests › Account Classes" name="should cache account classes with 24h TTL" time="0.024">
+    </testcase>
+    <testcase classname="AccountingService - Unit Tests › Account Classes" name="should get single account class by ID" time="0.019">
+    </testcase>
+    <testcase classname="AccountingService - Unit Tests › Account Classes" name="should get account class by code" time="0.022">
+    </testcase>
+    <testcase classname="AccountingService - Unit Tests › Account Groups" name="should get all account groups" time="0.014">
+    </testcase>
+    <testcase classname="AccountingService - Unit Tests › Synthetic Accounts" name="should get all synthetic accounts" time="0.013">
+    </testcase>
+    <testcase classname="AccountingService - Unit Tests › Analytic Accounts" name="should get all analytic accounts" time="0.016">
+    </testcase>
+    <testcase classname="AccountingService - Unit Tests › Error Handling" name="should handle storage errors gracefully" time="0.029">
+    </testcase>
+  </testsuite>
+  <testsuite name="AccountMappingService Unit Tests" errors="0" failures="1" skipped="0" timestamp="2025-10-16T06:40:09" time="1.379" tests="10">
+    <testcase classname="AccountMappingService Unit Tests › Get Account Mapping" name="should get account for a mapping type" time="0.149">
+    </testcase>
+    <testcase classname="AccountMappingService Unit Tests › Get Account Mapping" name="should return cached account if available" time="0.003">
+    </testcase>
+    <testcase classname="AccountMappingService Unit Tests › Get Account Mapping" name="should cache account mappings with 24h TTL" time="0.015">
+    </testcase>
+    <testcase classname="AccountMappingService Unit Tests › Get Account Mapping" name="should return default account if no mapping found" time="0.008">
+    </testcase>
+    <testcase classname="AccountMappingService Unit Tests › Cache Management" name="should clear cache for a company" time="0.003">
+    </testcase>
+    <testcase classname="AccountMappingService Unit Tests › Default Accounts" name="should return correct default for CASH_RON" time="0.009">
+    </testcase>
+    <testcase classname="AccountMappingService Unit Tests › Default Accounts" name="should return correct default for SUPPLIERS" time="0.008">
+    </testcase>
+    <testcase classname="AccountMappingService Unit Tests › Default Accounts" name="should return correct default for CUSTOMERS" time="0.01">
+    </testcase>
+    <testcase classname="AccountMappingService Unit Tests › Error Handling" name="should handle database errors gracefully" time="0.001">
+      <failure>Error: Database error
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/account-mapping.service.test.ts:126:52)
+    at Promise.finally.completed (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:1557:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:1497:10)
+    at _callCircusTest (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:1007:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:947:3)
+    at /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:849:7
+    at _runTestsForDescribeBlock (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:862:11)
+    at _runTestsForDescribeBlock (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:857:11)
+    at _runTestsForDescribeBlock (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:857:11)
+    at run (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:761:3)
+    at runAndTransformResultsToJestFormat (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:1918:21)
+    at jestAdapter (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/runner.js:101:19)
+    at runTestInternal (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-runner/build/testWorker.js:275:16)
+    at runTest (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-runner/build/testWorker.js:343:7)
+    at Object.worker (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-runner/build/testWorker.js:497:12)</failure>
+    </testcase>
+    <testcase classname="AccountMappingService Unit Tests › Error Handling" name="should work without Redis connection" time="0.01">
+    </testcase>
+  </testsuite>
+  <testsuite name="GeneralJournalPdfService Unit Tests" errors="0" failures="6" skipped="0" timestamp="2025-10-16T06:40:10" time="1.287" tests="6">
+    <testcase classname="GeneralJournalPdfService Unit Tests › PDF Generation" name="should generate PDF for general journal" time="0.039">
+      <failure>AggregateError: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)</failure>
+    </testcase>
+    <testcase classname="GeneralJournalPdfService Unit Tests › PDF Generation" name="should generate summary level PDF" time="0.004">
+      <failure>AggregateError: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)</failure>
+    </testcase>
+    <testcase classname="GeneralJournalPdfService Unit Tests › PDF Generation" name="should filter by journal types" time="0.004">
+      <failure>AggregateError: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)</failure>
+    </testcase>
+    <testcase classname="GeneralJournalPdfService Unit Tests › PDF Generation" name="should include responsible person details" time="0.008">
+      <failure>AggregateError: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)</failure>
+    </testcase>
+    <testcase classname="GeneralJournalPdfService Unit Tests › Caching Behavior" name="should cache journal entries with 10min TTL" time="0.004">
+      <failure>AggregateError: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)</failure>
+    </testcase>
+    <testcase classname="GeneralJournalPdfService Unit Tests › Error Handling" name="should handle missing entries gracefully" time="0.004">
+      <failure>AggregateError: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="GeneralJournalExcelService Unit Tests" errors="0" failures="5" skipped="0" timestamp="2025-10-16T06:40:10" time="1.482" tests="6">
+    <testcase classname="GeneralJournalExcelService Unit Tests › Excel Generation" name="should generate Excel file for general journal" time="0.157">
+      <failure>AggregateError: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)</failure>
+    </testcase>
+    <testcase classname="GeneralJournalExcelService Unit Tests › Excel Generation" name="should filter by journal types in Excel" time="0.008">
+      <failure>AggregateError: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)</failure>
+    </testcase>
+    <testcase classname="GeneralJournalExcelService Unit Tests › Excel Generation" name="should include metadata sheets" time="0.007">
+      <failure>AggregateError: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)</failure>
+    </testcase>
+    <testcase classname="GeneralJournalExcelService Unit Tests › Excel Generation" name="should exclude reversals when requested" time="0.01">
+      <failure>AggregateError: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)</failure>
+    </testcase>
+    <testcase classname="GeneralJournalExcelService Unit Tests › Caching Behavior" name="should cache journal entries with 10min TTL" time="0.006">
+      <failure>AggregateError: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)</failure>
+    </testcase>
+    <testcase classname="GeneralJournalExcelService Unit Tests › Error Handling" name="should handle XLSX not available error" time="0.008">
+    </testcase>
+  </testsuite>
+  <testsuite name="OnboardingService Unit Tests" errors="0" failures="6" skipped="0" timestamp="2025-10-16T06:40:10" time="2.778" tests="7">
+    <testcase classname="OnboardingService Unit Tests › Onboarding Status" name="should get onboarding status for company and fiscal year" time="0.417">
+      <failure>Error: Failed query: select &quot;id&quot;, &quot;code&quot;, &quot;name&quot;, &quot;description&quot;, &quot;account_function&quot;, &quot;grade&quot;, &quot;group_id&quot;, &quot;parent_id&quot;, &quot;is_active&quot;, &quot;created_at&quot;, &quot;updated_at&quot; from &quot;synthetic_accounts&quot;
+params: 
+    at PostgresJsPreparedQuery.queryWithCache (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/src/pg-core/session.ts:73:11)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/src/postgres-js/session.ts:58:17
+    at BaseDrizzleService.query (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/common/drizzle/modules/core/base-drizzle.service.ts:39:22)
+    at OnboardingService.query (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/common/drizzle/drizzle.service.ts:98:14)
+    at OnboardingService.getOnboardingStatus (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/modules/accounting/services/onboarding.service.ts:293:27)
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/onboarding.service.test.ts:40:22)</failure>
+    </testcase>
+    <testcase classname="OnboardingService Unit Tests › Onboarding Status" name="should cache onboarding status with 5min TTL" time="0.044">
+      <failure>Error: Failed query: select &quot;id&quot;, &quot;code&quot;, &quot;name&quot;, &quot;description&quot;, &quot;account_function&quot;, &quot;grade&quot;, &quot;group_id&quot;, &quot;parent_id&quot;, &quot;is_active&quot;, &quot;created_at&quot;, &quot;updated_at&quot; from &quot;synthetic_accounts&quot;
+params: 
+    at PostgresJsPreparedQuery.queryWithCache (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/src/pg-core/session.ts:73:11)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/src/postgres-js/session.ts:58:17
+    at BaseDrizzleService.query (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/common/drizzle/modules/core/base-drizzle.service.ts:39:22)
+    at OnboardingService.query (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/common/drizzle/drizzle.service.ts:98:14)
+    at OnboardingService.getOnboardingStatus (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/modules/accounting/services/onboarding.service.ts:293:27)
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/onboarding.service.test.ts:52:7)</failure>
+    </testcase>
+    <testcase classname="OnboardingService Unit Tests › Chart of Accounts Import" name="should import chart of accounts" time="0.048">
+      <failure>Error: Failed query: select &quot;id&quot;, &quot;code&quot;, &quot;name&quot;, &quot;description&quot;, &quot;account_function&quot;, &quot;grade&quot;, &quot;group_id&quot;, &quot;parent_id&quot;, &quot;is_active&quot;, &quot;created_at&quot;, &quot;updated_at&quot; from &quot;synthetic_accounts&quot; where &quot;synthetic_accounts&quot;.&quot;code&quot; = $1 limit $2
+params: 401,1
+    at PostgresJsPreparedQuery.queryWithCache (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/src/pg-core/session.ts:73:11)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/src/postgres-js/session.ts:58:17
+    at BaseDrizzleService.query (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/common/drizzle/modules/core/base-drizzle.service.ts:39:22)
+    at OnboardingService.query (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/common/drizzle/drizzle.service.ts:98:14)
+    at OnboardingService.importChartOfAccounts (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/modules/accounting/services/onboarding.service.ts:140:26)
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/onboarding.service.test.ts:72:7)</failure>
+    </testcase>
+    <testcase classname="OnboardingService Unit Tests › Opening Balances Import" name="should import opening balances" time="0.019">
+      <failure>Error: expect(jest.fn()).toHaveBeenCalled()
+
+Expected number of calls: &gt;= 1
+Received number of calls:    0
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/onboarding.service.test.ts:95:36)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="OnboardingService Unit Tests › Opening Balances Import" name="should validate balance totals" time="0.019">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;isBalanced&apos;)
+    at OnboardingService.validateOpeningBalances (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/modules/accounting/services/onboarding.service.ts:224:27)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/onboarding.service.test.ts:102:26)</failure>
+    </testcase>
+    <testcase classname="OnboardingService Unit Tests › Onboarding Finalization" name="should finalize onboarding" time="0.024">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;isBalanced&apos;)
+    at OnboardingService.validateOpeningBalances (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/modules/accounting/services/onboarding.service.ts:224:27)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at OnboardingService.finalizeOnboarding (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/modules/accounting/services/onboarding.service.ts:241:24)
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/onboarding.service.test.ts:118:7)</failure>
+    </testcase>
+    <testcase classname="OnboardingService Unit Tests › Error Handling" name="should handle database errors gracefully" time="0.031">
+    </testcase>
+  </testsuite>
+  <testsuite name="AccountingSettingsService Unit Tests" errors="0" failures="4" skipped="0" timestamp="2025-10-16T06:40:11" time="1.919" tests="7">
+    <testcase classname="AccountingSettingsService Unit Tests › Get Settings" name="should get all settings for a company" time="0.173">
+      <failure>Error: Failed query: select &quot;id&quot;, &quot;company_id&quot;, &quot;mapping_type&quot;, &quot;account_code&quot;, &quot;account_name&quot;, &quot;is_default&quot;, &quot;is_active&quot;, &quot;created_at&quot;, &quot;updated_at&quot;, &quot;created_by&quot; from &quot;account_mappings&quot; where &quot;account_mappings&quot;.&quot;company_id&quot; = $1
+params: company-1
+    at PostgresJsPreparedQuery.queryWithCache (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/src/pg-core/session.ts:73:11)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/src/postgres-js/session.ts:58:17
+    at BaseDrizzleService.query (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/common/drizzle/modules/core/base-drizzle.service.ts:39:22)
+    at AccountingSettingsService.query (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/common/drizzle/drizzle.service.ts:98:14)
+    at async Promise.all (index 2)
+    at AccountingSettingsService.getSettings (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/modules/accounting/services/accounting-settings.service.ts:97:9)
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/accounting-settings.service.test.ts:38:22)</failure>
+    </testcase>
+    <testcase classname="AccountingSettingsService Unit Tests › Get Settings" name="should return cached settings if available" time="0.187">
+    </testcase>
+    <testcase classname="AccountingSettingsService Unit Tests › Get Settings" name="should cache settings with 6h TTL" time="0.125">
+      <failure>Error: Failed query: select &quot;id&quot;, &quot;company_id&quot;, &quot;vat_payer&quot;, &quot;use_cash_vat&quot;, &quot;cash_vat_threshold&quot;, &quot;standard_vat_rate&quot;, &quot;reduced_vat_rate_1&quot;, &quot;reduced_vat_rate_2&quot;, &quot;vat_collected_account&quot;, &quot;vat_deductible_account&quot;, &quot;vat_payable_account&quot;, &quot;vat_receivable_account&quot;, &quot;declaration_frequency&quot;, &quot;enable_vat_validation&quot;, &quot;created_at&quot;, &quot;updated_at&quot; from &quot;vat_settings&quot; where &quot;vat_settings&quot;.&quot;company_id&quot; = $1 limit $2
+params: company-1,1
+    at PostgresJsPreparedQuery.queryWithCache (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/src/pg-core/session.ts:73:11)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/src/postgres-js/session.ts:58:17
+    at BaseDrizzleService.query (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/common/drizzle/modules/core/base-drizzle.service.ts:39:22)
+    at AccountingSettingsService.query (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/common/drizzle/drizzle.service.ts:98:14)
+    at AccountingSettingsService.getVatSettings (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/modules/accounting/services/accounting-settings.service.ts:211:24)
+    at async Promise.all (index 1)
+    at AccountingSettingsService.getSettings (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/modules/accounting/services/accounting-settings.service.ts:97:9)
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/accounting-settings.service.test.ts:69:7)</failure>
+    </testcase>
+    <testcase classname="AccountingSettingsService Unit Tests › General Settings" name="should get general settings for a company" time="0.027">
+    </testcase>
+    <testcase classname="AccountingSettingsService Unit Tests › General Settings" name="should update general settings" time="0.044">
+      <failure>Error: Failed query: select &quot;id&quot;, &quot;company_id&quot;, &quot;fiscal_year_start_month&quot;, &quot;require_approval&quot;, &quot;auto_numbering&quot;, &quot;enable_analytic_accounting&quot;, &quot;enable_multi_currency&quot;, &quot;enable_fixed_assets&quot;, &quot;enable_cost_centers&quot;, &quot;enable_projects&quot;, &quot;enable_saft_export&quot;, &quot;enable_anaf_efactura&quot;, &quot;anaf_api_key&quot;, &quot;has_accounting_history&quot;, &quot;accounting_start_date&quot;, &quot;opening_balances_imported&quot;, &quot;created_at&quot;, &quot;updated_at&quot;, &quot;created_by&quot; from &quot;accounting_settings&quot; where &quot;accounting_settings&quot;.&quot;company_id&quot; = $1 limit $2
+params: company-1,1
+    at PostgresJsPreparedQuery.queryWithCache (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/src/pg-core/session.ts:73:11)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/src/postgres-js/session.ts:58:17
+    at BaseDrizzleService.query (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/common/drizzle/modules/core/base-drizzle.service.ts:39:22)
+    at AccountingSettingsService.query (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/common/drizzle/drizzle.service.ts:98:14)
+    at AccountingSettingsService.getGeneralSettings (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/modules/accounting/services/accounting-settings.service.ts:137:24)
+    at AccountingSettingsService.updateGeneralSettings (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/modules/accounting/services/accounting-settings.service.ts:171:22)
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/accounting-settings.service.test.ts:95:7)</failure>
+    </testcase>
+    <testcase classname="AccountingSettingsService Unit Tests › Cache Invalidation" name="should invalidate settings cache" time="0.043">
+    </testcase>
+    <testcase classname="AccountingSettingsService Unit Tests › Error Handling" name="should handle Redis connection errors gracefully" time="0.029">
+      <failure>Error: expect(received).resolves.toBeDefined()
+
+Received promise rejected instead of resolved
+Rejected to value: [Error: Redis connection failed]
+    at expect (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/expect/build/index.js:2116:15)
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/accounting-settings.service.test.ts:119:19)
+    at Promise.finally.completed (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:1557:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:1497:10)
+    at _callCircusTest (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:1007:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:947:3)
+    at /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:849:7
+    at _runTestsForDescribeBlock (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:862:11)
+    at _runTestsForDescribeBlock (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:857:11)
+    at _runTestsForDescribeBlock (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:857:11)
+    at run (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:761:3)
+    at runAndTransformResultsToJestFormat (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/jestAdapterInit.js:1918:21)
+    at jestAdapter (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-circus/build/runner.js:101:19)
+    at runTestInternal (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-runner/build/testWorker.js:275:16)
+    at runTest (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-runner/build/testWorker.js:343:7)
+    at Object.worker (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/jest-runner/build/testWorker.js:497:12)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="BankJournalPDFService" errors="0" failures="2" skipped="0" timestamp="2025-10-16T06:40:14" time="0.644" tests="2">
+    <testcase classname="BankJournalPDFService › generateBankJournalPDF" name="should return cached PDF path if available" time="0.027">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;font&apos;)
+    at /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/modules/accounting/services/bank-journal-pdf.service.ts:76:25
+    at new Promise (&lt;anonymous&gt;)
+    at BankJournalPDFService.generateBankJournalPDF (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/server/modules/accounting/services/bank-journal-pdf.service.ts:65:12)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/bank-journal-pdf.service.test.ts:60:22)</failure>
+    </testcase>
+    <testcase classname="BankJournalPDFService › generateBankJournalPDF" name="should use correct cache key format" time="0.012">
+      <failure>Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+Expected: StringMatching /^acc:bank-journal-pdf:bank-1:2025-01-01_2025-01-31$/
+
+Number of calls: 0
+    at Object.&lt;anonymous&gt; (/Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/utils/testing/modules/accounting/unit/services/bank-journal-pdf.service.test.ts:90:42)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="CashRegisterPDFService" errors="0" failures="0" skipped="0" timestamp="2025-10-16T06:40:15" time="0.155" tests="1">
+    <testcase classname="CashRegisterPDFService" name="should cache and generate PDF" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="PurchaseJournalExportService" errors="0" failures="0" skipped="0" timestamp="2025-10-16T06:40:15" time="0.204" tests="1">
+    <testcase classname="PurchaseJournalExportService" name="should export purchase journal" time="0.003">
+    </testcase>
+  </testsuite>
+  <testsuite name="JournalExportService" errors="0" failures="0" skipped="0" timestamp="2025-10-16T06:40:15" time="0.23" tests="1">
+    <testcase classname="JournalExportService" name="should export journal with cache" time="0.003">
+    </testcase>
+  </testsuite>
+  <testsuite name="SalesJournalExportService" errors="0" failures="0" skipped="0" timestamp="2025-10-16T06:40:15" time="0.211" tests="1">
+    <testcase classname="SalesJournalExportService" name="should export sales journal" time="0.004">
+    </testcase>
+  </testsuite>
+  <testsuite name="CashRegisterService" errors="0" failures="0" skipped="0" timestamp="2025-10-16T06:40:15" time="0.174" tests="1">
+    <testcase classname="CashRegisterService" name="should handle cash transactions" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="SAFTExportService" errors="0" failures="0" skipped="0" timestamp="2025-10-16T06:40:15" time="0.163" tests="1">
+    <testcase classname="SAFTExportService" name="should generate SAFT XML" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="PeriodLockService - Unit Tests" errors="0" failures="0" skipped="0" timestamp="2025-10-16T06:40:14" time="1.101" tests="6">
+    <testcase classname="PeriodLockService - Unit Tests › Period Lock Status" name="should check if period is closed" time="0.071">
+    </testcase>
+    <testcase classname="PeriodLockService - Unit Tests › Period Lock Status" name="should cache period status with 1h TTL" time="0.012">
+    </testcase>
+    <testcase classname="PeriodLockService - Unit Tests › Period Lock Status" name="should return false for non-existent periods" time="0.008">
+    </testcase>
+    <testcase classname="PeriodLockService - Unit Tests › Validation" name="should validate posting allowed to open period" time="0.007">
+    </testcase>
+    <testcase classname="PeriodLockService - Unit Tests › Validation" name="should reject posting to closed period" time="0.007">
+    </testcase>
+    <testcase classname="PeriodLockService - Unit Tests › Error Handling" name="should handle database errors gracefully" time="0.005">
+    </testcase>
+  </testsuite>
+  <testsuite name="AccountingCacheService" errors="0" failures="0" skipped="0" timestamp="2025-10-16T06:40:15" time="0.271" tests="19">
+    <testcase classname="AccountingCacheService › Chart of Accounts Caching" name="should cache and retrieve account classes" time="0.004">
     </testcase>
     <testcase classname="AccountingCacheService › Chart of Accounts Caching" name="should set account classes with correct TTL" time="0.002">
     </testcase>
-    <testcase classname="AccountingCacheService › Chart of Accounts Caching" name="should invalidate account classes cache" time="0.001">
+    <testcase classname="AccountingCacheService › Chart of Accounts Caching" name="should invalidate account classes cache" time="0.002">
     </testcase>
-    <testcase classname="AccountingCacheService › Chart of Accounts Caching" name="should cache synthetic accounts" time="0.002">
+    <testcase classname="AccountingCacheService › Chart of Accounts Caching" name="should cache synthetic accounts" time="0.003">
     </testcase>
-    <testcase classname="AccountingCacheService › Account Balances Caching" name="should cache and retrieve account balance" time="0.002">
+    <testcase classname="AccountingCacheService › Account Balances Caching" name="should cache and retrieve account balance" time="0.001">
     </testcase>
-    <testcase classname="AccountingCacheService › Account Balances Caching" name="should cache account balance with date" time="0.002">
+    <testcase classname="AccountingCacheService › Account Balances Caching" name="should cache account balance with date" time="0.001">
     </testcase>
-    <testcase classname="AccountingCacheService › Account Balances Caching" name="should invalidate multiple account balances" time="0.001">
+    <testcase classname="AccountingCacheService › Account Balances Caching" name="should invalidate multiple account balances" time="0.002">
     </testcase>
     <testcase classname="AccountingCacheService › Trial Balance Caching" name="should cache trial balance for period" time="0.002">
     </testcase>
     <testcase classname="AccountingCacheService › Trial Balance Caching" name="should retrieve cached trial balance" time="0.002">
     </testcase>
-    <testcase classname="AccountingCacheService › Trial Balance Caching" name="should invalidate trial balance for specific period" time="0.003">
+    <testcase classname="AccountingCacheService › Trial Balance Caching" name="should invalidate trial balance for specific period" time="0.002">
     </testcase>
     <testcase classname="AccountingCacheService › Trial Balance Caching" name="should invalidate all trial balances for company" time="0.002">
     </testcase>
-    <testcase classname="AccountingCacheService › Settings Caching" name="should cache accounting settings" time="0.002">
+    <testcase classname="AccountingCacheService › Settings Caching" name="should cache accounting settings" time="0.001">
     </testcase>
     <testcase classname="AccountingCacheService › Settings Caching" name="should retrieve cached settings" time="0.001">
     </testcase>
-    <testcase classname="AccountingCacheService › Settings Caching" name="should invalidate settings cache" time="0.002">
+    <testcase classname="AccountingCacheService › Settings Caching" name="should invalidate settings cache" time="0.001">
     </testcase>
-    <testcase classname="AccountingCacheService › Journal Reports Caching" name="should cache sales journal" time="0.002">
+    <testcase classname="AccountingCacheService › Journal Reports Caching" name="should cache sales journal" time="0.001">
     </testcase>
-    <testcase classname="AccountingCacheService › Journal Reports Caching" name="should retrieve cached sales journal" time="0.002">
+    <testcase classname="AccountingCacheService › Journal Reports Caching" name="should retrieve cached sales journal" time="0.003">
     </testcase>
-    <testcase classname="AccountingCacheService › Connection Management" name="should connect to Redis" time="0.003">
+    <testcase classname="AccountingCacheService › Connection Management" name="should connect to Redis" time="0.002">
     </testcase>
-    <testcase classname="AccountingCacheService › Cache Key Generation" name="should generate correct keys for account classes without companyId" time="0.002">
+    <testcase classname="AccountingCacheService › Cache Key Generation" name="should generate correct keys for account classes without companyId" time="0.003">
     </testcase>
-    <testcase classname="AccountingCacheService › Cache Key Generation" name="should generate correct keys with date for account balance" time="0.003">
+    <testcase classname="AccountingCacheService › Cache Key Generation" name="should generate correct keys with date for account balance" time="0.002">
     </testcase>
   </testsuite>
 </testsuites>
