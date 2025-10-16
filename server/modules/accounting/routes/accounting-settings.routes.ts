@@ -60,8 +60,14 @@ export function setupAccountingSettingsRoutes(): Router {
   // GET /api/accounting/settings/:companyId/document-counters - Get document counters
   router.get('/:companyId/document-counters', (req, res) => settingsController.getDocumentCounters(req as any, res));
 
+  // POST /api/accounting/settings/:companyId/document-counters - Create new counter series
+  router.post('/:companyId/document-counters', (req, res) => settingsController.createDocumentCounterSeries(req as any, res));
+
   // PUT /api/accounting/settings/:companyId/document-counters/:type - Update counter series
   router.put('/:companyId/document-counters/:type', (req, res) => settingsController.updateDocumentCounterSeries(req as any, res));
+
+  // DELETE /api/accounting/settings/:companyId/document-counters/:counterId - Delete counter series
+  router.delete('/:companyId/document-counters/:counterId', (req, res) => settingsController.deleteDocumentCounterSeries(req as any, res));
 
   // GET /api/accounting/settings/:companyId/fiscal-periods - Get fiscal periods
   router.get('/:companyId/fiscal-periods', (req, res) => settingsController.getFiscalPeriods(req as any, res));

@@ -427,6 +427,77 @@ export class AccountingSettingsService extends DrizzleService {
   }
 
   /**
+   * Create new document counter series
+   */
+  async createDocumentCounterSeries(
+    companyId: string,
+    counterType: string,
+    series: string,
+    year: number
+  ): Promise<DocumentCounter> {
+    // Check if series already exists
+    const [existing] = await this.query((db) =>
+      db
+        .select()
+        .from(documentCounters)
+        .where(
+          and(
+            eq(documentCounters.companyId, companyId),
+            eq(documentCounters.counterType, counterType),
+            eq(documentCounters.series, series),
+            eq(documentCounters.year, year.toString())
+          )
+        )
+        .limit(1)
+    );
+
+    if (existing) {
+      throw new Error(`Seria ${series} pentru ${counterType} și anul ${year} există deja`);
+    }
+
+    // Create new counter
+    const [created] = await this.query((db) =>
+      db
+        .insert(documentCounters)
+        .values({
+          id: crypto.randomUUID(),
+          companyId,
+          counterType,
+          series,
+          year: year.toString(),
+          lastNumber: '0',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning()
+    );
+    
+    return created;
+  }
+
+  /**
+   * Delete document counter series
+   */
+  async deleteDocumentCounterSeries(counterId: string): Promise<void> {
+    // Check if counter has been used (has lastNumber > 0)
+    const [counter] = await this.query((db) =>
+      db.select().from(documentCounters).where(eq(documentCounters.id, counterId)).limit(1)
+    );
+
+    if (!counter) {
+      throw new Error('Seria nu a fost găsită');
+    }
+
+    if (parseInt(counter.lastNumber) > 0) {
+      throw new Error('Nu se poate șterge o serie care a fost deja utilizată');
+    }
+
+    await this.query((db) =>
+      db.delete(documentCounters).where(eq(documentCounters.id, counterId))
+    );
+  }
+
+  /**
    * Get fiscal periods
    */
   async getFiscalPeriods(companyId: string): Promise<FiscalPeriod[]> {

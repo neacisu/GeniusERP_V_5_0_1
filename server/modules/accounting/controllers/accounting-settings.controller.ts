@@ -278,6 +278,56 @@ export class AccountingSettingsController extends BaseController {
   }
 
   /**
+   * POST /api/accounting/settings/:companyId/document-counters
+   * Create new document counter series
+   */
+  async createDocumentCounterSeries(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = req.params.companyId;
+      const { counterType, series, year } = req.body;
+      
+      if (!counterType || !series || !year) {
+        throw { statusCode: 400, message: 'counterType, series and year are required' };
+      }
+      
+      // Verify user has access to this company
+      this.verifyCompanyAccess(req, companyId);
+      
+      const counter = await this.settingsService.createDocumentCounterSeries(
+        companyId,
+        counterType,
+        series,
+        parseInt(year, 10)
+      );
+      
+      return {
+        message: 'Document counter series created successfully',
+        counter
+      };
+    });
+  }
+
+  /**
+   * DELETE /api/accounting/settings/:companyId/document-counters/:counterId
+   * Delete document counter series
+   */
+  async deleteDocumentCounterSeries(req: AuthenticatedRequest, res: Response): Promise<void> {
+    await this.handleRequest(req, res, async () => {
+      const companyId = req.params.companyId;
+      const counterId = req.params.counterId;
+      
+      // Verify user has access to this company
+      this.verifyCompanyAccess(req, companyId);
+      
+      await this.settingsService.deleteDocumentCounterSeries(counterId);
+      
+      return {
+        message: 'Document counter series deleted successfully'
+      };
+    });
+  }
+
+  /**
    * GET /api/accounting/settings/:companyId/fiscal-periods
    * Get fiscal periods
    */

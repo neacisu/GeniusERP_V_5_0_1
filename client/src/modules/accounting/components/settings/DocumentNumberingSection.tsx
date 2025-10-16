@@ -1,7 +1,7 @@
 /**
  * Document Numbering Section
  * 
- * Component for managing document numbering and series
+ * Component for managing multiple document numbering series
  */
 
 import { useState } from "react";
@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Plus, Trash2, AlertCircle } from "lucide-react";
 
 interface DocumentCounter {
   id: string;
@@ -46,22 +46,30 @@ export default function DocumentNumberingSection({ companyId, onChange }: Docume
   const queryClient = useQueryClient();
   const currentYear = new Date().getFullYear();
 
+  // State for adding new series
+  const [addingFor, setAddingFor] = useState<string | null>(null);
+  const [newSeriesName, setNewSeriesName] = useState("");
+  const [newSeriesYear, setNewSeriesYear] = useState(currentYear);
+
   // Fetch document counters
   const { data: counters = [], isLoading } = useQuery<DocumentCounter[]>({
     queryKey: [`/api/accounting/settings/${companyId}/document-counters`],
   });
 
-  // Update counter series mutation
-  const updateCounterMutation = useMutation({
+  // Create new series mutation
+  const createSeriesMutation = useMutation({
     mutationFn: async ({ counterType, series, year }: { counterType: string; series: string; year: number }) => {
-      return await apiRequest(`/api/accounting/settings/${companyId}/document-counters/${counterType}`, {
-        method: 'PUT',
-        body: { series, year },
+      return await apiRequest(`/api/accounting/settings/${companyId}/document-counters`, {
+        method: 'POST',
+        body: { counterType, series, year },
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/accounting/settings/${companyId}/document-counters`] });
-      toast({ title: "Succes", description: "Seria documentului a fost actualizată" });
+      toast({ title: "Succes", description: "Seria a fost adăugată" });
+      setAddingFor(null);
+      setNewSeriesName("");
+      setNewSeriesYear(currentYear);
       onChange?.();
     },
     onError: (error: Error) => {
@@ -69,12 +77,58 @@ export default function DocumentNumberingSection({ companyId, onChange }: Docume
     },
   });
 
-  const getCounterBySeries = (counterType: string) => {
-    return counters.find((c) => c.counterType === counterType && c.year === currentYear.toString());
+  // Delete series mutation
+  const deleteSeriesMutation = useMutation({
+    mutationFn: async (counterId: string) => {
+      return await apiRequest(`/api/accounting/settings/${companyId}/document-counters/${counterId}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/accounting/settings/${companyId}/document-counters`] });
+      toast({ title: "Succes", description: "Seria a fost ștearsă" });
+      onChange?.();
+    },
+    onError: (error: Error) => {
+      toast({ title: "Eroare", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Group counters by type
+  const getCountersByType = (counterType: string) => {
+    return counters.filter((c) => c.counterType === counterType);
   };
 
-  const formatPreview = (series: string, year: number, number: string) => {
+  const formatPreview = (series: string, year: string, number: string) => {
     return `${series}/${year}/${number.padStart(5, '0')}`;
+  };
+
+  const handleAddSeries = (counterType: string) => {
+    if (!newSeriesName.trim()) {
+      toast({ title: "Eroare", description: "Introduceți numele seriei", variant: "destructive" });
+      return;
+    }
+
+    createSeriesMutation.mutate({
+      counterType,
+      series: newSeriesName.trim().toUpperCase(),
+      year: newSeriesYear
+    });
+  };
+
+  const handleDeleteSeries = (counter: DocumentCounter) => {
+    if (parseInt(counter.lastNumber) > 0) {
+      toast({
+        title: "Atenție",
+        description: "Nu se poate șterge o serie care a fost deja utilizată",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (window.confirm(`Sunteți sigur că doriți să ștergeți seria ${counter.series}/${counter.year}?`)) {
+      deleteSeriesMutation.mutate(counter.id);
+    }
   };
 
   if (isLoading) {
@@ -88,108 +142,148 @@ export default function DocumentNumberingSection({ companyId, onChange }: Docume
   return (
     <SettingCard
       title="Numerotare Documente"
-      description="Configurați seriile și formatul numerotării pentru documente contabile"
+      description="Configurați seriile și formatul numerotării pentru documente contabile. Puteți avea mai multe serii pentru fiecare tip de document."
     >
       <FormSection 
-        title="Serii Jurnale" 
-        description="Seriile pentru jurnale contabile"
-        columns={2}
+        title="Serii Jurnale și Documente" 
+        description="Gestionați seriile pentru jurnale contabile și documente"
+        columns={1}
       >
-        {Object.entries(COUNTER_LABELS).map(([counterType, label]) => {
-          const counter = getCounterBySeries(counterType);
-          return (
-            <Card key={counterType} className="p-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="font-semibold">{label}</Label>
-                  <Badge variant="outline">{counterType}</Badge>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">Serie</Label>
-                  <Input
-                    value={counter?.series || counterType}
-                    disabled
-                    className="font-mono"
-                  />
+        <div className="space-y-6">
+          {Object.entries(COUNTER_LABELS).map(([counterType, label]) => {
+            const typeCounters = getCountersByType(counterType);
+            const isAdding = addingFor === counterType;
+
+            return (
+              <div key={counterType} className="border rounded-lg p-4 bg-gray-50">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h4 className="font-medium text-sm">{label}</h4>
+                    <p className="text-xs text-gray-500">Tip: {counterType}</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setAddingFor(isAdding ? null : counterType)}
+                    disabled={createSeriesMutation.isPending}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Adaugă Serie
+                  </Button>
                 </div>
 
-                <div className="bg-muted p-3 rounded-md space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Format Preview:</p>
-                  <p className="text-sm font-mono font-semibold">
-                    {formatPreview(
-                      counter?.series || counterType,
-                      currentYear,
-                      counter?.lastNumber || "1"
-                    )}
-                  </p>
-                </div>
-
-                {counter && (
-                  <div className="pt-2 border-t">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Ultim număr alocat:</span>
-                      <span className="font-mono font-semibold">{counter.lastNumber.padStart(5, '0')}</span>
-                    </div>
-                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                      <span>An fiscal:</span>
-                      <span className="font-semibold">{counter.year}</span>
-                    </div>
+                {/* Existing Series */}
+                {typeCounters.length === 0 && !isAdding && (
+                  <div className="text-center py-4 text-sm text-gray-500">
+                    <AlertCircle className="h-5 w-5 mx-auto mb-2 text-gray-400" />
+                    Nu există serii configurate
                   </div>
                 )}
 
-                {!counter && (
-                  <div className="pt-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => updateCounterMutation.mutate({
-                        counterType,
-                        series: counterType,
-                        year: currentYear,
-                      })}
-                      disabled={updateCounterMutation.isPending}
-                    >
-                      {updateCounterMutation.isPending && (
-                        <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                      )}
-                      Inițializează Serie
-                    </Button>
+                {typeCounters.length > 0 && (
+                  <div className="space-y-2 mb-3">
+                    {typeCounters.map((counter) => (
+                      <Card key={counter.id} className="p-3 bg-white">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="font-mono">
+                                {counter.series}/{counter.year}
+                              </Badge>
+                              <span className="text-xs text-gray-500">
+                                Ultimul număr: {counter.lastNumber}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1">
+                              Format: {formatPreview(counter.series, counter.year, (parseInt(counter.lastNumber) + 1).toString())}
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteSeries(counter)}
+                            disabled={
+                              deleteSeriesMutation.isPending ||
+                              parseInt(counter.lastNumber) > 0
+                            }
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </Card>
+                    ))}
                   </div>
+                )}
+
+                {/* Add New Series Form */}
+                {isAdding && (
+                  <Card className="p-4 bg-blue-50 border-blue-200">
+                    <h5 className="text-sm font-medium mb-3">Adaugă Serie Nouă</h5>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs">Nume Serie (ex: FAC-A, JV-2025)</Label>
+                        <Input
+                          value={newSeriesName}
+                          onChange={(e) => setNewSeriesName(e.target.value)}
+                          placeholder="Ex: FAC-A"
+                          className="mt-1"
+                          disabled={createSeriesMutation.isPending}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">An</Label>
+                        <Input
+                          type="number"
+                          value={newSeriesYear}
+                          onChange={(e) => setNewSeriesYear(parseInt(e.target.value))}
+                          min={2020}
+                          max={2050}
+                          className="mt-1"
+                          disabled={createSeriesMutation.isPending}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <Button
+                        size="sm"
+                        onClick={() => handleAddSeries(counterType)}
+                        disabled={createSeriesMutation.isPending || !newSeriesName.trim()}
+                      >
+                        {createSeriesMutation.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+                        Adaugă
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setAddingFor(null);
+                          setNewSeriesName("");
+                          setNewSeriesYear(currentYear);
+                        }}
+                        disabled={createSeriesMutation.isPending}
+                      >
+                        Anulează
+                      </Button>
+                    </div>
+                  </Card>
                 )}
               </div>
-            </Card>
-          );
-        })}
+            );
+          })}
+        </div>
       </FormSection>
 
+      {/* Info Section */}
       <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="flex items-start space-x-3">
-          <div className="flex-shrink-0">
-            <svg
-              className="h-5 w-5 text-blue-600"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-          <div className="flex-1">
-            <h4 className="text-sm font-semibold text-blue-900">Informații despre numerotare</h4>
-            <ul className="mt-2 text-sm text-blue-800 space-y-1">
-              <li>• Seriile se resetează automat la începutul anului fiscal</li>
-              <li>• Numerotarea este secvențială și nu poate fi modificată manual</li>
-              <li>• Formatul: SERIE/AN/NUMĂR (ex: JV/2025/00001)</li>
-            </ul>
-          </div>
-        </div>
+        <h4 className="text-sm font-medium text-blue-900 mb-2">ℹ️ Informații</h4>
+        <ul className="text-xs text-blue-800 space-y-1">
+          <li>• Puteți adăuga mai multe serii pentru același tip de document (ex: FAC-A, FAC-B pentru facturi diferite)</li>
+          <li>• Fiecare serie are numerotare independentă</li>
+          <li>• Nu puteți șterge o serie care a fost deja utilizată (lastNumber {">"} 0)</li>
+          <li>• Formatul documentului va fi: SERIE/AN/NUMĂR (ex: FAC-A/2025/00001)</li>
+        </ul>
       </div>
     </SettingCard>
   );
 }
-
