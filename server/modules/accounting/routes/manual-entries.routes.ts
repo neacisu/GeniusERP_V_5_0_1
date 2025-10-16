@@ -7,7 +7,7 @@
 import { Router } from 'express';
 import { ManualEntriesController } from '../controllers/manual-entries.controller';
 import { AuthGuard } from '../../auth/guards/auth.guard';
-import { accountingReadRateLimiter } from '../../../middlewares/rate-limit.middleware';
+import { accountingReadRateLimiter, accountingHeavyRateLimiter } from '../../../middlewares/rate-limit.middleware';
 
 const router = Router();
 const controller = new ManualEntriesController();
@@ -23,6 +23,7 @@ const requireAccountingRole = AuthGuard.roleGuard(['accountant', 'admin', 'manag
  * @body {entryDate, documentDate?, description, isStorno?, lines[]}
  */
 router.post('/',
+  accountingHeavyRateLimiter,
   requireAccountant,
   controller.createManualEntry.bind(controller)
 );
@@ -45,6 +46,7 @@ router.get('/',
  * @access Private (accountant, admin, manager)
  */
 router.get('/:id',
+  accountingReadRateLimiter,
   requireAccountingRole,
   controller.getManualEntry.bind(controller)
 );
@@ -56,6 +58,7 @@ router.get('/:id',
  * @body {entryDate, documentDate?, description, isStorno?, lines[]}
  */
 router.post('/validate',
+  accountingReadRateLimiter,
   requireAccountant,
   controller.validateManualEntry.bind(controller)
 );
