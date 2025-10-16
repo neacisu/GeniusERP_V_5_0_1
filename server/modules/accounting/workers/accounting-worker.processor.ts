@@ -858,6 +858,7 @@ async function handleBulkInvoiceCreate(job: Job): Promise<any> {
     
     const result = {
       success: errors.length === 0,
+      totalItems: data.invoices.length,
       totalInvoices: data.invoices.length,
       successCount: results.length,
       errorCount: errors.length,
@@ -929,6 +930,7 @@ async function handleBulkPaymentRecord(job: Job): Promise<any> {
     
     const result = {
       success: errors.length === 0,
+      totalItems: data.payments.length,
       totalPayments: data.payments.length,
       successCount: results.length,
       errorCount: errors.length,
