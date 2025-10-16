@@ -268,7 +268,7 @@ export default function () {
       format: 'pdf'
     }),
     { headers, timeout: '30s' }
-  });
+  );
 
   check(incomeStatementResponse, {
     'income statement status 202': (r) => r.status === 202,
