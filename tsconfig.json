@@ -1,6 +1,7 @@
 {
-  "include": ["client/src/**/*", "shared/**/*", "server/**/*", "utils/testing/**/*"],
+  "include": ["client/src/**/*", "shared/**/*", "server/**/*"],
   "exclude": [
+    "utils/testing",
     "build",
     "dist",
     "**/node_modules",
