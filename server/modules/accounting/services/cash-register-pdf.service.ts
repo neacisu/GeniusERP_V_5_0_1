@@ -39,6 +39,19 @@ export class CashRegisterPDFService {
     transactions: CashTransaction[],
     companyName: string
   ): Promise<string> {
+    await this.ensureRedisConnection();
+    
+    // Check cache first
+    const dateStr = date.toISOString().split('T')[0];
+    const cacheKey = `acc:cash-register-pdf:${cashRegister.id}:${dateStr}`;
+    
+    if (this.redisService.isConnected()) {
+      const cachedPath = await this.redisService.getCached<string>(cacheKey);
+      if (cachedPath && fs.existsSync(cachedPath)) {
+        return cachedPath;
+      }
+    }
+    
     // RECOMANDARE 1: IMPLEMENTARE COMPLETĂ cu PDFKit
     const reportsDir = path.join(process.cwd(), 'reports', 'cash-registers');
     if (!fs.existsSync(reportsDir)) {
