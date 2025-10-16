@@ -85,21 +85,20 @@ describe('VatClosureService Unit Tests', () => {
     });
   });
 
-  describe('D300 Report Generation', () => {
-    it('should generate D300 VAT declaration', async () => {
-      const params = {
+  describe('VAT Balances', () => {
+    it('should handle non-deductible VAT', async () => {
+      const request = {
         companyId: 'company-1',
         periodYear: 2024,
         periodMonth: 1,
-        declarationFrequency: 'monthly' as const
+        userId: 'user-1',
+        dryRun: true
       };
 
-      const d300 = await vatClosureService.generateD300Declaration(params);
+      const result = await vatClosureService.closeVATPeriod(request);
 
-      expect(d300).toBeDefined();
-      expect(d300.companyId).toBe(params.companyId);
-      expect(d300.periodYear).toBe(params.periodYear);
-      expect(d300.periodMonth).toBe(params.periodMonth);
+      expect(result.vatNonDeductible).toBeDefined();
+      expect(result.vatNonDeductible).toBeGreaterThanOrEqual(0);
     });
   });
 

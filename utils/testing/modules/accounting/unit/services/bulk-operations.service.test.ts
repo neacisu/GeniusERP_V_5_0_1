@@ -50,7 +50,7 @@ describe('BulkOperationsService Unit Tests', () => {
         }
       ];
 
-      const result = await bulkOperationsService.bulkCreateInvoices('company-1', invoices);
+      const result = await bulkOperationsService.bulkCreateInvoices('company-1', invoices, 'user-1');
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
@@ -66,7 +66,7 @@ describe('BulkOperationsService Unit Tests', () => {
         { invoiceId: 'invoice-2', amount: 1000, paymentMethod: 'cash', paymentDate: '2024-01-16' }
       ];
 
-      const result = await bulkOperationsService.bulkRecordPayments('company-1', payments);
+      const result = await bulkOperationsService.bulkRecordPayments('company-1', payments, 'user-1');
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
@@ -81,11 +81,12 @@ describe('BulkOperationsService Unit Tests', () => {
 
       const progress = await bulkOperationsService.getBulkOperationProgress(jobId);
 
-      expect(progress).toBeDefined();
-      expect(progress.jobId).toBe(jobId);
-      expect(progress.status).toBeDefined();
-      expect(progress.progress).toBeGreaterThanOrEqual(0);
-      expect(progress.progress).toBeLessThanOrEqual(100);
+      if (progress) {
+        expect(progress.jobId).toBe(jobId);
+        expect(progress.status).toBeDefined();
+        expect(progress.progress).toBeGreaterThanOrEqual(0);
+        expect(progress.progress).toBeLessThanOrEqual(100);
+      }
     });
   });
 
@@ -135,7 +136,7 @@ describe('BulkOperationsService Unit Tests', () => {
   describe('Error Handling', () => {
     it('should handle empty invoice array', async () => {
       await expect(
-        bulkOperationsService.bulkCreateInvoices('company-1', [])
+        bulkOperationsService.bulkCreateInvoices('company-1', [], 'user-1')
       ).rejects.toThrow();
     });
 

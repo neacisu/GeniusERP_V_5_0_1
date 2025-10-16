@@ -56,7 +56,7 @@ describe('PurchaseJournalService Unit Tests', () => {
         }
       ];
 
-      const invoiceId = await purchaseJournalService.createSupplierInvoice(
+      const invoiceId = await purchaseJournalService.recordSupplierInvoice(
         invoiceData,
         supplier,
         items,
@@ -82,7 +82,7 @@ describe('PurchaseJournalService Unit Tests', () => {
         bankAccountId: 'bank-1'
       };
 
-      const paymentId = await purchaseJournalService.recordSupplierPayment(payment);
+      const paymentId = await purchaseJournalService.recordInvoicePayment(payment);
 
       expect(paymentId).toBeDefined();
       expect(typeof paymentId).toBe('string');
@@ -128,7 +128,7 @@ describe('PurchaseJournalService Unit Tests', () => {
       };
 
       await expect(
-        purchaseJournalService.createSupplierInvoice(invalidInvoiceData, undefined, [], [], undefined, undefined)
+        purchaseJournalService.recordSupplierInvoice(invalidInvoiceData, undefined, [], [], undefined, undefined)
       ).rejects.toThrow();
     });
   });
