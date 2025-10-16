@@ -215,25 +215,20 @@ export function setupSalesJournalRoutes() {
    * - customerId: Filtrare după client (opțional)
    * - category: Filtrare după categorie fiscală (opțional)
    */
-  router.get("/journal", accountingReadRateLimiter, (req, res) => {
-    salesJournalController.generateSalesJournal(req as AuthenticatedRequest, res);
-  });
+  // DEPRECATED: Use /journal/generate-async instead
+  // router.get("/journal", accountingReadRateLimiter, (req, res) => {
+  //   salesJournalController.generateSalesJournal(req as AuthenticatedRequest, res);
+  // });
   
-  /**
-   * Export Jurnal de Vânzări în Excel (CSV)
-   * Endpoint: GET /api/accounting/sales/journal/export/excel
-   */
-  router.get("/journal/export/excel", exportRateLimiter, (req, res) => {
-    salesJournalController.exportSalesJournalExcel(req as AuthenticatedRequest, res);
-  });
+  // DEPRECATED: Use /journal/generate-async with format param instead
+  // router.get("/journal/export/excel", exportRateLimiter, (req, res) => {
+  //   salesJournalController.exportSalesJournalExcel(req as AuthenticatedRequest, res);
+  // });
   
-  /**
-   * Export Jurnal de Vânzări în PDF (HTML printabil)
-   * Endpoint: GET /api/accounting/sales/journal/export/pdf
-   */
-  router.get("/journal/export/pdf", exportRateLimiter, (req, res) => {
-    salesJournalController.exportSalesJournalPDF(req as AuthenticatedRequest, res);
-  });
+  // DEPRECATED: Use /journal/generate-async with format param instead
+  // router.get("/journal/export/pdf", exportRateLimiter, (req, res) => {
+  //   salesJournalController.exportSalesJournalPDF(req as AuthenticatedRequest, res);
+  // });
   
   /**
    * =========================================================================
