@@ -125,6 +125,18 @@ export class PurchaseJournalExportService {
   }
   
   public async exportToPDF(report: PurchaseJournalReport): Promise<Buffer> {
+    await this.ensureRedisConnection();
+    
+    const periodKey = `${new Date(report.periodStart).toISOString().split('T')[0]}_${new Date(report.periodEnd).toISOString().split('T')[0]}`;
+    const cacheKey = `acc:purchase-journal-pdf:${report.companyId}:${periodKey}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<string>(cacheKey);
+      if (cached) {
+        return Buffer.from(cached, 'base64');
+      }
+    }
+    
     const html = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>Jurnal Cumpărări</title></head>
 <body><h1>JURNAL DE CUMPĂRĂRI - ${report.periodLabel}</h1>
@@ -132,8 +144,13 @@ export class PurchaseJournalExportService {
 <table border="1"><tr><th>Nr</th><th>Data</th><th>Document</th><th>Furnizor</th><th>CUI</th><th>Total</th></tr>
 ${report.rows.map(r => `<tr><td>${r.rowNumber}</td><td>${new Date(r.date).toLocaleDateString('ro-RO')}</td><td>${r.documentNumber}</td><td>${r.supplierName}</td><td>${r.supplierFiscalCode}</td><td>${r.totalAmount.toFixed(2)}</td></tr>`).join('')}
 </table></body></html>`;
+    const buffer = Buffer.from(html, 'utf-8');
     
-    return Buffer.from(html, 'utf-8');
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, buffer.toString('base64'), 900); // 15min TTL
+    }
+    
+    return buffer;
   }
 }
 
