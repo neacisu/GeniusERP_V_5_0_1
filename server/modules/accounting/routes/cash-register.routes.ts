@@ -8,6 +8,7 @@ import { AuthenticatedRequest } from "../../../common/middleware/auth-types";
 import { Response } from "express";
 import { 
   accountingReadRateLimiter,
+  accountingHeavyRateLimiter,
   reconciliationRateLimiter
 } from "../../../middlewares/rate-limit.middleware";
 
@@ -27,14 +28,14 @@ export function setupCashRegisterRoutes() {
   /**
    * Get all cash registers
    */
-  router.get("/cash-registers", (req, res) => {
+  router.get("/cash-registers", accountingReadRateLimiter, (req, res) => {
     cashRegisterController.getCashRegisters(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get cash register by ID
    */
-  router.get("/cash-registers/:id", (req, res) => {
+  router.get("/cash-registers/:id", accountingReadRateLimiter, (req, res) => {
     cashRegisterController.getCashRegister(req as AuthenticatedRequest, res);
   });
   
@@ -43,7 +44,8 @@ export function setupCashRegisterRoutes() {
    * Requires accountant or admin role
    */
   router.post(
-    "/cash-registers", 
+    "/cash-registers",
+    accountingHeavyRateLimiter, 
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       cashRegisterController.createCashRegister(req as AuthenticatedRequest, res);
@@ -55,7 +57,8 @@ export function setupCashRegisterRoutes() {
    * Requires accountant or admin role
    */
   router.put(
-    "/cash-registers/:id", 
+    "/cash-registers/:id",
+    accountingHeavyRateLimiter, 
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       cashRegisterController.updateCashRegister(req as AuthenticatedRequest, res);
@@ -68,6 +71,7 @@ export function setupCashRegisterRoutes() {
    */
   router.post(
     "/receipts", 
+    accountingHeavyRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       cashRegisterController.recordCashReceipt(req as AuthenticatedRequest, res);
@@ -80,6 +84,7 @@ export function setupCashRegisterRoutes() {
    */
   router.post(
     "/payments", 
+    accountingHeavyRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       cashRegisterController.recordCashPayment(req as AuthenticatedRequest, res);
@@ -92,6 +97,7 @@ export function setupCashRegisterRoutes() {
    */
   router.post(
     "/transfers", 
+    accountingHeavyRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       cashRegisterController.transferCash(req as AuthenticatedRequest, res);
@@ -101,21 +107,21 @@ export function setupCashRegisterRoutes() {
   /**
    * Get all cash transactions (for all registers or filtered)
    */
-  router.get("/cash-transactions", (req, res) => {
+  router.get("/cash-transactions", accountingReadRateLimiter, (req, res) => {
     cashRegisterController.getAllCashTransactions(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get all cash transactions for a specific register
    */
-  router.get("/cash-registers/:id/transactions", (req, res) => {
+  router.get("/cash-registers/:id/transactions", accountingReadRateLimiter, (req, res) => {
     cashRegisterController.getCashTransactions(req as AuthenticatedRequest, res);
   });
   
   /**
    * Get cash register balance as of specific date
    */
-  router.get("/cash-registers/:id/balance", (req, res) => {
+  router.get("/cash-registers/:id/balance", accountingReadRateLimiter, (req, res) => {
     cashRegisterController.getCashRegisterBalance(req as AuthenticatedRequest, res);
   });
   
@@ -125,6 +131,7 @@ export function setupCashRegisterRoutes() {
    */
   router.post(
     "/cash-registers/:id/bank-deposits", 
+    accountingHeavyRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       cashRegisterController.recordCashDepositToBank(req as AuthenticatedRequest, res);
@@ -137,6 +144,7 @@ export function setupCashRegisterRoutes() {
    */
   router.post(
     "/cash-registers/:id/bank-withdrawals", 
+    accountingHeavyRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       cashRegisterController.recordCashWithdrawalFromBank(req as AuthenticatedRequest, res);
@@ -149,6 +157,7 @@ export function setupCashRegisterRoutes() {
    */
   router.post(
     "/reconciliations/:registerId", 
+    reconciliationRateLimiter,
     AuthGuard.roleGuard(["accountant", "admin"]), 
     (req, res) => {
       cashRegisterController.createReconciliation(req as AuthenticatedRequest, res);
