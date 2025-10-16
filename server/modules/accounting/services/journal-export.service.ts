@@ -43,6 +43,20 @@ export class JournalExportService {
     endDate: Date,
     journalType?: string
   ): Promise<string> {
+    await this.ensureRedisConnection();
+    
+    // Check cache first
+    const dateStr = `${startDate.toISOString().split('T')[0]}_${endDate.toISOString().split('T')[0]}`;
+    const typeStr = journalType || 'all';
+    const cacheKey = `acc:journal-export-pdf:${companyId}:${dateStr}:${typeStr}`;
+    
+    if (this.redisService.isConnected()) {
+      const cachedPath = await this.redisService.getCached<string>(cacheKey);
+      if (cachedPath && fs.existsSync(cachedPath)) {
+        return cachedPath;
+      }
+    }
+    
     const db = getDrizzle();
     
     // Fetch ledger entries cu liniile aferente
@@ -146,7 +160,13 @@ export class JournalExportService {
         
         doc.end();
         
-        stream.on('finish', () => resolve(filePath));
+        stream.on('finish', async () => {
+          // Cache the file path for 15 minutes
+          if (this.redisService.isConnected()) {
+            await this.redisService.setCached(cacheKey, filePath, 900); // 15min TTL
+          }
+          resolve(filePath);
+        });
         stream.on('error', reject);
       } catch (error) {
         reject(error);
@@ -164,6 +184,19 @@ export class JournalExportService {
   ): Promise<string> {
     if (!XLSX) {
       throw new Error('XLSX library not available. Please install: npm install xlsx');
+    }
+    
+    await this.ensureRedisConnection();
+    
+    // Check cache first
+    const dateStr = `${startDate.toISOString().split('T')[0]}_${endDate.toISOString().split('T')[0]}`;
+    const cacheKey = `acc:journal-export-excel:${companyId}:${dateStr}`;
+    
+    if (this.redisService.isConnected()) {
+      const cachedPath = await this.redisService.getCached<string>(cacheKey);
+      if (cachedPath && fs.existsSync(cachedPath)) {
+        return cachedPath;
+      }
     }
     
     const db = getDrizzle();
