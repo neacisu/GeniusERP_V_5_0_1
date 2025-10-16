@@ -15,7 +15,21 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Trash2, AlertCircle } from "lucide-react";
+import { 
+  Loader2, 
+  Plus, 
+  Trash2, 
+  AlertCircle,
+  BookOpen,
+  TrendingUp,
+  ShoppingBag,
+  Wallet,
+  Landmark,
+  FileText,
+  Receipt,
+  StickyNote,
+  LucideIcon
+} from "lucide-react";
 
 interface DocumentCounter {
   id: string;
@@ -39,6 +53,28 @@ const COUNTER_LABELS: Record<string, string> = {
   INV: "Facturi",
   REC: "Chitanțe",
   NOTE: "Note Contabile",
+};
+
+const COUNTER_ICONS: Record<string, LucideIcon> = {
+  JV: BookOpen,
+  SA: TrendingUp,
+  PU: ShoppingBag,
+  CA: Wallet,
+  BA: Landmark,
+  INV: FileText,
+  REC: Receipt,
+  NOTE: StickyNote,
+};
+
+const COUNTER_COLORS: Record<string, { bg: string; text: string }> = {
+  JV: { bg: "bg-purple-100", text: "text-purple-600" },
+  SA: { bg: "bg-green-100", text: "text-green-600" },
+  PU: { bg: "bg-orange-100", text: "text-orange-600" },
+  CA: { bg: "bg-yellow-100", text: "text-yellow-700" },
+  BA: { bg: "bg-blue-100", text: "text-blue-600" },
+  INV: { bg: "bg-red-100", text: "text-red-600" },
+  REC: { bg: "bg-teal-100", text: "text-teal-600" },
+  NOTE: { bg: "bg-pink-100", text: "text-pink-600" },
 };
 
 export default function DocumentNumberingSection({ companyId, onChange }: DocumentNumberingSectionProps) {
@@ -148,13 +184,20 @@ export default function DocumentNumberingSection({ companyId, onChange }: Docume
           {Object.entries(COUNTER_LABELS).map(([counterType, label]) => {
             const typeCounters = getCountersByType(counterType);
             const isAdding = addingFor === counterType;
+            const Icon = COUNTER_ICONS[counterType];
+            const colors = COUNTER_COLORS[counterType];
 
             return (
               <div key={counterType} className="border rounded-lg p-4 bg-gray-50">
                 <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h4 className="font-medium text-sm">{label}</h4>
-                    <p className="text-xs text-gray-500">Tip: {counterType}</p>
+                  <div className="flex items-center gap-3">
+                    <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${colors.bg} ${colors.text}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">{label}</h4>
+                      <p className="text-xs text-gray-500">Tip: {counterType}</p>
+                    </div>
                   </div>
                   <Button
                     size="sm"
