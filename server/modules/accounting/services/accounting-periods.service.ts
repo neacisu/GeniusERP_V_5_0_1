@@ -3,6 +3,7 @@
  * 
  * Manages accounting periods with Romanian compliance
  * Supports Open, Soft-Close, Hard-Close statuses per OMFP requirements
+ * Enhanced cu Redis caching (TTL: 12h pentru periods list, 6h pentru individual)
  */
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
@@ -10,6 +11,7 @@ import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import { fiscalPeriods, FiscalPeriod, InsertFiscalPeriod } from '../schema/accounting.schema';
 import { AuditLogService } from './audit-log.service';
 import { PeriodLockService } from './period-lock.service';
+import { RedisService } from '../../../services/redis.service';
 
 export type PeriodStatus = 'open' | 'soft_close' | 'hard_close';
 
@@ -38,11 +40,19 @@ export interface PeriodValidation {
 export class AccountingPeriodsService extends DrizzleService {
   private auditService: AuditLogService;
   private lockService: PeriodLockService;
+  private redisService: RedisService;
 
   constructor() {
     super();
     this.auditService = new AuditLogService();
     this.lockService = new PeriodLockService();
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
   }
 
   /**
@@ -82,6 +92,12 @@ export class AccountingPeriodsService extends DrizzleService {
       description: `Perioadă creată: ${request.year}/${request.month}`,
       metadata: { year: request.year, month: request.month, status: request.status }
     });
+
+    // Invalidate cache
+    await this.ensureRedisConnection();
+    if (this.redisService.isConnected()) {
+      await this.redisService.invalidatePattern(`acc:periods:${request.companyId}:*`);
+    }
 
     return period;
   }
@@ -146,6 +162,12 @@ export class AccountingPeriodsService extends DrizzleService {
       }
     });
 
+    // Invalidate cache
+    await this.ensureRedisConnection();
+    if (this.redisService.isConnected()) {
+      await this.redisService.invalidatePattern(`acc:periods:${companyId}:*`);
+    }
+
     return period;
   }
 
@@ -171,6 +193,16 @@ export class AccountingPeriodsService extends DrizzleService {
    * Obține perioada după ID
    */
   async getPeriodById(companyId: string, periodId: string): Promise<FiscalPeriod | null> {
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:periods:${companyId}:single:${periodId}`;
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<FiscalPeriod>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+
     const periods = await this.query((db) =>
       db.select()
         .from(fiscalPeriods)
@@ -181,7 +213,13 @@ export class AccountingPeriodsService extends DrizzleService {
         .limit(1)
     );
 
-    return periods[0] || null;
+    const period = periods[0] || null;
+    
+    if (period && this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, period, 21600); // 6 hours
+    }
+
+    return period;
   }
 
   /**
@@ -192,6 +230,16 @@ export class AccountingPeriodsService extends DrizzleService {
     year?: number,
     limit = 12
   ): Promise<FiscalPeriod[]> {
+    await this.ensureRedisConnection();
+    
+    const cacheKey = `acc:periods:${companyId}:list:year:${year || 'all'}:limit:${limit}`;
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<FiscalPeriod[]>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+
     let whereClause: any = eq(fiscalPeriods.companyId, companyId);
     
     if (year) {
@@ -204,13 +252,19 @@ export class AccountingPeriodsService extends DrizzleService {
       }
     }
 
-    return this.query((db) =>
+    const periods = await this.query((db) =>
       db.select()
         .from(fiscalPeriods)
         .where(whereClause)
         .orderBy(fiscalPeriods.year, fiscalPeriods.month)
         .limit(limit)
     );
+
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, periods, 43200); // 12 hours
+    }
+
+    return periods;
   }
 
   /**
