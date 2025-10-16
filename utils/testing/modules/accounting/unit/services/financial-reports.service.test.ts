@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 /**
  * Unit Tests: FinancialReportsService
  * 

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="19" failures="0" errors="0" time="1.207">
+  <testsuite name="AccountingCacheService" errors="0" failures="0" skipped="0" timestamp="2025-10-16T06:13:28" time="0.813" tests="19">
+    <testcase classname="AccountingCacheService › Chart of Accounts Caching" name="should cache and retrieve account classes" time="0.006">
+    </testcase>
+    <testcase classname="AccountingCacheService › Chart of Accounts Caching" name="should set account classes with correct TTL" time="0.002">
+    </testcase>
+    <testcase classname="AccountingCacheService › Chart of Accounts Caching" name="should invalidate account classes cache" time="0.001">
+    </testcase>
+    <testcase classname="AccountingCacheService › Chart of Accounts Caching" name="should cache synthetic accounts" time="0.002">
+    </testcase>
+    <testcase classname="AccountingCacheService › Account Balances Caching" name="should cache and retrieve account balance" time="0.002">
+    </testcase>
+    <testcase classname="AccountingCacheService › Account Balances Caching" name="should cache account balance with date" time="0.002">
+    </testcase>
+    <testcase classname="AccountingCacheService › Account Balances Caching" name="should invalidate multiple account balances" time="0.001">
+    </testcase>
+    <testcase classname="AccountingCacheService › Trial Balance Caching" name="should cache trial balance for period" time="0.002">
+    </testcase>
+    <testcase classname="AccountingCacheService › Trial Balance Caching" name="should retrieve cached trial balance" time="0.002">
+    </testcase>
+    <testcase classname="AccountingCacheService › Trial Balance Caching" name="should invalidate trial balance for specific period" time="0.003">
+    </testcase>
+    <testcase classname="AccountingCacheService › Trial Balance Caching" name="should invalidate all trial balances for company" time="0.002">
+    </testcase>
+    <testcase classname="AccountingCacheService › Settings Caching" name="should cache accounting settings" time="0.002">
+    </testcase>
+    <testcase classname="AccountingCacheService › Settings Caching" name="should retrieve cached settings" time="0.001">
+    </testcase>
+    <testcase classname="AccountingCacheService › Settings Caching" name="should invalidate settings cache" time="0.002">
+    </testcase>
+    <testcase classname="AccountingCacheService › Journal Reports Caching" name="should cache sales journal" time="0.002">
+    </testcase>
+    <testcase classname="AccountingCacheService › Journal Reports Caching" name="should retrieve cached sales journal" time="0.002">
+    </testcase>
+    <testcase classname="AccountingCacheService › Connection Management" name="should connect to Redis" time="0.003">
+    </testcase>
+    <testcase classname="AccountingCacheService › Cache Key Generation" name="should generate correct keys for account classes without companyId" time="0.002">
+    </testcase>
+    <testcase classname="AccountingCacheService › Cache Key Generation" name="should generate correct keys with date for account balance" time="0.003">
+    </testcase>
+  </testsuite>
+</testsuites>
