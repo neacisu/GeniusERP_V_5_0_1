@@ -117,16 +117,11 @@ export default function DocumentNumberingSection({ companyId, onChange }: Docume
   };
 
   const handleDeleteSeries = (counter: DocumentCounter) => {
-    if (parseInt(counter.lastNumber) > 0) {
-      toast({
-        title: "Atenție",
-        description: "Nu se poate șterge o serie care a fost deja utilizată",
-        variant: "destructive"
-      });
-      return;
-    }
+    const confirmMessage = parseInt(counter.lastNumber) > 0
+      ? `ATENȚIE! Seria ${counter.series}/${counter.year} are documente emise (ultimul număr: ${counter.lastNumber}).\n\nÎncercarea de ștergere va eșua dacă există documente în sistem.\n\nContinuați?`
+      : `Sunteți sigur că doriți să ștergeți seria ${counter.series}/${counter.year}?`;
 
-    if (window.confirm(`Sunteți sigur că doriți să ștergeți seria ${counter.series}/${counter.year}?`)) {
+    if (window.confirm(confirmMessage)) {
       deleteSeriesMutation.mutate(counter.id);
     }
   };
@@ -202,11 +197,13 @@ export default function DocumentNumberingSection({ companyId, onChange }: Docume
                             size="sm"
                             variant="ghost"
                             onClick={() => handleDeleteSeries(counter)}
-                            disabled={
-                              deleteSeriesMutation.isPending ||
-                              parseInt(counter.lastNumber) > 0
-                            }
+                            disabled={deleteSeriesMutation.isPending}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            title={
+                              parseInt(counter.lastNumber) > 0
+                                ? "Serie cu documente emise - verificare la ștergere"
+                                : "Șterge seria"
+                            }
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -280,7 +277,8 @@ export default function DocumentNumberingSection({ companyId, onChange }: Docume
         <ul className="text-xs text-blue-800 space-y-1">
           <li>• Puteți adăuga mai multe serii pentru același tip de document (ex: FAC-A, FAC-B pentru facturi diferite)</li>
           <li>• Fiecare serie are numerotare independentă</li>
-          <li>• Nu puteți șterge o serie care a fost deja utilizată (lastNumber {">"} 0)</li>
+          <li>• <strong>Nu puteți șterge o serie dacă există documente emise cu ea</strong> (facturi, jurnale, etc.)</li>
+          <li>• Pentru a șterge o serie, mai întâi trebuie să ștergeți toate documentele asociate</li>
           <li>• Formatul documentului va fi: SERIE/AN/NUMĂR (ex: FAC-A/2025/00001)</li>
         </ul>
       </div>

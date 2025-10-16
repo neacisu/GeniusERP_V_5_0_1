@@ -12,7 +12,7 @@
  */
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, desc, sql, like, or } from 'drizzle-orm';
 import {
   accountingSettings,
   vatSettings,
@@ -33,7 +33,9 @@ import {
 import { accountMappings, AccountMapping, InsertAccountMapping } from '@shared/schema';
 import { documentCounters, DocumentCounter } from '../schema/accounting.schema';
 import { fiscalPeriods, FiscalPeriod } from '../schema/accounting.schema';
+import { ledgerEntries } from '../schema/accounting.schema';
 import { syntheticAccounts, SyntheticAccount } from '@shared/schema';
+import { invoices } from '@shared/schema';
 
 export interface AllAccountingSettings {
   generalSettings: AccountingSettings | null;
@@ -479,7 +481,7 @@ export class AccountingSettingsService extends DrizzleService {
    * Delete document counter series
    */
   async deleteDocumentCounterSeries(counterId: string): Promise<void> {
-    // Check if counter has been used (has lastNumber > 0)
+    // Get counter details
     const [counter] = await this.query((db) =>
       db.select().from(documentCounters).where(eq(documentCounters.id, counterId)).limit(1)
     );
@@ -488,10 +490,54 @@ export class AccountingSettingsService extends DrizzleService {
       throw new Error('Seria nu a fost găsită');
     }
 
-    if (parseInt(counter.lastNumber) > 0) {
-      throw new Error('Nu se poate șterge o serie care a fost deja utilizată');
+    const { series, year, companyId } = counter;
+
+    // Check if any invoices exist with this series
+    const invoiceCount = await this.query((db) =>
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(invoices)
+        .where(
+          and(
+            eq(invoices.companyId, companyId),
+            eq(invoices.series, series)
+          )
+        )
+    );
+
+    const invoiceTotal = Number(invoiceCount[0]?.count || 0);
+
+    if (invoiceTotal > 0) {
+      throw new Error(
+        `Nu se poate șterge seria ${series}/${year}. Există ${invoiceTotal} facturi emise cu această serie. Ștergeți mai întâi documentele.`
+      );
     }
 
+    // Check if any journal entries exist with this series
+    // Journal numbers are formatted as: SERIES/YEAR/NUMBER (ex: JV/2025/00001)
+    const journalPattern = `${series}/${year}/%`;
+    
+    const journalCount = await this.query((db) =>
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(ledgerEntries)
+        .where(
+          and(
+            eq(ledgerEntries.companyId, companyId),
+            like(ledgerEntries.journalNumber, journalPattern)
+          )
+        )
+    );
+
+    const journalTotal = Number(journalCount[0]?.count || 0);
+
+    if (journalTotal > 0) {
+      throw new Error(
+        `Nu se poate șterge seria ${series}/${year}. Există ${journalTotal} înregistrări în jurnal cu această serie. Ștergeți mai întâi documentele.`
+      );
+    }
+
+    // If no documents found, allow deletion
     await this.query((db) =>
       db.delete(documentCounters).where(eq(documentCounters.id, counterId))
     );
