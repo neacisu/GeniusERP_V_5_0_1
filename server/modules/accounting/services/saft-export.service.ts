@@ -5,6 +5,7 @@
  * Standard Audit File for Tax - România
  * 
  * Generează fișier XML cu toate tranzacțiile pentru raportarea către ANAF
+ * Enhanced cu Redis caching (TTL: 15min pentru export XML)
  */
 
 import { getDrizzle } from '../../../common/drizzle';
@@ -12,6 +13,7 @@ import { and, eq, gte, lte } from 'drizzle-orm';
 import { cashTransactions } from '../../../../shared/schema/cash-register.schema';
 import { bankTransactions } from '../../../../shared/schema/bank-journal.schema';
 import { companies } from '../../../../shared/schema';
+import { RedisService } from '../../../services/redis.service';
 
 /**
  * Payment method mapping pentru SAF-T
@@ -47,6 +49,18 @@ const TRANSACTION_TYPE_SAFT: Record<string, string> = {
 };
 
 export class SAFTExportService {
+  private redisService: RedisService;
+
+  constructor() {
+    this.redisService = new RedisService();
+  }
+
+  private async ensureRedisConnection(): Promise<void> {
+    if (!this.redisService.isConnected()) {
+      await this.redisService.connect();
+    }
+  }
+
   /**
    * RECOMANDARE 3: Generează fișier SAF-T D406 complet
    * 
@@ -60,6 +74,19 @@ export class SAFTExportService {
     startDate: Date,
     endDate: Date
   ): Promise<string> {
+    await this.ensureRedisConnection();
+    
+    // Check cache first
+    const dateStr = `${startDate.toISOString().split('T')[0]}_${endDate.toISOString().split('T')[0]}`;
+    const cacheKey = `acc:saft-export:${companyId}:${dateStr}`;
+    
+    if (this.redisService.isConnected()) {
+      const cached = await this.redisService.getCached<string>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+
     const db = getDrizzle();
     
     // Fetch company data
@@ -98,6 +125,11 @@ export class SAFTExportService {
     
     // Build SAF-T XML
     const xml = this.buildSAFTXML(company, cashTxns, bankTxns, startDate, endDate);
+    
+    // Cache result for 15 minutes
+    if (this.redisService.isConnected()) {
+      await this.redisService.setCached(cacheKey, xml, 900); // 15 minutes TTL
+    }
     
     return xml;
   }
