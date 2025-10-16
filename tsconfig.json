@@ -23,7 +23,6 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "types": ["node", "express", "jest"],
-    "typeRoots": ["./node_modules/@types/node", "./node_modules/@types/express", "./node_modules/@types/jest", "./node_modules/@jest"],
     "paths": {
       "@/*": ["./client/src/*"],
       "@shared/*": ["./shared/*"]
