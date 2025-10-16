@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { NoteContabilController } from '../../../../../../server/modules/accounting/controllers/note-contabil.controller';
-import { NoteContabilService } from '../../../../../../server/modules/accounting/services/note-contabil.service';
+import NoteContabilService from '../../../../../../server/modules/accounting/services/note-contabil.service';
 import { AuthenticatedRequest } from '../../../../../../server/common/middleware/auth-types';
 import { Response } from 'express';
 
