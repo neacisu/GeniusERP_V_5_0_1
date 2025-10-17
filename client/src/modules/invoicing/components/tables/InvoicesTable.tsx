@@ -306,7 +306,7 @@ export function InvoicesTable({
     { value: InvoiceStatus.ISSUED, label: 'Emisă' },
     { value: InvoiceStatus.SENT, label: 'Trimisă' },
     { value: InvoiceStatus.PAID, label: 'Plătită' },
-    { value: InvoiceStatus.OVERDUE, label: 'Depășită' },
+    { value: InvoiceStatus.SENT, label: 'Depășită' },
     { value: InvoiceStatus.CANCELED, label: 'Anulată' },
   ];
 

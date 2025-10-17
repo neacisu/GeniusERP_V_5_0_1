@@ -40,14 +40,14 @@ export function InvoiceCard({
   onMarkAsPaid,
   isMarkingAsPaid = false
 }: InvoiceCardProps) {
-  const isOverdue = new Date(invoice.dueDate) < new Date() && 
+  const isOverdue = invoice.dueDate && new Date(invoice.dueDate) < new Date() && 
     invoice.status !== InvoiceStatus.PAID &&
     invoice.status !== InvoiceStatus.CANCELED;
   
   const isPaid = invoice.status === InvoiceStatus.PAID;
   const isDraft = invoice.status === InvoiceStatus.DRAFT;
-  const canMarkAsPaid = invoice.status === InvoiceStatus.VALIDATED || 
-    invoice.status === InvoiceStatus.OVERDUE;
+  const canMarkAsPaid = invoice.status === InvoiceStatus.ISSUED || 
+    invoice.status === InvoiceStatus.SENT;
 
   const formatDate = (date: string | Date) => {
     return format(new Date(date), 'dd MMMM yyyy', { locale: ro });
@@ -95,7 +95,7 @@ export function InvoiceCard({
                   <div>
                     <span className="font-medium">Data scadentă:</span>
                     <p className={isOverdue ? "text-red-500 font-medium" : ""}>
-                      {formatDate(invoice.dueDate)}
+                      {invoice.dueDate ? formatDate(invoice.dueDate) : 'N/A'}
                       {isOverdue && " (Restantă)"}
                     </p>
                   </div>
@@ -202,16 +202,16 @@ export function InvoiceCard({
               <ul className="space-y-2 text-sm">
                 <li className="flex justify-between">
                   <span>Valoare netă:</span>
-                  <span>{formatCurrency(invoice.netTotal)} {invoice.currency}</span>
+                  <span>{formatCurrency(invoice.netTotal || invoice.netAmount || 0)} {invoice.currency}</span>
                 </li>
                 <li className="flex justify-between">
                   <span>TVA ({invoice.vatRate || 19}%):</span>
-                  <span>{formatCurrency(invoice.vatAmount)} {invoice.currency}</span>
+                  <span>{formatCurrency(invoice.vatTotal || invoice.vatAmount || 0)} {invoice.currency}</span>
                 </li>
                 <Separator className="my-2" />
                 <li className="flex justify-between font-medium text-base">
                   <span>Total:</span>
-                  <span>{formatCurrency(invoice.grossTotal)} {invoice.currency}</span>
+                  <span>{formatCurrency(invoice.grossTotal || invoice.amount || invoice.totalAmount || 0)} {invoice.currency}</span>
                 </li>
                 {isPaid && invoice.paidAmount && (
                   <li className="flex justify-between text-green-600">
