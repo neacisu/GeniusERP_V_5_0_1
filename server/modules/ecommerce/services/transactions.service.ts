@@ -30,35 +30,47 @@ export class TransactionsService {
    */
   async createTransaction(transactionData: {
     orderId: string;
-    userId: string;
     companyId: string;
+    transactionType: 'payment' | 'refund';
     transactionDate: Date;
     amount: string;
     currency: string;
     status: PaymentStatus;
-    paymentMethod: string;
-    paymentGateway: string;
-    gatewayTransactionId: string;
+    paymentMethod?: string;
+    gatewayName?: string;
+    transactionId?: string;
+    transactionReference?: string;
+    gatewayResponse?: Record<string, any>;
+    gatewayFee?: string;
+    parentTransactionId?: string;
+    notes?: string;
     metadata?: Record<string, any>;
+    createdBy?: string;
   }) {
     try {
-      const transactionId = uuidv4();
+      const id = uuidv4();
       
       // Insert transaction into database
       const [transaction] = await this.db.query(async (db) => {
         return await db.insert(ecommerceTransactions).values({
-          id: transactionId,
+          id,
           orderId: transactionData.orderId,
-          userId: transactionData.userId,
           companyId: transactionData.companyId,
+          transactionType: transactionData.transactionType,
           transactionDate: transactionData.transactionDate,
           amount: transactionData.amount,
           currency: transactionData.currency,
           status: transactionData.status,
           paymentMethod: transactionData.paymentMethod,
-          paymentGateway: transactionData.paymentGateway,
-          gatewayTransactionId: transactionData.gatewayTransactionId,
+          gatewayName: transactionData.gatewayName,
+          transactionId: transactionData.transactionId,
+          transactionReference: transactionData.transactionReference,
+          gatewayResponse: transactionData.gatewayResponse,
+          gatewayFee: transactionData.gatewayFee,
+          parentTransactionId: transactionData.parentTransactionId,
+          notes: transactionData.notes,
           metadata: transactionData.metadata || {},
+          createdBy: transactionData.createdBy,
           createdAt: new Date(),
           updatedAt: new Date()
         }).returning();
@@ -257,20 +269,23 @@ export class TransactionsService {
       // Create a refund transaction
       const refundTransaction = await this.createTransaction({
         orderId: originalTransaction.orderId,
-        userId,
         companyId,
+        transactionType: 'refund',
         transactionDate: new Date(),
         amount: refundAmount,
         currency: originalTransaction.currency,
         status: PaymentStatus.COMPLETED, // Assuming refund is processed immediately
         paymentMethod: originalTransaction.paymentMethod,
-        paymentGateway: originalTransaction.paymentGateway,
-        gatewayTransactionId: `refund-${uuidv4()}`,
+        gatewayName: originalTransaction.gatewayName,
+        transactionId: `refund-${uuidv4()}`,
+        parentTransactionId: originalTransactionId,
+        notes: reason,
         metadata: {
           originalTransactionId,
           refundReason: reason,
           type: 'refund'
-        }
+        },
+        createdBy: userId
       });
       
       // Update the original transaction status if it's a full refund

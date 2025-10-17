@@ -10,9 +10,11 @@ type Transaction = {
 };
 
 export default function RecentTransactions() {
-  const { data: transactionsResponse, isLoading } = useQuery<{ success: boolean; data: Transaction[] }>({
+  const { data: transactionsResponse, isLoading, isError } = useQuery<{ success: boolean; data: Transaction[] }>({
     queryKey: ['/api/ecommerce/transactions', { limit: 10, offset: 0 }],
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: false, // Don't retry if endpoint fails
+    refetchOnWindowFocus: false, // Don't refetch on window focus
   });
   
   const transactions = transactionsResponse?.data;

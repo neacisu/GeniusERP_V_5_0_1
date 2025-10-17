@@ -190,7 +190,7 @@ export class TransactionsRouter {
       const fullTransactionData = {
         ...transactionData,
         companyId: companyId as string,
-        userId: userId as string
+        createdBy: userId as string
       };
       
       const newTransaction = await this.transactionsService.createTransaction(fullTransactionData);
