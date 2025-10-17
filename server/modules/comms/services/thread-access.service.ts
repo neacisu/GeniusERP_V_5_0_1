@@ -177,7 +177,7 @@ export class ThreadAccessService {
           )
         );
       
-      return result.rowCount > 0;
+      return result && result.length > 0;
     } catch (error) {
       logger.error(`Failed to remove thread access for thread ${threadId}, user ${userId}`, error);
       throw new Error(`Failed to remove thread access: ${error instanceof Error ? error.message : String(error)}`);

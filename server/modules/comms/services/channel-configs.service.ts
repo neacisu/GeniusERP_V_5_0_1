@@ -118,18 +118,18 @@ export class ChannelConfigsService {
    */
   async getChannelConfigs(companyId: string, channel?: CommunicationChannel) {
     try {
-      // Start building the query
-      let query = this.db.select()
-        .from(channelConfigurations)
-        .where(eq(channelConfigurations.companyId, companyId));
+      // Build WHERE conditions array
+      const whereConditions: any[] = [eq(channelConfigurations.companyId, companyId)];
       
       // Apply channel filter if provided
       if (channel) {
-        query = query.where(eq(channelConfigurations.channel, channel));
+        whereConditions.push(eq(channelConfigurations.channel, channel));
       }
       
-      // Execute the query
-      const configs = await query;
+      // Execute the query with all conditions
+      const configs = await this.db.select()
+        .from(channelConfigurations)
+        .where(and(...whereConditions));
       
       // Sanitize credentials in results
       return configs.map(config => ({
@@ -245,7 +245,7 @@ export class ChannelConfigsService {
           )
         );
       
-      return result.rowCount > 0;
+      return result && result.length > 0;
     } catch (error) {
       logger.error(`Failed to delete channel configuration ${configId}`, error);
       throw new Error(`Failed to delete channel configuration: ${error instanceof Error ? error.message : String(error)}`);
@@ -262,29 +262,27 @@ export class ChannelConfigsService {
    */
   async getConfigsForChannel(companyId: string, channel: CommunicationChannel, active: boolean = true) {
     try {
-      // Build query
-      let query = this.db.select()
-        .from(channelConfigurations)
-        .where(
-          and(
-            eq(channelConfigurations.companyId, companyId),
-            eq(channelConfigurations.channel, channel)
-          )
-        );
+      // Build WHERE conditions
+      const whereConditions: any[] = [
+        eq(channelConfigurations.companyId, companyId),
+        eq(channelConfigurations.channel, channel)
+      ];
       
       // Filter by active status if requested
       if (active) {
-        query = query.where(eq(channelConfigurations.isActive, true));
+        whereConditions.push(eq(channelConfigurations.isActive, true));
       }
       
-      // Execute query
-      const configs = await query;
+      // Build and execute query with all conditions
+      const configs = await this.db.select()
+        .from(channelConfigurations)
+        .where(and(...whereConditions));
       
       // Decrypt credentials in a real-world application
       return configs.map(config => ({
         ...config,
-        credentials: JSON.parse(config.credentials),
-        settings: config.settings ? JSON.parse(config.settings) : {}
+        credentials: typeof config.credentials === 'string' ? JSON.parse(config.credentials) : config.credentials,
+        settings: config.settings && typeof config.settings === 'string' ? JSON.parse(config.settings) : (config.settings || {})
       }));
     } catch (error) {
       logger.error(`Failed to get configs for channel ${channel}`, error);

@@ -4,10 +4,11 @@
  * Handles API endpoints for message operations in the Communications module
  */
 
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { Logger } from '../../../common/logger';
 import { MessagesService } from '../services/messages.service';
 import { MessageDirection, MessageStatus } from '../../../../shared/schema/communications.schema';
+import { AuthenticatedRequest } from '../../../types/express';
 
 export class MessagesController {
   private _logger: Logger;
@@ -21,10 +22,10 @@ export class MessagesController {
   /**
    * Create a new message
    */
-  async createMessage(req: Request, res: Response): Promise<void> {
+  async createMessage(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { threadId } = req.params;
-      const { companyId } = req.user;
+      const { companyId } = req.user!;
       
       const messageData = {
         ...req.body,

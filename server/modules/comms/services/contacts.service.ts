@@ -167,15 +167,13 @@ export class ContactsService {
     offset?: number;
   }) {
     try {
-      // Start building the query
-      let query = this.db.select()
-        .from(contacts)
-        .where(eq(contacts.companyId, companyId));
+      // Build WHERE conditions array
+      const whereConditions: any[] = [eq(contacts.companyId, companyId)];
       
       // Apply search if provided
       if (options?.search) {
         const searchTerm = `%${options.search}%`;
-        query = query.where(
+        whereConditions.push(
           or(
             like(contacts.firstName, searchTerm),
             like(contacts.lastName, searchTerm),
@@ -187,8 +185,11 @@ export class ContactsService {
         );
       }
       
-      // Add ordering, limit and offset
-      query = query.orderBy(desc(contacts.createdAt));
+      // Build query with all conditions at once
+      let query = this.db.select()
+        .from(contacts)
+        .where(and(...whereConditions))
+        .orderBy(desc(contacts.createdAt));
       
       if (options?.limit) {
         query = query.limit(options.limit);
@@ -345,7 +346,7 @@ export class ContactsService {
           )
         );
       
-      return result.rowCount > 0;
+      return result && result.length > 0;
     } catch (error) {
       logger.error(`Failed to delete contact ${contactId}`, error);
       throw new Error(`Failed to delete contact: ${error instanceof Error ? error.message : String(error)}`);

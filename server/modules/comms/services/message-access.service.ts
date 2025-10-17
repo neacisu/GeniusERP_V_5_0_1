@@ -170,7 +170,7 @@ export class MessageAccessService {
           )
         );
       
-      return result.rowCount > 0;
+      return result && result.length > 0;
     } catch (error) {
       logger.error(`Failed to remove message access for message ${messageId}, user ${userId}`, error);
       throw new Error(`Failed to remove message access: ${error instanceof Error ? error.message : String(error)}`);

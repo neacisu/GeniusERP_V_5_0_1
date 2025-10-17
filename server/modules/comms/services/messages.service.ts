@@ -29,7 +29,7 @@ export class MessagesService {
   private threadsService: ThreadsService;
 
   constructor(private drizzleService: DrizzleService) {
-    this.threadsService = new ThreadsService(drizzleService);
+    this.threadsService = new ThreadsService(drizzleService.db);
   }
 
   /**
@@ -309,7 +309,7 @@ export class MessagesService {
             )
           );
         
-        return result.rowCount > 0;
+        return result && result.length > 0;
       });
     } catch (error) {
       logger.error(`Failed to delete message ${messageId}`, error);

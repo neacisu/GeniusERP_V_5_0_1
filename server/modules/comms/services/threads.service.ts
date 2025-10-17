@@ -109,41 +109,43 @@ export class ThreadsService {
     contactId?: string;
   }) {
     try {
-      // Start building the query
-      let query = this.db.select({
+      // Build WHERE conditions array - MUST be applied BEFORE groupBy()
+      const whereConditions: any[] = [eq(messageThreads.companyId, companyId)];
+      
+      if (filter) {
+        if (filter.channel) {
+          whereConditions.push(eq(messageThreads.channel, filter.channel));
+        }
+        
+        if (filter.status) {
+          whereConditions.push(eq(messageThreads.status, filter.status));
+        }
+        
+        if (filter.assignedTo) {
+          whereConditions.push(eq(messageThreads.assignedTo, filter.assignedTo));
+        }
+        
+        if (filter.customerId) {
+          whereConditions.push(eq(messageThreads.customerId, filter.customerId));
+        }
+        
+        if (filter.contactId) {
+          whereConditions.push(eq(messageThreads.contactId, filter.contactId));
+        }
+      }
+      
+      // Build and execute query - apply all WHERE conditions BEFORE groupBy()
+      const query = this.db.select({
         thread: messageThreads,
         messageCount: count(messages.id)
       })
         .from(messageThreads)
         .leftJoin(messages, eq(messageThreads.id, messages.threadId))
-        .where(eq(messageThreads.companyId, companyId))
-        .groupBy(messageThreads.id);
+        .where(and(...whereConditions))
+        .groupBy(messageThreads.id)
+        .orderBy(desc(messageThreads.lastMessageAt));
       
-      // Apply filters if provided
-      if (filter) {
-        if (filter.channel) {
-          query = query.where(eq(messageThreads.channel, filter.channel));
-        }
-        
-        if (filter.status) {
-          query = query.where(eq(messageThreads.status, filter.status));
-        }
-        
-        if (filter.assignedTo) {
-          query = query.where(eq(messageThreads.assignedTo, filter.assignedTo));
-        }
-        
-        if (filter.customerId) {
-          query = query.where(eq(messageThreads.customerId, filter.customerId));
-        }
-        
-        if (filter.contactId) {
-          query = query.where(eq(messageThreads.contactId, filter.contactId));
-        }
-      }
-      
-      // Execute the query and order by most recent message
-      const result = await query.orderBy(desc(messageThreads.lastMessageAt));
+      const result = await query;
       
       // Transform the result to a more usable format
       return result.map(item => ({
@@ -252,7 +254,7 @@ export class ThreadsService {
           )
         );
       
-      return result.rowCount > 0;
+      return result && result.length > 0;
     } catch (error) {
       logger.error(`Failed to delete thread ${threadId}`, error);
       throw new Error(`Failed to delete thread: ${error instanceof Error ? error.message : String(error)}`);
