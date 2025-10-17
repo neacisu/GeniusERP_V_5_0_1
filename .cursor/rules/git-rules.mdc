@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+Allways use a unified run command with all 4 commands included: add ., status, commit, push
+---

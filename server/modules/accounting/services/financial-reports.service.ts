@@ -76,14 +76,14 @@ export class FinancialReportsService {
       SELECT COALESCE(SUM(current_balance), 0) as total 
       FROM cash_registers 
       WHERE company_id = ${companyId}
-      AND deleted_at IS NULL
+      AND is_active = true
     `;
     
     const bankBalance = await client<{ total: string }[]>`
       SELECT COALESCE(SUM(current_balance), 0) as total 
       FROM bank_accounts 
       WHERE company_id = ${companyId}
-      AND deleted_at IS NULL
+      AND is_active = true
     `;
     
     const reports: FinancialReport[] = [
@@ -161,14 +161,14 @@ export class FinancialReportsService {
         SELECT COALESCE(SUM(current_balance), 0) as total 
         FROM cash_registers 
         WHERE company_id = ${companyId}
-        AND deleted_at IS NULL
+        AND is_active = true
       `,
       
       client<{ total: string }[]>`
         SELECT COALESCE(SUM(current_balance), 0) as total 
         FROM bank_accounts 
         WHERE company_id = ${companyId}
-        AND deleted_at IS NULL
+        AND is_active = true
       `
     ]);
     
