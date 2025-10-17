@@ -28,6 +28,60 @@ import {
 import { Search, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
+// Customer interface (from crm_customers table)
+interface Customer {
+  id: string;
+  companyId: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  county?: string;
+  country?: string;
+  postalCode?: string;
+  cui?: string;
+  registrationNumber?: string;
+  bankName?: string;
+  bankAccount?: string;
+  paymentTerms?: number;
+  creditLimit?: number;
+  discount?: number;
+  notes?: string;
+  tags?: string[];
+  customFields?: any;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Supplier interface (from crm_companies table)
+interface Supplier {
+  id: string;
+  name: string;
+  cui?: string;
+  vatNumber?: string;
+  registrationNumber?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  postalCode?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  customFields?: any;
+  analythic401?: string;
+  analythic4111?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Partner type (Customer or Supplier)
+type Partner = Customer | Supplier;
+
+// API Response structures (customers wraps in {success, data}, suppliers returns direct array)
+type PartnersResponse = { success: true; data: Partner[] } | Partner[];
+
 interface Invoice {
   id: string;
   invoiceNumber: string;
@@ -53,10 +107,15 @@ export function InvoiceSelectorDialog({ isOpen, onClose, type, onSelect }: Props
   const [searchTerm, setSearchTerm] = useState('');
   
   // Fetch partners (customers or suppliers)
-  const { data: partners, isLoading: isLoadingPartners } = useQuery({
+  const { data: partnersResponse, isLoading: isLoadingPartners } = useQuery<PartnersResponse>({
     queryKey: [type === 'customer' ? '/api/customers' : '/api/suppliers'],
     enabled: isOpen
   });
+  
+  // Normalize response (customers returns {success, data}, suppliers returns direct array)
+  const partners = Array.isArray(partnersResponse) 
+    ? partnersResponse 
+    : partnersResponse?.data || [];
   
   // Fetch unpaid invoices for selected partner
   const { data: invoices, isLoading: isLoadingInvoices } = useQuery<Invoice[]>({
@@ -117,9 +176,9 @@ export function InvoiceSelectorDialog({ isOpen, onClose, type, onSelect }: Props
                 {isLoadingPartners ? (
                   <SelectItem value="loading" disabled>Se încarcă...</SelectItem>
                 ) : (
-                  partners?.data?.map((p: any) => (
+                  partners?.map((p: Partner) => (
                     <SelectItem key={p.id} value={p.id}>
-                      {p.name || p.companyName}
+                      {p.name}
                     </SelectItem>
                   ))
                 )}
