@@ -49,11 +49,11 @@ export interface AttachmentProcessingResult {
  * Email Attachment Service for processing email attachments into documents
  */
 export class EmailAttachmentService {
-  private db!: ReturnType<typeof drizzle>;
-  private queryClient!: ReturnType<typeof postgres>;
-  private documentService!: DocumentService;
-  private ocrService!: OcrService;
-  private registryService!: DocumentRegistryService;
+  private db: ReturnType<typeof drizzle> | null = null;
+  private queryClient: ReturnType<typeof postgres> | null = null;
+  private documentService: DocumentService | null = null;
+  private ocrService: OcrService | null = null;
+  private registryService: DocumentRegistryService | null = null;
 
   constructor() {
     this.initialize();
@@ -66,11 +66,17 @@ export class EmailAttachmentService {
       this.documentService = new DocumentService(drizzleService);
       this.ocrService = new OcrService();
       this.registryService = new DocumentRegistryService();
-      
+
       console.log('[EmailAttachmentService] 📧 Email attachment service initialized');
     } catch (error) {
       console.error('[EmailAttachmentService] Failed to initialize:', error);
       throw error;
+    }
+  }
+
+  private ensureInitialized() {
+    if (!this.db || !this.documentService || !this.ocrService || !this.registryService) {
+      throw new Error('EmailAttachmentService not properly initialized');
     }
   }
   
@@ -84,19 +90,21 @@ export class EmailAttachmentService {
     companyId: string,
     attachment: EmailAttachment
   ): Promise<AttachmentProcessingResult> {
+    this.ensureInitialized();
     try {
       console.log(`[EmailAttachmentService] 📧 Processing attachment: ${attachment.filename}`);
-      
+
       // 1. Store the attachment as a document
-      const document = await this.documentService.createDocument({
-        companyId,
+      const document = await this.documentService!.createDocument({
+        companyId: companyId as string,
+        filePath: `/email-attachments/${companyId}/${Date.now()}-${attachment.filename}`,
         type: 'EMAIL_ATTACHMENT' // Default type until classified
-      }, attachment.content.toString('base64'));
+      } as any, attachment.content.toString('base64'));
       
       // 2. Process with OCR to extract text
       let ocrProcessed = false;
       try {
-        const ocrText = await this.ocrService.processDocument(document.document.id);
+        const ocrText = await this.ocrService!.processDocument(document.document.id);
         ocrProcessed = true;
       } catch (ocrError) {
         console.warn(`[EmailAttachmentService] OCR processing failed for ${document.document.id}:`, ocrError);
@@ -106,14 +114,14 @@ export class EmailAttachmentService {
       const classification = await this.classifyDocument(attachment, document.document.id);
       
       // 4. Update document type based on classification
-      await this.documentService.updateDocumentMetadata(document.document.id, {
+      await this.documentService!.updateDocumentMetadata(document.document.id, {
         type: classification.documentType
       });
 
       // 5. Register in the appropriate registry based on classification
       let registryNumber: string | undefined = undefined;
       try {
-        const registryResult = await this.registryService.registerDocument(
+        const registryResult = await this.registryService!.registerDocument(
           document.document.id,
           classification.flow,
           companyId,
@@ -125,11 +133,11 @@ export class EmailAttachmentService {
         );
         registryNumber = registryResult.registryNumber;
       } catch (registryError) {
-        console.error(`[EmailAttachmentService] Registry error for ${document.id}:`, registryError);
+        console.error(`[EmailAttachmentService] Registry error for ${document.document.id}:`, registryError);
       }
       
       return {
-        documentId: document.id,
+        documentId: document.document.id,
         registryNumber,
         ocrProcessed,
         detectedType: classification.documentType,
