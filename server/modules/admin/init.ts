@@ -5,7 +5,7 @@
  * setup tracking, and administrative functions.
  */
 
-import express, { Router, Response, NextFunction } from 'express';
+import { Express } from 'express';
 import { DrizzleService } from '../../common/drizzle';
 import { AdminModule } from './admin.module';
 import { Logger } from '../../common/logger';
@@ -15,7 +15,7 @@ const logger = new Logger('AdminModuleInit');
 /**
  * Initialize the Admin module
  */
-export function initAdminModule(app: express.Application): void {
+export function initAdminModule(app: Express): AdminModule {
   logger.info('Initializing Admin module...');
 
   try {
