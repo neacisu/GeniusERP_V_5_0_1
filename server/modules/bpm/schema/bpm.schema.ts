@@ -300,7 +300,7 @@ export const startProcessSchema = z.object({
   processId: z.string().uuid(),
   companyId: z.string(),
   startedBy: z.string(),
-  inputData: z.record(z.any()).optional(),
+  inputData: z.record(z.string(), z.any()).optional(),
 });
 
 /**

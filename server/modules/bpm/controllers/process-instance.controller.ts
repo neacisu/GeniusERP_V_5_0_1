@@ -53,12 +53,18 @@ export class ProcessInstanceController {
       
       if (status) {
         filter.status = Array.isArray(status) 
-          ? status 
+          ? (status as string[]).map(s => String(s))
           : [(status as string)];
       }
       
       if (startedBy) {
         filter.startedBy = startedBy as string;
+      }
+      
+      // Ensure companyId is not null
+      if (!companyId) {
+        res.status(400).json({ error: 'Company ID is required' });
+        return;
       }
       
       const result = await this.processInstanceService.getInstances(companyId, filter);
@@ -82,7 +88,7 @@ export class ProcessInstanceController {
       const { id } = req.params;
       const { companyId } = req.user;
       
-      const instance = await this.processInstanceService.getInstanceById(id, companyId);
+      const instance = await this.processInstanceService.getInstanceById(id, companyId || undefined);
       
       if (!instance) {
         res.status(404).json({ error: 'Process instance not found' });
@@ -106,7 +112,7 @@ export class ProcessInstanceController {
         return;
       }
       const { processId, _inputData } = req.body;
-      const { _companyId, _userId } = req.user;
+      const { companyId, userId } = req.user;
       
       if (!processId) {
         res.status(400).json({ error: 'Process ID is required' });
@@ -277,7 +283,7 @@ export class ProcessInstanceController {
       const { companyId } = req.user;
       
       // Get the instance first to verify access
-      const instance = await this.processInstanceService.getInstanceById(id, companyId);
+      const instance = await this.processInstanceService.getInstanceById(id, companyId || undefined);
       
       if (!instance) {
         res.status(404).json({ error: 'Process instance not found' });

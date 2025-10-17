@@ -17,7 +17,7 @@ const createJobSchema = z.object({
   description: z.string().optional().nullable(),
   schedule: z.string().min(1),
   action: z.string().uuid(),
-  configuration: z.record(z.any()).optional(),
+  configuration: z.record(z.string(), z.any()).optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -26,7 +26,7 @@ const updateJobSchema = z.object({
   description: z.string().optional().nullable(),
   schedule: z.string().min(1).optional(),
   action: z.string().uuid().optional(),
-  configuration: z.record(z.any()).optional(),
+  configuration: z.record(z.string(), z.any()).optional(),
   isActive: z.boolean().optional(),
 });
 

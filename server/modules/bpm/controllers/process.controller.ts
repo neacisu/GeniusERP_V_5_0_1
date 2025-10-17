@@ -51,10 +51,14 @@ export class ProcessController {
    */
   async getProcessById(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { id } = req.params;
       const { companyId } = req.user;
       
-      const process = await this.processService.getProcessById(id, companyId);
+      const process = await this.processService.getProcessById(id, companyId || undefined);
       
       if (!process) {
         res.status(404).json({ error: 'Process not found' });
@@ -73,7 +77,16 @@ export class ProcessController {
    */
   async getProcesses(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { companyId } = req.user;
+      
+      if (!companyId) {
+        res.status(400).json({ error: 'Company ID is required' });
+        return;
+      }
       const {
         page,
         limit,
@@ -94,9 +107,10 @@ export class ProcessController {
       }
       
       if (status) {
-        filter.status = Array.isArray(status) 
-          ? status 
+        const statusArray = Array.isArray(status) 
+          ? (status as string[]).map(s => String(s))
           : [(status as string)];
+        filter.status = statusArray as any; // BpmProcessStatus array will be validated by service
       }
       
       if (isTemplate !== undefined) {
@@ -121,6 +135,10 @@ export class ProcessController {
    */
   async updateProcess(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { id } = req.params;
       const { userId } = req.user;
       
@@ -148,12 +166,21 @@ export class ProcessController {
    */
   async changeProcessStatus(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { id } = req.params;
       const { status } = req.body;
       const { userId } = req.user;
       
       if (!Object.values(BpmProcessStatus).includes(status)) {
         res.status(400).json({ error: 'Invalid status value' });
+        return;
+      }
+      
+      if (!userId) {
+        res.status(400).json({ error: 'User ID is required' });
         return;
       }
       
@@ -176,9 +203,18 @@ export class ProcessController {
    */
   async duplicateProcess(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { id } = req.params;
       const { asTemplate, newName } = req.body;
       const { userId } = req.user;
+      
+      if (!userId) {
+        res.status(400).json({ error: 'User ID is required' });
+        return;
+      }
       
       const options = {
         asTemplate,
@@ -226,7 +262,16 @@ export class ProcessController {
    */
   async getProcessTemplates(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { companyId } = req.user;
+      
+      if (!companyId) {
+        res.status(400).json({ error: 'Company ID is required' });
+        return;
+      }
       
       const templates = await this.processService.getProcessTemplates(companyId);
       
@@ -242,9 +287,18 @@ export class ProcessController {
    */
   async createFromTemplate(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { templateId } = req.params;
       const { name } = req.body;
       const { companyId, userId } = req.user;
+      
+      if (!companyId || !userId) {
+        res.status(400).json({ error: 'Company ID and User ID are required' });
+        return;
+      }
       
       const process = await this.processService.createFromTemplate(templateId, {
         name,
@@ -269,9 +323,18 @@ export class ProcessController {
    */
   async startProcess(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { processId } = req.params;
       const { companyId, userId } = req.user;
       const { inputData } = req.body;
+      
+      if (!companyId || !userId) {
+        res.status(400).json({ error: 'Company ID and User ID are required' });
+        return;
+      }
       
       const instance = await this.processService.startProcess({
         processId,

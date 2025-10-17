@@ -43,7 +43,7 @@ export class StepTemplateService {
       return stepTemplate;
     } catch (error) {
       console.error('Error creating step template:', error);
-      throw new Error(`Failed to create step template: ${error.message}`);
+      throw new Error(`Failed to create step template: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -75,7 +75,7 @@ export class StepTemplateService {
       return await query;
     } catch (error) {
       console.error('Error getting step templates:', error);
-      throw new Error(`Failed to get step templates: ${error.message}`);
+      throw new Error(`Failed to get step templates: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -104,7 +104,7 @@ export class StepTemplateService {
       return stepTemplate || null;
     } catch (error) {
       console.error('Error getting step template by ID:', error);
-      throw new Error(`Failed to get step template: ${error.message}`);
+      throw new Error(`Failed to get step template: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -141,7 +141,7 @@ export class StepTemplateService {
       return updatedTemplate;
     } catch (error) {
       console.error('Error updating step template:', error);
-      throw new Error(`Failed to update step template: ${error.message}`);
+      throw new Error(`Failed to update step template: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -172,7 +172,7 @@ export class StepTemplateService {
       return true;
     } catch (error) {
       console.error('Error deleting step template:', error);
-      throw new Error(`Failed to delete step template: ${error.message}`);
+      throw new Error(`Failed to delete step template: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -210,7 +210,7 @@ export class StepTemplateService {
       return await query;
     } catch (error) {
       console.error(`Error getting step templates by type ${type}:`, error);
-      throw new Error(`Failed to get step templates by type: ${error.message}`);
+      throw new Error(`Failed to get step templates by type: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -248,7 +248,7 @@ export class StepTemplateService {
       return await query;
     } catch (error) {
       console.error(`Error getting step templates by target type ${targetType}:`, error);
-      throw new Error(`Failed to get step templates by target type: ${error.message}`);
+      throw new Error(`Failed to get step templates by target type: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -286,7 +286,7 @@ export class StepTemplateService {
       return updatedTemplate;
     } catch (error) {
       console.error('Error toggling global status of step template:', error);
-      throw new Error(`Failed to toggle global status: ${error.message}`);
+      throw new Error(`Failed to toggle global status: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 }

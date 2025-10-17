@@ -3,12 +3,13 @@
  * This overrides all other declarations in the application for Request.user
  */
 
-import { ExtendedJwtPayload } from '../guards/auth.guard';
+import { UnifiedJwtPayload } from '../guards/auth.guard';
 
 declare global {
   namespace Express {
     // This will override the existing User interface
-    interface User extends ExtendedJwtPayload {}
+    // Use UnifiedJwtPayload which includes all necessary properties
+    interface User extends UnifiedJwtPayload {}
   }
 }
 

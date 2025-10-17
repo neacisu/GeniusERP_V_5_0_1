@@ -71,6 +71,9 @@ export interface TriggerExecutionContext {
 export class TriggerService {
   private _logger: Logger;
   private _processService: ProcessService;
+  private get db() {
+    return this.drizzleService.getDbInstance();
+  }
 
   constructor(private drizzleService: DrizzleService) {
     this._logger = new Logger('TriggerService');

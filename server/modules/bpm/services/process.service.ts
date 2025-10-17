@@ -313,7 +313,7 @@ export class ProcessService {
         description: originalProcess.description || undefined,
         companyId: originalProcess.companyId,
         steps: originalProcess.steps,
-        status: options.asTemplate ? BpmProcessStatus.DRAFT : originalProcess.status,
+        status: options.asTemplate ? BpmProcessStatus.DRAFT : (originalProcess.status as BpmProcessStatus),
         isTemplate: options.asTemplate !== undefined ? options.asTemplate : originalProcess.isTemplate,
         createdBy: options.userId,
         updatedBy: options.userId,
