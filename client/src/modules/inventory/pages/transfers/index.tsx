@@ -342,7 +342,7 @@ const TransfersPage: React.FC = () => {
   const handleProductChange = (index: number, productId: string) => {
     const product = getProductById(productId);
     if (product) {
-      form.setValue(`items.${index}.unitPrice`, parseFloat(product.purchasePrice) || 0);
+      form.setValue(`items.${index}.unitPrice`, product.purchasePrice ? parseFloat(product.purchasePrice.toString()) : 0);
       form.setValue(`items.${index}.vatRate`, product.vatRate || 19);
       // Clear the stockItemId to force reselection
       form.setValue(`items.${index}.stockItemId`, "");

@@ -57,7 +57,6 @@ const warehouseFormSchema = z.object({
   }),
   code: z.string().optional(),
   type: z.enum(["depozit", "magazin", "custodie", "transfer"]),
-  trackingType: z.enum(["standard", "fifo", "lifo", "cmp"]),
   location: z.string().optional(),
   responsible: z.string().optional(),
   isActive: z.boolean(),
@@ -89,7 +88,6 @@ const WarehousesPage: React.FC = () => {
       name: "",
       code: "",
       type: "depozit",
-      trackingType: "standard",
       location: "",
       responsible: "",
       isActive: true,
@@ -112,7 +110,6 @@ const WarehousesPage: React.FC = () => {
       name: "",
       code: "",
       type: "depozit",
-      trackingType: "standard",
       location: "",
       responsible: "",
       isActive: true,
@@ -127,7 +124,6 @@ const WarehousesPage: React.FC = () => {
       name: warehouse.name,
       code: warehouse.code,
       type: warehouse.type,
-      trackingType: warehouse.trackingType,
       location: warehouse.location || "",
       responsible: warehouse.responsible || "",
       isActive: warehouse.isActive,
@@ -203,21 +199,6 @@ const WarehousesPage: React.FC = () => {
     }
   };
   
-  // Get tracking type label for display
-  const getTrackingTypeLabel = (type: StockTrackingType) => {
-    switch (type) {
-      case StockTrackingType.STANDARD:
-        return "Standard";
-      case StockTrackingType.FIFO:
-        return "FIFO (First In, First Out)";
-      case StockTrackingType.LIFO:
-        return "LIFO (Last In, First Out)";
-      case StockTrackingType.CMP:
-        return "CMP (Cost Mediu Ponderat)";
-      default:
-        return type;
-    }
-  };
   
   // Get the selected warehouse for detail view
   const selectedWarehouse = warehouseDetailId 
@@ -268,7 +249,6 @@ const WarehousesPage: React.FC = () => {
                       <TableHead>Cod</TableHead>
                       <TableHead>Denumire</TableHead>
                       <TableHead>Tip</TableHead>
-                      <TableHead>Evidență</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Acțiuni</TableHead>
                     </TableRow>
@@ -301,7 +281,6 @@ const WarehousesPage: React.FC = () => {
                               {getTypeLabel(warehouse.type)}
                             </Badge>
                           </TableCell>
-                          <TableCell>{getTrackingTypeLabel(warehouse.trackingType)}</TableCell>
                           <TableCell>
                             <StatusBadge status={warehouse.isActive ? 'active' : 'inactive'} />
                           </TableCell>
@@ -369,10 +348,6 @@ const WarehousesPage: React.FC = () => {
                     <div>
                       <p className="text-sm font-medium">Tip Gestiune</p>
                       <p className="text-sm text-muted-foreground">{getTypeLabel(selectedWarehouse.type)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Evidență</p>
-                      <p className="text-sm text-muted-foreground">{getTrackingTypeLabel(selectedWarehouse.trackingType)}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium">Status</p>
@@ -529,34 +504,6 @@ const WarehousesPage: React.FC = () => {
                     </FormItem>
                   )}
                 />
-                
-                <FormField
-                  control={form.control}
-                  name="trackingType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tip Evidență</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selectează tipul" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="standard">Standard</SelectItem>
-                          <SelectItem value="fifo">FIFO (First In, First Out)</SelectItem>
-                          <SelectItem value="lifo">LIFO (Last In, First Out)</SelectItem>
-                          <SelectItem value="cmp">CMP (Cost Mediu Ponderat)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        Determină modul de evidență a stocurilor
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
                 <FormField
                   control={form.control}
                   name="isActive"

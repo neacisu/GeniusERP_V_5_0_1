@@ -18,7 +18,6 @@ export interface Warehouse {
   name: string;
   code: string;
   type: GestiuneType;
-  trackingType: StockTrackingType;
   location?: string | null;
   responsible?: string | null;
   isActive: boolean;
@@ -260,7 +259,6 @@ export interface WarehouseFormValues {
   name: string;
   code: string;
   type: GestiuneType;
-  trackingType: StockTrackingType;
   location?: string;
   responsible?: string;
   isActive: boolean;

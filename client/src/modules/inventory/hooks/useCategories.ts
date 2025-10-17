@@ -99,8 +99,14 @@ export function useCategories() {
       const uniqueCategories = new Map<string, ProductCategory>();
       
       productsData.forEach((product: Product) => {
-        if (product.category && product.category.id && !uniqueCategories.has(product.category.id)) {
-          uniqueCategories.set(product.category.id, product.category);
+        if (product.categoryId && product.categoryName && !uniqueCategories.has(product.categoryId)) {
+          uniqueCategories.set(product.categoryId, {
+            id: product.categoryId,
+            name: product.categoryName,
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          });
         }
       });
       

@@ -250,7 +250,7 @@ const NIRDocumentsPage: React.FC = () => {
   const filteredDocuments = nirDocuments.filter((doc: NirDocument) => {
     // Apply search filter
     const matchesSearch = 
-      (doc.number || '').toLowerCase().includes(searchQuery.toLowerCase());
+      ((doc.nirNumber || doc.nir_number) || '').toLowerCase().includes(searchQuery.toLowerCase());
     
     // Apply warehouse filter
     const matchesWarehouse = selectedWarehouse === "" || doc.warehouseId === selectedWarehouse;
@@ -851,9 +851,9 @@ const NIRDocumentsPage: React.FC = () => {
             <div className="space-y-4">
               <div className="flex justify-between">
                 <div>
-                  <h3 className="text-lg font-medium">{viewDocument.number}</h3>
+                  <h3 className="text-lg font-medium">{viewDocument.nirNumber || viewDocument.nir_number}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Data: {new Date(viewDocument.date).toLocaleDateString()}
+                    Data: {new Date(viewDocument.receiptDate || viewDocument.receipt_date || '').toLocaleDateString()}
                   </p>
                 </div>
                 <StatusBadge status={viewDocument.status} />
@@ -865,13 +865,13 @@ const NIRDocumentsPage: React.FC = () => {
                 <div>
                   <p className="text-sm font-medium">Gestiune</p>
                   <p className="text-sm text-muted-foreground">
-                    {getWarehouseById(viewDocument.warehouseId)?.name || "Necunoscut"}
+                    {getWarehouseById(viewDocument.warehouseId || viewDocument.warehouse_id || '')?.name || "Necunoscut"}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm font-medium">Furnizor</p>
                   <p className="text-sm text-muted-foreground">
-                    {getSupplierById(viewDocument.supplierId)?.name || "Necunoscut"}
+                    {getSupplierById(viewDocument.supplierId || viewDocument.supplier_id || '')?.name || "Necunoscut"}
                   </p>
                 </div>
               </div>
@@ -904,7 +904,7 @@ const NIRDocumentsPage: React.FC = () => {
               
               <div>
                 <p className="text-sm font-medium">Observații</p>
-                <p className="text-sm text-muted-foreground">{viewDocument.observations || "-"}</p>
+                <p className="text-sm text-muted-foreground">{viewDocument.notes || "-"}</p>
               </div>
               
               <DialogFooter className="flex justify-between">

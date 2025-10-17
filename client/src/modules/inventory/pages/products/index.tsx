@@ -252,7 +252,7 @@ export default function ProductsPage() {
         sellingPrice: editingProduct.sellingPrice ? Number(editingProduct.sellingPrice) : 0,
         vatRate: editingProduct.vatRate ? Number(editingProduct.vatRate) : 19,
         stockAlert: editingProduct.stockAlert ? Number(editingProduct.stockAlert) : 0,
-        isActive: editingProduct.isActive,
+        isActive: editingProduct.isActive !== null ? editingProduct.isActive : true,
         priceIncludesVat: (editingProduct as any).priceIncludesVat || false
       });
     }
