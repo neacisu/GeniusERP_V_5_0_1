@@ -120,7 +120,7 @@ export class ValidateInvoiceController {
               invoiceId,
               success: result.success,
               message: result.message,
-              journalEntryId: result.journalEntryId
+              journalEntryId: result.ledgerEntryId
             };
           } catch (error) {
             return {
