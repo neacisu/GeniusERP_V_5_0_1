@@ -737,6 +737,7 @@ export const invoices = pgTable('invoices', {
   // Accounting validation fields for Note Contabil generation
   isValidated: boolean('is_validated').default(false).notNull(),
   validatedAt: timestamp('validated_at'),
+  validatedBy: uuid('validated_by').references(() => users.id),
   ledgerEntryId: uuid('ledger_entry_id'), // Reference to the accounting ledger entry (Note Contabil)
   
   // Audit fields

@@ -333,21 +333,20 @@ export class InvoiceService {
       
       const invoice = results[0] as InvoiceWithRelations;
       
-      // Get invoice details
-      const detailsQuery = `
-        SELECT * FROM invoice_details
-        WHERE invoice_id = $1
-      `;
-      
-      const linesQuery = `
-        SELECT * FROM invoice_items
-        WHERE invoice_id = $1
-        ORDER BY sequence ASC
-      `;
-      
+      // Get invoice details and items using Drizzle ORM
       const [details, lines] = await Promise.all([
-        this.drizzle.base.executeQuery(detailsQuery, [invoiceId]),
-        this.drizzle.base.executeQuery(linesQuery, [invoiceId])
+        this.drizzle.query(async (db) => {
+          return await db
+            .select()
+            .from(invoiceDetails)
+            .where(eq(invoiceDetails.invoiceId, invoiceId));
+        }),
+        this.drizzle.query(async (db) => {
+          return await db
+            .select()
+            .from(invoiceItems)
+            .where(eq(invoiceItems.invoiceId, invoiceId));
+        })
       ]);
       
       // Add related data to invoice
@@ -530,21 +529,20 @@ export class InvoiceService {
       
       const invoice = results[0] as InvoiceWithRelations;
       
-      // Get invoice details
-      const detailsQuery = `
-        SELECT * FROM invoice_details
-        WHERE invoice_id = '${id}'
-      `;
-      
-      const linesQuery = `
-        SELECT * FROM invoice_items
-        WHERE invoice_id = '${id}'
-        ORDER BY sequence ASC
-      `;
-      
+      // Get invoice details and items using Drizzle ORM
       const [details, lines] = await Promise.all([
-        this.drizzle.base.executeQuery(detailsQuery),
-        this.drizzle.base.executeQuery(linesQuery)
+        this.drizzle.query(async (db) => {
+          return await db
+            .select()
+            .from(invoiceDetails)
+            .where(eq(invoiceDetails.invoiceId, id));
+        }),
+        this.drizzle.query(async (db) => {
+          return await db
+            .select()
+            .from(invoiceItems)
+            .where(eq(invoiceItems.invoiceId, id));
+        })
       ]);
       
       // Add related data to invoice

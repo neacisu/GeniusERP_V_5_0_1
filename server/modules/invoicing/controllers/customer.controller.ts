@@ -7,7 +7,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Logger } from '../../../common/logger';
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { sql } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { UnifiedJwtPayload } from '../../auth/guards/auth.guard';
 
 // Extindere Request pentru a suporta ambele formate de token
@@ -52,26 +52,26 @@ export class CustomerController {
       // Query companies marked as clients using Drizzle ORM
       this.logger.debug(`Getting customers for company ID: ${companyId}`);
       
-      const { crmCompanies } = await import('../../../server/modules/crm/schema/crm.schema');
+      const { crm_companies } = await import('../../crm/schema/crm.schema');
       
       const customers = await this.drizzle.query(async (db) => {
         return await db
           .select({
-            id: crmCompanies.id,
-            name: crmCompanies.name,
-            fiscalCode: crmCompanies.vatNumber,
-            registrationNumber: crmCompanies.registrationNumber,
-            address: crmCompanies.address,
-            city: crmCompanies.city,
-            county: crmCompanies.postalCode,
-            country: crmCompanies.country,
-            email: crmCompanies.email,
-            phone: crmCompanies.phone
+            id: crm_companies.id,
+            name: crm_companies.name,
+            fiscalCode: crm_companies.vatNumber,
+            registrationNumber: crm_companies.registrationNumber,
+            address: crm_companies.address,
+            city: crm_companies.city,
+            county: crm_companies.postalCode,
+            country: crm_companies.country,
+            email: crm_companies.email,
+            phone: crm_companies.phone
           })
-          .from(crmCompanies)
+          .from(crm_companies)
           .where(and(
-            eq(crmCompanies.companyId, companyId as string),
-            eq(crmCompanies.isCustomer, true)
+            eq(crm_companies.companyId, companyId as string),
+            eq(crm_companies.isCustomer, true)
           ));
       });
       
