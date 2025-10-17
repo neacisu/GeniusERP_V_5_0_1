@@ -7,7 +7,7 @@
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 import { v4 as uuidv4 } from 'uuid';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { ecommerceOrders, OrderStatus } from '../../../../shared/schema/ecommerce.schema';
 import { Logger } from '../../../common/logger';
 
@@ -100,42 +100,32 @@ export class OrdersService {
         orderDate = new Date();
       }
 
-      // Use raw SQL query directly instead of Drizzle's query builder to avoid timestamp mapping issues
-      const orderDateISO = orderDate instanceof Date ? orderDate.toISOString() : new Date().toISOString();
-      const subtotal = orderData.totalAmount; // Use totalAmount as subtotal
-      const tax = orderData.taxAmount;
-      const discount = orderData.discountAmount;
-      const shipping = orderData.shippingAmount;
-      const total = orderData.totalAmount;
-      const notes = orderData.notes || '';
-      const items = JSON.stringify(orderData.items);
-      const shippingAddress = orderData.shippingAddress ? JSON.stringify(orderData.shippingAddress) : null;
-      const billingAddress = orderData.billingAddress ? JSON.stringify(orderData.billingAddress) : null;
-      const metadata = orderData.metadata ? JSON.stringify(orderData.metadata) : '{}';
-      const now = new Date().toISOString();
+      logger.info(`Creating order with date: ${orderDate.toISOString()}`);
       
-      logger.info(`Creating order with date: ${orderDateISO}`);
-      
-      // Execute raw SQL INSERT query using string literal for timestamp
-      const result = await this.db.query(async (db) => db.execute(sql`
-        INSERT INTO ecommerce_orders (
-          id, company_id, user_id, order_number, order_date, status,
-          subtotal, tax, discount, shipping, total, 
-          shipping_address, billing_address, payment_method, 
-          items, notes, created_at, updated_at
-        )
-        VALUES (
-          ${orderId}, ${orderData.companyId}, ${orderData.userId}, ${orderData.orderNumber}, 
-          CURRENT_TIMESTAMP, ${orderData.status},
-          ${subtotal}, ${tax}, ${discount}, ${shipping}, ${total},
-          ${shippingAddress}::jsonb, ${billingAddress}::jsonb, ${orderData.paymentMethod},
-          ${items}::jsonb, ${notes}, ${now}::timestamptz, ${now}::timestamptz
-        )
-        RETURNING *;
-      `));
-      
-      // Get the first row of results which should be our inserted order
-      const order = result.rows[0];
+      // Use Drizzle ORM to insert the order
+      const [order] = await this.db.query(async (db) => {
+        return await db.insert(ecommerceOrders).values({
+          id: orderId,
+          companyId: orderData.companyId,
+          userId: orderData.userId,
+          orderNumber: orderData.orderNumber,
+          orderDate: orderDate,
+          status: orderData.status,
+          subtotal: orderData.totalAmount,
+          tax: orderData.taxAmount,
+          discount: orderData.discountAmount,
+          shipping: orderData.shippingAmount,
+          total: orderData.totalAmount,
+          shippingAddress: orderData.shippingAddress || {},
+          billingAddress: orderData.billingAddress || {},
+          paymentMethod: orderData.paymentMethod,
+          items: orderData.items,
+          notes: orderData.notes || '',
+          metadata: orderData.metadata || {},
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }).returning();
+      });
       
       logger.info(`Created order ${order.orderNumber} with ID ${order.id}`);
       return order;

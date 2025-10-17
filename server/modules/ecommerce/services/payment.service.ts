@@ -6,7 +6,6 @@
  */
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { sql } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import Stripe from 'stripe';
 import { Logger } from '../../../common/logger';
