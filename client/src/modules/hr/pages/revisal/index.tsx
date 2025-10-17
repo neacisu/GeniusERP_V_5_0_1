@@ -109,8 +109,7 @@ const RevisalPage: React.FC = () => {
       if (searchTerm) params.append('search', searchTerm);
       if (filterStatus !== 'all') params.append('status', filterStatus);
       
-      const res = await apiRequest('GET', `/api/hr/revisal/operations?${params.toString()}`);
-      return await res.json();
+      return await apiRequest(`/api/hr/revisal/operations?${params.toString()}`);
     },
   });
   
@@ -118,8 +117,7 @@ const RevisalPage: React.FC = () => {
   const { data: statsResponse } = useQuery({
     queryKey: ['/api/hr/revisal/stats'],
     queryFn: async () => {
-      const res = await apiRequest('GET', '/api/hr/revisal/stats');
-      return await res.json();
+      return await apiRequest('/api/hr/revisal/stats');
     },
   });
   const stats = statsResponse?.data || {
@@ -146,8 +144,7 @@ const RevisalPage: React.FC = () => {
   // File upload mutation
   const uploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      const res = await apiRequest('POST', '/api/hr/revisal/upload', formData);
-      return await res.json();
+      return await apiRequest('/api/hr/revisal/upload', { method: 'POST', body: formData });
     },
     onSuccess: (data) => {
       toast({
@@ -632,8 +629,8 @@ const RevisalPage: React.FC = () => {
                       <PaginationContent>
                         <PaginationItem>
                           <PaginationPrevious 
-                            onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                            disabled={currentPage === 1}
+                            onClick={() => currentPage > 1 ? handlePageChange(Math.max(1, currentPage - 1)) : undefined}
+                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                           />
                         </PaginationItem>
                         
@@ -659,8 +656,8 @@ const RevisalPage: React.FC = () => {
                         
                         <PaginationItem>
                           <PaginationNext 
-                            onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                            disabled={currentPage === totalPages || totalPages === 0}
+                            onClick={() => currentPage < totalPages && totalPages > 0 ? handlePageChange(Math.min(totalPages, currentPage + 1)) : undefined}
+                            className={currentPage === totalPages || totalPages === 0 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                           />
                         </PaginationItem>
                       </PaginationContent>

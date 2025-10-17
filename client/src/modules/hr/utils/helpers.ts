@@ -172,6 +172,15 @@ export function getContractTypeLabel(type: string): string {
 }
 
 /**
+ * Format contract type (alias for getContractTypeLabel for compatibility)
+ * @param type Contract type
+ * @returns Romanian type label
+ */
+export function formatContractType(type: string): string {
+  return getContractTypeLabel(type);
+}
+
+/**
  * Get Romanian label for employee status
  * @param status Employee status
  * @returns Romanian status label

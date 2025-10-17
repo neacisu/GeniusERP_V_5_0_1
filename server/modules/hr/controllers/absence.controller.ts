@@ -84,7 +84,7 @@ export class AbsenceController {
       );
       
       res.status(201).json(result);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error recording absence:', error);
       res.status(400).json({ error: (error as Error).message });
     }
@@ -106,7 +106,7 @@ export class AbsenceController {
       );
       
       res.json(absences);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error retrieving employee absences:', error);
       res.status(500).json({ error: (error as Error).message });
     }
@@ -129,7 +129,7 @@ export class AbsenceController {
       );
       
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error approving absence:', error);
       res.status(400).json({ error: (error as Error).message });
     }
@@ -159,7 +159,7 @@ export class AbsenceController {
       );
       
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error denying absence:', error);
       res.status(400).json({ error: (error as Error).message });
     }
@@ -180,7 +180,7 @@ export class AbsenceController {
       );
       
       res.json(pendingAbsences);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error retrieving pending absences:', error);
       res.status(500).json({ error: (error as Error).message });
     }

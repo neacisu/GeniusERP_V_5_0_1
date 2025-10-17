@@ -149,6 +149,28 @@ export function useHrApi() {
     });
   };
   
+  const useUpdateContract = () => {
+    return useMutation({
+      mutationFn: ({ id, data }: { id: string, data: any }) => 
+        apiRequest(`/api/hr/contracts/${id}`, { method: 'PATCH', data }),
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({ queryKey: ['/api/hr/contracts'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/hr/contracts', variables.id] });
+        toast({
+          title: 'Succes!',
+          description: 'Contract actualizat cu succes.',
+        });
+      },
+      onError: (error: any) => {
+        toast({
+          title: 'Eroare',
+          description: `Nu s-a putut actualiza contractul: ${error.message || 'Eroare necunoscută'}`,
+          variant: 'destructive',
+        });
+      },
+    });
+  };
+  
   // API pentru coduri COR
   const useCorOccupations = (params?: Record<string, any>) => {
     return useQuery({
@@ -427,6 +449,7 @@ export function useHrApi() {
     useContracts,
     useContract,
     useCreateContract,
+    useUpdateContract,
     
     // Absențe
     useAbsences,

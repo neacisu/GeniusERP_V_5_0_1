@@ -8,6 +8,7 @@
  */
 
 import { Router, Response, Request } from 'express';
+import { DepartmentService } from '../services/department.service';
 import { EmployeeService } from '../services/employee.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
@@ -18,13 +19,16 @@ import { Logger } from '../../../common/logger';
 const logger = new Logger('DepartmentController');
 
 export class DepartmentController {
-  constructor(private readonly employeeService: EmployeeService) {}
+  constructor(
+    private readonly departmentService: DepartmentService,
+    private readonly employeeService: EmployeeService
+  ) {}
 
   registerRoutes(router: Router) {
     // Department endpoints
-    router.get('/departments', this.getDepartments.bind(this));
-    router.post('/departments', this.createDepartment.bind(this));
-    router.get('/departments/:id/employees', this.getEmployeesByDepartment.bind(this));
+    router.get('/departments', this.getDepartments.bind(this) as any);
+    router.post('/departments', this.createDepartment.bind(this) as any);
+    router.get('/departments/:id/employees', this.getEmployeesByDepartment.bind(this) as any);
   }
 
   /**
@@ -43,9 +47,9 @@ export class DepartmentController {
         });
       }
       
-      const departments = await this.employeeService.getDepartments(companyId, includeInactive);
+      const departments = await this.departmentService.getDepartments(companyId, includeInactive);
       res.json(departments);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error retrieving departments:', error);
       res.status(500).json({ 
         success: false,
@@ -62,7 +66,11 @@ export class DepartmentController {
     try {
       const { name, description, managerId, parentDepartmentId } = req.body;
       
-      const result = await this.employeeService.createDepartment(
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
+      const result = await this.departmentService.createDepartment(
         req.user.companyId,
         name,
         description,
@@ -72,7 +80,7 @@ export class DepartmentController {
       );
       
       res.status(201).json(result);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating department:', error);
       res.status(400).json({ error: (error as Error).message });
     }
@@ -86,7 +94,7 @@ export class DepartmentController {
       const includeInactive = req.query.includeInactive === 'true';
       const employees = await this.employeeService.getEmployeesByDepartment(req.params.id, includeInactive);
       res.json(employees);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error retrieving department employees:', error);
       res.status(500).json({ error: (error as Error).message });
     }

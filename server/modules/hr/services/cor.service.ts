@@ -51,7 +51,7 @@ export class CorService {
       }
       
       return await query.orderBy(corMajorGroups.code);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching COR major groups:", error);
       throw new Error("Failed to fetch COR major groups");
     }
@@ -73,7 +73,7 @@ export class CorService {
       }
       
       return await query.orderBy(corSubmajorGroups.code);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching COR submajor groups:", error);
       throw new Error("Failed to fetch COR submajor groups");
     }
@@ -95,7 +95,7 @@ export class CorService {
       }
       
       return await query.orderBy(corMinorGroups.code);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching COR minor groups:", error);
       throw new Error("Failed to fetch COR minor groups");
     }
@@ -117,7 +117,7 @@ export class CorService {
       }
       
       return await query.orderBy(corSubminorGroups.code);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching COR subminor groups:", error);
       throw new Error("Failed to fetch COR subminor groups");
     }
@@ -168,7 +168,7 @@ export class CorService {
         limit,
         totalPages: Math.ceil(total / limit)
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching COR occupations:", error);
       throw new Error("Failed to fetch COR occupations");
     }
@@ -185,7 +185,7 @@ export class CorService {
         .limit(1);
       
       return occupation[0] || null;
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error fetching COR occupation with code ${code}:`, error);
       throw new Error(`Failed to fetch COR occupation with code ${code}`);
     }
@@ -212,7 +212,7 @@ export class CorService {
       }
       
       return await query;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error searching COR occupations:", error);
       throw new Error("Failed to search COR occupations");
     }
@@ -231,7 +231,7 @@ export class CorService {
       // Check if it exists in the database
       const occupation = await this.getOccupationByCode(code);
       return !!occupation;
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error validating COR code ${code}:`, error);
       throw new Error(`Failed to validate COR code ${code}`);
     }
@@ -757,7 +757,7 @@ export class CorService {
           minorGroupCode: minorCode
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error ensuring parent groups for ${subminorCode}:`, error);
       throw error;
     }

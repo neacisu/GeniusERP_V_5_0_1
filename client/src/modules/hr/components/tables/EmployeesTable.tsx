@@ -205,7 +205,7 @@ const EmployeesTable: React.FC<EmployeesTableProps> = ({
               </TableCell>
               <TableCell className="hidden md:table-cell">{formatDate(employee.createdAt)}</TableCell>
               <TableCell>
-                <Badge className={getEmployeeStatusColor(employee.isActive)}>
+                <Badge className={getEmployeeStatusColor(employee.isActive ? 'active' : 'inactive')}>
                   {employee.isActive ? 'Activ' : 'Inactiv'}
                 </Badge>
               </TableCell>
@@ -293,9 +293,8 @@ const EmployeesTable: React.FC<EmployeesTableProps> = ({
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious 
-                onClick={() => onPageChange(Math.max(page - 1, 1))}
-                disabled={page === 1}
-                className={page === 1 ? 'pointer-events-none opacity-50' : ''}
+                onClick={() => page > 1 ? onPageChange(Math.max(page - 1, 1)) : undefined}
+                className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
               />
             </PaginationItem>
             
@@ -324,9 +323,8 @@ const EmployeesTable: React.FC<EmployeesTableProps> = ({
             
             <PaginationItem>
               <PaginationNext 
-                onClick={() => onPageChange(Math.min(page + 1, totalPages))}
-                disabled={page === totalPages}
-                className={page === totalPages ? 'pointer-events-none opacity-50' : ''}
+                onClick={() => page < totalPages ? onPageChange(Math.min(page + 1, totalPages)) : undefined}
+                className={page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
               />
             </PaginationItem>
           </PaginationContent>

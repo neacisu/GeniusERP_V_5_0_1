@@ -22,11 +22,11 @@ export class PayrollController {
 
   registerRoutes(router: Router) {
     // Payroll endpoints
-    router.post('/payroll/calculate', this.calculateEmployeePayroll.bind(this));
-    router.post('/payroll/process-company', this.processCompanyPayroll.bind(this));
-    router.get('/payroll/reports/:year/:month', this.getPayrollReport.bind(this));
-    router.get('/payroll/employee/:id', this.getEmployeePayrollHistory.bind(this));
-    router.post('/payroll/export', this.exportPayroll.bind(this));
+    router.post('/payroll/calculate', this.calculateEmployeePayroll.bind(this) as any);
+    router.post('/payroll/process-company', this.processCompanyPayroll.bind(this) as any);
+    router.get('/payroll/reports/:year/:month', this.getPayrollReport.bind(this) as any);
+    router.get('/payroll/employee/:id', this.getEmployeePayrollHistory.bind(this) as any);
+    router.post('/payroll/export', this.exportPayroll.bind(this) as any);
   }
 
   /**
@@ -34,6 +34,10 @@ export class PayrollController {
    */
   async calculateEmployeePayroll(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const { employeeId, year, month } = req.body;
       
       const result = await this.payrollService.calculateEmployeePayroll(
@@ -45,7 +49,7 @@ export class PayrollController {
       );
       
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error calculating payroll:', error);
       res.status(400).json({ error: (error as Error).message });
     }
@@ -56,6 +60,10 @@ export class PayrollController {
    */
   async processCompanyPayroll(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const { year, month } = req.body;
       
       const result = await this.payrollService.processCompanyPayroll(
@@ -66,7 +74,7 @@ export class PayrollController {
       );
       
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error processing company payroll:', error);
       res.status(400).json({ error: (error as Error).message });
     }
@@ -77,16 +85,20 @@ export class PayrollController {
    */
   async getPayrollReport(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const { year, month } = req.params;
       
       const report = await this.payrollService.getPayrollReport(
         req.user.companyId,
         parseInt(year),
-        parseInt(month)
+        month ? parseInt(month) : undefined
       );
       
       res.json(report);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error retrieving payroll report:', error);
       res.status(500).json({ error: (error as Error).message });
     }
@@ -97,15 +109,22 @@ export class PayrollController {
    */
   async getEmployeePayrollHistory(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const employeeId = req.params.id;
+      const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 12;
       
       const history = await this.payrollService.getEmployeePayrollHistory(
         employeeId,
-        req.user.companyId
+        year,
+        limit
       );
       
       res.json(history);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error retrieving employee payroll history:', error);
       res.status(500).json({ error: (error as Error).message });
     }
@@ -116,17 +135,21 @@ export class PayrollController {
    */
   async exportPayroll(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const { year, month, format } = req.body;
       
       const exportData = await this.payrollService.exportPayroll(
         req.user.companyId,
         year,
         month,
-        format || 'excel'
+        format || 'csv'
       );
       
       res.json(exportData);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error exporting payroll:', error);
       res.status(500).json({ error: (error as Error).message });
     }

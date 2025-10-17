@@ -10,18 +10,23 @@
  * - Year-to-date totals
  */
 
-import { getDrizzle } from '../../../common/drizzle';
 import { employees, payrollLogs } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
 import AuditService from '../../audit/services/audit.service';
 import { AuditAction, AuditResourceType } from '../../../common/enums/audit.enum';
 import { sql } from 'drizzle-orm';
+import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 
 export class PayrollService {
-  private db: ReturnType<typeof getDrizzle>;
+  private drizzle: DrizzleService;
 
   constructor() {
-    this.db = getDrizzle();
+    this.drizzle = new DrizzleService();
+  }
+  
+  // Backward compatibility getter
+  private get db() {
+    return this.drizzle.db;
   }
 
   /**
@@ -36,18 +41,18 @@ export class PayrollService {
   async calculateEmployeePayroll(employeeId: string, companyId: string, year: number, month: number, userId: string) {
     try {
       // Get employee details including contract
-      const employee = await this.db.execute(
+      const employee = await this.drizzle.db.execute(
         sql`SELECT e.*, ec.base_salary_gross, ec.contract_type 
             FROM hr_employees e
             JOIN hr_employment_contracts ec ON e.id = ec.employee_id
             WHERE e.id = ${employeeId} AND e.company_id = ${companyId}`
       );
       
-      if (!employee.rows || employee.rows.length === 0) {
+      if (!employee || employee.length === 0) {
         throw new Error('Employee not found');
       }
 
-      const employeeData = employee.rows[0];
+      const employeeData = employee[0];
       const grossSalary = parseFloat(employeeData.base_salary_gross);
       
       // Calculate Romanian tax values
@@ -74,7 +79,7 @@ export class PayrollService {
       
       // Create payroll record
       const payrollId = uuidv4();
-      await this.db.execute(
+      await this.drizzle.db.execute(
         sql`INSERT INTO hr_payroll_logs (
           id, company_id, employee_id, year, month, 
           gross_total, cas_employee_amount, cass_employee_amount, 
@@ -113,7 +118,7 @@ export class PayrollService {
         netSalary,
         status: 'calculated'
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error calculating payroll:', error);
       throw new Error(`Failed to calculate payroll: ${error.message}`);
     }
@@ -130,7 +135,7 @@ export class PayrollService {
   async processCompanyPayroll(companyId: string, year: number, month: number, userId: string) {
     try {
       // Get all active employees with valid contracts
-      const activeEmployees = await this.db.execute(
+      const activeEmployees = await this.drizzle.db.execute(
         sql`SELECT e.id 
             FROM hr_employees e
             JOIN hr_employment_contracts ec ON e.id = ec.employee_id
@@ -139,14 +144,14 @@ export class PayrollService {
             AND ec.status = 'active'`
       );
       
-      if (!activeEmployees.rows || activeEmployees.rows.length === 0) {
+      if (!activeEmployees || activeEmployees.length === 0) {
         return { processed: 0, message: 'No active employees found' };
       }
       
       const results = [];
       
       // Process each employee's payroll
-      for (const employee of activeEmployees.rows) {
+      for (const employee of activeEmployees) {
         try {
           const payrollResult = await this.calculateEmployeePayroll(
             employee.id, 
@@ -164,10 +169,10 @@ export class PayrollService {
       
       return {
         processed: results.length,
-        total: activeEmployees.rows.length,
+        total: activeEmployees.length,
         results
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error processing company payroll:', error);
       throw new Error(`Failed to process company payroll: ${error.message}`);
     }
@@ -181,20 +186,20 @@ export class PayrollService {
    */
   async approvePayroll(payrollId: string, userId: string) {
     try {
-      const payroll = await this.db.execute(
+      const payroll = await this.drizzle.db.execute(
         sql`SELECT * FROM hr_payroll_logs WHERE id = ${payrollId}`
       );
       
-      if (!payroll.rows || payroll.rows.length === 0) {
+      if (!payroll || payroll.length === 0) {
         throw new Error('Payroll record not found');
       }
       
-      if (payroll.rows[0].status !== 'calculated') {
-        throw new Error(`Cannot approve payroll in ${payroll.rows[0].status} status`);
+      if (payroll[0].status !== 'calculated') {
+        throw new Error(`Cannot approve payroll in ${payroll[0].status} status`);
       }
       
       // Update the payroll status
-      await this.db.execute(
+      await this.drizzle.db.execute(
         sql`UPDATE hr_payroll_logs
             SET status = 'approved', 
                 approved_by = ${userId}, 
@@ -207,7 +212,7 @@ export class PayrollService {
       // Audit the approval
       await AuditService.log({
         userId,
-        companyId: payroll.rows[0].company_id,
+        companyId: payroll[0].company_id,
         action: AuditAction.UPDATE,
         entity: 'PAYROLL',
         entityId: payrollId,
@@ -222,7 +227,7 @@ export class PayrollService {
         status: 'approved',
         message: 'Payroll approved successfully'
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error approving payroll:', error);
       throw new Error(`Failed to approve payroll: ${error.message}`);
     }
@@ -268,10 +273,10 @@ export class PayrollService {
         `;
       }
       
-      const payrollRecords = await this.db.execute(querySQL);
+      const payrollRecords = await this.drizzle.db.execute(querySQL);
       
-      return payrollRecords.rows || [];
-    } catch (error) {
+      return payrollRecords || [];
+    } catch (error: any) {
       console.error('Error retrieving employee payroll:', error);
       throw new Error(`Failed to retrieve employee payroll: ${(error as Error).message}`);
     }
@@ -306,9 +311,9 @@ export class PayrollService {
         params.push(month);
       }
       
-      const summary = await this.db.query(query, params);
+      const summary = await this.drizzle.executeQuery(query, params);
       
-      if (!summary.rows || summary.rows.length === 0) {
+      if (!summary || summary.length === 0) {
         return {
           employeeCount: 0,
           totalGross: 0,
@@ -321,17 +326,180 @@ export class PayrollService {
       }
       
       return {
-        employeeCount: parseInt(summary.rows[0].employee_count) || 0,
-        totalGross: parseFloat(summary.rows[0].total_gross) || 0,
-        totalNet: parseFloat(summary.rows[0].total_net) || 0,
-        totalCasEmployee: parseFloat(summary.rows[0].total_cas_employee) || 0,
-        totalCassEmployee: parseFloat(summary.rows[0].total_cass_employee) || 0,
-        totalIncomeTax: parseFloat(summary.rows[0].total_income_tax) || 0,
-        totalCamEmployer: parseFloat(summary.rows[0].total_cam_employer) || 0
+        employeeCount: parseInt(summary[0].employee_count) || 0,
+        totalGross: parseFloat(summary[0].total_gross) || 0,
+        totalNet: parseFloat(summary[0].total_net) || 0,
+        totalCasEmployee: parseFloat(summary[0].total_cas_employee) || 0,
+        totalCassEmployee: parseFloat(summary[0].total_cass_employee) || 0,
+        totalIncomeTax: parseFloat(summary[0].total_income_tax) || 0,
+        totalCamEmployer: parseFloat(summary[0].total_cam_employer) || 0
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error retrieving company payroll summary:', error);
-      throw new Error(`Failed to retrieve company payroll summary: ${error.message}`);
+      throw new Error(`Failed to retrieve company payroll summary: ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Get payroll report for a company
+   * 
+   * @param companyId Company ID
+   * @param year Year for report
+   * @param month Month for report (optional)
+   */
+  async getPayrollReport(companyId: string, year: number, month?: number) {
+    try {
+      // Get detailed payroll data
+      let query = `
+        SELECT 
+          pl.*,
+          e.first_name,
+          e.last_name,
+          e.cnp,
+          ec.contract_number,
+          ec.position
+        FROM hr_payroll_logs pl
+        JOIN hr_employees e ON pl.employee_id = e.id
+        LEFT JOIN hr_employment_contracts ec ON pl.employment_contract_id = ec.id
+        WHERE pl.company_id = $1 AND pl.year = $2
+      `;
+      
+      const params: any[] = [companyId, year];
+      
+      if (month) {
+        query += ` AND pl.month = $${params.length + 1}`;
+        params.push(month);
+      }
+      
+      query += ` ORDER BY e.last_name, e.first_name, pl.month`;
+      
+      const payrollData = await this.drizzle.executeQuery(query, params);
+      
+      // Get summary data
+      const summary = await this.getCompanyPayrollSummary(companyId, year, month);
+      
+      return {
+        payrollData: payrollData || [],
+        summary,
+        year,
+        month: month || null,
+        generatedAt: new Date()
+      };
+    } catch (error: any) {
+      console.error('Error generating payroll report:', error);
+      throw new Error(`Failed to generate payroll report: ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Get employee payroll history
+   * Alias for getEmployeePayroll for backward compatibility
+   * 
+   * @param employeeId Employee ID
+   * @param year Year (optional)
+   * @param limit Limit of records to return
+   */
+  async getEmployeePayrollHistory(employeeId: string, year?: number, limit: number = 12) {
+    try {
+      let query = `
+        SELECT 
+          pl.*,
+          e.first_name,
+          e.last_name,
+          ec.contract_number
+        FROM hr_payroll_logs pl
+        JOIN hr_employees e ON pl.employee_id = e.id
+        LEFT JOIN hr_employment_contracts ec ON pl.employment_contract_id = ec.id
+        WHERE pl.employee_id = $1
+      `;
+      
+      const params: any[] = [employeeId];
+      
+      if (year) {
+        query += ` AND pl.year = $${params.length + 1}`;
+        params.push(year);
+      }
+      
+      query += ` ORDER BY pl.year DESC, pl.month DESC LIMIT $${params.length + 1}`;
+      params.push(limit);
+      
+      const history = await this.drizzle.executeQuery(query, params);
+      
+      return history || [];
+    } catch (error: any) {
+      console.error('Error retrieving employee payroll history:', error);
+      throw new Error(`Failed to retrieve employee payroll history: ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Export payroll data to CSV or Excel format
+   * 
+   * @param companyId Company ID
+   * @param year Year for export
+   * @param month Month for export (optional)
+   * @param format Export format ('csv' or 'excel')
+   */
+  async exportPayroll(
+    companyId: string,
+    year: number,
+    month?: number,
+    format: 'csv' | 'excel' = 'csv'
+  ) {
+    try {
+      // Get the payroll report data
+      const reportData = await this.getPayrollReport(companyId, year, month);
+      
+      if (format === 'csv') {
+        // Generate CSV content
+        const headers = [
+          'CNP',
+          'Nume',
+          'Prenume',
+          'Luna',
+          'An',
+          'Salariu Brut',
+          'CAS',
+          'CASS',
+          'Impozit',
+          'Salariu Net',
+          'Status'
+        ].join(',');
+        
+        const rows = reportData.payrollData.map((record: any) => {
+          return [
+            record.cnp,
+            record.last_name,
+            record.first_name,
+            record.month,
+            record.year,
+            record.gross_total,
+            record.cas_employee_amount,
+            record.cass_employee_amount,
+            record.income_tax_amount,
+            record.net_salary,
+            record.status
+          ].join(',');
+        });
+        
+        const csvContent = [headers, ...rows].join('\n');
+        
+        return {
+          content: csvContent,
+          filename: `payroll_${year}_${month || 'all'}.csv`,
+          mimeType: 'text/csv'
+        };
+      } else {
+        // For Excel, return JSON that can be processed by a library like xlsx
+        return {
+          content: JSON.stringify(reportData.payrollData, null, 2),
+          filename: `payroll_${year}_${month || 'all'}.json`,
+          mimeType: 'application/json'
+        };
+      }
+    } catch (error: any) {
+      console.error('Error exporting payroll:', error);
+      throw new Error(`Failed to export payroll: ${(error as Error).message}`);
     }
   }
 }

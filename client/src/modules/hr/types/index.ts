@@ -28,7 +28,16 @@ export interface Employee {
   updatedAt: string;
 }
 
-// Employment Contract
+// Employment Contract Status Enum
+export enum EmploymentContractStatus {
+  DRAFT = 'draft',
+  ACTIVE = 'active',
+  SUSPENDED = 'suspended',
+  TERMINATED = 'terminated',
+  TRANSFERRED = 'transferred'
+}
+
+// Employment Contract (alias pentru compatibility)
 export interface Contract {
   id: string;
   employeeId: string;
@@ -45,6 +54,43 @@ export interface Contract {
   notes?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// Employment Contract (complete schema matching DB)
+export interface EmploymentContract {
+  id: string;
+  employeeId: string;
+  companyId: string;
+  contractNumber: string;
+  revisalId?: string;
+  contractType: string;
+  durationType: string;
+  status: string;
+  startDate: string;
+  endDate?: string;
+  isIndefinite: boolean;
+  suspendedFrom?: string;
+  suspendedUntil?: string;
+  terminationDate?: string;
+  terminationReason?: string;
+  workingTime?: string;
+  workingHoursPerDay: string | number;
+  workingHoursPerWeek: string | number;
+  baseSalaryGross: string | number;
+  currency: string;
+  paymentInterval: string;
+  caenCode?: string;
+  corCode: string;
+  annualLeaveEntitlement?: number;
+  isTelemuncaPossible?: boolean;
+  hasCompetitionClause?: boolean;
+  hasConfidentialityClause?: boolean;
+  contractFilePath?: string;
+  annexesFilePaths?: any[];
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string;
+  updatedBy?: string;
 }
 
 // Department entity

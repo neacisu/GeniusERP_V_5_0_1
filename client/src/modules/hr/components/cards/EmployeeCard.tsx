@@ -70,7 +70,7 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({
               </div>
             </div>
           </div>
-          <Badge className={getEmployeeStatusColor(employee.isActive)}>
+          <Badge className={getEmployeeStatusColor(employee.isActive ? 'active' : 'inactive')}>
             {employee.isActive ? 'Activ' : 'Inactiv'}
           </Badge>
         </div>

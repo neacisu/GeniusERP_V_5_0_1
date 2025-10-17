@@ -7,22 +7,27 @@
  * - Employee-department associations
  */
 
-import { getDrizzle } from '../../../common/drizzle';
 import { employees, departments } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditService } from '../../audit/services/audit.service';
 import { AuditAction, AuditResourceType } from '../../../common/enums/audit.enum';
 import { eq, sql, asc, desc } from 'drizzle-orm';
 import { Logger } from '../../../common/logger';
+import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 
 export class DepartmentService {
-  private db: any;
+  private drizzle: DrizzleService;
   private auditService: AuditService;
   private logger = new Logger('DepartmentService');
 
   constructor() {
-    this.db = getDrizzle();
+    this.drizzle = new DrizzleService();
     this.auditService = new AuditService();
+  }
+  
+  // Backward compatibility getter
+  private get db() {
+    return this.drizzle.db;
   }
 
   /**
@@ -82,7 +87,7 @@ export class DepartmentService {
       });
 
       return department[0];
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to create department:', error);
       throw error;
     }
@@ -125,7 +130,7 @@ export class DepartmentService {
       });
 
       return rootDepartments;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to get departments:', error);
       throw error;
     }
@@ -149,7 +154,7 @@ export class DepartmentService {
         .execute();
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to get employees by department:', error);
       throw error;
     }
@@ -242,7 +247,7 @@ export class DepartmentService {
       });
 
       return updated[0];
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to update department:', error);
       throw error;
     }
@@ -262,7 +267,7 @@ export class DepartmentService {
         .execute();
 
       return result.length > 0 ? result[0] : null;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to get department by ID:', error);
       throw error;
     }
@@ -321,7 +326,7 @@ export class DepartmentService {
       });
 
       return updated[0];
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to change department manager:', error);
       throw error;
     }
@@ -391,7 +396,7 @@ export class DepartmentService {
       });
 
       return updated[0];
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to deactivate department:', error);
       throw error;
     }

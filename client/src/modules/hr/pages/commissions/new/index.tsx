@@ -21,8 +21,7 @@ const NewCommissionPage: React.FC = () => {
   const { data: rules } = useQuery({
     queryKey: ['/api/hr/commissions/rules'],
     queryFn: async () => {
-      const res = await apiRequest('GET', '/api/hr/commissions/rules');
-      return await res.json();
+      return await apiRequest('/api/hr/commissions/rules');
     },
   });
 

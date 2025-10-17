@@ -32,7 +32,7 @@ import { users, companies } from "../../../../shared/schema";
  * Employee table - Core HR data 
  * Contains basic employee information and references employment contracts
  */
-export const employees = pgTable("hr_employees", {
+export const employees: any = pgTable("hr_employees", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   userId: uuid("user_id").references(() => users.id),
@@ -61,8 +61,8 @@ export const employees = pgTable("hr_employees", {
   // Basic Employment Info
   position: text("position").notNull(),
   department: text("department"),
-  departmentId: uuid("department_id").references(() => departments.id),
-  managerEmployeeId: uuid("manager_employee_id").references(() => employees.id),
+  departmentId: uuid("department_id").references((): any => departments.id),
+  managerEmployeeId: uuid("manager_employee_id").references((): any => employees.id),
   
   // Status
   isActive: boolean("is_active").default(true),
@@ -396,7 +396,7 @@ export const employeeCommissions = pgTable("hr_employee_commissions", {
  * 
  * Organizational structure definition for HR reporting
  */
-export const departments = pgTable("hr_departments", {
+export const departments: any = pgTable("hr_departments", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   
@@ -406,10 +406,10 @@ export const departments = pgTable("hr_departments", {
   description: text("description"),
   
   // Hierarchy
-  parentDepartmentId: uuid("parent_department_id").references(() => departments.id),
+  parentDepartmentId: uuid("parent_department_id").references((): any => departments.id),
   
   // Management
-  managerId: uuid("manager_id").references(() => employees.id),
+  managerId: uuid("manager_id").references((): any => employees.id),
   
   // Budget Code
   costCenter: varchar("cost_center", { length: 50 }),

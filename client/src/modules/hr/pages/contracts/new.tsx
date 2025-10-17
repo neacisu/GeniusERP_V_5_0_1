@@ -27,14 +27,21 @@ const NewContractPage: React.FC = () => {
   // Create mutation for new contract
   const { 
     mutate: createContract, 
-    isLoading: isCreatingContract,
+    isPending: isCreatingContract,
     isError,
     error
   } = useCreateContract();
   
   // Handle form submission
-  const handleSubmit = (data: Partial<EmploymentContract>) => {
-    createContract(data, {
+  const handleSubmit = (data: any) => {
+    // Convert Date to string if needed
+    const contractData = {
+      ...data,
+      startDate: data.startDate instanceof Date ? data.startDate.toISOString() : data.startDate,
+      endDate: data.endDate instanceof Date ? data.endDate.toISOString() : data.endDate,
+    };
+    
+    createContract(contractData, {
       onSuccess: (response) => {
         if (response.success && response.data) {
           // Navigate to contract details page
@@ -64,7 +71,7 @@ const NewContractPage: React.FC = () => {
         )}
         
         <ContractForm 
-          employeeId={employeeId || undefined}
+          initialEmployeeId={employeeId}
           onSubmit={handleSubmit}
           isSubmitting={isCreatingContract}
         />

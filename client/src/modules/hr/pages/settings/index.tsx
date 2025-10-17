@@ -73,7 +73,7 @@ const HrSettingsPage: React.FC = () => {
   const settings = settingsResponse?.data || {};
   
   // Update settings mutation
-  const { mutate: updateSettings, isLoading: isUpdating } = useUpdateHrSettings();
+  const { mutate: updateSettings, isPending: isUpdating } = useUpdateHrSettings();
   
   // General settings form schema
   const generalFormSchema = z.object({
@@ -95,11 +95,11 @@ const HrSettingsPage: React.FC = () => {
   
   // HR specific settings schema
   const hrFormSchema = z.object({
-    defaultProbationPeriod: z.coerce.number().min(0, "Perioada de probă trebuie să fie un număr pozitiv"),
-    defaultWorkingHours: z.coerce.number().min(0, "Orele de lucru trebuie să fie un număr pozitiv"),
-    defaultVacationDays: z.coerce.number().min(0, "Zilele de concediu trebuie să fie un număr pozitiv"),
-    defaultSickDays: z.coerce.number().min(0, "Zilele medicale trebuie să fie un număr pozitiv"),
-    defaultNoticePeriod: z.coerce.number().min(0, "Perioada de preaviz trebuie să fie un număr pozitiv"),
+    defaultProbationPeriod: z.number().min(0, "Perioada de probă trebuie să fie un număr pozitiv"),
+    defaultWorkingHours: z.number().min(0, "Orele de lucru trebuie să fie un număr pozitiv"),
+    defaultVacationDays: z.number().min(0, "Zilele de concediu trebuie să fie un număr pozitiv"),
+    defaultSickDays: z.number().min(0, "Zilele medicale trebuie să fie un număr pozitiv"),
+    defaultNoticePeriod: z.number().min(0, "Perioada de preaviz trebuie să fie un număr pozitiv"),
     enableAutoCalculateVacationDays: z.boolean(),
     enableAutoCalculateSeniority: z.boolean(),
     enableContractNotifications: z.boolean(),

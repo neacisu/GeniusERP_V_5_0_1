@@ -45,7 +45,7 @@ router.get('/settings',
   async (req: Request, res: Response) => {
     try {
       await SettingsService.getSettings(req, res);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in settings endpoint:", error);
       res.status(500).json({
         success: false,
@@ -61,7 +61,7 @@ router.put('/settings/:id',
   async (req: Request, res: Response) => {
     try {
       await SettingsService.updateSettings(req, res);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in settings update endpoint:", error);
       res.status(500).json({
         success: false,
@@ -94,7 +94,7 @@ router.post('/employees/draft',
         data: savedDraft,
         message: "Ciorna angajatului a fost salvată cu succes"
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving employee draft:", error);
       res.status(500).json({
         success: false,
@@ -126,7 +126,7 @@ router.post('/documents/generate-compliance',
         data: documents,
         message: "Documentele au fost generate cu succes"
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating compliance documents:", error);
       res.status(500).json({
         success: false,
@@ -173,7 +173,7 @@ router.post('/documents/upload',
         },
         message: "Documentul a fost încărcat cu succes"
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error uploading document:", error);
       res.status(500).json({
         success: false,
@@ -195,7 +195,7 @@ router.get('/holidays',
         data: holidays,
         message: "Zilele de sărbătoare legală au fost obținute cu succes"
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching Romanian holidays:", error);
       res.status(500).json({
         success: false,

@@ -19,7 +19,7 @@ const dbWithTables = {
         try {
           const result = await db.select().from(hrSettings).where(where).limit(1);
           return result[0] || null;
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error querying hrSettings:", error);
           return null;
         }
@@ -30,7 +30,7 @@ const dbWithTables = {
         try {
           const result = await db.select().from(companies).where(where).limit(1);
           return result[0] || null;
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error querying companies:", error);
           return null;
         }
@@ -83,9 +83,16 @@ export class SettingsService {
           enableContractNotifications: true,
           enableBirthdayNotifications: true,
           anafIntegrationEnabled: false,
+          anafApiKey: null,
+          anafUsername: null,
+          anafPassword: null,
           revisalIntegrationEnabled: false,
+          revisalApiKey: null,
+          revisalUsername: null,
           sendgridEnabled: false,
+          sendgridApiKey: null,
           stripeEnabled: false,
+          stripeApiKey: null,
           createdAt: new Date(),
           updatedAt: new Date(),
           
@@ -96,22 +103,22 @@ export class SettingsService {
           address: company?.address || '',
           city: company?.city || '',
           county: company?.county || '',
-          postalCode: company?.postalCode || '',
+          postalCode: (company as any)?.postalCode || null,
           country: company?.country || 'România',
           phone: company?.phone || '',
           email: company?.email || '',
-          website: company?.website || '',
-          contactPerson: company?.contactPerson || '',
-          contactEmail: company?.contactEmail || '',
-          contactPhone: company?.contactPhone || '',
-        };
+          website: (company as any)?.website || null,
+          contactPerson: (company as any)?.contactPerson || null,
+          contactEmail: (company as any)?.contactEmail || null,
+          contactPhone: (company as any)?.contactPhone || null,
+        } as any;
       }
       
       return res.status(200).json({
         success: true,
         data: settings,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error getting HR settings:', error);
       return res.status(500).json({
         error: 'Failed to get HR settings',
@@ -168,7 +175,7 @@ export class SettingsService {
         success: true,
         data: result[0],
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating HR settings:', error);
       return res.status(500).json({
         error: 'Failed to update HR settings',

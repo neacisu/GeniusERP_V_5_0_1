@@ -25,35 +25,35 @@ export class EmployeeController {
     router.get('/employees', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-      this.searchEmployees.bind(this)
+      this.searchEmployees.bind(this) as any
     );
     
     // Employee creation endpoint (simple version)
     router.post('/employee', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-      this.createSimpleEmployee.bind(this)
+      this.createSimpleEmployee.bind(this) as any
     );
     
     // Employee details by ID
     router.get('/employees/:id', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-      this.getEmployeeById.bind(this)
+      this.getEmployeeById.bind(this) as any
     );
     
     // Comprehensive employee creation endpoint
     router.post('/employees', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-      this.createEmployee.bind(this)
+      this.createEmployee.bind(this) as any
     );
     
     // Employee update endpoint
     router.put('/employees/:id', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-      this.updateEmployee.bind(this)
+      this.updateEmployee.bind(this) as any
     );
   }
 
@@ -62,6 +62,10 @@ export class EmployeeController {
    */
   async searchEmployees(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
       const { 
         search, 
         departmentId, 
@@ -92,7 +96,7 @@ export class EmployeeController {
         success: true,
         data: result
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error searching employees:', error);
       res.status(500).json({ 
         success: false,
@@ -107,6 +111,10 @@ export class EmployeeController {
    */
   async createSimpleEmployee(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
       const { 
         name, 
         email, 
@@ -179,7 +187,7 @@ export class EmployeeController {
         success: true,
         data: employee
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating employee:', error);
       return res.status(500).json({ 
         success: false, 
@@ -194,13 +202,17 @@ export class EmployeeController {
    */
   async getEmployeeById(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
       const employee = await this.employeeService.getEmployeeById(req.params.id);
       
       res.json({
         success: true,
         data: employee
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error getting employee:', error);
       res.status(404).json({ 
         success: false,
@@ -215,6 +227,10 @@ export class EmployeeController {
    */
   async createEmployee(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
       const { 
         firstName, lastName, email, phone, position, 
         departmentId, cnp, address, birthDate, hireDate, data 
@@ -257,7 +273,7 @@ export class EmployeeController {
         success: true,
         data: result
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating employee:', error);
       res.status(400).json({ 
         success: false,
@@ -272,6 +288,10 @@ export class EmployeeController {
    */
   async updateEmployee(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
       if (!req.params.id) {
         return res.status(400).json({ 
           success: false, 
@@ -298,7 +318,7 @@ export class EmployeeController {
         success: true,
         data: result
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating employee:', error);
       res.status(400).json({ 
         success: false,

@@ -24,19 +24,19 @@ export class ContractController {
     router.post('/contracts', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-      this.createContract.bind(this)
+      this.createContract.bind(this) as any
     );
     
     router.get('/contracts/:employeeId', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-      this.getContractsByEmployeeId.bind(this)
+      this.getContractsByEmployeeId.bind(this) as any
     );
     
     router.put('/contracts/:id', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-      this.updateContract.bind(this)
+      this.updateContract.bind(this) as any
     );
   }
 
@@ -45,6 +45,10 @@ export class ContractController {
    */
   async createContract(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
       const { 
         employeeId, contractNumber, contractType, startDate, endDate,
         baseSalaryGross, workingTime, corCode, annualVacationDays,
@@ -87,7 +91,7 @@ export class ContractController {
         success: true,
         data: result
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating employment contract:', error);
       res.status(400).json({ 
         success: false,
@@ -102,6 +106,10 @@ export class ContractController {
    */
   async getContractsByEmployeeId(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
       if (!req.params.employeeId) {
         return res.status(400).json({ 
           success: false, 
@@ -115,7 +123,7 @@ export class ContractController {
         success: true,
         data: contracts
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error retrieving employment contracts:', error);
       res.status(500).json({ 
         success: false,
@@ -130,6 +138,10 @@ export class ContractController {
    */
   async updateContract(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
       if (!req.params.id) {
         return res.status(400).json({ 
           success: false, 
@@ -166,7 +178,7 @@ export class ContractController {
         success: true,
         data: result
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating employment contract:', error);
       res.status(400).json({ 
         success: false,

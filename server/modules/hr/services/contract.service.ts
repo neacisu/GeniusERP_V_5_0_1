@@ -7,13 +7,13 @@
  * - Contract status management
  */
 
-import { getDrizzle } from '../../../common/drizzle';
 import { employees, employmentContracts } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditService } from '../../audit/services/audit.service';
 import { AuditAction, AuditResourceType } from '../../../common/enums/audit.enum';
 import { eq, sql, asc, desc } from 'drizzle-orm';
 import { Logger } from '../../../common/logger';
+import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 
 export enum EmploymentContractType {
   STANDARD = 'standard',
@@ -33,13 +33,18 @@ export enum EmploymentContractStatus {
 }
 
 export class ContractService {
-  private db: any;
+  private drizzle: DrizzleService;
   private auditService: AuditService;
   private logger = new Logger('ContractService');
 
   constructor() {
-    this.db = getDrizzle();
+    this.drizzle = new DrizzleService();
     this.auditService = new AuditService();
+  }
+  
+  // Backward compatibility getter
+  private get db() {
+    return this.drizzle.db;
   }
 
   /**
@@ -66,7 +71,7 @@ export class ContractService {
   ) {
     try {
       // Validate employee exists and belongs to the company
-      const employee = await this.db.select()
+      const employee = await this.drizzle.db.select()
         .from(employees)
         .where(sql`${employees.id} = ${employeeId} AND ${employees.companyId} = ${companyId}`)
         .execute();
@@ -76,7 +81,7 @@ export class ContractService {
       }
 
       // Check if employee already has an active contract
-      const activeContract = await this.db.select()
+      const activeContract = await this.drizzle.db.select()
         .from(employmentContracts)
         .where(sql`
           ${employmentContracts.employeeId} = ${employeeId} AND 
@@ -86,7 +91,7 @@ export class ContractService {
 
       if (activeContract && activeContract.length > 0) {
         // Automatically set previous active contract to terminated
-        await this.db.update(employmentContracts)
+        await this.drizzle.db.update(employmentContracts)
           .set({
             status: EmploymentContractStatus.TERMINATED,
             updatedAt: new Date(),
@@ -110,7 +115,7 @@ export class ContractService {
       }
 
       // Create the new contract
-      const contract = await this.db.insert(employmentContracts)
+      const contract = await this.drizzle.db.insert(employmentContracts)
         .values({
           id: uuidv4(),
           employeeId,
@@ -145,7 +150,7 @@ export class ContractService {
       });
 
       return contract[0];
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to create employment contract:', error);
       throw error;
     }
@@ -162,7 +167,7 @@ export class ContractService {
   ) {
     try {
       // Fetch current contract for audit
-      const currentContract = await this.db.select()
+      const currentContract = await this.drizzle.db.select()
         .from(employmentContracts)
         .where(sql`
           ${employmentContracts.id} = ${contractId} AND
@@ -187,7 +192,7 @@ export class ContractService {
       }
 
       // Update the contract
-      const updated = await this.db.update(employmentContracts)
+      const updated = await this.drizzle.db.update(employmentContracts)
         .set(updateData)
         .where(sql`${employmentContracts.id} = ${contractId}`)
         .returning()
@@ -209,7 +214,7 @@ export class ContractService {
       });
 
       return updated[0];
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to update employment contract:', error);
       throw error;
     }
@@ -220,7 +225,7 @@ export class ContractService {
    */
   async getActiveEmploymentContract(employeeId: string) {
     try {
-      const contracts = await this.db.select()
+      const contracts = await this.drizzle.db.select()
         .from(employmentContracts)
         .where(sql`
           ${employmentContracts.employeeId} = ${employeeId} AND
@@ -231,7 +236,7 @@ export class ContractService {
         .execute();
 
       return contracts.length > 0 ? contracts[0] : null;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to get active employment contract:', error);
       throw error;
     }
@@ -242,14 +247,14 @@ export class ContractService {
    */
   async getEmploymentContractHistory(employeeId: string) {
     try {
-      const result = await this.db.select()
+      const result = await this.drizzle.db.select()
         .from(employmentContracts)
         .where(sql`${employmentContracts.employeeId} = ${employeeId}`)
         .orderBy(desc(employmentContracts.startDate))
         .execute();
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to get employment contract history:', error);
       throw error;
     }
@@ -267,7 +272,7 @@ export class ContractService {
   ) {
     try {
       // Validate the contract
-      const contract = await this.db.select()
+      const contract = await this.drizzle.db.select()
         .from(employmentContracts)
         .where(sql`
           ${employmentContracts.id} = ${contractId} AND
@@ -281,7 +286,7 @@ export class ContractService {
       }
 
       // Update contract status and add termination details
-      const updated = await this.db.update(employmentContracts)
+      const updated = await this.drizzle.db.update(employmentContracts)
         .set({
           status: EmploymentContractStatus.TERMINATED,
           endDate: terminationDate,
@@ -315,7 +320,7 @@ export class ContractService {
       });
 
       return updated[0];
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to terminate contract:', error);
       throw error;
     }
@@ -334,7 +339,7 @@ export class ContractService {
   ) {
     try {
       // Validate the contract
-      const contract = await this.db.select()
+      const contract = await this.drizzle.db.select()
         .from(employmentContracts)
         .where(sql`
           ${employmentContracts.id} = ${contractId} AND
@@ -348,7 +353,7 @@ export class ContractService {
       }
 
       // Update contract status and add suspension details
-      const updated = await this.db.update(employmentContracts)
+      const updated = await this.drizzle.db.update(employmentContracts)
         .set({
           status: EmploymentContractStatus.SUSPENDED,
           suspensionDate,
@@ -380,7 +385,7 @@ export class ContractService {
       });
 
       return updated[0];
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to suspend contract:', error);
       throw error;
     }
@@ -398,7 +403,7 @@ export class ContractService {
   ) {
     try {
       // Validate the contract
-      const contract = await this.db.select()
+      const contract = await this.drizzle.db.select()
         .from(employmentContracts)
         .where(sql`
           ${employmentContracts.id} = ${contractId} AND
@@ -412,7 +417,7 @@ export class ContractService {
       }
 
       // Update contract status and add reactivation details
-      const updated = await this.db.update(employmentContracts)
+      const updated = await this.drizzle.db.update(employmentContracts)
         .set({
           status: EmploymentContractStatus.ACTIVE,
           suspensionEndDate: reactivationDate,
@@ -442,7 +447,7 @@ export class ContractService {
       });
 
       return updated[0];
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to reactivate contract:', error);
       throw error;
     }
@@ -453,7 +458,7 @@ export class ContractService {
    */
   async getContractById(contractId: string, companyId: string) {
     try {
-      const contracts = await this.db.select()
+      const contracts = await this.drizzle.db.select()
         .from(employmentContracts)
         .where(sql`
           ${employmentContracts.id} = ${contractId} AND
@@ -462,7 +467,7 @@ export class ContractService {
         .execute();
 
       return contracts.length > 0 ? contracts[0] : null;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to get contract by ID:', error);
       throw error;
     }

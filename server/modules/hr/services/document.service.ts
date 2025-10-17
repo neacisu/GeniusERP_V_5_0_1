@@ -102,7 +102,7 @@ export class HrDocumentService {
       });
       
       return newDraft[0];
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error saving employee draft: ${(error as Error).message}`, error);
       throw error;
     }
@@ -205,7 +205,7 @@ Documentul este valabil doar cu semnătură și ștampilă.`;
       });
 
       return generatedDocs;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error generating compliance documents: ${(error as Error).message}`, error);
       throw error;
     }
@@ -260,7 +260,7 @@ Documentul este valabil doar cu semnătură și ștampilă.`;
       });
 
       return savedDoc[0];
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error saving employee document: ${(error as Error).message}`, error);
       throw error;
     }
@@ -282,7 +282,7 @@ Documentul este valabil doar cu semnătură și ștampilă.`;
         .orderBy(hrDocuments.uploadedAt);
       
       return documents;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error getting employee documents: ${(error as Error).message}`, error);
       throw error;
     }

@@ -22,17 +22,17 @@ export class CommissionController {
 
   registerRoutes(router: Router) {
     // Commission endpoints
-    router.post('/commissions/structures', this.createCommissionStructure.bind(this));
-    router.put('/commissions/structures/:id', this.updateCommissionStructure.bind(this));
-    router.get('/commissions/structures', this.getCommissionStructures.bind(this));
-    router.post('/commissions/calculate', this.calculateCommission.bind(this));
-    router.post('/commissions', this.createCommission.bind(this));
-    router.get('/commissions', this.getCommissions.bind(this));
-    router.put('/commissions/:id/approve', this.approveCommission.bind(this));
-    router.put('/commissions/:id/mark-paid', this.markCommissionPaid.bind(this));
-    router.get('/commissions/employee/:id', this.getEmployeeCommissions.bind(this));
-    router.get('/commissions/summary', this.getCommissionSummary.bind(this));
-    router.get('/commissions/:id', this.getCommissionById.bind(this));
+    router.post('/commissions/structures', this.createCommissionStructure.bind(this) as any);
+    router.put('/commissions/structures/:id', this.updateCommissionStructure.bind(this) as any);
+    router.get('/commissions/structures', this.getCommissionStructures.bind(this) as any);
+    router.post('/commissions/calculate', this.calculateCommission.bind(this) as any);
+    router.post('/commissions', this.createCommission.bind(this) as any);
+    router.get('/commissions', this.getCommissions.bind(this) as any);
+    router.put('/commissions/:id/approve', this.approveCommission.bind(this) as any);
+    router.put('/commissions/:id/mark-paid', this.markCommissionPaid.bind(this) as any);
+    router.get('/commissions/employee/:id', this.getEmployeeCommissions.bind(this) as any);
+    router.get('/commissions/summary', this.getCommissionSummary.bind(this) as any);
+    router.get('/commissions/:id', this.getCommissionById.bind(this) as any);
   }
 
   /**
@@ -40,6 +40,10 @@ export class CommissionController {
    */
   async createCommissionStructure(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const { name, type, rules, isActive } = req.body;
       
       if (!name || !type || !rules) {
@@ -52,6 +56,7 @@ export class CommissionController {
       const result = await this.commissionService.createCommissionStructure(
         req.user.companyId,
         name,
+        '', // description
         type,
         rules,
         isActive !== false,
@@ -59,7 +64,7 @@ export class CommissionController {
       );
       
       res.status(201).json(result);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating commission structure:', error);
       res.status(400).json({ error: (error as Error).message });
     }
@@ -70,6 +75,10 @@ export class CommissionController {
    */
   async updateCommissionStructure(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const result = await this.commissionService.updateCommissionStructure(
         req.params.id,
         req.body,
@@ -77,7 +86,7 @@ export class CommissionController {
       );
       
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error updating commission structure:', error);
       res.status(400).json({ error: (error as Error).message });
     }
@@ -88,6 +97,10 @@ export class CommissionController {
    */
   async getCommissionStructures(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const includeInactive = req.query.includeInactive === 'true';
       
       const structures = await this.commissionService.getCommissionStructures(
@@ -96,7 +109,7 @@ export class CommissionController {
       );
       
       res.json(structures);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error retrieving commission structures:', error);
       res.status(500).json({ error: (error as Error).message });
     }
@@ -107,25 +120,32 @@ export class CommissionController {
    */
   async calculateCommission(req: AuthenticatedRequest, res: Response) {
     try {
-      const { employeeId, period, sales } = req.body;
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
       
-      if (!employeeId || !period) {
+      const { employeeId, structureId, saleAmount, saleId, saleType, metadata = {} } = req.body;
+      
+      if (!employeeId || !structureId || !saleAmount) {
         return res.status(400).json({ 
           success: false, 
-          message: 'Employee ID and period are required' 
+          message: 'Employee ID, structure ID, and sale amount are required' 
         });
       }
       
       const result = await this.commissionService.calculateCommission(
-        req.user.companyId,
         employeeId,
-        period,
-        sales,
+        req.user.companyId,
+        structureId,
+        saleAmount,
+        saleId || '',
+        saleType || 'sale',
+        metadata,
         req.user.id
       );
       
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error calculating commission:', error);
       res.status(400).json({ error: (error as Error).message });
     }
@@ -136,13 +156,17 @@ export class CommissionController {
    */
   async approveCommission(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const result = await this.commissionService.approveCommission(
         req.params.id,
         req.user.id
       );
       
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error approving commission:', error);
       res.status(400).json({ error: (error as Error).message });
     }
@@ -153,17 +177,20 @@ export class CommissionController {
    */
   async markCommissionPaid(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const { paymentDate, paymentReference } = req.body;
       
-      const result = await this.commissionService.markCommissionPaid(
+      const result = await this.commissionService.markCommissionAsPaid(
         req.params.id,
-        paymentDate ? new Date(paymentDate) : new Date(),
         paymentReference,
         req.user.id
       );
       
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error marking commission as paid:', error);
       res.status(400).json({ error: (error as Error).message });
     }
@@ -174,16 +201,19 @@ export class CommissionController {
    */
   async getEmployeeCommissions(req: AuthenticatedRequest, res: Response) {
     try {
-      const year = req.query.year ? parseInt(req.query.year as string) : null;
+      const status = req.query.status as any; // CommissionStatus or undefined
+      const timeframe = req.query.timeframe as 'month' | 'quarter' | 'year' | undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       
       const commissions = await this.commissionService.getEmployeeCommissions(
-        req.user.companyId,
-        req.params.id,
-        year
+        req.params.id, // employeeId
+        status,
+        timeframe,
+        limit
       );
       
       res.json(commissions);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error retrieving employee commissions:', error);
       res.status(500).json({ error: (error as Error).message });
     }
@@ -194,8 +224,12 @@ export class CommissionController {
    */
   async getCommissionSummary(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
-      const month = req.query.month ? parseInt(req.query.month as string) : null;
+      const month = req.query.month ? parseInt(req.query.month as string) : undefined;
       
       const summary = await this.commissionService.getCommissionSummary(
         req.user.companyId,
@@ -204,7 +238,7 @@ export class CommissionController {
       );
       
       res.json(summary);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error retrieving commission summary:', error);
       res.status(500).json({ error: (error as Error).message });
     }
@@ -215,6 +249,10 @@ export class CommissionController {
    */
   async createCommission(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const { 
         employeeId, 
         structureId, 
@@ -253,7 +291,7 @@ export class CommissionController {
         success: true,
         data: result
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error creating commission:', error);
       res.status(400).json({ 
         success: false,
@@ -267,6 +305,10 @@ export class CommissionController {
    */
   async getCommissions(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const year = req.query.year ? parseInt(req.query.year as string) : null;
       const month = req.query.month ? parseInt(req.query.month as string) : null;
       const status = req.query.status as string || null;
@@ -280,7 +322,7 @@ export class CommissionController {
       );
       
       res.json(commissions);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error retrieving commissions:', error);
       res.status(500).json({ error: (error as Error).message });
     }
@@ -291,6 +333,10 @@ export class CommissionController {
    */
   async getCommissionById(req: AuthenticatedRequest, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const commissionId = req.params.id;
       
       const commission = await this.commissionService.getCommissionById(
@@ -306,7 +352,7 @@ export class CommissionController {
       }
       
       res.json(commission);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error retrieving commission by ID:', error);
       res.status(500).json({ error: (error as Error).message });
     }

@@ -102,7 +102,7 @@ export class EmployeeService {
           if (existingEmployee.length > 0) {
             throw new Error('Employee with the same CNP already exists');
           }
-        } catch (validationError) {
+        } catch (validationError: any) {
           console.warn('[WARN] CNP validation failed:', validationError.message);
           // Continue with the default CNP value
         }
@@ -126,7 +126,7 @@ export class EmployeeService {
             console.warn(`Invalid birthDate format: ${birthDate}, using undefined`);
             birthDateObj = undefined;
           }
-        } catch (error) {
+        } catch (error: any) {
           console.warn(`Error parsing birthDate: ${error.message}`);
           birthDateObj = undefined;
         }
@@ -148,7 +148,7 @@ export class EmployeeService {
             console.warn(`Invalid hireDate format: ${hireDate}, using current date`);
             hireDateObj = new Date();
           }
-        } catch (error) {
+        } catch (error: any) {
           console.warn(`Error parsing hireDate: ${error.message}`);
           hireDateObj = new Date();
         }
@@ -207,7 +207,7 @@ export class EmployeeService {
         RETURNING *
       `;
       
-      const result = await this.drizzle.execute(sqlQuery);
+      const result = await this.drizzle.db.execute(sqlQuery);
       
       const createdEmployee = result[0];
       
@@ -226,7 +226,7 @@ export class EmployeeService {
       });
       
       return createdEmployee;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating employee:', error);
       throw new Error(`Failed to create employee: ${error.message}`);
     }
@@ -323,7 +323,7 @@ export class EmployeeService {
             if (!isNaN(hireDateObj.getTime())) {
               formattedHireDate = hireDateObj.toISOString();
             }
-          } catch (error) {
+          } catch (error: any) {
             // If date parsing fails, use current date
             this.logger.warn(`Invalid hire date format: ${hireDate}, using current date`);
           }
@@ -364,7 +364,7 @@ export class EmployeeService {
         RETURNING *
       `;
       
-      const result = await this.drizzle.execute(sqlQuery);
+      const result = await this.drizzle.db.execute(sqlQuery);
       
       if (!result || result.length === 0) {
         throw new Error('No result returned from employee insertion');
@@ -407,7 +407,7 @@ export class EmployeeService {
         updatedAt: result[0].updated_at,
         isActive: result[0].is_active
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Error creating employee:', error);
       
       // Provide more specific error information
@@ -466,7 +466,7 @@ export class EmployeeService {
       this.validateRomanianCorCode(corCode);
       
       // Check if employee exists using Drizzle
-      const employee = await this.drizzle.select()
+      const employee = await this.drizzle.db.select()
         .from(employees)
         .where(sql`${employees.id} = ${employeeId} AND ${employees.companyId} = ${companyId}`)
         .limit(1);
@@ -476,7 +476,7 @@ export class EmployeeService {
       }
       
       // Check if there is already an active contract using Drizzle and sql template for the status column
-      const activeContract = await this.drizzle.select()
+      const activeContract = await this.drizzle.db.select()
         .from(employmentContracts)
         .where(sql`${employmentContracts.employeeId} = ${employeeId} AND status = ${EmploymentContractStatus.ACTIVE}`)
         .limit(1);
@@ -498,7 +498,7 @@ export class EmployeeService {
         } else {
           startDateObj = startDate;
         }
-      } catch (error) {
+      } catch (error: any) {
         console.warn(`Error parsing startDate: ${error.message}, using current date`);
         startDateObj = new Date();
       }
@@ -516,7 +516,7 @@ export class EmployeeService {
           } else {
             endDateObj = endDate;
           }
-        } catch (error) {
+        } catch (error: any) {
           console.warn(`Error parsing endDate: ${error.message}, using null`);
           endDateObj = null;
         }
@@ -582,7 +582,7 @@ export class EmployeeService {
         RETURNING *
       `;
       
-      const result = await this.drizzle.execute(sqlQuery);
+      const result = await this.drizzle.db.execute(sqlQuery);
       
       const createdContract = result[0];
       
@@ -609,7 +609,7 @@ export class EmployeeService {
         startDate: startDateObj,
         status: EmploymentContractStatus.ACTIVE
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating employment contract:', error);
       throw new Error(`Failed to create employment contract: ${error.message}`);
     }
@@ -714,7 +714,7 @@ export class EmployeeService {
   ) {
     try {
       // Get the current employee
-      const currentEmployee = await this.drizzle.select()
+      const currentEmployee = await this.drizzle.db.select()
         .from(employees)
         .where(sql`${employees.id} = ${employeeId}`)
         .limit(1);
@@ -766,7 +766,7 @@ export class EmployeeService {
       }
       
       // Execute the update with Drizzle
-      const result = await this.drizzle.update(employees)
+      const result = await this.drizzle.db.update(employees)
         .set(updateValues)
         .where(sql`${employees.id} = ${employeeId}`)
         .returning();
@@ -785,7 +785,7 @@ export class EmployeeService {
       });
       
       return result[0];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating employee:', error);
       throw new Error(`Failed to update employee: ${error.message}`);
     }
@@ -814,7 +814,7 @@ export class EmployeeService {
   ) {
     try {
       // Get the current contract using Drizzle
-      const currentContract = await this.drizzle.select()
+      const currentContract = await this.drizzle.db.select()
         .from(employmentContracts)
         .where(sql`${employmentContracts.id} = ${contractId}`)
         .limit(1);
@@ -843,7 +843,7 @@ export class EmployeeService {
             } else {
               endDateObj = updates.endDate;
             }
-          } catch (error) {
+          } catch (error: any) {
             console.warn(`Error parsing endDate in update: ${error.message}, using null`);
             endDateObj = null;
           }
@@ -887,7 +887,7 @@ export class EmployeeService {
             } else {
               terminationDateObj = updates.terminationDate;
             }
-          } catch (error) {
+          } catch (error: any) {
             console.warn(`Error parsing terminationDate in update: ${error.message}, using null`);
             terminationDateObj = null;
           }
@@ -901,7 +901,7 @@ export class EmployeeService {
       }
       
       // Execute the update with Drizzle
-      const result = await this.drizzle.update(employmentContracts)
+      const result = await this.drizzle.db.update(employmentContracts)
         .set(updateValues)
         .where(sql`${employmentContracts.id} = ${contractId}`)
         .returning();
@@ -920,7 +920,7 @@ export class EmployeeService {
       });
       
       return result[0];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating employment contract:', error);
       throw new Error(`Failed to update employment contract: ${error.message}`);
     }
@@ -944,7 +944,7 @@ export class EmployeeService {
         LIMIT 1
       `;
       
-      const result = await this.drizzle.execute(employeeQuery);
+      const result = await this.drizzle.db.execute(employeeQuery);
       
       if (!result || result.length === 0) {
         throw new Error('Employee not found');
@@ -958,7 +958,7 @@ export class EmployeeService {
           WHERE name = ${result[0].department} 
           LIMIT 1
         `;
-        const deptResult = await this.drizzle.execute(deptQuery);
+        const deptResult = await this.drizzle.db.execute(deptQuery);
         if (deptResult && deptResult.length > 0) {
           departmentName = deptResult[0].name;
         }
@@ -982,7 +982,7 @@ export class EmployeeService {
       };
       
       return employee;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error retrieving employee:', error);
       throw new Error(`Failed to retrieve employee: ${error.message}`);
     }
@@ -996,7 +996,7 @@ export class EmployeeService {
   async getActiveEmploymentContract(employeeId: string) {
     try {
       // Use Drizzle ORM to select active contract
-      const result = await this.drizzle.select()
+      const result = await this.drizzle.db.select()
         .from(employmentContracts)
         .where(sql`${employmentContracts.employeeId} = ${employeeId} AND status = ${EmploymentContractStatus.ACTIVE}`)
         .limit(1);
@@ -1006,7 +1006,7 @@ export class EmployeeService {
       }
       
       return result[0];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error retrieving active employment contract:', error);
       throw new Error(`Failed to retrieve active employment contract: ${error.message}`);
     }
@@ -1020,13 +1020,13 @@ export class EmployeeService {
   async getEmploymentContractHistory(employeeId: string) {
     try {
       // Use Drizzle ORM to select all contracts for the employee, ordered by start date
-      const result = await this.drizzle.select()
+      const result = await this.drizzle.db.select()
         .from(employmentContracts)
         .where(sql`${employmentContracts.employeeId} = ${employeeId}`)
         .orderBy(desc(employmentContracts.startDate));
       
       return result || [];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error retrieving employment contract history:', error);
       throw new Error(`Failed to retrieve employment contract history: ${error.message}`);
     }
@@ -1076,7 +1076,7 @@ export class EmployeeService {
       // Filter by department if provided
       if (departmentId) {
         // Get the department name from the departments table
-        const deptResult = await this.drizzle.execute(
+        const deptResult = await this.drizzle.db.execute(
           sql`SELECT name FROM hr_departments WHERE id = ${departmentId}`
         );
         
@@ -1124,7 +1124,7 @@ export class EmployeeService {
         finalCountQuery = sql`${finalCountQuery} AND e.is_active = ${isActive}`;
       }
       
-      const countResult = await this.drizzle.execute(finalCountQuery);
+      const countResult = await this.drizzle.db.execute(finalCountQuery);
       const totalCount = parseInt(countResult[0]?.total_count || '0', 10);
       
       // Add sorting and pagination
@@ -1134,7 +1134,7 @@ export class EmployeeService {
       `;
       
       // Execute the main query
-      const result = await this.drizzle.execute(fullQuery);
+      const result = await this.drizzle.db.execute(fullQuery);
       
       return {
         employees: result || [],
@@ -1145,7 +1145,7 @@ export class EmployeeService {
           totalPages: Math.ceil(totalCount / limit)
         }
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error searching employees:', error);
       throw new Error(`Failed to search employees: ${error.message}`);
     }
@@ -1171,7 +1171,7 @@ export class EmployeeService {
   ) {
     try {
       // Check if department name already exists using Drizzle
-      const existingDepartment = await this.drizzle.select()
+      const existingDepartment = await this.drizzle.db.select()
         .from(departments)
         .where(sql`${departments.companyId} = ${companyId} AND ${departments.name} = ${name}`)
         .limit(1);
@@ -1181,7 +1181,7 @@ export class EmployeeService {
       }
       
       // Create department record using Drizzle
-      const result = await this.drizzle.insert(departments).values({
+      const result = await this.drizzle.db.insert(departments).values({
         companyId,
         name,
         description,
@@ -1217,7 +1217,7 @@ export class EmployeeService {
         managerId,
         parentDepartmentId
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating department:', error);
       throw new Error(`Failed to create department: ${error.message}`);
     }
@@ -1248,10 +1248,10 @@ export class EmployeeService {
       `;
       
       // Execute the query
-      const result = await this.drizzle.execute(query);
+      const result = await this.drizzle.db.execute(query);
       
       return result || [];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error retrieving departments:', error);
       throw new Error(`Failed to retrieve departments: ${error.message}`);
     }
@@ -1266,7 +1266,7 @@ export class EmployeeService {
   async getEmployeesByDepartment(departmentId: string, includeInactive: boolean = false) {
     try {
       // First get the department name from the departments table
-      const deptResult = await this.drizzle.execute(
+      const deptResult = await this.drizzle.db.execute(
         sql`SELECT name FROM hr_departments WHERE id = ${departmentId}`
       );
       
@@ -1294,10 +1294,10 @@ export class EmployeeService {
         ORDER BY e.last_name ASC, e.first_name ASC
       `;
       
-      const result = await this.drizzle.execute(fullQuery);
+      const result = await this.drizzle.db.execute(fullQuery);
       
       return result || [];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error retrieving employees by department:', error);
       throw new Error(`Failed to retrieve employees by department: ${error.message}`);
     }

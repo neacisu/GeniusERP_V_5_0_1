@@ -312,9 +312,8 @@ const ContractsTable: React.FC<ContractsTableProps> = ({
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious 
-                onClick={() => onPageChange(Math.max(page - 1, 1))}
-                disabled={page === 1}
-                className={page === 1 ? 'pointer-events-none opacity-50' : ''}
+                onClick={() => page > 1 ? onPageChange(Math.max(page - 1, 1)) : undefined}
+                className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
               />
             </PaginationItem>
             
@@ -343,9 +342,8 @@ const ContractsTable: React.FC<ContractsTableProps> = ({
             
             <PaginationItem>
               <PaginationNext 
-                onClick={() => onPageChange(Math.min(page + 1, totalPages))}
-                disabled={page === totalPages}
-                className={page === totalPages ? 'pointer-events-none opacity-50' : ''}
+                onClick={() => page < totalPages ? onPageChange(Math.min(page + 1, totalPages)) : undefined}
+                className={page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
               />
             </PaginationItem>
           </PaginationContent>

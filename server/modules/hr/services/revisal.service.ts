@@ -6,7 +6,7 @@
  * that tracks all employment contracts and their changes.
  */
 
-import { getDrizzle } from '../../../common/drizzle';
+import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 import { employees, employmentContracts, revisalExportLogs } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditService } from '../../audit/services/audit.service';
@@ -28,12 +28,17 @@ export enum RevisalExportStatus {
 }
 
 export class RevisalService {
-  private db: any;
+  private drizzle: DrizzleService;
   private auditService: AuditService;
 
   constructor() {
-    this.db = getDrizzle();
+    this.drizzle = new DrizzleService();
     this.auditService = new AuditService();
+  }
+  
+  // Backward compatibility getter
+  private get db() {
+    return this.drizzle.db;
   }
 
   /**
@@ -68,15 +73,15 @@ export class RevisalService {
         params.push(...employeeIds);
       }
       
-      const employees = await this.db.query(query, params);
+      const employees = await this.drizzle.executeQuery(query, params);
       
-      if (!employees.rows || employees.rows.length === 0) {
+      if (!employees || employees.length === 0) {
         throw new Error('No employees found for REVISAL export');
       }
       
       // Create an export log entry
       const exportId = uuidv4();
-      const exportLog = await this.db.query(
+      const exportLog = await this.drizzle.executeQuery(
         `INSERT INTO hr_revisal_export_logs (
           id, company_id, export_type, employee_count, status,
           created_by
@@ -85,7 +90,7 @@ export class RevisalService {
           $6
         ) RETURNING *`,
         [
-          exportId, companyId, exportType, employees.rows.length, RevisalExportStatus.PENDING,
+          exportId, companyId, exportType, employees.length, RevisalExportStatus.PENDING,
           userId
         ]
       );
@@ -99,15 +104,15 @@ export class RevisalService {
         metadata: {
           companyId,
           exportType,
-          employeeCount: employees.rows.length
+          employeeCount: employees.length
         }
       });
       
       // Generate the REVISAL XML content
-      const revisalXml = this.generateRevisalXmlContent(employees.rows, exportType);
+      const revisalXml = this.generateRevisalXmlContent(employees, exportType);
       
       // Update the export log with the XML content
-      await this.db.query(
+      await this.drizzle.executeQuery(
         `UPDATE hr_revisal_export_logs
          SET revisal_xml = $1, status = $2, completed_at = NOW(), updated_by = $3, updated_at = NOW()
          WHERE id = $4`,
@@ -129,16 +134,16 @@ export class RevisalService {
       return {
         id: exportId,
         exportType,
-        employeeCount: employees.rows.length,
+        employeeCount: employees.length,
         status: RevisalExportStatus.COMPLETED,
         revisalXml
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating REVISAL export:', error);
       
       // If we've already created an export log, update it to failed
       if (error.exportId) {
-        await this.db.query(
+        await this.drizzle.executeQuery(
           `UPDATE hr_revisal_export_logs
            SET status = $1, error_message = $2, updated_by = $3, updated_at = NOW()
            WHERE id = $4`,
@@ -310,7 +315,7 @@ export class RevisalService {
    */
   async getRevisalExportLogs(companyId: string, limit: number = 50) {
     try {
-      const logs = await this.db.query(
+      const logs = await this.drizzle.executeQuery(
         `SELECT * FROM hr_revisal_export_logs
          WHERE company_id = $1
          ORDER BY created_at DESC
@@ -318,10 +323,10 @@ export class RevisalService {
         [companyId, limit]
       );
       
-      return logs.rows || [];
-    } catch (error) {
+      return logs || [];
+    } catch (error: any) {
       console.error('Error retrieving REVISAL export logs:', error);
-      throw new Error(`Failed to retrieve REVISAL export logs: ${error.message}`);
+      throw new Error(`Failed to retrieve REVISAL export logs: ${(error as Error).message}`);
     }
   }
 
@@ -332,20 +337,183 @@ export class RevisalService {
    */
   async getRevisalExportById(exportId: string) {
     try {
-      const log = await this.db.query(
-        `SELECT * FROM hr_revisal_export_logs
-         WHERE id = $1`,
+      const log = await this.drizzle.executeQuery(
+        `SELECT * FROM hr_revisal_export_logs WHERE id = $1`,
         [exportId]
       );
       
-      if (!log.rows || log.rows.length === 0) {
+      if (!log || log.length === 0) {
         throw new Error('REVISAL export log not found');
       }
       
-      return log.rows[0];
-    } catch (error) {
+      return log[0];
+    } catch (error: any) {
       console.error('Error retrieving REVISAL export log:', error);
-      throw new Error(`Failed to retrieve REVISAL export log: ${error.message}`);
+      throw new Error(`Failed to retrieve REVISAL export log: ${(error as Error).message}`);
     }
+  }
+
+  /**
+   * Validate REVISAL XML content
+   * 
+   * @param xmlContent XML content to validate
+   * @returns Validation result
+   */
+  async validateRevisalXml(xmlContent: string): Promise<{ valid: boolean; errors: string[] }> {
+    const errors: string[] = [];
+    
+    try {
+      // Basic XML structure validation
+      if (!xmlContent.includes('<?xml')) {
+        errors.push('Missing XML declaration');
+      }
+      
+      if (!xmlContent.includes('<revisal')) {
+        errors.push('Missing root <revisal> element');
+      }
+      
+      if (!xmlContent.includes('<header>')) {
+        errors.push('Missing <header> section');
+      }
+      
+      if (!xmlContent.includes('<angajator>')) {
+        errors.push('Missing <angajator> section');
+      }
+      
+      if (!xmlContent.includes('<salariati>')) {
+        errors.push('Missing <salariati> section');
+      }
+      
+      // Validate required fields in header
+      if (!xmlContent.includes('<data_export>')) {
+        errors.push('Missing export date in header');
+      }
+      
+      // Validate employee data
+      if (!xmlContent.includes('<cnp>')) {
+        errors.push('Missing CNP data for employees');
+      }
+      
+      return {
+        valid: errors.length === 0,
+        errors
+      };
+    } catch (error: any) {
+      errors.push(`Validation error: ${(error as Error).message}`);
+      return {
+        valid: false,
+        errors
+      };
+    }
+  }
+
+  /**
+   * Log a REVISAL submission
+   * 
+   * @param exportId Export log ID
+   * @param submissionData Submission details
+   * @param userId User ID performing the submission
+   */
+  async logRevisalSubmission(
+    exportId: string,
+    submissionData: {
+      status: string;
+      registrationNumber?: string;
+      submissionResponse?: string;
+    },
+    userId: string
+  ) {
+    try {
+      await this.drizzle.executeQuery(
+        `UPDATE hr_revisal_export_logs
+         SET submission_status = $1, 
+             registration_number = $2,
+             submission_date = NOW(),
+             updated_by = $3,
+             updated_at = NOW()
+         WHERE id = $4`,
+        [
+          submissionData.status,
+          submissionData.registrationNumber || null,
+          userId,
+          exportId
+        ]
+      );
+      
+      // Audit the submission
+      await this.auditService.logAction({
+        userId,
+        action: AuditAction.UPDATE,
+        resourceType: AuditResourceType.REVISAL_EXPORT,
+        resourceId: exportId,
+        metadata: {
+          submissionStatus: submissionData.status,
+          registrationNumber: submissionData.registrationNumber
+        }
+      });
+      
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error logging REVISAL submission:', error);
+      throw new Error(`Failed to log REVISAL submission: ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Get REVISAL logs for a company with optional filters
+   * 
+   * @param companyId Company ID
+   * @param filters Optional filters (status, dateFrom, dateTo)
+   * @param limit Optional limit of records
+   */
+  async getRevisalLogs(
+    companyId: string,
+    filters?: {
+      status?: string;
+      dateFrom?: Date;
+      dateTo?: Date;
+    },
+    limit: number = 50
+  ) {
+    try {
+      let query = `
+        SELECT * FROM hr_revisal_export_logs
+        WHERE company_id = $1
+      `;
+      const params: any[] = [companyId];
+      let paramIndex = 2;
+      
+      if (filters?.status) {
+        query += ` AND submission_status = $${paramIndex++}`;
+        params.push(filters.status);
+      }
+      
+      if (filters?.dateFrom) {
+        query += ` AND export_date >= $${paramIndex++}`;
+        params.push(filters.dateFrom);
+      }
+      
+      if (filters?.dateTo) {
+        query += ` AND export_date <= $${paramIndex++}`;
+        params.push(filters.dateTo);
+      }
+      
+      query += ` ORDER BY export_date DESC LIMIT $${paramIndex}`;
+      params.push(limit);
+      
+      const logs = await this.drizzle.executeQuery(query, params);
+      
+      return logs || [];
+    } catch (error: any) {
+      console.error('Error retrieving REVISAL logs:', error);
+      throw new Error(`Failed to retrieve REVISAL logs: ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Alias for getRevisalExportById to match controller usage
+   */
+  async getRevisalLogById(exportId: string) {
+    return this.getRevisalExportById(exportId);
   }
 }

@@ -72,11 +72,9 @@ const CommissionsPage: React.FC = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ['/api/hr/commissions', page, pageSize, statusFilter, monthFilter],
     queryFn: async () => {
-      const res = await apiRequest(
-        'GET',
+      return await apiRequest(
         `/api/hr/commissions?page=${page}&limit=${pageSize}&status=${statusFilter}&month=${monthFilter}`
       );
-      return await res.json();
     },
   });
 
@@ -84,8 +82,7 @@ const CommissionsPage: React.FC = () => {
   const { data: statsData, isLoading: isLoadingStats } = useQuery({
     queryKey: ['/api/hr/commissions/stats'],
     queryFn: async () => {
-      const res = await apiRequest('GET', '/api/hr/commissions/stats');
-      return await res.json();
+      return await apiRequest('/api/hr/commissions/stats');
     },
   });
 

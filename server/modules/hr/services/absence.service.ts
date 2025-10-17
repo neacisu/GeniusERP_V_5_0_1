@@ -154,7 +154,7 @@ export class AbsenceService {
         totalDays,
         status: AbsenceStatus.REQUESTED
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error requesting absence:', error);
       throw new Error(`Failed to request absence: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -250,7 +250,7 @@ export class AbsenceService {
         message: approved ? 'Absence approved successfully' : 'Absence rejected',
         comment
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error reviewing absence:', error);
       throw new Error(`Failed to review absence: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -305,7 +305,7 @@ export class AbsenceService {
         message: 'Absence cancelled successfully',
         reason
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error cancelling absence:', error);
       throw new Error(`Failed to cancel absence: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -351,7 +351,7 @@ export class AbsenceService {
       const absences = await this.db.query(query, params);
       
       return absences.rows || [];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error retrieving employee absences:', error);
       throw new Error(`Failed to retrieve employee absences: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -399,7 +399,7 @@ export class AbsenceService {
         usedVacationDays,
         remainingVacationDays: totalVacationDays - usedVacationDays
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error calculating remaining vacation days:', error);
       throw new Error(`Failed to calculate remaining vacation days: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -431,7 +431,7 @@ export class AbsenceService {
       );
       
       return absences.rows || [];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error retrieving upcoming company absences:', error);
       throw new Error(`Failed to retrieve upcoming company absences: ${error instanceof Error ? error.message : String(error)}`);
     }

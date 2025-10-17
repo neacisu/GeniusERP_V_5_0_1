@@ -5,11 +5,12 @@
  * It supports Romanian-specific commission structures and integrates with invoicing.
  */
 
-import { getDrizzle } from '../../../common/drizzle';
 import { commissionStructures, employeeCommissions } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditService } from '../../audit/services/audit.service';
 import { AuditAction, AuditResourceType } from '../../../common/enums/audit.enum';
+import { sql } from 'drizzle-orm';
+import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 
 export enum CommissionType {
   FIXED = 'fixed',                   // Fixed amount per sale
@@ -28,12 +29,17 @@ export enum CommissionStatus {
 }
 
 export class CommissionService {
-  private db: any;
+  private drizzle: DrizzleService;
   private auditService: AuditService;
 
   constructor() {
-    this.db = getDrizzle();
+    this.drizzle = new DrizzleService();
     this.auditService = new AuditService();
+  }
+  
+  // Backward compatibility getter
+  private get db() {
+    return this.drizzle.db;
   }
   
   /**
@@ -45,7 +51,7 @@ export class CommissionService {
    */
   async getCommissionById(companyId: string, commissionId: string) {
     try {
-      const commission = await this.db.query(
+      const commission = await this.db.execute(
         `SELECT 
           c.*,
           e.first_name as employee_first_name,
@@ -64,7 +70,7 @@ export class CommissionService {
       }
       
       return commission.rows[0];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error retrieving commission by ID:', error);
       throw new Error(`Failed to retrieve commission: ${error.message}`);
     }
@@ -99,7 +105,7 @@ export class CommissionService {
         WHERE c.company_id = $1
       `;
       
-      const params = [companyId];
+      const params: any[] = [companyId];
       let paramIndex = 2;
       
       // Add year filter if provided
@@ -123,10 +129,10 @@ export class CommissionService {
       // Order by newest first
       query += ` ORDER BY c.created_at DESC`;
       
-      const commissions = await this.db.query(query, params);
+      const commissions = await this.drizzle.executeQuery(query, params);
       
       return commissions.rows || [];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error retrieving company commissions:', error);
       throw new Error(`Failed to retrieve commissions: ${error.message}`);
     }
@@ -158,7 +164,7 @@ export class CommissionService {
       
       // Create commission structure
       const structureId = uuidv4();
-      await this.db.query(
+      await this.db.execute(
         `INSERT INTO hr_commission_structures (
           id, company_id, name, description, type, 
           configuration, is_active, created_by
@@ -192,7 +198,7 @@ export class CommissionService {
         type,
         isActive
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating commission structure:', error);
       throw new Error(`Failed to create commission structure: ${error.message}`);
     }
@@ -312,7 +318,7 @@ export class CommissionService {
   ) {
     try {
       // Get the current structure
-      const currentStructure = await this.db.query(
+      const currentStructure = await this.db.execute(
         `SELECT * FROM hr_commission_structures WHERE id = $1`,
         [structureId]
       );
@@ -329,7 +335,7 @@ export class CommissionService {
       
       // Build update query
       let updateQuery = 'UPDATE hr_commission_structures SET updated_by = $1, updated_at = NOW()';
-      const params = [userId];
+      const params: any[] = [userId];
       let paramIndex = 2;
       
       if (updates.name !== undefined) {
@@ -361,7 +367,7 @@ export class CommissionService {
       params.push(structureId);
       
       // Execute the update
-      await this.db.query(updateQuery, params);
+      await this.db.execute(updateQuery, params);
       
       // Audit the update
       await this.auditService.logAction({
@@ -376,13 +382,13 @@ export class CommissionService {
       });
       
       // Get and return the updated structure
-      const updated = await this.db.query(
+      const updated = await this.db.execute(
         `SELECT * FROM hr_commission_structures WHERE id = $1`,
         [structureId]
       );
       
       return updated.rows[0];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating commission structure:', error);
       throw new Error(`Failed to update commission structure: ${error.message}`);
     }
@@ -412,7 +418,7 @@ export class CommissionService {
   ) {
     try {
       // Get the commission structure
-      const structure = await this.db.query(
+      const structure = await this.db.execute(
         `SELECT * FROM hr_commission_structures WHERE id = $1 AND company_id = $2`,
         [structureId, companyId]
       );
@@ -436,7 +442,7 @@ export class CommissionService {
       
       // Create commission record
       const commissionId = uuidv4();
-      await this.db.query(
+      await this.db.execute(
         `INSERT INTO hr_employee_commissions (
           id, company_id, employee_id, structure_id,
           sale_amount, commission_amount, sale_id, sale_type,
@@ -476,7 +482,7 @@ export class CommissionService {
         commissionAmount,
         status: CommissionStatus.CALCULATED
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error calculating commission:', error);
       throw new Error(`Failed to calculate commission: ${error.message}`);
     }
@@ -587,7 +593,7 @@ export class CommissionService {
    */
   async approveCommission(commissionId: string, userId: string) {
     try {
-      const commission = await this.db.query(
+      const commission = await this.db.execute(
         `SELECT * FROM hr_employee_commissions WHERE id = $1`,
         [commissionId]
       );
@@ -601,7 +607,7 @@ export class CommissionService {
       }
       
       // Update the commission status
-      await this.db.query(
+      await this.db.execute(
         `UPDATE hr_employee_commissions
          SET status = $1, approved_by = $2, approved_at = NOW(), updated_by = $2, updated_at = NOW()
          WHERE id = $3`,
@@ -625,7 +631,7 @@ export class CommissionService {
         status: CommissionStatus.APPROVED,
         message: 'Commission approved successfully'
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error approving commission:', error);
       throw new Error(`Failed to approve commission: ${error.message}`);
     }
@@ -640,7 +646,7 @@ export class CommissionService {
    */
   async markCommissionAsPaid(commissionId: string, paymentReference: string, userId: string) {
     try {
-      const commission = await this.db.query(
+      const commission = await this.db.execute(
         `SELECT * FROM hr_employee_commissions WHERE id = $1`,
         [commissionId]
       );
@@ -654,7 +660,7 @@ export class CommissionService {
       }
       
       // Update the commission status
-      await this.db.query(
+      await this.db.execute(
         `UPDATE hr_employee_commissions
          SET status = $1, payment_reference = $2, payment_date = NOW(), updated_by = $3, updated_at = NOW()
          WHERE id = $4`,
@@ -680,7 +686,7 @@ export class CommissionService {
         paymentReference,
         message: 'Commission marked as paid successfully'
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error marking commission as paid:', error);
       throw new Error(`Failed to mark commission as paid: ${error.message}`);
     }
@@ -708,7 +714,7 @@ export class CommissionService {
         WHERE ec.employee_id = $1
       `;
       
-      const params = [employeeId];
+      const params: any[] = [employeeId];
       
       if (status) {
         query += ` AND ec.status = $${params.length + 1}`;
@@ -735,10 +741,10 @@ export class CommissionService {
       query += ` ORDER BY ec.created_at DESC LIMIT $${params.length + 1}`;
       params.push(limit);
       
-      const commissions = await this.db.query(query, params);
+      const commissions = await this.drizzle.executeQuery(query, params);
       
       return commissions.rows || [];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error retrieving employee commissions:', error);
       throw new Error(`Failed to retrieve employee commissions: ${error.message}`);
     }
@@ -753,7 +759,7 @@ export class CommissionService {
   async getCommissionStructures(companyId: string, activeOnly: boolean = false) {
     try {
       let query = `SELECT * FROM hr_commission_structures WHERE company_id = $1`;
-      const params = [companyId];
+      const params: any[] = [companyId];
       
       if (activeOnly) {
         query += ` AND is_active = true`;
@@ -761,10 +767,10 @@ export class CommissionService {
       
       query += ` ORDER BY name ASC`;
       
-      const structures = await this.db.query(query, params);
+      const structures = await this.drizzle.executeQuery(query, params);
       
       return structures.rows || [];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error retrieving commission structures:', error);
       throw new Error(`Failed to retrieve commission structures: ${error.message}`);
     }
@@ -780,7 +786,7 @@ export class CommissionService {
   async getCommissionSummary(companyId: string, year: number, month?: number) {
     try {
       let dateFilter: string;
-      const params = [companyId];
+      const params: any[] = [companyId];
       
       if (month) {
         dateFilter = `
@@ -793,7 +799,7 @@ export class CommissionService {
         params.push(year);
       }
       
-      const summary = await this.db.query(
+      const summary = await this.db.execute(
         `SELECT 
           status,
           COUNT(*) as count,
@@ -805,7 +811,7 @@ export class CommissionService {
       );
       
       return summary.rows || [];
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error retrieving commission summary:', error);
       throw new Error(`Failed to retrieve commission summary: ${error.message}`);
     }

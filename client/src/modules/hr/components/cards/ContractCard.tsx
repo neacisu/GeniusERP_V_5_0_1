@@ -83,7 +83,7 @@ const ContractCard: React.FC<ContractCardProps> = ({
             <>
               <div className="flex items-center text-sm">
                 <DollarSign className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span>Salariu: {formatCurrency(contract.baseSalaryGross)}</span>
+                <span>Salariu: {formatCurrency(typeof contract.baseSalaryGross === 'number' ? contract.baseSalaryGross : parseFloat(contract.baseSalaryGross.toString()))}</span>
               </div>
               
               <div className="flex items-center text-sm">

@@ -48,7 +48,7 @@ const OverviewPage: React.FC = () => {
   // Fetch data
   const { data: employeesResponse, isLoading: isLoadingEmployees } = useEmployees();
   const { data: departmentsResponse, isLoading: isLoadingDepartments } = useDepartments();
-  const { data: contractsResponse, isLoading: isLoadingContracts } = useContracts(1, 5, undefined, 'active');
+  const { data: contractsResponse, isLoading: isLoadingContracts } = useContracts({ page: 1, limit: 5, status: 'active' });
   
   // Query absențe direct
   const { data: absencesResponse, isLoading: isLoadingAbsences } = useQuery<any, Error>({

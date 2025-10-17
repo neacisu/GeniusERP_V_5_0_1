@@ -22,11 +22,11 @@ export class RevisalController {
 
   registerRoutes(router: Router) {
     // Revisal endpoints
-    router.post('/revisal/generate', this.generateRevisalXml.bind(this));
-    router.post('/revisal/validate', this.validateRevisalXml.bind(this));
-    router.post('/revisal/submit-log', this.logRevisalSubmission.bind(this));
-    router.get('/revisal/logs', this.getRevisalLogs.bind(this));
-    router.get('/revisal/logs/:id', this.getRevisalLogById.bind(this));
+    router.post('/revisal/generate', this.generateRevisalXml.bind(this) as any);
+    router.post('/revisal/validate', this.validateRevisalXml.bind(this) as any);
+    router.post('/revisal/submit-log', this.logRevisalSubmission.bind(this) as any);
+    router.get('/revisal/logs', this.getRevisalLogs.bind(this) as any);
+    router.get('/revisal/logs/:id', this.getRevisalLogById.bind(this) as any);
   }
 
   /**
@@ -34,25 +34,28 @@ export class RevisalController {
    */
   async generateRevisalXml(req: AuthenticatedRequest, res: Response) {
     try {
-      const { reference, date, employeeIds } = req.body;
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
       
-      if (!reference || !date) {
+      const { exportType, employeeIds } = req.body;
+      
+      if (!exportType) {
         return res.status(400).json({ 
           success: false, 
-          message: 'Reference and date are required' 
+          message: 'Export type is required' 
         });
       }
       
-      const result = await this.revisalService.generateRevisalXml(
+      const result = await this.revisalService.generateRevisalExport(
         req.user.companyId,
-        reference,
-        new Date(date),
-        employeeIds,
+        exportType,
+        employeeIds || null,
         req.user.id
       );
       
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error generating Revisal XML:', error);
       res.status(500).json({ error: (error as Error).message });
     }
@@ -75,7 +78,7 @@ export class RevisalController {
       const validationResult = await this.revisalService.validateRevisalXml(xmlData);
       
       res.json(validationResult);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error validating Revisal XML:', error);
       res.status(500).json({ error: (error as Error).message });
     }
@@ -86,35 +89,27 @@ export class RevisalController {
    */
   async logRevisalSubmission(req: AuthenticatedRequest, res: Response) {
     try {
-      const { 
-        reference, 
-        submissionDate, 
-        submissionMethod, 
-        registrationNumber, 
-        xmlPath, 
-        notes 
-      } = req.body;
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
       
-      if (!reference || !submissionDate || !submissionMethod) {
+      const { exportId, status, registrationNumber, submissionResponse } = req.body;
+      
+      if (!exportId || !status) {
         return res.status(400).json({ 
           success: false, 
-          message: 'Reference, submission date, and submission method are required' 
+          message: 'Export ID and status are required' 
         });
       }
       
       const result = await this.revisalService.logRevisalSubmission(
-        req.user.companyId,
-        reference,
-        new Date(submissionDate),
-        submissionMethod,
-        registrationNumber,
-        xmlPath,
-        notes,
+        exportId,
+        { status, registrationNumber, submissionResponse },
         req.user.id
       );
       
       res.status(201).json(result);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error logging Revisal submission:', error);
       res.status(400).json({ error: (error as Error).message });
     }
@@ -125,15 +120,21 @@ export class RevisalController {
    */
   async getRevisalLogs(req: AuthenticatedRequest, res: Response) {
     try {
-      const year = req.query.year ? parseInt(req.query.year as string) : null;
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
+      const status = req.query.status as string | undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       
       const logs = await this.revisalService.getRevisalLogs(
         req.user.companyId,
-        year
+        { status },
+        limit
       );
       
       res.json(logs);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error retrieving Revisal logs:', error);
       res.status(500).json({ error: (error as Error).message });
     }
@@ -154,7 +155,7 @@ export class RevisalController {
       }
       
       res.json(log);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Error retrieving Revisal log:', error);
       res.status(500).json({ error: (error as Error).message });
     }

@@ -91,8 +91,8 @@ const CorPage: React.FC = () => {
     items.push(
       <PaginationItem key="prev">
         <PaginationPrevious 
-          onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-          disabled={currentPage === 1}
+          onClick={() => currentPage > 1 ? handlePageChange(Math.max(1, currentPage - 1)) : undefined}
+          className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
         />
       </PaginationItem>
     );
@@ -160,8 +160,8 @@ const CorPage: React.FC = () => {
     items.push(
       <PaginationItem key="next">
         <PaginationNext 
-          onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-          disabled={currentPage === totalPages || totalPages === 0}
+          onClick={() => currentPage < totalPages && totalPages > 0 ? handlePageChange(Math.min(totalPages, currentPage + 1)) : undefined}
+          className={currentPage === totalPages || totalPages === 0 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
         />
       </PaginationItem>
     );
