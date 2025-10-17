@@ -95,18 +95,18 @@ import PageHeader from "../../components/common/PageHeader";
 const formSchema = z.object({
   warehouseId: z.string().uuid("Selectați o gestiune validă"),
   assessmentType: z.enum(["annual", "monthly", "unscheduled", "special"], {
-    required_error: "Selectați tipul de inventariere",
+    message: "Selectați tipul de inventariere",
   }),
   name: z.string().min(3, "Numele trebuie să conțină cel puțin 3 caractere"),
   description: z.string().optional(),
   startDate: z.date({
-    required_error: "Selectați data de început",
+    message: "Selectați data de început",
   }),
   endDate: z.date().optional(),
   commissionOrderNumber: z.string().min(1, "Introduceți numărul deciziei comisiei de inventariere"),
   legalBasis: z.string().default("OMFP 2861/2009, Legea contabilității 82/1991"),
   valuationMethod: z.enum(["FIFO", "LIFO", "WEIGHTED_AVERAGE"], {
-    required_error: "Selectați metoda de evaluare a stocurilor",
+    message: "Selectați metoda de evaluare a stocurilor",
   }),
   notes: z.string().optional(),
 });

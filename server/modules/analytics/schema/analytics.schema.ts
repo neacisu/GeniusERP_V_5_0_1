@@ -36,7 +36,13 @@ export const reportTypeEnum = pgEnum('report_type', [
   'sales',
   'marketing',
   'operations',
-  'custom'
+  'custom',
+  // AI Report types
+  'financial_summary',
+  'sales_performance',
+  'inventory_analysis',
+  'customer_insights',
+  'market_trends'
 ]);
 
 /**

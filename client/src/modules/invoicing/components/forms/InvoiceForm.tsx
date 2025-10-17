@@ -43,10 +43,10 @@ const invoiceItemSchema = z.object({
 const invoiceFormSchema = z.object({
   customerId: z.string().min(1, 'Clientul este obligatoriu'),
   issueDate: z.date({
-    required_error: 'Data emiterii este obligatorie',
+    message: 'Data emiterii este obligatorie',
   }),
   dueDate: z.date({
-    required_error: 'Data scadenței este obligatorie',
+    message: 'Data scadenței este obligatorie',
   }),
   currency: z.string().default('RON'),
   exchangeRate: z.number().optional(),

@@ -36,7 +36,7 @@ const COMMON_PASSWORDS = [
  * Poate fi folosită direct în formulare sau în API-uri
  */
 export const passwordSchema = z
-  .string({ required_error: 'Parola este obligatorie' })
+  .string({ message: 'Parola este obligatorie' })
   .min(12, 'Parola trebuie să aibă minimum 12 caractere')
   .max(128, 'Parola nu poate depăși 128 caractere') // Previne DoS prin parole foarte lungi
   .regex(/[A-Z]/, 'Parola trebuie să conțină cel puțin o literă mare (A-Z)')
@@ -70,7 +70,7 @@ export const passwordWithConfirmationSchema = z.object({
  * Schema pentru schimbarea parolei (necesită parola veche)
  */
 export const changePasswordSchema = z.object({
-  oldPassword: z.string({ required_error: 'Parola veche este obligatorie' }),
+  oldPassword: z.string({ message: 'Parola veche este obligatorie' }),
   newPassword: passwordSchema,
   confirmPassword: z.string()
 }).refine(

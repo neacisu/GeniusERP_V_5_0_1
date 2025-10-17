@@ -63,13 +63,13 @@ const commissionFormSchema = z.object({
   }),
   description: z.string().optional(),
   employeeId: z.string({
-    required_error: "Vă rugăm să selectați un angajat",
+    message: "Vă rugăm să selectați un angajat",
   }),
   type: z.nativeEnum(CommissionType, {
-    required_error: "Vă rugăm să selectați un tip de comision",
+    message: "Vă rugăm să selectați un tip de comision",
   }),
   saleAmount: z.number({
-    required_error: "Vă rugăm să introduceți suma vânzării",
+    message: "Vă rugăm să introduceți suma vânzării",
   }).min(0.01, {
     message: "Suma vânzării trebuie să fie mai mare de 0",
   }),

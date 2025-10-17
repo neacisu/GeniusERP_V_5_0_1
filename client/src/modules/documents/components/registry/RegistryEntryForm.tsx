@@ -39,10 +39,10 @@ const registryEntrySchema = z.object({
     message: 'Subiectul trebuie să conțină cel puțin 3 caractere',
   }),
   type: z.string({
-    required_error: 'Alegeți tipul documentului',
+    message: 'Alegeți tipul documentului',
   }),
   flow: z.enum(['incoming', 'outgoing'], {
-    required_error: 'Selectați fluxul documentului',
+    message: 'Selectați fluxul documentului',
   }),
   sender: z.string().min(2, {
     message: 'Expeditorul trebuie să conțină cel puțin 2 caractere',
@@ -51,7 +51,7 @@ const registryEntrySchema = z.object({
     message: 'Destinatarul trebuie să conțină cel puțin 2 caractere',
   }),
   date: z.date({
-    required_error: 'Selectați data documentului',
+    message: 'Selectați data documentului',
   }),
   refNumber: z.string().optional(),
   notes: z.string().optional(),

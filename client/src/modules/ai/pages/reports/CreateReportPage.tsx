@@ -58,7 +58,7 @@ const reportSchema = z.object({
     message: "Numele raportului trebuie să aibă minim 3 caractere"
   }),
   type: z.enum(["financial_summary", "sales_performance", "inventory_analysis", "customer_insights", "market_trends"] as const, {
-    required_error: "Selectează tipul raportului"
+    message: "Selectează tipul raportului"
   }),
   description: z.string().optional(),
   parameters: z.object({

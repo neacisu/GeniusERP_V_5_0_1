@@ -49,10 +49,10 @@ const paymentFormSchema = z.object({
     { message: 'Suma trebuie să fie un număr pozitiv' }
   ),
   paymentMethod: z.enum(['bank_transfer', 'cash', 'card', 'check', 'credit'], {
-    required_error: 'Selectați metoda de plată',
+    message: 'Selectați metoda de plată',
   }),
   paymentDate: z.string({
-    required_error: 'Selectați data plății',
+    message: 'Selectați data plății',
   }),
   paymentReference: z.string().optional(),
   notes: z.string().optional(),
@@ -77,7 +77,7 @@ export function PaymentModal({
   const form = useForm<z.infer<typeof paymentFormSchema>>({
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
-      paymentAmount: invoice?.grossTotal.toString() || '',
+      paymentAmount: invoice?.grossTotal?.toString() || '',
       paymentMethod: 'bank_transfer',
       paymentDate: format(new Date(), 'yyyy-MM-dd'),
       paymentReference: '',
@@ -90,7 +90,7 @@ export function PaymentModal({
   React.useEffect(() => {
     if (invoice) {
       form.reset({
-        paymentAmount: invoice.grossTotal.toString(),
+        paymentAmount: invoice.grossTotal?.toString() || '',
         paymentMethod: 'bank_transfer',
         paymentDate: format(new Date(), 'yyyy-MM-dd'),
         paymentReference: '',
@@ -133,7 +133,7 @@ export function PaymentModal({
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Total de plată</span>
-                <span className="font-medium">{formatCurrency(invoice.grossTotal)}</span>
+                <span className="font-medium">{invoice.grossTotal ? formatCurrency(invoice.grossTotal) : 'N/A'}</span>
               </div>
             </div>
 

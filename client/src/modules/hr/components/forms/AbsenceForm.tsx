@@ -63,10 +63,10 @@ const absenceSchema = z.object({
   absenceCode: z.string().min(1, { message: 'Selectați codul de absență' }).optional(),
   medicalLeaveCode: z.string().optional(),
   startDate: z.date({
-    required_error: "Data de început este obligatorie",
+    message: "Data de început este obligatorie",
   }),
   endDate: z.date({
-    required_error: "Data de sfârșit este obligatorie",
+    message: "Data de sfârșit este obligatorie",
   }),
   workingDays: z.coerce.number().positive({ message: 'Numărul zilelor lucrătoare trebuie să fie pozitiv' }),
   notes: z.string().optional(),

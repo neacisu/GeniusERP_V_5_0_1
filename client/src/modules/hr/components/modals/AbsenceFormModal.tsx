@@ -42,10 +42,10 @@ const absenceFormSchema = z.object({
   employeeId: z.string().min(1, { message: 'Selectați un angajat' }),
   absenceType: z.string().min(1, { message: 'Selectați tipul de absență' }),
   startDate: z.date({
-    required_error: "Data de început este obligatorie",
+    message: "Data de început este obligatorie",
   }),
   endDate: z.date({
-    required_error: "Data de sfârșit este obligatorie",
+    message: "Data de sfârșit este obligatorie",
   }),
   notes: z.string().optional(),
   medicalCertificateNumber: z.string().optional(),

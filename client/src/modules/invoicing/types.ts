@@ -75,12 +75,14 @@ export interface InvoiceBasic {
   id: string;
   number?: number;
   series?: string;
+  invoiceNumber: string;
   issueDate: string;
   dueDate: string;
   status: InvoiceStatus;
   customerName: string;
   customerFiscalCode: string;
   totalAmount: number;
+  grossTotal: number;
   paidAmount?: number;
   currency: string;
 }
