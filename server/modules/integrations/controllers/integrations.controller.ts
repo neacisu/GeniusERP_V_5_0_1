@@ -447,7 +447,7 @@ export class IntegrationsController {
       const activatedIntegration = await this.integrationsService.getIntegration(id, companyId);
 
       // Log the activation in audit logs
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'activate',

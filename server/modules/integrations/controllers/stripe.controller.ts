@@ -81,7 +81,7 @@ export class StripeController {
       }, userId);
       
       // Create audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'create',
@@ -155,7 +155,7 @@ export class StripeController {
       );
       
       // Create audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'create',
@@ -231,7 +231,7 @@ export class StripeController {
       );
       
       // Create audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'create',
@@ -306,7 +306,7 @@ export class StripeController {
       );
       
       // Create audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'create',
@@ -376,7 +376,7 @@ export class StripeController {
       const event = await stripeClient.handleWebhook(payload, signature);
       
       // Create system audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId: 'system',
         companyId,
         action: 'webhook',

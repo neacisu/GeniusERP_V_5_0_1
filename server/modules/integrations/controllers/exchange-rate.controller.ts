@@ -105,7 +105,7 @@ export class ExchangeRateController {
       const rates = await bnrExchangeRateService.manualFetch();
       
       // Audit log for manual update
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'update',

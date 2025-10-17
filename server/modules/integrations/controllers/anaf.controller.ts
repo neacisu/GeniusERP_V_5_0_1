@@ -48,7 +48,7 @@ export class AnafController {
       const validationResult = await anafService.validateVat(vatNumber);
       
       // Audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'read',
@@ -106,7 +106,7 @@ export class AnafController {
       }
       
       // Audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'read',
@@ -157,7 +157,7 @@ export class AnafController {
       const result = await eFacturaService.sendInvoice(invoiceId, xmlData, companyId, userId);
       
       // Audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'create',

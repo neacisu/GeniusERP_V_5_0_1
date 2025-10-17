@@ -78,7 +78,7 @@ export class PandaDocController {
       const integration = await pandaDocClient.initialize(apiKey, userId);
       
       // Create audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'create',
@@ -263,7 +263,7 @@ export class PandaDocController {
       );
       
       // Create audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'create',
@@ -382,7 +382,7 @@ export class PandaDocController {
       );
       
       // Create audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'update',
@@ -493,7 +493,7 @@ export class PandaDocController {
       const fileBuffer = await pandaDocClient.downloadDocument(documentId, userId);
       
       // Create audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'read',

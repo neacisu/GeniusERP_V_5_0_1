@@ -81,7 +81,7 @@ export class IntegrationsService {
       }).returning();
       
       // Audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'create',
@@ -230,7 +230,7 @@ export class IntegrationsService {
       }
       
       // Audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'update',
@@ -283,7 +283,7 @@ export class IntegrationsService {
       }
       
       // Audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'update',
@@ -362,7 +362,7 @@ export class IntegrationsService {
         );
       
       // Audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'delete',

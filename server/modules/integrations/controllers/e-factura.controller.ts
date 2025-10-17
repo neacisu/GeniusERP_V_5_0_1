@@ -64,7 +64,7 @@ export class EFacturaController {
       const result = await eFacturaService.sendInvoice(invoiceId, xmlData, companyId, userId);
       
       // Audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'create',
@@ -178,7 +178,7 @@ export class EFacturaController {
       }
       
       // Audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'read',
@@ -299,7 +299,7 @@ export class EFacturaController {
       }
       
       // Audit log
-      await this.auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
         action: 'read',
