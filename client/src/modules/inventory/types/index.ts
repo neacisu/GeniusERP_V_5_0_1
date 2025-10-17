@@ -49,18 +49,17 @@ export interface StockItem {
 export interface Product {
   id: string;
   name: string;
-  code?: string; // Add this to maintain backwards compatibility
-  sku: string;
+  sku: string; // SKU este obligatoriu în DB
   barcode?: string | null;
   description?: string | null;
   categoryId?: string | null;
-  isActive: boolean;
+  isActive: boolean | null;
   createdAt: string;
   updatedAt: string;
   // Pricing and stock information
   purchasePrice?: number;
   sellingPrice?: number;
-  vatRate?: number;
+  vatRate?: number | null;
   stockAlert?: number;
   priceIncludesVat?: boolean;
   // Extended properties for UI
@@ -270,7 +269,6 @@ export interface WarehouseFormValues {
 export interface ProductFormValues {
   name: string;
   sku: string;
-  code?: string; // Make code optional to match useProducts
   barcode?: string;
   description?: string;
   categoryId?: string;

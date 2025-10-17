@@ -49,11 +49,11 @@ export const inventoryCountResultEnum = {
 } as const;
 
 // Create PostgreSQL enum types
-export const warehouseTypeEnumType = pgEnum('warehouse_type', [] /* FIXME: Replace with literal array values from warehouseTypeEnum */);
-export const assessmentTypeEnumType = pgEnum('inventory_assessment_type', [] /* FIXME: Replace with literal array values from inventoryAssessmentTypeEnum */);
-export const assessmentStatusEnumType = pgEnum('inventory_assessment_status', [] /* FIXME: Replace with literal array values from inventoryAssessmentStatusEnum */);
-export const valuationMethodEnumType = pgEnum('inventory_valuation_method', [] /* FIXME: Replace with literal array values from inventoryValuationMethodEnum */);
-export const countResultEnumType = pgEnum('inventory_count_result', [] /* FIXME: Replace with literal array values from inventoryCountResultEnum */);
+export const warehouseTypeEnumType = pgEnum('warehouse_type', ['depozit', 'magazin', 'custodie', 'transfer']);
+export const assessmentTypeEnumType = pgEnum('inventory_assessment_type', ['annual', 'monthly', 'unscheduled', 'special']);
+export const assessmentStatusEnumType = pgEnum('inventory_assessment_status', ['draft', 'in_progress', 'pending_approval', 'approved', 'finalized', 'cancelled']);
+export const valuationMethodEnumType = pgEnum('inventory_valuation_method', ['FIFO', 'LIFO', 'WEIGHTED_AVERAGE', 'STANDARD_COST']);
+export const countResultEnumType = pgEnum('inventory_count_result', ['MATCH', 'SURPLUS', 'DEFICIT']);
 
 // Define warehouse table
 export const inventoryWarehouses = pgTable('inventory_warehouses', {
@@ -161,39 +161,31 @@ export const inventoryBatches = pgTable('inventory_batches', {
 });
 
 // Setup relations
+// Note: Relations la companies vor fi stabilite în schema principală
 export const warehouseRelations = relations(inventoryWarehouses, ({ one, many }) => ({
-  company: one('companies', {
-    fields: [inventoryWarehouses.companyId],
-    references: ['id']
-  }),
   parent: one(inventoryWarehouses, {
     fields: [inventoryWarehouses.parentId],
     references: [inventoryWarehouses.id]
   }),
-  children: many(inventoryWarehouses)
+  children: many(inventoryWarehouses),
+  assessments: many(inventoryAssessments)
 }));
 
 export const assessmentRelations = relations(inventoryAssessments, ({ one, many }) => ({
-  company: one('companies', {
-    fields: [inventoryAssessments.companyId],
-    references: ['id']
-  }),
   warehouse: one(inventoryWarehouses, {
     fields: [inventoryAssessments.warehouseId],
     references: [inventoryWarehouses.id]
   }),
-  items: many(inventoryAssessmentItems)
+  items: many(inventoryAssessmentItems),
+  valuations: many(inventoryValuations)
 }));
 
 export const assessmentItemRelations = relations(inventoryAssessmentItems, ({ one }) => ({
   assessment: one(inventoryAssessments, {
     fields: [inventoryAssessmentItems.assessmentId],
     references: [inventoryAssessments.id]
-  }),
-  product: one('inventory_products', {
-    fields: [inventoryAssessmentItems.productId],
-    references: ['id']
   })
+  // Note: Relația la product va fi stabilită în schema principală
 }));
 
 // Create Zod validation schemas

@@ -104,7 +104,7 @@ const formSchema = z.object({
   }),
   endDate: z.date().optional(),
   commissionOrderNumber: z.string().min(1, "Introduceți numărul deciziei comisiei de inventariere"),
-  legalBasis: z.string().default("OMFP 2861/2009, Legea contabilității 82/1991"),
+  legalBasis: z.string().optional().default("OMFP 2861/2009, Legea contabilității 82/1991"),
   valuationMethod: z.enum(["FIFO", "LIFO", "WEIGHTED_AVERAGE"], {
     message: "Selectați metoda de evaluare a stocurilor",
   }),

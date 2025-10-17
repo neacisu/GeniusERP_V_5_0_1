@@ -489,6 +489,7 @@ export const inventoryCategories = pgTable("inventory_categories", {
   name: text("name").notNull().unique(), // Adăugare constrângere de unicitate
   description: text("description"),
   parentId: uuid("parent_id").references((): any => inventoryCategories.id), // Self-reference - explicit return type
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

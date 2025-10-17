@@ -37,9 +37,11 @@ export class WarehouseService {
       code: data.code || await this.generateWarehouseCode(data.companyId)
     };
 
-    const [warehouse] = await this.db.insertInto(warehouses)
-      .values(warehouseData)
-      .returning();
+    const [warehouse] = await this.db.query(async (db) => 
+      db.insert(warehouses)
+        .values(warehouseData)
+        .returning()
+    );
 
     // Log the warehouse creation action
     await AuditService.log({
@@ -48,7 +50,7 @@ export class WarehouseService {
       entityId: warehouse.id,
       userId,
       companyId: warehouse.companyId,
-      data: {
+      details: {
         name: warehouse.name,
         code: warehouse.code,
         type: warehouse.type
@@ -67,13 +69,15 @@ export class WarehouseService {
    * @returns The updated warehouse
    */
   async updateWarehouse(id: string, data: Partial<InsertWarehouse>, userId: string): Promise<Warehouse> {
-    const [warehouse] = await this.db.update(warehouses)
-      .set({
-        ...data,
-        updatedAt: new Date()
-      })
-      .where(eq(warehouses.id, id))
-      .returning();
+    const [warehouse] = await this.db.query(async (db) => 
+      db.update(warehouses)
+        .set({
+          ...data,
+          updatedAt: new Date()
+        })
+        .where(eq(warehouses.id, id))
+        .returning()
+    );
 
     if (!warehouse) {
       throw new Error(`Warehouse with ID ${id} not found`);
@@ -86,7 +90,7 @@ export class WarehouseService {
       entityId: warehouse.id,
       userId,
       companyId: warehouse.companyId,
-      data: {
+      details: {
         name: warehouse.name,
         code: warehouse.code,
         type: warehouse.type,
@@ -104,9 +108,12 @@ export class WarehouseService {
    * @returns The warehouse or null if not found
    */
   async getWarehouseById(id: string): Promise<Warehouse | null> {
-    const [warehouse] = await this.db.from(warehouses)
-      .where(eq(warehouses.id, id))
-      .limit(1);
+    const [warehouse] = await this.db.query(async (db) => 
+      db.select()
+        .from(warehouses)
+        .where(eq(warehouses.id, id))
+        .limit(1)
+    );
 
     return warehouse || null;
   }
@@ -129,13 +136,15 @@ export class WarehouseService {
     await this.validateWarehouseCanBeDeleted(id);
 
     // Perform soft delete by setting isActive to false
-    const [result] = await this.db.update(warehouses)
-      .set({
-        isActive: false,
-        updatedAt: new Date()
-      })
-      .where(eq(warehouses.id, id))
-      .returning();
+    const [result] = await this.db.query(async (db) => 
+      db.update(warehouses)
+        .set({
+          isActive: false,
+          updatedAt: new Date()
+        })
+        .where(eq(warehouses.id, id))
+        .returning()
+    );
 
     // Log the warehouse deletion action
     await AuditService.log({
@@ -144,7 +153,7 @@ export class WarehouseService {
       entityId: id,
       userId,
       companyId: warehouse.companyId,
-      data: {
+      details: {
         name: warehouse.name,
         code: warehouse.code,
         type: warehouse.type
@@ -185,8 +194,8 @@ export class WarehouseService {
       FROM warehouses
       WHERE company_id = $1
     `;
-    const countResult = await pool.query(countQuery, [companyId]);
-    const total = Number(countResult.rows[0]?.count || 0);
+    const countResult = await pool`${countQuery}`.values([companyId]);
+    const total = Number(countResult[0]?.count || 0);
     
     // Build the base query 
     let query = `
@@ -233,8 +242,7 @@ export class WarehouseService {
     queryParams.push(limit, offset);
     
     // Execute the query
-    const result = await pool.query(query, queryParams);
-    const warehouseRows = result.rows;
+    const warehouseRows = await pool.unsafe(query, queryParams);
       
     return { warehouses: warehouseRows, total };
   }
@@ -256,8 +264,8 @@ export class WarehouseService {
       ORDER BY name
     `;
     
-    const result = await pool.query(query, [parentId, companyId]);
-    return result.rows;
+    const rows = await pool.unsafe(query, [parentId, companyId]);
+    return rows;
   }
 
   /**
@@ -276,14 +284,17 @@ export class WarehouseService {
       code = `${prefix}${generateRandomCode(5, 'numeric')}`;
       
       // Check if code already exists
-      const [existing] = await this.db.from(warehouses)
-        .where(
-          and(
-            eq(warehouses.code, code),
-            eq(warehouses.companyId, companyId)
+      const [existing] = await this.db.query(async (db) => 
+        db.select()
+          .from(warehouses)
+          .where(
+            and(
+              eq(warehouses.code, code),
+              eq(warehouses.companyId, companyId)
+            )
           )
-        )
-        .limit(1);
+          .limit(1)
+      );
       
       isUnique = !existing;
     }
@@ -299,9 +310,12 @@ export class WarehouseService {
    */
   private async validateWarehouseCanBeDeleted(warehouseId: string): Promise<void> {
     // Check for child warehouses
-    const childWarehouses = await this.db.from(warehouses)
-      .where(eq(warehouses.franchiseId, warehouseId)) // Using franchiseId instead of parentId
-      .limit(1);
+    const childWarehouses = await this.db.query(async (db) => 
+      db.select()
+        .from(warehouses)
+        .where(eq(warehouses.franchiseId, warehouseId)) // Using franchiseId instead of parentId
+        .limit(1)
+    );
 
     if (childWarehouses.length > 0) {
       throw new Error('Cannot delete warehouse with child warehouses. Please delete child warehouses first.');
