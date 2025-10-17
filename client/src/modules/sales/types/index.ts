@@ -76,6 +76,11 @@ export interface Customer {
   postalCode?: string;
   website?: string;
   status: CustomerStatus;
+  type?: string; // lead, prospect, customer, partner, etc.
+  category?: string; // Customer category/segment
+  totalSpent?: number; // Total amount spent by customer
+  currency?: string; // Default currency for customer transactions
+  active?: boolean; // Whether customer is active
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -154,6 +159,7 @@ export interface Opportunity {
   expectedCloseDate?: string;
   description?: string;
   source?: string;
+  nextAction?: string; // Next action to be taken for this opportunity
   assignedTo?: string;
   createdBy: string;
   createdAt: string;
@@ -175,8 +181,10 @@ export interface Quote {
   validUntil: string;
   value: number;
   currency: string;
-  termsAndConditions?: string;
-  notes?: string;
+  description?: string; // Quote description
+  terms?: string; // Terms and conditions
+  termsAndConditions?: string; // Alias for terms
+  notes?: string; // Internal notes
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -186,14 +194,15 @@ export interface Quote {
 
 // Quote item
 export interface QuoteItem {
-  id: string;
-  quoteId: string;
+  id?: string;
+  quoteId?: string;
   description: string;
   quantity: number;
   unitPrice: number;
+  vatRate: number; // VAT rate percentage
   discount?: number;
   tax?: number;
-  total: number;
+  total?: number;
 }
 
 // Activity entity
@@ -231,6 +240,13 @@ export interface Pipeline {
   deals: Deal[];
   totalValue: number;
   currency: string;
+  stats?: {
+    totalDeals: number;
+    totalValue: number;
+    wonDeals: number;
+    lostDeals: number;
+    conversionRate: number;
+  };
 }
 
 // Sales analytics data interfaces

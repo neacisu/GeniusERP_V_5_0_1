@@ -88,7 +88,7 @@ const OpportunityForm: React.FC<OpportunityFormProps> = ({
 }) => {
   // Initialize the form with react-hook-form
   const form = useForm<OpportunityFormValues>({
-    resolver: zodResolver(opportunityFormSchema),
+    resolver: zodResolver(opportunityFormSchema) as any,
     defaultValues: {
       title: initialData?.title || '',
       customerId: initialData?.customerId || '',

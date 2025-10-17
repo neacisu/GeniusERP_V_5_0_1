@@ -90,7 +90,7 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
 }) => {
   // Initialize the form with react-hook-form
   const form = useForm<QuoteFormValues>({
-    resolver: zodResolver(quoteFormSchema),
+    resolver: zodResolver(quoteFormSchema) as any,
     defaultValues: {
       quoteNumber: initialData?.quoteNumber || '',
       title: initialData?.title || '',

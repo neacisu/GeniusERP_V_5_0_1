@@ -84,7 +84,7 @@ const DealForm: React.FC<DealFormProps> = ({
 }) => {
   // Initialize the form with react-hook-form
   const form = useForm<DealFormValues>({
-    resolver: zodResolver(dealFormSchema),
+    resolver: zodResolver(dealFormSchema) as any,
     defaultValues: {
       title: initialData?.title || '',
       customerId: initialData?.customerId || '',

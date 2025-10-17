@@ -24,7 +24,8 @@ export class CustomerService {
   async createCustomer(companyId: string, franchiseId: string, name: string, email?: string) {
     this.logger.debug(`Creating customer: ${name} for company ${companyId}`);
     
-    const inserted = await this.drizzle.insert(customers).values({
+    const db = this.drizzle.db;
+    const inserted = await db.insert(customers).values({
       companyId,
       name,
       email,
@@ -45,7 +46,8 @@ export class CustomerService {
   async getCustomerById(customerId: string, companyId: string) {
     this.logger.debug(`Getting customer by ID: ${customerId} for company ${companyId}`);
     
-    const result = await this.drizzle.select()
+    const db = this.drizzle.db;
+    const result = await db.select()
       .from(customers)
       .where(
         eq(customers.id, customerId)
@@ -66,7 +68,8 @@ export class CustomerService {
   async getCustomersByCompany(companyId: string, limit = 50, offset = 0) {
     this.logger.debug(`Getting customers for company ${companyId}, limit: ${limit}, offset: ${offset}`);
     
-    const result = await this.drizzle.select()
+    const db = this.drizzle.db;
+    const result = await db.select()
       .from(customers)
       .where(
         eq(customers.companyId, companyId)

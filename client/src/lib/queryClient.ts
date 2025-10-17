@@ -15,6 +15,14 @@ export interface ApiRequestOptions {
   params?: Record<string, any>;
 }
 
+// Tip pentru răspunsuri de eroare API
+export interface ApiErrorResponse {
+  status: number;
+  message: string;
+  error?: string;
+  details?: any;
+}
+
 // Constants for token refresh
 const TOKEN_REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
 let tokenRefreshTimer: number | null = null;
