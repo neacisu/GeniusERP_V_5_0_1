@@ -21,6 +21,7 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, ArrowDown, ArrowUp, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import type { CashRegister, BankAccount } from '@shared/schema';
 
 interface Props {
   isOpen: boolean;
@@ -37,12 +38,12 @@ export function CashBankTransferDialog({ isOpen, onClose, type }: Props) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   
-  const { data: cashRegisters, isLoading: isLoadingCash } = useQuery({
+  const { data: cashRegisters, isLoading: isLoadingCash } = useQuery<{ data: CashRegister[]; total: number }>({
     queryKey: ['/api/accounting/cash-registers'],
     enabled: isOpen
   });
   
-  const { data: bankAccounts, isLoading: isLoadingBank } = useQuery({
+  const { data: bankAccounts, isLoading: isLoadingBank } = useQuery<{ data: BankAccount[]; total: number }>({
     queryKey: ['/api/accounting/bank-accounts'],
     enabled: isOpen
   });
