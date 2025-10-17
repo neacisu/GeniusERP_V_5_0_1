@@ -10,7 +10,7 @@
  * - Employment contract tracking
  */
 
-import { Router, Response } from 'express';
+import { Router, Response, RequestHandler } from 'express';
 import { getDrizzle } from '../../common/drizzle';
 import { PayrollService } from './services/payroll.service';
 import { AbsenceService } from './services/absence.service';
@@ -25,6 +25,14 @@ import { JwtAuthMode } from '../auth/constants/auth-mode.enum';
 import { Logger } from '../../common/logger';
 import { AuditService } from '../../common/services/audit.service';
 import { AuthenticatedRequest } from '../../types/express';
+
+/**
+ * Type-safe wrapper pentru AuthenticatedRequest handlers
+ * Convertește un handler AuthenticatedRequest într-un RequestHandler pentru Express Router
+ */
+const authHandler = (handler: (req: AuthenticatedRequest, res: Response) => Promise<any>): RequestHandler => {
+  return handler as any as RequestHandler;
+};
 
 // Import controllers
 import {
@@ -90,12 +98,10 @@ export class HrModule {
     // Below endpoints will be gradually migrated to their controllers in the future sprints
     
     // Employee endpoints
-    // @ts-ignore - Type mismatch with Express router
     router.get('/employees', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-    // @ts-ignore
-      async (req: AuthenticatedRequest, res: Response) => {
+      authHandler(async (req, res) => {
       try {
         const { 
           search, 
@@ -135,15 +141,13 @@ export class HrModule {
           error: (error as Error).message 
         });
       }
-    });
+    }));
     
     // Employee creation endpoint
-    // @ts-ignore - Type mismatch with Express router
     router.post('/employee', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-    // @ts-ignore
-      async (req: AuthenticatedRequest, res: Response) => {
+      authHandler(async (req, res) => {
         try {
           const { 
             name, 
@@ -225,14 +229,12 @@ export class HrModule {
             error: (error as Error).message
           });
         }
-      });
+      }));
     
-    // @ts-ignore - Type mismatch with Express router
     router.get('/employees/:id', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-    // @ts-ignore
-      async (req: AuthenticatedRequest, res: Response) => {
+      authHandler(async (req, res) => {
       try {
         const employee = await employeeService.getEmployeeById(req.params.id as string);
         
@@ -248,14 +250,12 @@ export class HrModule {
           error: (error as Error).message 
         });
       }
-    });
+    }));
     
-    // @ts-ignore - Type mismatch with Express router
     router.post('/employees', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-    // @ts-ignore
-      async (req: AuthenticatedRequest, res: Response) => {
+      authHandler(async (req, res) => {
       try {
         const { 
           firstName, lastName, email, phone, position, 
@@ -307,14 +307,12 @@ export class HrModule {
           error: (error as Error).message 
         });
       }
-    });
+    }));
     
-    // @ts-ignore - Type mismatch with Express router
     router.put('/employees/:id', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-    // @ts-ignore
-      async (req: AuthenticatedRequest, res: Response) => {
+      authHandler(async (req, res) => {
       try {
         if (!(req.params.id as string)) {
           return res.status(400).json({ 
@@ -350,15 +348,13 @@ export class HrModule {
           error: (error as Error).message 
         });
       }
-    });
+    }));
     
     // Employment contracts endpoints
-    // @ts-ignore - Type mismatch with Express router
     router.post('/contracts', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-    // @ts-ignore
-      async (req: AuthenticatedRequest, res: Response) => {
+      authHandler(async (req, res) => {
       try {
         const { 
           employeeId, contractNumber, contractType, startDate, endDate,
@@ -410,14 +406,12 @@ export class HrModule {
           error: (error as Error).message 
         });
       }
-    });
+    }));
     
-    // @ts-ignore - Type mismatch with Express router
     router.get('/contracts/:employeeId', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-    // @ts-ignore
-      async (req: AuthenticatedRequest, res: Response) => {
+      authHandler(async (req, res) => {
       try {
         if (!req.params.employeeId) {
           return res.status(400).json({ 
@@ -440,14 +434,12 @@ export class HrModule {
           error: (error as Error).message 
         });
       }
-    });
+    }));
     
-    // @ts-ignore - Type mismatch with Express router
     router.put('/contracts/:id', 
       AuthGuard.roleGuard(['hr_team', 'admin']),
       AuthGuard.companyGuard('companyId'),
-    // @ts-ignore
-      async (req: AuthenticatedRequest, res: Response) => {
+      authHandler(async (req, res) => {
       try {
         if (!(req.params.id as string)) {
           return res.status(400).json({ 
@@ -485,11 +477,10 @@ export class HrModule {
           error: (error as Error).message 
         });
       }
-    });
+    }));
     
     // Department endpoints
-    // @ts-ignore - Type mismatch with Express router
-    router.get('/departments', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req: AuthenticatedRequest, res: Response) => {
+    router.get('/departments', AuthGuard.protect(JwtAuthMode.REQUIRED), authHandler(async (req, res) => {
       try {
         const includeInactive = req.query.includeInactive === 'true';
         
@@ -512,9 +503,8 @@ export class HrModule {
           error: (error as Error).message 
         });
       }
-    });
+    }));
     
-    // @ts-ignore - Type mismatch with Express router
     router.post('/departments', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { name, description, managerId, parentDepartmentId } = req.body;
@@ -542,7 +532,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.get('/departments/:id/employees', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const includeInactive = req.query.includeInactive === 'true';
@@ -555,7 +544,6 @@ export class HrModule {
     });
     
     // Payroll endpoints
-    // @ts-ignore - Type mismatch with Express router
     router.post('/payroll/calculate', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { employeeId, year, month } = req.body;
@@ -575,7 +563,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.post('/payroll/process-company', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { year, month } = req.body;
@@ -594,7 +581,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.put('/payroll/:id/approve', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const result = await payrollService.approvePayroll(
@@ -609,7 +595,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.get('/payroll/employee/:id', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { year, month } = req.query;
@@ -627,7 +612,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.get('/payroll/summary', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { year, month } = req.query;
@@ -650,7 +634,6 @@ export class HrModule {
     });
     
     // Absence endpoints
-    // @ts-ignore - Type mismatch with Express router
     router.post('/absences', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { 
@@ -677,7 +660,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.put('/absences/:id/review', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { approved, comment } = req.body;
@@ -696,7 +678,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.put('/absences/:id/cancel', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { reason } = req.body;
@@ -714,7 +695,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.get('/absences/employee/:id', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { year, status } = req.query;
@@ -733,7 +713,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.get('/absences/vacation-balance/:id', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { year } = req.query;
@@ -754,7 +733,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.get('/absences/upcoming', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { days } = req.query;
@@ -772,7 +750,6 @@ export class HrModule {
     });
     
     // REVISAL export endpoints
-    // @ts-ignore - Type mismatch with Express router
     router.post('/revisal/export', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { exportType, employeeIds } = req.body;
@@ -791,7 +768,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.get('/revisal/logs', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { limit } = req.query;
@@ -808,7 +784,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.get('/revisal/logs/:id', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const result = await revisalService.getRevisalExportById(req.params.id as string);
@@ -820,7 +795,6 @@ export class HrModule {
     });
     
     // Commission structure endpoints
-    // @ts-ignore - Type mismatch with Express router
     router.post('/commissions/structures', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { name, description, type, configuration, isActive } = req.body;
@@ -842,7 +816,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.put('/commissions/structures/:id', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const result = await commissionService.updateCommissionStructure(
@@ -858,7 +831,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.get('/commissions/structures', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const activeOnly = req.query.activeOnly === 'true';
@@ -876,7 +848,6 @@ export class HrModule {
     });
     
     // Employee commission endpoints
-    // @ts-ignore - Type mismatch with Express router
     router.post('/commissions/calculate', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { 
@@ -902,7 +873,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.put('/commissions/:id/approve', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const result = await commissionService.approveCommission(
@@ -917,7 +887,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.put('/commissions/:id/mark-paid', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { paymentReference } = req.body;
@@ -935,7 +904,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.get('/commissions/employee/:id', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { status, timeframe, limit } = req.query;
@@ -954,7 +922,6 @@ export class HrModule {
       }
     });
     
-    // @ts-ignore - Type mismatch with Express router
     router.get('/commissions/summary', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         const { year, month } = req.query;
@@ -977,7 +944,6 @@ export class HrModule {
     });
     
     // Placeholder endpoint with role-based access control
-    // @ts-ignore - Type mismatch with Express router
     router.post('/placeholder', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
       try {
         // Return a simple response with user info from the token
