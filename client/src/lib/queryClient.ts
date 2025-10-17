@@ -13,6 +13,7 @@ export interface ApiRequestOptions {
   data?: any; // adăugat pentru a fi compatibil cu useHrApi
   headers?: Record<string, string>;
   params?: Record<string, any>;
+  responseType?: 'json' | 'blob' | 'text'; // Tip de răspuns așteptat
 }
 
 // Tip pentru răspunsuri de eroare API

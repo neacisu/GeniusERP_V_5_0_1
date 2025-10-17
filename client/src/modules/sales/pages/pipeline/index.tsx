@@ -46,10 +46,7 @@ const PipelinePage: React.FC = () => {
   const { data: pipeline, isLoading } = useQuery({
     queryKey: ['/api/sales/pipeline', searchTerm, selectedFilters],
     queryFn: async () => {
-      const response = await getPipeline({
-        search: searchTerm,
-        priority: selectedFilters.priority as DealPriority
-      });
+      const response = await getPipeline();
       return response;
     }
   });

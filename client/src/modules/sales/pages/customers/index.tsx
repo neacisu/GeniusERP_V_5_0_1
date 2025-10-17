@@ -43,8 +43,9 @@ import { MoreHorizontal, FileText, Edit, Eye, Trash2, ArrowUpDown, ArrowUp, Arro
 // Import utilities and hooks
 import { useSalesApi } from '../../hooks/useSalesApi';
 import { formatDate, formatCurrency } from '../../utils/formatters';
+import { Customer, CustomerQueryOptions } from '../../types';
 
-// Customer types
+// Customer types - moved to types/index.ts but defined here for local use
 enum CustomerType {
   COMPANY = 'company',
   INDIVIDUAL = 'individual'
@@ -54,31 +55,6 @@ enum CustomerCategory {
   STANDARD = 'standard',
   PREMIUM = 'premium',
   VIP = 'vip'
-}
-
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  type: CustomerType;
-  category: CustomerCategory;
-  totalSpent: number;
-  currency: string;
-  lastPurchaseDate?: string;
-  createdAt: string;
-  active: boolean;
-}
-
-interface CustomerQueryOptions {
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-  search?: string;
-  type?: CustomerType;
-  category?: CustomerCategory;
-  active?: boolean;
 }
 
 const CustomersPage: React.FC = () => {
@@ -114,11 +90,11 @@ const CustomersPage: React.FC = () => {
     }
     
     if (selectedFilters.type) {
-      options.type = selectedFilters.type as CustomerType;
+      options.type = selectedFilters.type;
     }
     
     if (selectedFilters.category) {
-      options.category = selectedFilters.category as CustomerCategory;
+      options.category = selectedFilters.category;
     }
     
     // Handle different views
@@ -404,8 +380,8 @@ const CustomersPage: React.FC = () => {
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <div className="flex items-center">
-                        {getCustomerTypeIcon(customer.type)}
-                        {customer.type === CustomerType.COMPANY ? 'Companie' : 'Persoană Fizică'}
+                        {getCustomerTypeIcon(customer.type as any)}
+                        {customer.type === 'company' ? 'Companie' : 'Persoană Fizică'}
                       </div>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
@@ -415,12 +391,12 @@ const CustomersPage: React.FC = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={getCategoryColor(customer.category)}>
-                        {customer.category}
+                      <Badge variant="outline" className={getCategoryColor(customer.category as any)}>
+                        {customer.category || 'Standard'}
                       </Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell text-right">
-                      {formatCurrency(customer.totalSpent, customer.currency)}
+                      {formatCurrency(customer.totalSpent || 0, customer.currency || 'RON')}
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
                       {formatDate(customer.lastPurchaseDate, 'Niciodată')}

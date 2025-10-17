@@ -76,11 +76,12 @@ export interface Customer {
   postalCode?: string;
   website?: string;
   status: CustomerStatus;
-  type?: string; // lead, prospect, customer, partner, etc.
-  category?: string; // Customer category/segment
+  type?: string; // lead, prospect, customer, partner, company, individual, etc.
+  category?: string; // Customer category/segment (standard, premium, vip, etc.)
   totalSpent?: number; // Total amount spent by customer
   currency?: string; // Default currency for customer transactions
   active?: boolean; // Whether customer is active
+  lastPurchaseDate?: string; // Date of last purchase
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -236,16 +237,18 @@ export interface PipelineStage {
 export interface Pipeline {
   id: string;
   name: string;
-  stages: PipelineStage[];
+  stages: any; // Can be array of stages or object with stage keys
   deals: Deal[];
   totalValue: number;
   currency: string;
   stats?: {
-    totalDeals: number;
-    totalValue: number;
-    wonDeals: number;
-    lostDeals: number;
-    conversionRate: number;
+    totalDeals?: number;
+    totalValue?: number;
+    wonDeals?: number;
+    lostDeals?: number;
+    conversionRate?: number;
+    totalOpportunities?: number;
+    stageCount?: Record<string, number>;
   };
 }
 
@@ -278,6 +281,9 @@ export interface CustomerQueryOptions {
   sortBy?: string;
   sortOrder?: string;
   filter?: string;
+  type?: string; // Filter by customer type
+  category?: string; // Filter by customer category
+  active?: boolean; // Filter by active status
   count?: boolean;
 }
 

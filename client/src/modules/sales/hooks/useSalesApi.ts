@@ -528,6 +528,39 @@ export const useSalesApi = () => {
     }
   };
   
+  /**
+   * Get products with optional filtering
+   * Note: This is a placeholder - actual implementation depends on backend
+   */
+  const getProducts = async (options?: any): Promise<PaginatedResponse<any> | CountResponse> => {
+    try {
+      setError(null);
+      
+      const queryParams: Record<string, string> = {};
+      
+      if (options) {
+        if (options.page) queryParams.page = options.page.toString();
+        if (options.limit) queryParams.limit = options.limit.toString();
+        if (options.search) queryParams.search = options.search;
+        if (options.sortBy) queryParams.sortBy = options.sortBy;
+        if (options.sortOrder) queryParams.sortOrder = options.sortOrder;
+        if (options.category) queryParams.category = options.category;
+        if (options.count) queryParams.count = 'true';
+      }
+      
+      const requestOptions: ApiRequestOptions = {
+        method: 'GET',
+        params: queryParams
+      };
+      
+      const response = await apiRequest<PaginatedResponse<any> | CountResponse>('/api/sales/products', requestOptions);
+      return response;
+    } catch (err) {
+      setError(err as ApiErrorResponse);
+      throw err;
+    }
+  };
+  
   return {
     // State
     error,
@@ -565,6 +598,9 @@ export const useSalesApi = () => {
     // Pipeline methods
     getPipeline,
     updateDealStage,
+    
+    // Product methods
+    getProducts,
     
     // Analytics methods
     getSalesOverview
