@@ -39,11 +39,18 @@ export function RoleForm({ role, permissions, onSubmit, isPending }: RoleFormPro
   const formSchema = z.object({
     name: z.string().min(2, "Numele trebuie să aibă minim 2 caractere"),
     description: z.string().optional(),
-    permissions: z.array(z.string()).default([]),
+    permissions: z.array(z.string()),
   });
 
+  // Define explicit type for form values
+  type FormValues = {
+    name: string;
+    description?: string;
+    permissions: string[];
+  };
+
   // Create form
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -65,7 +72,7 @@ export function RoleForm({ role, permissions, onSubmit, isPending }: RoleFormPro
   }, [role, form]);
 
   // Handle form submission
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = (values: FormValues) => {
     const roleData: RoleFormData = {
       name: values.name,
       description: values.description,
