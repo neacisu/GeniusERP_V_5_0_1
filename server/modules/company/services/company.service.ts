@@ -276,7 +276,8 @@ export class CompanyService {
       logger.debug(`Getting franchises with filter:`, companyId || 'all');
       
       // Utilizăm serviciul Drizzle modular dedicat pentru companii
-      return await this.drizzleService.company.getFranchises(companyId);
+      const result = await this.drizzleService.company.getFranchises(companyId);
+      return result as unknown as Company[];
     } catch (error) {
       logger.error('Failed to get franchises', error);
       throw new Error('Failed to retrieve franchises');

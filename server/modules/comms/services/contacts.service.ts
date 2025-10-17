@@ -186,21 +186,17 @@ export class ContactsService {
       }
       
       // Build query with all conditions at once
-      let query = this.db.select()
+      const baseQuery = this.db.select()
         .from(contacts)
         .where(and(...whereConditions))
         .orderBy(desc(contacts.createdAt));
       
-      if (options?.limit) {
-        query = query.limit(options.limit);
-      }
+      // Apply pagination
+      const limit = options?.limit || 50;
+      const offset = options?.offset || 0;
       
-      if (options?.offset) {
-        query = query.offset(options.offset);
-      }
-      
-      // Execute the query
-      return await query;
+      // Execute the query with limit and offset
+      return await baseQuery.limit(limit).offset(offset);
     } catch (error) {
       logger.error(`Failed to get contacts for company ${companyId}`, error);
       throw new Error(`Failed to get contacts: ${error instanceof Error ? error.message : String(error)}`);

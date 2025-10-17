@@ -14,7 +14,7 @@ import {
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { eq, asc, and, count } from 'drizzle-orm';
+import { eq, asc, and, count, isNull } from 'drizzle-orm';
 
 // ES module path resolution
 const __filename = fileURLToPath(import.meta.url);

@@ -14,7 +14,7 @@ import { AuthGuard } from '../../auth/guards/auth.guard.js';
 export const initStepTemplateRoutes = (app: any, db: any) => {
   const router = express.Router();
   const stepTemplateService = new StepTemplateService(db);
-  const auditService = new AuditService(db);
+  const auditService = new AuditService();
   const stepTemplateController = new StepTemplateController(stepTemplateService, auditService);
 
   // Apply authentication middleware to all routes
