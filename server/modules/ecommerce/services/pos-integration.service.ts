@@ -111,20 +111,21 @@ export class POSIntegrationService {
         // Create transaction for the order
         const transactionData = {
           orderId: order.id,
-          userId,
           companyId,
+          transactionType: 'payment' as const,
           transactionDate: posOrder.posOrderDate,
           amount: String(posOrder.totalAmount),
           currency: posOrder.currency,
           status: PaymentStatus.COMPLETED, // POS transactions are typically already completed
           paymentMethod: posOrder.paymentMethod,
-          paymentGateway: 'pos',
-          gatewayTransactionId: `${posSystem}-${posOrder.posOrderId}`,
+          gatewayName: 'pos',
+          transactionId: `${posSystem}-${posOrder.posOrderId}`,
           metadata: {
             posSystem,
             posOrderId: posOrder.posOrderId,
             importDate: new Date()
-          }
+          },
+          createdBy: userId
         };
         
         await this.transactionsService.createTransaction(transactionData);

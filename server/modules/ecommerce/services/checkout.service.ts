@@ -107,21 +107,21 @@ export class CheckoutService {
       // Process payment
       const transactionData = {
         orderId: order.id,
-        userId,
         companyId,
-        transactionType: TransactionType.PAYMENT,
+        transactionType: 'payment' as const,
         transactionDate: new Date(),
         amount: cart.total,
         currency: cart.currencyCode,
         status: PaymentStatus.PENDING,
         paymentMethod,
-        paymentGateway: this.getPaymentGatewayForMethod(paymentMethod),
-        gatewayTransactionId: uuidv4(), // Would be provided by the payment gateway
+        gatewayName: this.getPaymentGatewayForMethod(paymentMethod),
+        transactionId: uuidv4(), // Would be provided by the payment gateway
         metadata: {
           ...additionalDetails,
           cartId,
           orderNumber: order.orderNumber
-        }
+        },
+        createdBy: userId
       };
       
       const transaction = await this.transactionsService.createTransaction(transactionData);
@@ -221,20 +221,20 @@ export class CheckoutService {
       // Process payment
       const transactionData = {
         orderId: order.id,
-        userId,
         companyId,
-        transactionType: TransactionType.PAYMENT,
+        transactionType: 'payment' as const,
         transactionDate: new Date(),
         amount: String(total),
         currency: 'RON',
         status: PaymentStatus.PENDING,
         paymentMethod,
-        paymentGateway: this.getPaymentGatewayForMethod(paymentMethod),
-        gatewayTransactionId: uuidv4(), // Would be provided by the payment gateway
+        gatewayName: this.getPaymentGatewayForMethod(paymentMethod),
+        transactionId: uuidv4(), // Would be provided by the payment gateway
         metadata: {
           ...additionalDetails,
           orderNumber: order.orderNumber
-        }
+        },
+        createdBy: userId
       };
       
       const transaction = await this.transactionsService.createTransaction(transactionData);
@@ -279,39 +279,38 @@ export class CheckoutService {
       }
 
       // Get order details for payment description
-      const order = await this.ordersService.getOrderById(transaction.orderId);
+      const order = await this.ordersService.getOrderById(transaction.orderId, transaction.companyId);
       
       if (!order) {
         throw new Error(`Order not found with ID: ${transaction.orderId}`);
       }
       
-      // Create a payment request using the new PaymentService
-      const paymentRequest = {
-        orderId: transaction.orderId,
-        amount: transaction.amount,
-        currency: transaction.currency || 'RON',
-        paymentMethod: transaction.paymentMethod || 'credit_card',
-        customerId: order.customerId || undefined,
-        description: `Payment for order ${order.orderNumber || transaction.orderId}`,
-        metadata: {
-          transactionId: transaction.id,
-          orderNumber: order.orderNumber,
-          ...transaction.metadata
-        },
-        userId: transaction.createdBy || '0',
-        companyId: transaction.companyId
-      };
-      
       // Process the payment through the PaymentService
-      const paymentResponse = await this.paymentService.processPayment(paymentRequest);
+      const paymentResponse = await this.paymentService.processPayment(
+        transaction.companyId,
+        transaction.createdBy || '0',
+        (transaction.paymentMethod as PaymentMethod) || PaymentMethod.CREDIT_CARD,
+        Number(transaction.amount),
+        transaction.currency || 'RON',
+        {
+          description: `Payment for order ${order.orderNumber || transaction.orderId}`,
+          metadata: {
+            transactionId: transaction.id,
+            orderId: transaction.orderId,
+            customerId: order.customerId || undefined,
+            orderNumber: order.orderNumber,
+            ...transaction.metadata
+          }
+        }
+      );
       
       // Map PaymentService status to our schema PaymentStatus
       const mappedStatus = this.mapPaymentServiceStatus(paymentResponse.status);
 
       // Extract payment intent data from response
       const paymentIntentId = paymentResponse.data?.id || '';
-      const clientSecret = paymentResponse.data?.client_secret || '';
-      const receiptUrl = paymentResponse.data?.receipt_url || '';
+      const clientSecret = paymentResponse.data?.clientSecret || '';
+      const receiptUrl = paymentResponse.data?.receiptUrl || '';
       
       // Update the transaction with the payment response details
       const updatedTransaction = await this.transactionsService.updateTransactionStatus(
@@ -413,6 +412,6 @@ export class CheckoutService {
    * @returns Payment gateway name
    */
   private getPaymentGatewayForMethod(paymentMethod: string): string {
-    return mapPaymentMethodToGateway(paymentMethod);
+    return mapPaymentMethodToGateway(paymentMethod as PaymentMethod);
   }
 }

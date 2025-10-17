@@ -576,19 +576,20 @@ export class ShopifyIntegrationService {
         if (shopifyOrder.financial_status === 'paid') {
           const transactionData = {
             orderId: newOrder.id,
-            userId,
             companyId,
+            transactionType: 'payment' as const,
             transactionDate: new Date(shopifyOrder.processed_at),
             amount: shopifyOrder.total_price,
             currency: shopifyOrder.currency,
             status: PaymentStatus.COMPLETED,
             paymentMethod: shopifyOrder.gateway,
-            paymentGateway: 'shopify',
-            gatewayTransactionId: `shopify-${shopifyOrder.id}`,
+            gatewayName: 'shopify',
+            transactionId: `shopify-${shopifyOrder.id}`,
             metadata: {
               shopifyOrderId: shopifyOrder.id,
               shopifyOrderNumber: shopifyOrder.order_number
-            }
+            },
+            createdBy: userId
           };
           
           await this.transactionsService.createTransaction(transactionData);
