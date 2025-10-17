@@ -9,15 +9,16 @@
 import { eq, and, sql, desc, asc, or, inArray } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { DrizzleService } from '../../../common/drizzle';
-import { 
+import {
   analyticsPredictiveModels,
-  analyticsPredictiveScenarios,
-  analyticsReports,
-  Alert,
+  analyticsScenarios,
   PredictiveModel,
-  PredictiveScenario,
+  Scenario,
   InsertPredictiveModel,
-  InsertPredictiveScenario
+  InsertScenario
+} from '../schema/predictive.schema';
+import {
+  Alert
 } from '../schema/analytics.schema';
 
 /**
@@ -183,7 +184,7 @@ export class PredictiveService {
     try {
       console.log(`Creating predictive model: ${model.name} for company ${model.companyId}`);
       
-      const [createdModel] = await this.drizzleService.db.insert(analyticsPredictiveModels).values({
+      const [createdModel] = await this.drizzleService.getDbInstance().insert(analyticsPredictiveModels).values({
         id: uuidv4(),
         name: model.name,
         description: model.description,
@@ -218,7 +219,7 @@ export class PredictiveService {
     try {
       console.log(`Updating predictive model: ${id}`);
       
-      const [updatedModel] = await this.drizzleService.db.update(analyticsPredictiveModels)
+      const [updatedModel] = await this.drizzleService.getDbInstance().update(analyticsPredictiveModels)
         .set({
           ...model,
           updatedAt: new Date()
@@ -247,7 +248,7 @@ export class PredictiveService {
     try {
       console.log(`Getting predictive model: ${id}`);
       
-      const model = await this.drizzleService.db.query.analyticsPredictiveModels.findFirst({
+      const model = await this.drizzleService.getDbInstance().query.analyticsPredictiveModels.findFirst({
         where: eq(analyticsPredictiveModels.id, id)
       });
       
@@ -273,7 +274,7 @@ export class PredictiveService {
     try {
       console.log(`Getting predictive models for company: ${companyId}`);
       
-      let query = this.drizzleService.db
+      let query = this.drizzleService.getDbInstance()
         .select()
         .from(analyticsPredictiveModels)
         .where(eq(analyticsPredictiveModels.companyId, companyId));
@@ -302,11 +303,11 @@ export class PredictiveService {
       console.log(`Deleting predictive model: ${id}`);
       
       // First delete all related scenarios
-      await this.drizzleService.db.delete(analyticsPredictiveScenarios)
-        .where(eq(analyticsPredictiveScenarios.modelId, id));
+      await this.drizzleService.getDbInstance().delete(analyticsScenarios)
+        .where(eq(analyticsScenarios.modelId, id));
       
       // Then delete the model
-      const result = await this.drizzleService.db.delete(analyticsPredictiveModels)
+      const result = await this.drizzleService.getDbInstance().delete(analyticsPredictiveModels)
         .where(eq(analyticsPredictiveModels.id, id));
       
       return true;
@@ -322,14 +323,14 @@ export class PredictiveService {
    * @param scenario The scenario data to create
    * @returns The created scenario
    */
-  async createScenario(scenario: Omit<InsertPredictiveScenario, 'id' | 'createdAt' | 'updatedAt'>): Promise<PredictiveScenario> {
+  async createScenario(scenario: Omit<InsertScenario, 'id' | 'createdAt' | 'updatedAt'>): Promise<Scenario> {
     try {
       console.log(`Creating predictive scenario: ${scenario.name} for model ${scenario.modelId}`);
       
       // Verify model exists
       const model = await this.getModelById(scenario.modelId);
       
-      const [createdScenario] = await this.drizzleService.db.insert(analyticsPredictiveScenarios).values({
+      const [createdScenario] = await this.drizzleService.getDbInstance().insert(analyticsScenarios).values({
         id: uuidv4(),
         name: scenario.name,
         description: scenario.description,
@@ -357,7 +358,7 @@ export class PredictiveService {
    * @param scenarioId The scenario ID
    * @returns The scenario with results
    */
-  async runScenario(scenarioId: string): Promise<PredictiveScenario> {
+  async runScenario(scenarioId: string): Promise<Scenario> {
     try {
       console.log(`Running prediction scenario: ${scenarioId}`);
       
@@ -365,12 +366,12 @@ export class PredictiveService {
       const scenario = await this.getScenarioById(scenarioId);
       
       // Update scenario status to running
-      await this.drizzleService.db.update(analyticsPredictiveScenarios)
+      await this.drizzleService.getDbInstance().update(analyticsScenarios)
         .set({
           status: ScenarioStatus.RUNNING,
           updatedAt: new Date()
         })
-        .where(eq(analyticsPredictiveScenarios.id, scenarioId));
+        .where(eq(analyticsScenarios.id, scenarioId));
       
       // Get the associated model
       const model = await this.getModelById(scenario.modelId);
@@ -400,14 +401,14 @@ export class PredictiveService {
         }
         
         // Update scenario with results
-        const [updatedScenario] = await this.drizzleService.db.update(analyticsPredictiveScenarios)
+        const [updatedScenario] = await this.drizzleService.getDbInstance().update(analyticsScenarios)
           .set({
             results: JSON.stringify(results),
             status: ScenarioStatus.COMPLETED,
             runAt: new Date(),
             updatedAt: new Date()
           })
-          .where(eq(analyticsPredictiveScenarios.id, scenarioId))
+          .where(eq(analyticsScenarios.id, scenarioId))
           .returning();
         
         return updatedScenario;
@@ -415,12 +416,12 @@ export class PredictiveService {
         console.error(`Error executing prediction for scenario ${scenarioId}:`, predictionError);
         
         // Update scenario with failed status
-        const [failedScenario] = await this.drizzleService.db.update(analyticsPredictiveScenarios)
+        const [failedScenario] = await this.drizzleService.getDbInstance().update(analyticsScenarios)
           .set({
             status: ScenarioStatus.FAILED,
             updatedAt: new Date()
           })
-          .where(eq(analyticsPredictiveScenarios.id, scenarioId))
+          .where(eq(analyticsScenarios.id, scenarioId))
           .returning();
         
         throw new Error(`Failed to execute prediction: ${predictionError}`);
@@ -437,12 +438,12 @@ export class PredictiveService {
    * @param id The scenario ID
    * @returns The scenario
    */
-  async getScenarioById(id: string): Promise<PredictiveScenario> {
+  async getScenarioById(id: string): Promise<Scenario> {
     try {
       console.log(`Getting prediction scenario: ${id}`);
       
-      const scenario = await this.drizzleService.db.query.analyticsPredictiveScenarios.findFirst({
-        where: eq(analyticsPredictiveScenarios.id, id),
+      const scenario = await this.drizzleService.getDbInstance().query.analyticsScenarios.findFirst({
+        where: eq(analyticsScenarios.id, id),
         with: {
           model: true
         }
@@ -471,24 +472,24 @@ export class PredictiveService {
     companyId: string, 
     modelId?: string, 
     status?: ScenarioStatus
-  ): Promise<PredictiveScenario[]> {
+  ): Promise<Scenario[]> {
     try {
       console.log(`Getting prediction scenarios for company: ${companyId}`);
       
-      let query = this.drizzleService.db
+      let query = this.drizzleService.getDbInstance()
         .select()
-        .from(analyticsPredictiveScenarios)
-        .where(eq(analyticsPredictiveScenarios.companyId, companyId));
+        .from(analyticsScenarios)
+        .where(eq(analyticsScenarios.companyId, companyId));
       
       if (modelId) {
-        query = query.where(eq(analyticsPredictiveScenarios.modelId, modelId));
+        query = query.where(eq(analyticsScenarios.modelId, modelId));
       }
       
       if (status) {
-        query = query.where(eq(analyticsPredictiveScenarios.status as any, status));
+        query = query.where(eq(analyticsScenarios.status as any, status));
       }
       
-      const scenarios = await query.orderBy(desc(analyticsPredictiveScenarios.updatedAt));
+      const scenarios = await query.orderBy(desc(analyticsScenarios.updatedAt));
       
       return scenarios;
     } catch (error) {
@@ -507,8 +508,8 @@ export class PredictiveService {
     try {
       console.log(`Deleting prediction scenario: ${id}`);
       
-      const result = await this.drizzleService.db.delete(analyticsPredictiveScenarios)
-        .where(eq(analyticsPredictiveScenarios.id, id));
+      const result = await this.drizzleService.getDbInstance().delete(analyticsScenarios)
+        .where(eq(analyticsScenarios.id, id));
       
       return true;
     } catch (error) {
@@ -524,7 +525,7 @@ export class PredictiveService {
    * @param scenario The scenario configuration
    * @returns Stock prediction results
    */
-  private async predictStockLevels(model: PredictiveModel, scenario: PredictiveScenario): Promise<StockPredictionResult[]> {
+  private async predictStockLevels(model: PredictiveModel, scenario: Scenario): Promise<StockPredictionResult[]> {
     console.log(`Running stock prediction with model ${model.id} and scenario ${scenario.id}`);
     
     // For demonstration purposes, we'll generate synthetic predictions
@@ -607,7 +608,7 @@ export class PredictiveService {
    * @param scenario The scenario configuration
    * @returns Sales forecast results
    */
-  private async forecastSales(model: PredictiveModel, scenario: PredictiveScenario): Promise<SalesForecastResult> {
+  private async forecastSales(model: PredictiveModel, scenario: Scenario): Promise<SalesForecastResult> {
     console.log(`Running sales forecast with model ${model.id} and scenario ${scenario.id}`);
     
     // For demonstration purposes, we'll generate synthetic forecasts
@@ -750,7 +751,7 @@ export class PredictiveService {
    * @param scenario The scenario configuration
    * @returns Purchase optimization results
    */
-  private async optimizePurchasing(model: PredictiveModel, scenario: PredictiveScenario): Promise<PurchaseOptimizationResult> {
+  private async optimizePurchasing(model: PredictiveModel, scenario: Scenario): Promise<PurchaseOptimizationResult> {
     console.log(`Running purchase optimization with model ${model.id} and scenario ${scenario.id}`);
     
     // For demonstration purposes, we'll generate synthetic optimization results
@@ -855,7 +856,7 @@ export class PredictiveService {
    * @param scenario The scenario configuration
    * @returns Cash flow forecast results
    */
-  private async forecastCashFlow(model: PredictiveModel, scenario: PredictiveScenario): Promise<CashFlowForecastResult> {
+  private async forecastCashFlow(model: PredictiveModel, scenario: Scenario): Promise<CashFlowForecastResult> {
     console.log(`Running cash flow forecast with model ${model.id} and scenario ${scenario.id}`);
     
     // For demonstration purposes, we'll generate synthetic cash flow forecasts
@@ -1010,7 +1011,7 @@ export class PredictiveService {
    * @param scenario The scenario configuration
    * @returns Time series prediction results
    */
-  private async runTimeSeriesPrediction(model: PredictiveModel, scenario: PredictiveScenario): Promise<any> {
+  private async runTimeSeriesPrediction(model: PredictiveModel, scenario: Scenario): Promise<any> {
     console.log(`Running time series prediction with model ${model.id} and scenario ${scenario.id}`);
     
     // For demonstration purposes, we'll generate synthetic time series predictions
@@ -1121,7 +1122,7 @@ export class PredictiveService {
    * @param scenario The scenario configuration
    * @returns Generic prediction results
    */
-  private async runGenericPrediction(model: PredictiveModel, scenario: PredictiveScenario): Promise<any> {
+  private async runGenericPrediction(model: PredictiveModel, scenario: Scenario): Promise<any> {
     console.log(`Running generic prediction with model ${model.id} and scenario ${scenario.id}`);
     
     // For demonstration purposes, we'll return a basic prediction result

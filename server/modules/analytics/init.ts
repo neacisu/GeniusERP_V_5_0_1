@@ -19,15 +19,15 @@ import * as schema from '@shared/schema';
  * @param app Express application instance
  * @param db Database connection
  */
-export function initializeAnalyticsModule(app: Express, db: PostgresJsDatabase<typeof schema>) {
+export function initializeAnalyticsModule(app: Express) {
   // Set up analytics routes
-  const analyticsRouter = setupAnalyticsRoutes(db);
-  
+  const analyticsRouter = setupAnalyticsRoutes();
+
   // Set up business intelligence routes
-  const biRouter = setupBusinessIntelligenceRoutes(db);
-  
+  const biRouter = setupBusinessIntelligenceRoutes();
+
   // Set up predictive analytics routes
-  const predictiveRouter = setupPredictiveRoutes(db);
+  const predictiveRouter = setupPredictiveRoutes();
   
   // Register the routers with their respective API paths
   app.use('/api/analytics', analyticsRouter);

@@ -569,7 +569,7 @@ router.get(
  * @param db Database instance
  * @returns Express router with predictive analytics routes
  */
-export function setupPredictiveRoutes(db: any) {
+export function setupPredictiveRoutes(db?: any) {
   return router;
 }
 

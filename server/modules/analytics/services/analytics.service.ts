@@ -9,12 +9,12 @@
 import { eq, and, sql, desc, asc, or, like, inArray, isNull, isNotNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { DrizzleService } from '../../../common/drizzle';
-import { 
+import {
   analyticsReports,
   analyticsDashboards,
   analyticsMetrics,
   analyticsAlerts,
-  analyticsAlertHistory,
+  alertHistory,
   Alert,
   Report,
   Dashboard,
@@ -63,6 +63,9 @@ export interface MetricFilter {
   type?: string;
   createdBy?: string;
   search?: string;
+  periodStart?: string;
+  periodEnd?: string;
+  metricTypes?: string[];
   limit?: number;
   offset?: number;
 }
@@ -73,6 +76,7 @@ export interface MetricFilter {
 export interface AlertFilter {
   companyId: string;
   severity?: string;
+  status?: string;
   createdBy?: string;
   search?: string;
   limit?: number;
@@ -123,11 +127,11 @@ export class AnalyticsService {
    * @param report Report data
    * @returns Created report
    */
-  async createReport(report: z.infer<typeof InsertReport>): Promise<Report> {
+  async createReport(report: InsertReport): Promise<Report> {
     try {
       console.log(`Creating report: ${report.name} for company ${report.companyId}`);
       
-      const [createdReport] = await this.drizzleService.db.insert(analyticsReports).values({
+      const [createdReport] = await this.drizzleService.getDbInstance().insert(analyticsReports).values({
         id: uuidv4(),
         name: report.name,
         description: report.description || null,
@@ -162,7 +166,7 @@ export class AnalyticsService {
     try {
       console.log(`Updating report: ${id}`);
       
-      const [updatedReport] = await this.drizzleService.db.update(analyticsReports)
+      const [updatedReport] = await this.drizzleService.getDbInstance().update(analyticsReports)
         .set({
           ...report,
           updatedAt: new Date()
@@ -191,7 +195,7 @@ export class AnalyticsService {
     try {
       console.log(`Getting report: ${id}`);
       
-      const report = await this.drizzleService.db.query.analyticsReports.findFirst({
+      const report = await this.drizzleService.getDbInstance().query.analyticsReports.findFirst({
         where: eq(analyticsReports.id, id)
       });
       
@@ -220,7 +224,7 @@ export class AnalyticsService {
       const report = await this.getReportById(id);
       
       // Delete the report
-      await this.drizzleService.db.delete(analyticsReports)
+      await this.drizzleService.getDbInstance().delete(analyticsReports)
         .where(eq(analyticsReports.id, id));
       
       return true;
@@ -240,13 +244,13 @@ export class AnalyticsService {
     try {
       console.log(`Getting reports for company ${filter.companyId}`);
       
-      let query = this.drizzleService.db
+      let query = this.drizzleService.getDbInstance()
         .select()
         .from(analyticsReports)
         .where(eq(analyticsReports.companyId, filter.companyId));
       
       if (filter.type) {
-        query = query.where(eq(analyticsReports.type, filter.type));
+        query = query.where(eq(analyticsReports.type, filter.type as any));
       }
       
       if (filter.createdBy) {
@@ -325,16 +329,16 @@ export class AnalyticsService {
       let result: any;
       
       switch (report.type) {
-        case 'sales_analysis':
+        case 'sales':
           result = await this.executeSalesAnalysis(mergedParams);
           break;
-        case 'inventory_analysis':
+        case 'inventory':
           result = await this.executeInventoryAnalysis(mergedParams);
           break;
-        case 'financial_analysis':
+        case 'financial':
           result = await this.executeFinancialAnalysis(mergedParams);
           break;
-        case 'customer_analysis':
+        case 'customer_insights':
           result = await this.executeCustomerAnalysis(mergedParams);
           break;
         default:
@@ -342,7 +346,7 @@ export class AnalyticsService {
       }
       
       // Update report with new results
-      const [updatedReport] = await this.drizzleService.db.update(analyticsReports)
+      const [updatedReport] = await this.drizzleService.getDbInstance().update(analyticsReports)
         .set({
           result: JSON.stringify(result),
           parameters: JSON.stringify(mergedParams),
@@ -559,11 +563,11 @@ export class AnalyticsService {
    * @param dashboard Dashboard data
    * @returns Created dashboard
    */
-  async createDashboard(dashboard: z.infer<typeof InsertDashboard>): Promise<Dashboard> {
+  async createDashboard(dashboard: InsertDashboard): Promise<Dashboard> {
     try {
       console.log(`Creating dashboard: ${dashboard.name} for company ${dashboard.companyId}`);
       
-      const [createdDashboard] = await this.drizzleService.db.insert(analyticsDashboards).values({
+      const [createdDashboard] = await this.drizzleService.getDbInstance().insert(analyticsDashboards).values({
         id: uuidv4(),
         name: dashboard.name,
         description: dashboard.description || null,
@@ -596,7 +600,7 @@ export class AnalyticsService {
     try {
       console.log(`Updating dashboard: ${id}`);
       
-      const [updatedDashboard] = await this.drizzleService.db.update(analyticsDashboards)
+      const [updatedDashboard] = await this.drizzleService.getDbInstance().update(analyticsDashboards)
         .set({
           ...dashboard,
           updatedAt: new Date()
@@ -625,7 +629,7 @@ export class AnalyticsService {
     try {
       console.log(`Getting dashboard: ${id}`);
       
-      const dashboard = await this.drizzleService.db.query.analyticsDashboards.findFirst({
+      const dashboard = await this.drizzleService.getDbInstance().query.analyticsDashboards.findFirst({
         where: eq(analyticsDashboards.id, id),
         with: {
           reports: true
@@ -654,7 +658,7 @@ export class AnalyticsService {
       console.log(`Deleting dashboard: ${id}`);
       
       // First check if dashboard exists
-      const dashboard = await this.drizzleService.db.query.analyticsDashboards.findFirst({
+      const dashboard = await this.drizzleService.getDbInstance().query.analyticsDashboards.findFirst({
         where: eq(analyticsDashboards.id, id)
       });
       
@@ -663,12 +667,12 @@ export class AnalyticsService {
       }
       
       // First update any reports linked to this dashboard
-      await this.drizzleService.db.update(analyticsReports)
+      await this.drizzleService.getDbInstance().update(analyticsReports)
         .set({ dashboardId: null })
         .where(eq(analyticsReports.dashboardId, id));
       
       // Then delete the dashboard
-      await this.drizzleService.db.delete(analyticsDashboards)
+      await this.drizzleService.getDbInstance().delete(analyticsDashboards)
         .where(eq(analyticsDashboards.id, id));
       
       return true;
@@ -688,7 +692,7 @@ export class AnalyticsService {
     try {
       console.log(`Getting dashboards for company ${filter.companyId}`);
       
-      let query = this.drizzleService.db
+      let query = this.drizzleService.getDbInstance()
         .select()
         .from(analyticsDashboards)
         .where(eq(analyticsDashboards.companyId, filter.companyId));
@@ -743,7 +747,7 @@ export class AnalyticsService {
       console.log(`Adding report ${reportId} to dashboard ${dashboardId}`);
       
       // First check if dashboard exists
-      const dashboard = await this.drizzleService.db.query.analyticsDashboards.findFirst({
+      const dashboard = await this.drizzleService.getDbInstance().query.analyticsDashboards.findFirst({
         where: eq(analyticsDashboards.id, dashboardId)
       });
       
@@ -752,7 +756,7 @@ export class AnalyticsService {
       }
       
       // Check if report exists
-      const report = await this.drizzleService.db.query.analyticsReports.findFirst({
+      const report = await this.drizzleService.getDbInstance().query.analyticsReports.findFirst({
         where: eq(analyticsReports.id, reportId)
       });
       
@@ -761,7 +765,7 @@ export class AnalyticsService {
       }
       
       // Update report with dashboard ID
-      const [updatedReport] = await this.drizzleService.db.update(analyticsReports)
+      const [updatedReport] = await this.drizzleService.getDbInstance().update(analyticsReports)
         .set({
           dashboardId,
           updatedAt: new Date()
@@ -787,7 +791,7 @@ export class AnalyticsService {
       console.log(`Removing report ${reportId} from its dashboard`);
       
       // Check if report exists
-      const report = await this.drizzleService.db.query.analyticsReports.findFirst({
+      const report = await this.drizzleService.getDbInstance().query.analyticsReports.findFirst({
         where: eq(analyticsReports.id, reportId)
       });
       
@@ -801,7 +805,7 @@ export class AnalyticsService {
       }
       
       // Update report to remove dashboard ID
-      const [updatedReport] = await this.drizzleService.db.update(analyticsReports)
+      const [updatedReport] = await this.drizzleService.getDbInstance().update(analyticsReports)
         .set({
           dashboardId: null,
           updatedAt: new Date()
@@ -822,11 +826,11 @@ export class AnalyticsService {
    * @param metric Metric data
    * @returns Created metric
    */
-  async createMetric(metric: z.infer<typeof InsertMetric>): Promise<Metric> {
+  async createMetric(metric: InsertMetric): Promise<Metric> {
     try {
       console.log(`Creating metric: ${metric.name} for company ${metric.companyId}`);
       
-      const [createdMetric] = await this.drizzleService.db.insert(analyticsMetrics).values({
+      const [createdMetric] = await this.drizzleService.getDbInstance().insert(analyticsMetrics).values({
         id: uuidv4(),
         name: metric.name,
         description: metric.description || null,
@@ -863,7 +867,7 @@ export class AnalyticsService {
     try {
       console.log(`Updating metric: ${id}`);
       
-      const [updatedMetric] = await this.drizzleService.db.update(analyticsMetrics)
+      const [updatedMetric] = await this.drizzleService.getDbInstance().update(analyticsMetrics)
         .set({
           ...metric,
           updatedAt: new Date()
@@ -892,7 +896,7 @@ export class AnalyticsService {
     try {
       console.log(`Getting metric: ${id}`);
       
-      const metric = await this.drizzleService.db.query.analyticsMetrics.findFirst({
+      const metric = await this.drizzleService.getDbInstance().query.analyticsMetrics.findFirst({
         where: eq(analyticsMetrics.id, id)
       });
       
@@ -918,7 +922,7 @@ export class AnalyticsService {
       console.log(`Deleting metric: ${id}`);
       
       // Check if metric exists
-      const metric = await this.drizzleService.db.query.analyticsMetrics.findFirst({
+      const metric = await this.drizzleService.getDbInstance().query.analyticsMetrics.findFirst({
         where: eq(analyticsMetrics.id, id)
       });
       
@@ -927,11 +931,11 @@ export class AnalyticsService {
       }
       
       // Delete dependent alerts first
-      await this.drizzleService.db.delete(analyticsAlerts)
+      await this.drizzleService.getDbInstance().delete(analyticsAlerts)
         .where(eq(analyticsAlerts.metricId, id));
       
       // Delete the metric
-      await this.drizzleService.db.delete(analyticsMetrics)
+      await this.drizzleService.getDbInstance().delete(analyticsMetrics)
         .where(eq(analyticsMetrics.id, id));
       
       return true;
@@ -951,7 +955,7 @@ export class AnalyticsService {
     try {
       console.log(`Getting metrics for company ${filter.companyId}`);
       
-      let query = this.drizzleService.db
+      let query = this.drizzleService.getDbInstance()
         .select()
         .from(analyticsMetrics)
         .where(eq(analyticsMetrics.companyId, filter.companyId));
@@ -960,9 +964,10 @@ export class AnalyticsService {
         query = query.where(eq(analyticsMetrics.type, filter.type));
       }
       
-      if (filter.createdBy) {
-        query = query.where(eq(analyticsMetrics.createdBy, filter.createdBy));
-      }
+      // Note: analyticsMetrics table doesn't have createdBy column
+      // if (filter.createdBy) {
+      //   query = query.where(eq(analyticsMetrics.createdBy, filter.createdBy));
+      // }
       
       if (filter.search) {
         query = query.where(
@@ -1008,8 +1013,8 @@ export class AnalyticsService {
       // Get the metric
       const metric = await this.getMetricById(id);
       
-      // Parse existing parameters
-      const existingParams = metric.parameters ? JSON.parse(metric.parameters) : {};
+      // Parse existing parameters from metadata
+      const existingParams = metric.metadata ? JSON.parse(metric.metadata) : {};
       
       // Merge with new parameters if provided
       const mergedParams = parameters 
@@ -1148,13 +1153,13 @@ export class AnalyticsService {
    * @param alert Alert data
    * @returns Created alert
    */
-  async createAlert(alert: z.infer<typeof InsertAlert>): Promise<Alert> {
+  async createAlert(alert: InsertAlert): Promise<Alert> {
     try {
       console.log(`Creating alert: ${alert.name} for company ${alert.companyId}`);
       
       // Check if metric exists if a metric ID is provided
       if (alert.metricId) {
-        const metric = await this.drizzleService.db.query.analyticsMetrics.findFirst({
+        const metric = await this.drizzleService.getDbInstance().query.analyticsMetrics.findFirst({
           where: eq(analyticsMetrics.id, alert.metricId)
         });
         
@@ -1165,7 +1170,7 @@ export class AnalyticsService {
       
       // Check if report exists if a report ID is provided
       if (alert.reportId) {
-        const report = await this.drizzleService.db.query.analyticsReports.findFirst({
+        const report = await this.drizzleService.getDbInstance().query.analyticsReports.findFirst({
           where: eq(analyticsReports.id, alert.reportId)
         });
         
@@ -1174,7 +1179,7 @@ export class AnalyticsService {
         }
       }
       
-      const [createdAlert] = await this.drizzleService.db.insert(analyticsAlerts).values({
+      const [createdAlert] = await this.drizzleService.getDbInstance().insert(analyticsAlerts).values({
         id: uuidv4(),
         name: alert.name,
         description: alert.description || null,
@@ -1212,7 +1217,7 @@ export class AnalyticsService {
     try {
       console.log(`Updating alert: ${id}`);
       
-      const [updatedAlert] = await this.drizzleService.db.update(analyticsAlerts)
+      const [updatedAlert] = await this.drizzleService.getDbInstance().update(analyticsAlerts)
         .set({
           ...alert,
           updatedAt: new Date()
@@ -1241,7 +1246,7 @@ export class AnalyticsService {
     try {
       console.log(`Getting alert: ${id}`);
       
-      const alert = await this.drizzleService.db.query.analyticsAlerts.findFirst({
+      const alert = await this.drizzleService.getDbInstance().query.analyticsAlerts.findFirst({
         where: eq(analyticsAlerts.id, id),
         with: {
           metric: true,
@@ -1271,7 +1276,7 @@ export class AnalyticsService {
       console.log(`Deleting alert: ${id}`);
       
       // Check if alert exists
-      const alert = await this.drizzleService.db.query.analyticsAlerts.findFirst({
+      const alert = await this.drizzleService.getDbInstance().query.analyticsAlerts.findFirst({
         where: eq(analyticsAlerts.id, id)
       });
       
@@ -1280,11 +1285,11 @@ export class AnalyticsService {
       }
       
       // Delete alert history records first
-      await this.drizzleService.db.delete(analyticsAlertHistory)
-        .where(eq(analyticsAlertHistory.alertId, id));
+      await this.drizzleService.getDbInstance().delete(alertHistory)
+        .where(eq(alertHistory.alertId, id));
       
       // Delete the alert
-      await this.drizzleService.db.delete(analyticsAlerts)
+      await this.drizzleService.getDbInstance().delete(analyticsAlerts)
         .where(eq(analyticsAlerts.id, id));
       
       return true;
@@ -1304,13 +1309,13 @@ export class AnalyticsService {
     try {
       console.log(`Getting alerts for company ${filter.companyId}`);
       
-      let query = this.drizzleService.db
+      let query = this.drizzleService.getDbInstance()
         .select()
         .from(analyticsAlerts)
         .where(eq(analyticsAlerts.companyId, filter.companyId));
       
       if (filter.severity) {
-        query = query.where(eq(analyticsAlerts.severity, filter.severity));
+        query = query.where(eq(analyticsAlerts.severity, filter.severity as any));
       }
       
       if (filter.createdBy) {
@@ -1376,7 +1381,7 @@ export class AnalyticsService {
       const alert = await this.getAlertById(alertId);
       
       // Create history record
-      const [historyRecord] = await this.drizzleService.db.insert(analyticsAlertHistory).values({
+      const [historyRecord] = await this.drizzleService.getDbInstance().insert(alertHistory).values({
         id: uuidv4(),
         alertId,
         companyId: alert.companyId,
@@ -1391,11 +1396,11 @@ export class AnalyticsService {
       
       // In a real implementation, you would send notifications here
       // For demonstration, we just update the record
-      const [updatedRecord] = await this.drizzleService.db.update(analyticsAlertHistory)
+      const [updatedRecord] = await this.drizzleService.getDbInstance().update(alertHistory)
         .set({
           notificationSent: true
         })
-        .where(eq(analyticsAlertHistory.id, historyRecord.id))
+        .where(eq(alertHistory.id, historyRecord.id))
         .returning();
       
       return updatedRecord;
@@ -1416,11 +1421,11 @@ export class AnalyticsService {
     try {
       console.log(`Getting history for alert: ${alertId}`);
       
-      let query = this.drizzleService.db
+      let query = this.drizzleService.getDbInstance()
         .select()
-        .from(analyticsAlertHistory)
-        .where(eq(analyticsAlertHistory.alertId, alertId))
-        .orderBy(desc(analyticsAlertHistory.triggeredAt));
+        .from(alertHistory)
+        .where(eq(alertHistory.alertId, alertId))
+        .orderBy(desc(alertHistory.triggeredAt));
       
       if (limit) {
         query = query.limit(limit);
@@ -1445,11 +1450,11 @@ export class AnalyticsService {
     try {
       console.log(`Acknowledging alert history record: ${historyId}`);
       
-      const [updatedRecord] = await this.drizzleService.db.update(analyticsAlertHistory)
+      const [updatedRecord] = await this.drizzleService.getDbInstance().update(alertHistory)
         .set({
           status: 'acknowledged'
         })
-        .where(eq(analyticsAlertHistory.id, historyId))
+        .where(eq(alertHistory.id, historyId))
         .returning();
       
       if (!updatedRecord) {
@@ -1473,11 +1478,11 @@ export class AnalyticsService {
     try {
       console.log(`Resolving alert history record: ${historyId}`);
       
-      const [updatedRecord] = await this.drizzleService.db.update(analyticsAlertHistory)
+      const [updatedRecord] = await this.drizzleService.getDbInstance().update(alertHistory)
         .set({
           status: 'resolved'
         })
-        .where(eq(analyticsAlertHistory.id, historyId))
+        .where(eq(alertHistory.id, historyId))
         .returning();
       
       if (!updatedRecord) {

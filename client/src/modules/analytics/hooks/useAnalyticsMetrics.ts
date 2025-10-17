@@ -62,12 +62,28 @@ interface MetricsFilters {
   type?: string;
   status?: string;
   search?: string;
+  period?: string;
+  category?: string;
 }
 
 // Hook principal pentru metrici
 export function useAnalyticsMetrics(filters: MetricsFilters = {}) {
   const queryClient = useQueryClient();
-  
+
+  // Construiește query parameters
+  const buildQueryParams = (params: MetricsFilters) => {
+    const queryParams = new URLSearchParams();
+
+    if (params.type) queryParams.append('type', params.type);
+    if (params.status) queryParams.append('status', params.status);
+    if (params.search) queryParams.append('search', params.search);
+    if (params.period) queryParams.append('period', params.period);
+    if (params.category) queryParams.append('category', params.category);
+
+    const queryString = queryParams.toString();
+    return queryString ? `?${queryString}` : '';
+  };
+
   // Preluare lista de metrici
   const {
     data: metricsData,
@@ -78,16 +94,12 @@ export function useAnalyticsMetrics(filters: MetricsFilters = {}) {
   } = useQuery({
     queryKey: ['analytics', 'metrics', filters],
     queryFn: async () => {
-      const response = await apiRequest({
-        url: '/api/analytics/metrics',
-        method: 'GET',
-        params: filters
-      });
-      
+      const response = await apiRequest(`/api/analytics/metrics${buildQueryParams(filters)}`);
+
       if (!response.success) {
         throw new Error(response.message || 'Eroare la preluarea metricilor');
       }
-      
+
       return response.data;
     }
   });
@@ -100,15 +112,12 @@ export function useAnalyticsMetrics(filters: MetricsFilters = {}) {
   } = useQuery({
     queryKey: ['analytics', 'metrics', 'summary'],
     queryFn: async () => {
-      const response = await apiRequest({
-        url: '/api/analytics/metrics/summary',
-        method: 'GET'
-      });
-      
+      const response = await apiRequest('/api/analytics/metrics/summary');
+
       if (!response.success) {
         throw new Error(response.message || 'Eroare la preluarea sumarului metricilor');
       }
-      
+
       return response.data;
     }
   });

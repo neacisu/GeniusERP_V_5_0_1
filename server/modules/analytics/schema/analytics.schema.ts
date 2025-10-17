@@ -105,7 +105,10 @@ export const analyticsDashboards = pgTable('analytics_dashboards', {
   createdBy: varchar('created_by').notNull(), // References user ID
   updatedBy: varchar('updated_by'), // References user ID
   isPublic: boolean('is_public').default(false).notNull(),
-  refreshInterval: integer('refresh_interval') // in seconds
+  refreshInterval: integer('refresh_interval'), // in seconds
+  // Additional fields for compatibility
+  data: text('data'), // Alternative data storage
+  thumbnailUrl: text('thumbnail_url') // Dashboard thumbnail
 });
 
 /**
@@ -174,7 +177,14 @@ export const analyticsMetrics = pgTable('analytics_metrics', {
   timestamp: timestamp('timestamp').defaultNow().notNull(),
   period: varchar('period', { length: 20 }), // daily, weekly, monthly, quarterly, yearly
   source: varchar('source', { length: 50 }),
-  metadata: text('metadata') // JSON string with additional metadata
+  metadata: text('metadata'), // JSON string with additional metadata
+  // Additional fields for compatibility
+  format: varchar('format', { length: 20 }), // Data format
+  aggregationType: varchar('aggregation_type', { length: 20 }), // Aggregation method
+  query: text('query'), // Query definition
+  parameters: text('parameters'), // Query parameters
+  schedule: varchar('schedule', { length: 50 }), // Schedule for updates
+  createdBy: varchar('created_by') // User who created the metric
 });
 
 /**
@@ -210,7 +220,13 @@ export const analyticsAlerts = pgTable('analytics_alerts', {
   updatedBy: varchar('updated_by'), // References user ID
   lastTriggeredAt: timestamp('last_triggered_at'),
   notificationChannels: text('notification_channels'), // JSON string with notification settings
-  isActive: boolean('is_active').default(true).notNull()
+  isActive: boolean('is_active').default(true).notNull(),
+  // Additional fields for compatibility
+  reportId: varchar('report_id'), // Associated report ID
+  threshold: text('threshold'), // Threshold value
+  source: varchar('source', { length: 50 }), // Alert source
+  value: text('value'), // Current value
+  message: text('message') // Alert message
 });
 
 /**
@@ -382,3 +398,29 @@ export const scenarioResults = pgTable('scenario_results', {
   status: varchar('status', { length: 20 }).notNull(), // success, failed, in-progress
   notes: text('notes')
 });
+
+// Type exports for TypeScript
+export type Dashboard = typeof analyticsDashboards.$inferSelect;
+export type InsertDashboard = typeof analyticsDashboards.$inferInsert;
+export type Report = typeof analyticsReports.$inferSelect;
+export type InsertReport = typeof analyticsReports.$inferInsert;
+export type Metric = typeof analyticsMetrics.$inferSelect;
+export type InsertMetric = typeof analyticsMetrics.$inferInsert;
+export type Alert = typeof analyticsAlerts.$inferSelect;
+export type InsertAlert = typeof analyticsAlerts.$inferInsert;
+export type AlertHistory = typeof alertHistory.$inferSelect;
+export type InsertAlertHistory = typeof alertHistory.$inferInsert;
+export type CostCenter = typeof biCostCenters.$inferSelect;
+export type InsertCostCenter = typeof biCostCenters.$inferInsert;
+export type BusinessUnit = typeof biBusinessUnits.$inferSelect;
+export type InsertBusinessUnit = typeof biBusinessUnits.$inferInsert;
+export type CostAllocation = typeof biCostAllocations.$inferSelect;
+export type InsertCostAllocation = typeof biCostAllocations.$inferInsert;
+export type CostAllocationHistory = typeof costAllocationHistory.$inferSelect;
+export type InsertCostAllocationHistory = typeof costAllocationHistory.$inferInsert;
+
+// Additional types
+export type ReportType = typeof reportTypeEnum.enumValues[number];
+export type AlertSeverity = typeof alertSeverityEnum.enumValues[number];
+export type AlertStatus = typeof alertStatusEnum.enumValues[number];
+export type VisualizationType = 'bar' | 'line' | 'pie' | 'area' | 'table';

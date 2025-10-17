@@ -43,7 +43,21 @@ interface NewReportData {
 // Hook principal pentru rapoarte
 export function useAnalyticsReports(filters: ReportFilters = {}) {
   const queryClient = useQueryClient();
-  
+
+  // Construiește query parameters
+  const buildQueryParams = (params: ReportFilters) => {
+    const queryParams = new URLSearchParams();
+
+    if (params.type) queryParams.append('type', params.type);
+    if (params.status) queryParams.append('status', params.status);
+    if (params.search) queryParams.append('search', params.search);
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+
+    const queryString = queryParams.toString();
+    return queryString ? `?${queryString}` : '';
+  };
+
   // Preluare lista de rapoarte
   const {
     data: reportsData,
@@ -54,16 +68,12 @@ export function useAnalyticsReports(filters: ReportFilters = {}) {
   } = useQuery({
     queryKey: ['analytics', 'reports', filters],
     queryFn: async () => {
-      const response = await apiRequest({
-        url: '/api/analytics/reports',
-        method: 'GET',
-        params: filters
-      });
-      
+      const response = await apiRequest(`/api/analytics/reports${buildQueryParams(filters)}`);
+
       if (!response.success) {
         throw new Error(response.message || 'Eroare la preluarea rapoartelor');
       }
-      
+
       return response.data;
     }
   });
@@ -215,6 +225,7 @@ export function useAnalyticsReports(filters: ReportFilters = {}) {
     createReport,
     deleteReport,
     runReport,
+    isRunning: false, // TODO: implement proper running state when API is ready
     refetch,
     useReportQuery,
     recentReports,

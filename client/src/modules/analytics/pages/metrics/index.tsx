@@ -94,22 +94,22 @@ interface MetricCardProps {
   value: string | number;
   change: number;
   icon: React.ReactNode;
-  trend: 'up' | 'down' | 'neutral';
+  trend: string;
   targetValue?: number;
   targetPercent?: number;
   sparklineData?: Array<{ value: number }>;
   timeframe?: string;
-  variant?: 'default' | 'success' | 'warning' | 'danger' | 'info';
+  variant?: string;
 }
 
 export default function MetricsPage() {
-  const [timeRange, setTimeRange] = useState<string>('month');
+  const [period, setPeriod] = useState<string>('month');
   const [category, setCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const { metrics, summary, isLoading } = useAnalyticsMetrics({
-    timeRange,
+    period,
     category: category !== 'all' ? category : undefined
   });
   
@@ -150,7 +150,7 @@ export default function MetricsPage() {
   };
   
   // Funcție pentru generarea iconului corect în funcție de trend
-  const renderTrendIcon = (trend: 'up' | 'down' | 'neutral', change: number) => {
+  const renderTrendIcon = (trend: string, change: number) => {
     if (trend === 'up') {
       return (
         <div className="flex items-center text-green-600">
@@ -562,7 +562,7 @@ export default function MetricsPage() {
         </div>
         
         <div className="flex items-center gap-3">
-          <Select value={timeRange} onValueChange={setTimeRange}>
+          <Select value={period} onValueChange={setPeriod}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Selectați perioada" />
             </SelectTrigger>

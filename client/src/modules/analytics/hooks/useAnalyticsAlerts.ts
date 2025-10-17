@@ -97,29 +97,29 @@ export function useAnalyticsAlerts(filters: AlertsFilters = {}) {
   };
   
   // Query pentru lista de alerte
-  const alertsQuery = useQuery<{ 
-    alerts: AnalyticsAlert[]; 
-    total: number; 
-    page: number; 
-    limit: number 
+  const alertsQuery = useQuery<{
+    alerts: AnalyticsAlert[];
+    total: number;
+    page: number;
+    limit: number
   }>({
     queryKey: ['/api/analytics/alerts', filters],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/analytics/alerts${buildQueryParams(filters)}`);
+      const response = await apiRequest(`/api/analytics/alerts${buildQueryParams(filters)}`);
       return response.json();
     }
   });
   
   // Query pentru istoricul alertelor
-  const alertHistoryQuery = useQuery<{ 
-    history: AnalyticsAlertHistory[]; 
-    total: number; 
-    page: number; 
-    limit: number 
+  const alertHistoryQuery = useQuery<{
+    history: AnalyticsAlertHistory[];
+    total: number;
+    page: number;
+    limit: number
   }>({
     queryKey: ['/api/analytics/alerts/history', filters],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/analytics/alerts/history${buildQueryParams(filters)}`);
+      const response = await apiRequest(`/api/analytics/alerts/history${buildQueryParams(filters)}`);
       return response.json();
     }
   });
@@ -130,7 +130,7 @@ export function useAnalyticsAlerts(filters: AlertsFilters = {}) {
       queryKey: ['/api/analytics/alerts', id],
       queryFn: async () => {
         if (!id) throw new Error('Alert ID is required');
-        const response = await apiRequest('GET', `/api/analytics/alerts/${id}`);
+        const response = await apiRequest(`/api/analytics/alerts/${id}`);
         return response.json();
       },
       enabled: !!id
@@ -140,7 +140,7 @@ export function useAnalyticsAlerts(filters: AlertsFilters = {}) {
   // Mutație pentru crearea unei alerte noi
   const createAlertMutation = useMutation({
     mutationFn: async (data: CreateAlertInput) => {
-      const response = await apiRequest('POST', '/api/analytics/alerts', data);
+      const response = await apiRequest('/api/analytics/alerts', { method: 'POST', data });
       return response.json();
     },
     onSuccess: () => {
@@ -162,7 +162,7 @@ export function useAnalyticsAlerts(filters: AlertsFilters = {}) {
   // Mutație pentru actualizarea unei alerte
   const updateAlertMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<CreateAlertInput> }) => {
-      const response = await apiRequest('PATCH', `/api/analytics/alerts/${id}`, data);
+      const response = await apiRequest(`/api/analytics/alerts/${id}`, { method: 'PATCH', data });
       return response.json();
     },
     onSuccess: (_, variables) => {
@@ -185,7 +185,7 @@ export function useAnalyticsAlerts(filters: AlertsFilters = {}) {
   // Mutație pentru ștergerea unei alerte
   const deleteAlertMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest('DELETE', `/api/analytics/alerts/${id}`);
+      const response = await apiRequest(`/api/analytics/alerts/${id}`, { method: 'DELETE' });
       return response.json();
     },
     onSuccess: () => {
@@ -207,7 +207,7 @@ export function useAnalyticsAlerts(filters: AlertsFilters = {}) {
   // Mutație pentru confirmarea (acknowledge) unei alerte
   const acknowledgeAlertMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest('POST', `/api/analytics/alerts/${id}/acknowledge`);
+      const response = await apiRequest(`/api/analytics/alerts/${id}/acknowledge`, { method: 'POST' });
       return response.json();
     },
     onSuccess: (_, id) => {

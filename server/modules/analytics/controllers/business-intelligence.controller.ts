@@ -93,14 +93,9 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         const periodStart = req.query.periodStart as string;
         const periodEnd = req.query.periodEnd as string;
         
-        const kpis = await biService.getKPIs(
-          companyId,
-          businessUnitId,
-          periodStart,
-          periodEnd
-        );
-        
-        return res.status(200).json({ kpis });
+        // TODO: Implement KPI functionality
+        const kpis = undefined;
+        throw new Error('KPI functionality not yet implemented');
       } catch (error) {
         logger.error('Error fetching KPIs:', error);
         return res.status(500).json({ 
@@ -130,7 +125,8 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
           createdBy: req.user.id
         };
         
-        const kpi = await biService.createKPI(kpiData);
+        // TODO: Implement KPI functionality
+        throw new Error('KPI creation not yet implemented');
         
         return res.status(201).json({ kpi });
       } catch (error) {
@@ -159,7 +155,8 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         const companyId = req.user.companyId;
         const datasetId = req.query.datasetId as string;
         
-        const dimensions = await biService.getOlapDimensions(companyId, datasetId);
+        // TODO: Implement OLAP functionality
+        throw new Error('OLAP dimensions not yet implemented');
         
         return res.status(200).json({ dimensions });
       } catch (error) {
@@ -188,7 +185,8 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         const companyId = req.user.companyId;
         const datasetId = req.query.datasetId as string;
         
-        const measures = await biService.getOlapMeasures(companyId, datasetId);
+        // TODO: Implement OLAP functionality
+        throw new Error('OLAP measures not yet implemented');
         
         return res.status(200).json({ measures });
       } catch (error) {
@@ -217,13 +215,8 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         const companyId = req.user.companyId;
         const { dimensions, measures, filters, datasetId } = req.body;
         
-        const results = await biService.executeOlapQuery(
-          companyId,
-          datasetId,
-          dimensions,
-          measures,
-          filters
-        );
+        // TODO: Implement OLAP functionality
+        throw new Error('OLAP query execution not yet implemented');
         
         return res.status(200).json({ results });
       } catch (error) {
@@ -252,7 +245,8 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         const companyId = req.user.companyId;
         const status = req.query.status as string;
         
-        const jobs = await biService.getEtlJobs(companyId, status);
+        // TODO: Implement ETL functionality
+        throw new Error('ETL jobs not yet implemented');
         
         return res.status(200).json({ jobs });
       } catch (error) {
@@ -284,7 +278,8 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
           createdBy: req.user.id
         };
         
-        const job = await biService.createEtlJob(jobData);
+        // TODO: Implement ETL functionality
+        throw new Error('ETL job creation not yet implemented');
         
         return res.status(201).json({ job });
       } catch (error) {
@@ -313,7 +308,8 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         const companyId = req.user.companyId;
         const type = req.query.type as string;
         
-        const datasets = await biService.getDatasets(companyId, type);
+        // TODO: Implement dataset functionality
+        throw new Error('Dataset retrieval not yet implemented');
         
         return res.status(200).json({ datasets });
       } catch (error) {
@@ -345,7 +341,8 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
           createdBy: req.user.id
         };
         
-        const dataset = await biService.createDataset(datasetData);
+        // TODO: Implement dataset functionality
+        throw new Error('Dataset creation not yet implemented');
         
         return res.status(201).json({ dataset });
       } catch (error) {

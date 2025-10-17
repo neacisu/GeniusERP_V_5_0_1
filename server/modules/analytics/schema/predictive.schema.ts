@@ -72,6 +72,12 @@ export const analyticsPredictiveModels = pgTable('analytics_predictive_models', 
   version: integer('version').default(1),
   modelUrl: text('model_url'), // URL to the model file (for ML models)
   integrationId: varchar('integration_id', { length: 36 }), // Reference to external model API
+  // Additional fields for compatibility
+  type: varchar('type', { length: 50 }), // Alias for modelType
+  algorithm: varchar('algorithm', { length: 50 }), // Algorithm name
+  parameters: jsonb('parameters'), // Model parameters (alias for configuration)
+  trainingData: text('training_data'), // Training data reference
+  status: varchar('status', { length: 20 }).default('draft'), // Model status
 }, (table) => ({
   companyIdx: index('analytics_predictive_models_company_idx').on(table.companyId),
   typeIdx: index('analytics_predictive_models_type_idx').on(table.modelType, table.predictionType),
@@ -238,6 +244,9 @@ export const analyticsScenarios = pgTable('analytics_scenarios', {
   updatedBy: varchar('updated_by', { length: 36 }),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
+  // Additional fields for compatibility
+  modelId: uuid('model_id'), // Alias for baseModelId
+  status: varchar('status', { length: 20 }).default('draft'), // Scenario status
 }, (table) => ({
   modelIdx: index('analytics_scenarios_model_idx').on(table.baseModelId),
   companyIdx: index('analytics_scenarios_company_idx').on(table.companyId),

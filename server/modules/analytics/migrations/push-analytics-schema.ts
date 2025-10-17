@@ -41,31 +41,33 @@ async function pushAnalyticsSchema() {
     
     // Push all analytics schema tables to the database
     // This creates or alters tables to match the schema
-    await db.execute(sql`
+    const createEnumsSQL = `
       -- Create enums if they don't exist
-      DO $$ 
+      DO $$
       BEGIN
         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'report_type') THEN
           CREATE TYPE report_type AS ENUM ('financial', 'inventory', 'sales', 'marketing', 'operations', 'custom');
         END IF;
-        
+
         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'alert_severity') THEN
           CREATE TYPE alert_severity AS ENUM ('critical', 'high', 'medium', 'low', 'info');
         END IF;
-        
+
         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'alert_status') THEN
           CREATE TYPE alert_status AS ENUM ('active', 'acknowledged', 'resolved', 'dismissed');
         END IF;
-        
+
         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'predictive_model_type') THEN
           CREATE TYPE predictive_model_type AS ENUM ('inventory', 'sales', 'pricing', 'marketing', 'financial', 'custom');
         END IF;
-        
+
         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'predictive_scenario_type') THEN
           CREATE TYPE predictive_scenario_type AS ENUM ('inventory_planning', 'sales_forecasting', 'pricing_optimization', 'budget_planning', 'marketing_campaign', 'custom');
         END IF;
       END $$;
-    `);
+    `;
+
+    await db.executeQuery(createEnumsSQL);
     
     console.log('Created enum types');
     
