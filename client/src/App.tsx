@@ -35,6 +35,11 @@ import MarketingModule from "@/modules/marketing";
 import SettingsModule from "@/modules/settings";
 import SalesModule from "@/modules/sales";
 import CollabModule from "@/modules/collab";
+import HRModule from "@/modules/hr";
+import NewRolePage from "@/modules/admin/pages/NewRolePage";
+import EditRolePage from "@/modules/admin/pages/EditRolePage";
+import RolesPage from "@/modules/admin/pages/RolesPage";
+import PermissionsPage from "@/modules/admin/pages/PermissionsPage";
 // Import Settings Module pages directly
 // SystemGeneralPage, SystemIndexPage, ModuleSettingsPage - unused, removed
 import { AuthProvider } from "@/hooks/use-auth";
@@ -120,58 +125,10 @@ function Router() {
       <ProtectedRoute path="/admin/users" component={AdminUsersPage} />
       {/* Folosim protected route cu componente direct importate - ORDINEA CONTEAZĂ! */}
       {/* Prima trebuie să fie ruta cea mai specifică */}
-      <ProtectedRoute
-        path="/admin/roles/new"
-        component={() => {
-          const LazyComponent = React.lazy(
-            () => import("@/modules/admin/pages/NewRolePage"),
-          );
-          return (
-            <React.Suspense fallback={<div>Se încarcă...</div>}>
-              <LazyComponent />
-            </React.Suspense>
-          );
-        }}
-      />
-      <ProtectedRoute
-        path="/admin/roles/:id/edit"
-        component={() => {
-          const LazyComponent = React.lazy(
-            () => import("@/modules/admin/pages/EditRolePage"),
-          );
-          return (
-            <React.Suspense fallback={<div>Se încarcă...</div>}>
-              <LazyComponent />
-            </React.Suspense>
-          );
-        }}
-      />
-      <ProtectedRoute
-        path="/admin/roles"
-        component={() => {
-          const LazyComponent = React.lazy(
-            () => import("@/modules/admin/pages/RolesPage"),
-          );
-          return (
-            <React.Suspense fallback={<div>Se încarcă...</div>}>
-              <LazyComponent />
-            </React.Suspense>
-          );
-        }}
-      />
-      <ProtectedRoute
-        path="/admin/permissions"
-        component={() => {
-          const LazyComponent = React.lazy(
-            () => import("@/modules/admin/pages/PermissionsPage"),
-          );
-          return (
-            <React.Suspense fallback={<div>Se încarcă...</div>}>
-              <LazyComponent />
-            </React.Suspense>
-          );
-        }}
-      />
+      <ProtectedRoute path="/admin/roles/new" component={NewRolePage} />
+      <ProtectedRoute path="/admin/roles/:id/edit" component={EditRolePage} />
+      <ProtectedRoute path="/admin/roles" component={RolesPage} />
+      <ProtectedRoute path="/admin/permissions" component={PermissionsPage} />
       <ProtectedRoute path="/admin" component={AdminUsersPage} />
 
       <ProtectedRoute path="/inventory/*" component={InventoryModule} />
@@ -189,30 +146,9 @@ function Router() {
       <ProtectedRoute path="/bpm/:path*" component={BPMModule} />
       <ProtectedRoute path="/bpm" component={BPMModule} />
 
-      {/* HR Module Routes */}
-      {/* Folosim varianta cu path pattern modificat "/hr/*" pentru a fi compatibil cu wouter */}
-      <ProtectedRoute
-        path="/hr/*"
-        component={() => {
-          const HRModule = React.lazy(() => import("@/modules/hr"));
-          return (
-            <React.Suspense fallback={<div>Se încarcă modulul HR...</div>}>
-              <HRModule />
-            </React.Suspense>
-          );
-        }}
-      />
-      <ProtectedRoute
-        path="/hr"
-        component={() => {
-          const HRModule = React.lazy(() => import("@/modules/hr"));
-          return (
-            <React.Suspense fallback={<div>Se încarcă modulul HR...</div>}>
-              <HRModule />
-            </React.Suspense>
-          );
-        }}
-      />
+      {/* HR Module Routes - Import direct pentru încărcare rapidă */}
+      <ProtectedRoute path="/hr/*" component={() => <HRModule />} />
+      <ProtectedRoute path="/hr" component={() => <HRModule />} />
       {/* CRM Module Routes */}
       <ProtectedRoute path="/crm/*" component={CRMModule} />
       <ProtectedRoute path="/crm" component={CRMModule} />
