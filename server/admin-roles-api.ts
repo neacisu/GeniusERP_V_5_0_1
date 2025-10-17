@@ -7,12 +7,16 @@
 import express, { Request, Response } from 'express';
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { AuthGuard, JwtAuthMode } from './modules/auth/guards/auth.guard';
+import { AuthGuard } from './modules/auth/guards/auth.guard';
+import { JwtAuthMode } from './modules/auth/constants/auth-mode.enum';
 
 const router = express.Router();
 
 // Inițializare conexiune directă la baza de date
 const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error('DATABASE_URL is not set in environment variables');
+}
 const client = postgres(connectionString);
 const db = drizzle(client);
 
