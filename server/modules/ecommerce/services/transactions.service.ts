@@ -162,26 +162,28 @@ export class TransactionsService {
       } = options;
       
       const transactions = await this.db.query(async (db) => {
-        let query = db.select()
-          .from(ecommerceTransactions)
-          .where(eq(ecommerceTransactions.companyId, companyId));
+        // Build WHERE conditions array
+        const conditions: any[] = [eq(ecommerceTransactions.companyId, companyId)];
         
         // Apply status filter if not 'all'
         if (status !== 'all') {
-          query = query.where(eq(ecommerceTransactions.status, status));
+          conditions.push(eq(ecommerceTransactions.status, status));
         }
         
         // Apply date range filters if provided
         if (startDate) {
-          query = query.where(gte(ecommerceTransactions.transactionDate, startDate));
+          conditions.push(gte(ecommerceTransactions.transactionDate, startDate));
         }
         
         if (endDate) {
-          query = query.where(lte(ecommerceTransactions.transactionDate, endDate));
+          conditions.push(lte(ecommerceTransactions.transactionDate, endDate));
         }
         
-        // Apply sorting and pagination
-        query = query.orderBy(desc(ecommerceTransactions.transactionDate))
+        // Build query with combined conditions
+        const query = db.select()
+          .from(ecommerceTransactions)
+          .where(and(...conditions))
+          .orderBy(desc(ecommerceTransactions.transactionDate))
           .limit(limit)
           .offset(offset);
         
