@@ -38,12 +38,22 @@ export function UserForm({ user, roles, onSubmit, isPending }: UserFormProps) {
       : z.string().min(8, "Parola trebuie să aibă minim 8 caractere"),
     firstName: z.string().optional(),
     lastName: z.string().optional(),
-    isActive: z.boolean().default(true),
-    roles: z.array(z.string()).default([]),
+    isActive: z.boolean(),
+    roles: z.array(z.string()),
   });
 
+  // Define explicit type for form values
+  type FormValues = {
+    email: string;
+    password: string | undefined;
+    firstName?: string;
+    lastName?: string;
+    isActive: boolean;
+    roles: string[];
+  };
+
   // Create form
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
@@ -70,7 +80,7 @@ export function UserForm({ user, roles, onSubmit, isPending }: UserFormProps) {
   }, [user, form]);
 
   // Handle form submission
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = (values: FormValues) => {
     const userData: UserFormData = {
       email: values.email,
       firstName: values.firstName,
