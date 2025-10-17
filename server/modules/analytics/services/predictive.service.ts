@@ -536,7 +536,7 @@ export class PredictiveService {
     
     // For demonstration purposes, we'll generate synthetic predictions
     // In a real implementation, this would apply the actual model to real data
-    const inputs: any = scenario.inputs ? JSON.parse(scenario.inputs) : {};
+    const inputs: Record<string, any> = scenario.inputs ? JSON.parse(scenario.inputs) : {};
     const days = inputs.days || 30;
     const products = inputs.products || ['P001', 'P002', 'P003'];
     
@@ -619,7 +619,7 @@ export class PredictiveService {
     
     // For demonstration purposes, we'll generate synthetic forecasts
     // In a real implementation, this would apply the actual model to real data
-    const inputs: any = scenario.inputs ? JSON.parse(scenario.inputs) : {};
+    const inputs: Record<string, any> = scenario.inputs ? JSON.parse(scenario.inputs) : {};
     const months = inputs.months || 6;
     const includeProducts = inputs.includeProducts || true;
     const includeChannels = inputs.includeChannels || true;
@@ -762,7 +762,7 @@ export class PredictiveService {
     
     // For demonstration purposes, we'll generate synthetic optimization results
     // In a real implementation, this would apply the actual model to real data
-    const inputs: any = scenario.inputs ? JSON.parse(scenario.inputs) : {};
+    const inputs: Record<string, any> = scenario.inputs ? JSON.parse(scenario.inputs) : {};
     
     const suppliers = [
       { id: 'S001', name: 'Quality Suppliers SRL', discount: 0.12, leadTime: 7 },
@@ -867,7 +867,7 @@ export class PredictiveService {
     
     // For demonstration purposes, we'll generate synthetic cash flow forecasts
     // In a real implementation, this would apply the actual model to real data
-    const inputs: any = scenario.inputs ? JSON.parse(scenario.inputs) : {};
+    const inputs: Record<string, any> = scenario.inputs ? JSON.parse(scenario.inputs) : {};
     const months = inputs.months || 12;
     
     // Generate date series (months)
@@ -1022,7 +1022,7 @@ export class PredictiveService {
     
     // For demonstration purposes, we'll generate synthetic time series predictions
     // In a real implementation, this would apply the actual model to real data
-    const inputs: any = scenario.inputs ? JSON.parse(scenario.inputs) : {};
+    const inputs: Record<string, any> = scenario.inputs ? JSON.parse(scenario.inputs) : {};
     const periods = inputs.periods || 12;
     const interval = inputs.interval || 'month';
     const includeConfidenceIntervals = inputs.includeConfidenceIntervals !== false;
