@@ -42,29 +42,29 @@ export default function DashboardPage() {
   const moduleStats = [
     { 
       name: "Rapoarte generate", 
-      value: statsData?.reports?.count || 0, 
-      change: statsData?.reports?.change || 0,
+      value: statsData?.data?.reports?.total || 0, 
+      change: ((statsData?.data?.reports?.generated || 0) / (statsData?.data?.reports?.total || 1) * 100),
       icon: <FileBarChart className="h-5 w-5 text-purple-600" />,
       color: "bg-purple-100 text-purple-800"
     },
     { 
       name: "Analiză lead-uri", 
-      value: statsData?.leads?.count || 0, 
-      change: statsData?.leads?.change || 0,
+      value: statsData?.data?.leads?.scored || 0, 
+      change: statsData?.data?.leads?.conversionRate || 0,
       icon: <LineChart className="h-5 w-5 text-blue-600" />,
       color: "bg-blue-100 text-blue-800"
     },
     { 
       name: "Sugestii email", 
-      value: statsData?.emails?.count || 0, 
-      change: statsData?.emails?.change || 0,
+      value: statsData?.data?.emails?.analyzed || 0, 
+      change: ((statsData?.data?.emails?.responded || 0) / (statsData?.data?.emails?.analyzed || 1) * 100),
       icon: <Mail className="h-5 w-5 text-amber-600" />,
       color: "bg-amber-100 text-amber-800"
     },
     { 
       name: "Asistență produse", 
-      value: statsData?.products?.count || 0, 
-      change: statsData?.products?.change || 0,
+      value: statsData?.data?.products?.questions || 0, 
+      change: ((statsData?.data?.products?.answered || 0) / (statsData?.data?.products?.questions || 1) * 100),
       icon: <ShoppingBag className="h-5 w-5 text-green-600" />,
       color: "bg-green-100 text-green-800"
     }
@@ -207,26 +207,28 @@ export default function DashboardPage() {
                 </Card>
               ))}
             </div>
-          ) : statsData?.recentActivity?.length ? (
+          ) : statsData?.data?.recentActivity?.length ? (
             <div className="space-y-4">
-              {statsData.recentActivity.map((activity: { type: string; title: string; description: string }, index: number) => (
-                <Card key={index}>
+              {statsData.data.recentActivity.map((activity, index) => (
+                <Card key={activity.id || index}>
                   <CardContent className="p-6">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center">
                         <div className={`p-2 rounded-md mr-3 ${
-                          activity.type === 'report' ? 'bg-purple-100' : 
-                          activity.type === 'lead' ? 'bg-blue-100' : 
-                          activity.type === 'email' ? 'bg-amber-100' : 'bg-green-100'
+                          activity.type === 'report_generated' ? 'bg-purple-100' : 
+                          activity.type === 'lead_scored' ? 'bg-blue-100' : 
+                          activity.type === 'email_analyzed' ? 'bg-amber-100' : 
+                          activity.type === 'question_answered' ? 'bg-green-100' : 'bg-red-100'
                         }`}>
-                          {activity.type === 'report' ? <FileBarChart className="h-4 w-4 text-purple-600" /> : 
-                           activity.type === 'lead' ? <LineChart className="h-4 w-4 text-blue-600" /> : 
-                           activity.type === 'email' ? <Mail className="h-4 w-4 text-amber-600" /> : 
-                           <Lightbulb className="h-4 w-4 text-green-600" />}
+                          {activity.type === 'report_generated' ? <FileBarChart className="h-4 w-4 text-purple-600" /> : 
+                           activity.type === 'lead_scored' ? <LineChart className="h-4 w-4 text-blue-600" /> : 
+                           activity.type === 'email_analyzed' ? <Mail className="h-4 w-4 text-amber-600" /> : 
+                           activity.type === 'question_answered' ? <Lightbulb className="h-4 w-4 text-green-600" /> :
+                           <Bot className="h-4 w-4 text-red-600" />}
                         </div>
                         <div>
-                          <h3 className="font-medium">{activity.title}</h3>
-                          <p className="text-sm text-gray-500">{activity.description}</p>
+                          <h3 className="font-medium">{activity.entityName}</h3>
+                          <p className="text-sm text-gray-500">{activity.details || ''}</p>
                         </div>
                       </div>
                       <div className="text-sm text-gray-500">
