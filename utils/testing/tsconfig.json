@@ -20,15 +20,12 @@
   },
   "include": [
     "./**/*.ts",
-    "../../server/**/*.ts",
-    "../../shared/**/*.ts",
     "./jest-global.d.ts"
   ],
   "exclude": [
-    "../../node_modules",
-    "../../build",
-    "../../dist",
-    "../../client"
+    "node_modules",
+    "build",
+    "dist"
   ]
 }
 
