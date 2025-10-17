@@ -5,7 +5,7 @@
  * Includes Redis caching for performance optimization
  */
 
-import { getDrizzle } from '../../../common/drizzle';
+import { getPostgresClient } from '../../../common/drizzle/db';
 import { RedisService } from '../../../services/redis.service';
 
 /**
@@ -52,38 +52,39 @@ export class FinancialReportsService {
       return cached;
     }
     
-    // Calculate from database
-    const db = getDrizzle();
+    // Calculate from database using postgres client directly
+    const client = getPostgresClient();
     
-    const sales = await db.$client.unsafe(`
+    // Use tagged template literals for safe SQL queries
+    const sales = await client<{ total: string }[]>`
       SELECT COALESCE(SUM(amount), 0) as total 
       FROM invoices 
-      WHERE company_id = $1 
+      WHERE company_id = ${companyId}
       AND type = 'INVOICE'
       AND deleted_at IS NULL
-    `, [companyId]);
+    `;
     
-    const purchases = await db.$client.unsafe(`
+    const purchases = await client<{ total: string }[]>`
       SELECT COALESCE(SUM(amount), 0) as total 
       FROM invoices 
-      WHERE company_id = $1 
+      WHERE company_id = ${companyId}
       AND type = 'PURCHASE'
       AND deleted_at IS NULL
-    `, [companyId]);
+    `;
     
-    const cashBalance = await db.$client.unsafe(`
+    const cashBalance = await client<{ total: string }[]>`
       SELECT COALESCE(SUM(current_balance), 0) as total 
       FROM cash_registers 
-      WHERE company_id = $1
+      WHERE company_id = ${companyId}
       AND deleted_at IS NULL
-    `, [companyId]);
+    `;
     
-    const bankBalance = await db.$client.unsafe(`
+    const bankBalance = await client<{ total: string }[]>`
       SELECT COALESCE(SUM(current_balance), 0) as total 
       FROM bank_accounts 
-      WHERE company_id = $1
+      WHERE company_id = ${companyId}
       AND deleted_at IS NULL
-    `, [companyId]);
+    `;
     
     const reports: FinancialReport[] = [
       {
@@ -135,39 +136,40 @@ export class FinancialReportsService {
       return cached;
     }
     
-    // Calculate from database
-    const db = getDrizzle();
+    // Calculate from database using postgres client directly
+    const client = getPostgresClient();
     
+    // Use tagged template literals for safe SQL queries
     const [salesResult, purchasesResult, cashResult, bankResult] = await Promise.all([
-      db.$client.unsafe(`
+      client<{ total: string }[]>`
         SELECT COALESCE(SUM(amount), 0) as total 
         FROM invoices 
-        WHERE company_id = $1 
+        WHERE company_id = ${companyId}
         AND type = 'INVOICE'
         AND deleted_at IS NULL
-      `, [companyId]),
+      `,
       
-      db.$client.unsafe(`
+      client<{ total: string }[]>`
         SELECT COALESCE(SUM(amount), 0) as total 
         FROM invoices 
-        WHERE company_id = $1 
+        WHERE company_id = ${companyId}
         AND type = 'PURCHASE'
         AND deleted_at IS NULL
-      `, [companyId]),
+      `,
       
-      db.$client.unsafe(`
+      client<{ total: string }[]>`
         SELECT COALESCE(SUM(current_balance), 0) as total 
         FROM cash_registers 
-        WHERE company_id = $1
+        WHERE company_id = ${companyId}
         AND deleted_at IS NULL
-      `, [companyId]),
+      `,
       
-      db.$client.unsafe(`
+      client<{ total: string }[]>`
         SELECT COALESCE(SUM(current_balance), 0) as total 
         FROM bank_accounts 
-        WHERE company_id = $1
+        WHERE company_id = ${companyId}
         AND deleted_at IS NULL
-      `, [companyId])
+      `
     ]);
     
     const totalRevenue = Number(salesResult[0]?.total || 0);
@@ -179,14 +181,14 @@ export class FinancialReportsService {
     const totalAssets = cashBalance + bankBalance;
     
     // Get liabilities (suppliers balance)
-    const liabilitiesResult = await db.$client.unsafe(`
+    const liabilitiesResult = await client<{ total: string }[]>`
       SELECT COALESCE(SUM(amount - paid_amount), 0) as total 
       FROM invoices 
-      WHERE company_id = $1 
+      WHERE company_id = ${companyId}
       AND type = 'PURCHASE'
       AND status != 'paid'
       AND deleted_at IS NULL
-    `, [companyId]);
+    `;
     
     const totalLiabilities = Number(liabilitiesResult[0]?.total || 0);
     const netWorth = totalAssets - totalLiabilities;
