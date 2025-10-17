@@ -1,5 +1,6 @@
 import { IStorage } from "../../../storage";
 import { DrizzleService } from "../../../common/drizzle/drizzle.service";
+import { and, eq } from "drizzle-orm";
 import {
   AccountClass, AccountGroup, SyntheticAccount, AnalyticAccount,
   JournalEntry, JournalLine,
@@ -381,62 +382,36 @@ export class AccountingService {
    * Get all suppliers for a company
    */
   async getSuppliers(companyId: string): Promise<any[]> {
-    // Get suppliers from CRM companies table where isSupplier is true
-    const query = `
-      SELECT
-        id,
-        name,
-        cui,
-        vat_number as "vatNumber",
-        registration_number as "registrationNumber",
-        address,
-        city,
-        country,
-        postal_code as "postalCode",
-        phone,
-        email,
-        website,
-        custom_fields as "customFields",
-        analythic_401 as "analythic401",
-        analythic_4111 as "analythic4111",
-        created_at as "createdAt",
-        updated_at as "updatedAt"
-      FROM crm_companies
-      WHERE company_id = $1 AND is_supplier = true
-      ORDER BY name ASC
-    `;
-
-    return this.drizzleService.executeQuery(query, [companyId]);
+    // Get suppliers from CRM companies table where isSupplier is true using Drizzle ORM
+    const { crm_companies } = await import('../../../modules/crm/schema/crm.schema');
+    
+    return this.drizzleService.db
+      .select()
+      .from(crm_companies)
+      .where(and(
+        eq(crm_companies.companyId, companyId),
+        eq(crm_companies.isSupplier, true)
+      ))
+      .orderBy(crm_companies.name);
   }
 
   /**
    * Get supplier by ID for a company
    */
   async getSupplier(supplierId: string, companyId: string): Promise<any> {
-    const query = `
-      SELECT
-        id,
-        name,
-        cui,
-        vat_number as "vatNumber",
-        registration_number as "registrationNumber",
-        address,
-        city,
-        country,
-        postal_code as "postalCode",
-        phone,
-        email,
-        website,
-        custom_fields as "customFields",
-        analythic_401 as "analythic401",
-        analythic_4111 as "analythic4111",
-        created_at as "createdAt",
-        updated_at as "updatedAt"
-      FROM crm_companies
-      WHERE id = $1 AND company_id = $2 AND is_supplier = true
-    `;
-
-    const result = await this.drizzleService.executeQuery(query, [supplierId, companyId]);
+    // Get supplier using Drizzle ORM
+    const { crm_companies } = await import('../../../modules/crm/schema/crm.schema');
+    
+    const result = await this.drizzleService.db
+      .select()
+      .from(crm_companies)
+      .where(and(
+        eq(crm_companies.id, supplierId),
+        eq(crm_companies.companyId, companyId),
+        eq(crm_companies.isSupplier, true)
+      ))
+      .limit(1);
+    
     return result[0] || null;
   }
 }

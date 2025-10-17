@@ -9,6 +9,8 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { DrizzleService, getDrizzle } from '../../../common/drizzle';
+import { eq, desc, sum } from 'drizzle-orm';
+import { ledgerEntries, ledgerLines } from '../../../../shared/schema';
 import { AuditService } from '../../audit/services/audit.service';
 import { Service } from '../../../../shared/types';
 import { RedisService } from '../../../services/redis.service';
@@ -306,19 +308,15 @@ export default class NoteContabilService {
         }
       }
       
-      // Query direct din PostgreSQL ledger_entries
+      // Query direct din PostgreSQL ledger_entries folosind Drizzle ORM
       const db = getDrizzle();
       
-      // Query folosind $client pentru SQL raw
-      const entries = await db.$client`
-        SELECT 
-          le.*,
-          COALESCE((SELECT SUM(debit_amount) FROM ledger_lines WHERE ledger_entry_id = le.id), 0) as total_debit,
-          COALESCE((SELECT SUM(credit_amount) FROM ledger_lines WHERE ledger_entry_id = le.id), 0) as total_credit
-        FROM ledger_entries le
-        WHERE le.company_id = ${companyId}
-        ORDER BY le.created_at DESC
-      `;
+      // Query folosind Drizzle ORM cu relații
+      const entries = await db
+        .select()
+        .from(ledgerEntries)
+        .where(eq(ledgerEntries.companyId, companyId))
+        .orderBy(desc(ledgerEntries.createdAt));
       
       // Transform to Note Contabilă format
       const notes = entries.map((entry: any) => ({

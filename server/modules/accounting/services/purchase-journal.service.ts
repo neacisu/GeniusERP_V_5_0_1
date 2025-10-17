@@ -18,8 +18,6 @@ import { invoices, invoiceItems, invoiceDetails, invoicePayments, companies, use
 
 import { v4 as uuidv4 } from 'uuid';
 import { VATCategory, determineVATCategory } from '../types/vat-categories';
-import pg from 'pg';
-const { Client } = pg;
 
 import { accountingCacheService } from './accounting-cache.service';
 import { accountingQueueService } from './accounting-queue.service';
@@ -316,84 +314,55 @@ export class PurchaseJournalService {
       const grossAmount = netAmount + vatAmount;
       console.log('grossAmount calculated:', grossAmount);
 
-      // Create completely separate PostgreSQL client to avoid Drizzle interference
-      const { Client } = require('pg');
-      const client = new Client({
-        host: process.env.PGHOST,
-        port: parseInt(process.env.PGPORT || '5432'),
-        database: process.env.PGDATABASE,
-        user: process.env.PGUSER,
-        password: process.env.PGPASSWORD,
-        ssl: process.env.NODE_ENV === 'production'
-      });
-
+      const db = getDrizzle();
       const actualInvoiceId = uuidv4();
 
       try {
-        await client.connect();
+        // Insert invoice using Drizzle ORM
+        await db.insert(invoices).values({
+          id: actualInvoiceId,
+          companyId: invoiceData.companyId,
+          invoiceNumber: invoiceData.invoiceNumber,
+          customerName: supplier.name,
+          amount: grossAmount.toString(),
+          totalAmount: grossAmount.toString(),
+          netAmount: netAmount.toString(),
+          vatAmount: vatAmount.toString(),
+          issueDate: invoiceData.issueDate,
+          dueDate: invoiceData.dueDate,
+          type: 'PURCHASE',
+          description: notes || `Purchase invoice ${invoiceData.invoiceNumber} from ${supplier.name}`,
+          createdBy: invoiceData.userId || 'system'
+        });
 
-        // Insert invoice using completely separate client
-        await client.query(`
-          INSERT INTO invoices (
-            id, company_id, invoice_number, customer_name,
-            amount, total_amount, net_amount, vat_amount, issue_date, due_date,
-            type, description, created_by
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-        `, [
-          actualInvoiceId,
-          invoiceData.companyId,
-          invoiceData.invoiceNumber,
-          supplier.name,
-          grossAmount.toString(),
-          grossAmount.toString(),
-          netAmount.toString(),
-          vatAmount.toString(),
-          invoiceData.issueDate,
-          invoiceData.dueDate,
-          'PURCHASE',
-          notes || `Purchase invoice ${invoiceData.invoiceNumber} from ${supplier.name}`,
-          invoiceData.userId || 'system'
-        ]);
-
-        // Insert invoice items
+        // Insert invoice items using Drizzle ORM
         for (const item of items) {
-          await client.query(`
-            INSERT INTO invoice_items (
-              id, invoice_id, product_name, description, quantity,
-              unit_price, net_amount, vat_rate, vat_amount, gross_amount, sequence, created_at, updated_at
-            ) VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
-          `, [
-            actualInvoiceId,
-            item.productName || null,
-            item.description || null,
-            Number(item.quantity),
-            Number(item.unitPrice),
-            Number(item.netAmount),
-            Number(item.vatRate),
-            Number(item.vatAmount),
-            Number(item.grossAmount),
-            1 // sequence
-          ]);
+          await db.insert(invoiceItems).values({
+            invoiceId: actualInvoiceId,
+            productName: item.productName || '',
+            description: item.description,
+            quantity: String(item.quantity),
+            unitPrice: String(item.unitPrice),
+            netAmount: String(item.netAmount),
+            vatRate: String(item.vatRate),
+            vatAmount: String(item.vatAmount),
+            grossAmount: String(item.grossAmount),
+            sequence: 1
+          });
         }
 
-        // Insert supplier details
-        await client.query(`
-          INSERT INTO invoice_details (
-            invoice_id, partner_name, partner_fiscal_code, partner_registration_number,
-            partner_address, partner_city, partner_country,
-            payment_method, payment_due_days
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        `, [
-          actualInvoiceId,
-          supplier.name || 'Furnizor necunoscut',
-          supplier.fiscalCode || 'N/A',
-          supplier.registrationNumber || null,
-          supplier.address || 'Adresă necunoscută',
-          supplier.city || 'Oraș necunoscut',
-          supplier.country || 'Romania',
-          paymentTerms?.method || 'bank_transfer',
-          paymentTerms?.dueDays || 30
-        ]);
+        // Insert supplier details using Drizzle ORM
+        await db.insert(invoiceDetails).values({
+          invoiceId: actualInvoiceId,
+          partnerName: supplier.name || 'Furnizor necunoscut',
+          partnerFiscalCode: supplier.fiscalCode || 'N/A',
+          partnerRegistrationNumber: supplier.registrationNumber || null,
+          partnerAddress: supplier.address || 'Adresă necunoscută',
+          partnerCity: supplier.city || 'Oraș necunoscut',
+          partnerCountry: supplier.country || 'Romania',
+          paymentMethod: paymentTerms?.method || 'bank_transfer',
+          paymentDueDays: paymentTerms?.dueDays || 30
+        });
 
         console.log('Successfully recorded purchase invoice with supplier details (OMFP 2634/2015 compliance)');
         return actualInvoiceId;
@@ -401,8 +370,6 @@ export class PurchaseJournalService {
       } catch (error) {
         console.error('Error recording supplier invoice:', error);
         throw new Error(`Failed to record supplier invoice: ${(error as Error).message}`);
-      } finally {
-        await client.end();
       }
 
       // GENERARE AUTOMATĂ NOTĂ CONTABILĂ (Integrare în contabilitate)
@@ -429,27 +396,15 @@ export class PurchaseJournalService {
           deductibleVat: invoiceData.deductibleVat !== false
         });
 
-        // Actualizare factură cu ledgerEntryId folosind client separat
-        const updateClient = new Client({
-          host: process.env.PGHOST,
-          port: parseInt(process.env.PGPORT || '5432'),
-          database: process.env.PGDATABASE,
-          user: process.env.PGUSER,
-          password: process.env.PGPASSWORD,
-          ssl: process.env.NODE_ENV === 'production'
-        });
-
-        try {
-          await updateClient.connect();
-          await updateClient.query(`
-            UPDATE invoices
-            SET ledger_entry_id = $1, is_validated = true, validated_at = $2
-            WHERE id = $3
-          `, [entry.id, new Date(), actualInvoiceId]);
-          console.log('Invoice validated and linked to ledger entry:', entry.id);
-        } finally {
-          await updateClient.end();
-        }
+        // Actualizare factură cu ledgerEntryId folosind Drizzle ORM
+        await db.update(invoices)
+          .set({
+            ledgerEntryId: entry.id,
+            isValidated: true,
+            validatedAt: new Date()
+          })
+          .where(eq(invoices.id, actualInvoiceId));
+        console.log('Invoice validated and linked to ledger entry:', entry.id);
       } catch (accountingError) {
         console.error('Warning: Failed to generate automatic accounting entry:', accountingError);
         // Nu aruncăm eroare - înregistrarea facturii a reușit, doar nota contabilă a eșuat
@@ -1153,99 +1108,68 @@ export class PurchaseJournalService {
       const vatAmount = items.reduce((sum, item) => sum + Number(item.vatAmount), 0);
       const grossAmount = netAmount + vatAmount;
 
-      // Create direct PostgreSQL client connection
-      const { Client } = require('pg');
-      const client = new Client({
-        host: process.env.PGHOST || 'localhost',
-        port: parseInt(process.env.PGPORT || '5432'),
-        database: process.env.PGDATABASE || 'geniuserp',
-        user: process.env.PGUSER || 'postgres',
-        password: process.env.PGPASSWORD || '',
-        ssl: false
-      });
+      const db = getDrizzle();
 
       try {
-        await client.connect();
+        // Use Drizzle transaction for atomicity
+        await db.transaction(async (tx) => {
+          // Update invoice using Drizzle ORM
+          await tx.update(invoices)
+            .set({
+              invoiceNumber: invoiceData.invoiceNumber,
+              customerName: supplier.name,
+              amount: grossAmount.toString(),
+              totalAmount: grossAmount.toString(),
+              netAmount: netAmount.toString(),
+              vatAmount: vatAmount.toString(),
+              issueDate: invoiceData.issueDate,
+              dueDate: invoiceData.dueDate,
+              description: notes || `Purchase invoice ${invoiceData.invoiceNumber} from ${supplier.name}`,
+              updatedAt: new Date()
+            })
+            .where(eq(invoices.id, invoiceId));
 
-        // Start transaction
-        await client.query('BEGIN');
+          // Delete existing invoice items using Drizzle ORM
+          await tx.delete(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
 
-        // Update invoice
-        await client.query(`
-          UPDATE invoices SET
-            invoice_number = $2, customer_name = $3,
-            amount = $4, total_amount = $5, net_amount = $6, vat_amount = $7,
-            issue_date = $8, due_date = $9, description = $10, updated_at = NOW()
-          WHERE id = $1
-        `, [
-          invoiceId,
-          invoiceData.invoiceNumber,
-          supplier.name,
-          grossAmount.toString(),
-          grossAmount.toString(),
-          netAmount.toString(),
-          vatAmount.toString(),
-          invoiceData.issueDate,
-          invoiceData.dueDate,
-          notes || `Purchase invoice ${invoiceData.invoiceNumber} from ${supplier.name}`
-        ]);
+          // Insert updated invoice items using Drizzle ORM
+          for (const item of items) {
+            await tx.insert(invoiceItems).values({
+              invoiceId: invoiceId,
+              productName: item.productName || '',
+              description: item.description,
+              quantity: String(item.quantity),
+              unitPrice: String(item.unitPrice),
+              netAmount: String(item.netAmount),
+              vatRate: String(item.vatRate),
+              vatAmount: String(item.vatAmount),
+              grossAmount: String(item.grossAmount),
+              sequence: 1
+            });
+          }
 
-        // Delete existing invoice items
-        await client.query('DELETE FROM invoice_items WHERE invoice_id = $1', [invoiceId]);
-
-        // Insert updated invoice items
-        for (const item of items) {
-          await client.query(`
-            INSERT INTO invoice_items (
-              id, invoice_id, product_name, description, quantity,
-              unit_price, net_amount, vat_rate, vat_amount, gross_amount, sequence, created_at, updated_at
-            ) VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
-          `, [
-            invoiceId,
-            item.productName || null,
-            item.description || null,
-            Number(item.quantity),
-            Number(item.unitPrice),
-            Number(item.netAmount),
-            Number(item.vatRate),
-            Number(item.vatAmount),
-            Number(item.grossAmount),
-            1 // sequence
-          ]);
-        }
-
-        // Update supplier details
-        await client.query(`
-          UPDATE invoice_details SET
-            partner_name = $2, partner_fiscal_code = $3, partner_registration_number = $4,
-            partner_address = $5, partner_city = $6, partner_country = $7,
-            payment_method = $8, payment_due_days = $9, notes = $10
-          WHERE invoice_id = $1
-        `, [
-          invoiceId,
-          supplier.name || 'Furnizor necunoscut',
-          supplier.fiscalCode || 'N/A',
-          supplier.registrationNumber || null,
-          supplier.address || 'Adresă necunoscută',
-          supplier.city || 'Oraș necunoscut',
-          supplier.country || 'Romania',
-          paymentTerms?.method || 'bank_transfer',
-          paymentTerms?.dueDays || 30,
-          notes || null
-        ]);
-
-        // Commit transaction
-        await client.query('COMMIT');
+          // Update supplier details using Drizzle ORM
+          await tx.update(invoiceDetails)
+            .set({
+              partnerName: supplier.name || 'Furnizor necunoscut',
+              partnerFiscalCode: supplier.fiscalCode || 'N/A',
+              partnerRegistrationNumber: supplier.registrationNumber || null,
+              partnerAddress: supplier.address || 'Adresă necunoscută',
+              partnerCity: supplier.city || 'Oraș necunoscut',
+              partnerCountry: supplier.country || 'Romania',
+              paymentMethod: paymentTerms?.method || 'bank_transfer',
+              paymentDueDays: paymentTerms?.dueDays || 30,
+              notes: notes || null
+            })
+            .where(eq(invoiceDetails.invoiceId, invoiceId));
+        });
 
         console.log('Successfully updated purchase invoice with supplier details');
         return invoiceId;
 
       } catch (error) {
-        await client.query('ROLLBACK');
         console.error('Database error:', error);
         throw error;
-      } finally {
-        await client.end();
       }
     } catch (error) {
       console.error('Error updating supplier invoice:', error);

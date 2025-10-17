@@ -3,6 +3,8 @@ import { BaseController } from './base.controller';
 import { JournalService, LedgerEntryType } from '../services/journal.service';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
 import { getDrizzle } from '../../../common/drizzle';
+import { eq, desc } from 'drizzle-orm';
+import { ledgerEntries, ledgerLines } from '../../../../shared/schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditService, AuditAction } from '../../audit/services/audit.service';
 
@@ -25,26 +27,36 @@ export class JournalController extends BaseController {
       const companyId = this.getCompanyId(req);
       
       const db = getDrizzle();
-      const entries = await db.$client`
-        SELECT 
-          le.*,
-          json_agg(
-            json_build_object(
-              'id', ll.id,
-              'accountId', ll.account_id,
-              'debitAmount', ll.debit_amount,
-              'creditAmount', ll.credit_amount,
-              'description', ll.description
-            ) ORDER BY ll.id
-          ) as lines
-        FROM ledger_entries le
-        LEFT JOIN ledger_lines ll ON le.id = ll.ledger_entry_id
-        WHERE le.company_id = ${companyId}
-        GROUP BY le.id
-        ORDER BY le.created_at DESC
-      `;
+      // Get entries using Drizzle ORM
+      const entries = await db
+        .select()
+        .from(ledgerEntries)
+        .where(eq(ledgerEntries.companyId, companyId))
+        .orderBy(desc(ledgerEntries.createdAt));
       
-      return entries.map((e: any) => ({
+      // Load lines for each entry
+      const entriesWithLines = await Promise.all(
+        entries.map(async (entry) => {
+          const lines = await db
+            .select()
+            .from(ledgerLines)
+            .where(eq(ledgerLines.ledgerEntryId, entry.id))
+            .orderBy(ledgerLines.id);
+          
+          return {
+            ...entry,
+            lines: lines.map(line => ({
+              id: line.id,
+              accountId: line.accountId,
+              debitAmount: line.debitAmount,
+              creditAmount: line.creditAmount,
+              description: line.description
+            }))
+          };
+        })
+      );
+      
+      return entriesWithLines.map((e: any) => ({
         id: e.id,
         number: e.note_number || `NC-${e.id.substring(0, 8)}`, // Numărul NOTEI contabile
         date: e.created_at,
