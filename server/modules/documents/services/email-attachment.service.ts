@@ -35,7 +35,7 @@ export interface EmailAttachment {
  */
 export interface AttachmentProcessingResult {
   documentId: string;
-  registryId?: string;
+  registryNumber?: string;
   ocrProcessed: boolean;
   detectedType?: string;
   classification: {
@@ -49,12 +49,12 @@ export interface AttachmentProcessingResult {
  * Email Attachment Service for processing email attachments into documents
  */
 export class EmailAttachmentService {
-  private db: ReturnType<typeof drizzle>;
-  private queryClient: ReturnType<typeof postgres>;
-  private documentService: DocumentService;
-  private ocrService: OcrService;
-  private registryService: DocumentRegistryService;
-  
+  private db!: ReturnType<typeof drizzle>;
+  private queryClient!: ReturnType<typeof postgres>;
+  private documentService!: DocumentService;
+  private ocrService!: OcrService;
+  private registryService!: DocumentRegistryService;
+
   constructor() {
     this.initialize();
   }
@@ -63,8 +63,7 @@ export class EmailAttachmentService {
     try {
       const drizzleService = new DrizzleService();
       this.db = drizzleService.getDbInstance();
-      this.queryClient = drizzleService.queryClient;
-      this.documentService = new DocumentService();
+      this.documentService = new DocumentService(drizzleService);
       this.ocrService = new OcrService();
       this.registryService = new DocumentRegistryService();
       
@@ -91,41 +90,31 @@ export class EmailAttachmentService {
       // 1. Store the attachment as a document
       const document = await this.documentService.createDocument({
         companyId,
-        content: attachment.content.toString('base64'),
-        type: 'EMAIL_ATTACHMENT', // Default type until classified
-        metadata: {
-          originalFilename: attachment.filename,
-          contentType: attachment.contentType,
-          size: attachment.size,
-          emailSubject: attachment.emailSubject,
-          emailFrom: attachment.emailFrom,
-          emailDate: attachment.emailDate.toISOString(),
-          emailTo: attachment.emailTo.join(', ')
-        }
-      });
+        type: 'EMAIL_ATTACHMENT' // Default type until classified
+      }, attachment.content.toString('base64'));
       
       // 2. Process with OCR to extract text
       let ocrProcessed = false;
       try {
-        const ocrText = await this.ocrService.processDocument(document.id);
+        const ocrText = await this.ocrService.processDocument(document.document.id);
         ocrProcessed = true;
       } catch (ocrError) {
-        console.warn(`[EmailAttachmentService] OCR processing failed for ${document.id}:`, ocrError);
+        console.warn(`[EmailAttachmentService] OCR processing failed for ${document.document.id}:`, ocrError);
       }
       
       // 3. Classify document based on filename, content type, and OCR text
-      const classification = await this.classifyDocument(attachment, document.id);
+      const classification = await this.classifyDocument(attachment, document.document.id);
       
       // 4. Update document type based on classification
-      await this.documentService.updateDocumentMetadata(document.id, {
+      await this.documentService.updateDocumentMetadata(document.document.id, {
         type: classification.documentType
       });
-      
+
       // 5. Register in the appropriate registry based on classification
-      let registryId: string | undefined = undefined;
+      let registryNumber: string | undefined = undefined;
       try {
         const registryResult = await this.registryService.registerDocument(
-          document.id,
+          document.document.id,
           classification.flow,
           companyId,
           {
@@ -134,21 +123,21 @@ export class EmailAttachmentService {
             confidence: classification.confidence
           }
         );
-        registryId = registryResult.registryId;
+        registryNumber = registryResult.registryNumber;
       } catch (registryError) {
         console.error(`[EmailAttachmentService] Registry error for ${document.id}:`, registryError);
       }
       
       return {
         documentId: document.id,
-        registryId,
+        registryNumber,
         ocrProcessed,
         detectedType: classification.documentType,
         classification
       };
     } catch (error) {
       console.error('[EmailAttachmentService] Attachment processing error:', error);
-      throw new Error(`Failed to process email attachment: ${error.message}`);
+      throw new Error(`Failed to process email attachment: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
   
@@ -167,8 +156,8 @@ export class EmailAttachmentService {
     // Get OCR text if available
     let ocrText = '';
     try {
-      const document = await this.documentService.getDocument(documentId);
-      ocrText = document.ocrText || '';
+      const document = await this.documentService.getDocumentById(documentId);
+      ocrText = (document as any).ocrText || '';
     } catch (error) {
       console.warn(`[EmailAttachmentService] Couldn't get OCR text for classification:`, error);
     }
