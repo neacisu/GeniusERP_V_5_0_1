@@ -28,32 +28,30 @@ import {
   AlertTitle,
 } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { 
-  BarChart, 
-  PieChart, 
-  LineChart, 
-  Clock, 
-  Download, 
-  Share2, 
-  ChevronLeft, 
+import {
+  BarChart,
+  LineChart,
+  Clock,
+  Download,
+  Share2,
+  ChevronLeft,
   Printer,
-  TrendingUp, 
-  FileText, 
-  File, 
+  TrendingUp,
+  FileText,
+  File,
   FileBarChart,
   RefreshCcw
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 
 export default function ReportDetailPage() {
   // Obținem ID-ul raportului din URL
   const [, params] = useRoute<{ id: string }>("/ai/reports/:id");
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const reportId = params?.id;
-  
+  const reportId = params?.id || null;
+
   // Încărcăm datele raportului
   const { data: reportResponse, isLoading, error, refetch } = useAIReport(reportId);
   const report = reportResponse?.data;

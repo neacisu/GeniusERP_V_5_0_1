@@ -62,17 +62,13 @@ import {
   Search,
   Filter,
   MoreVertical,
-  ArrowRight,
-  Clock,
   Play,
   FileText,
   Edit,
   Copy,
   Trash2,
   Eye,
-  BarChart,
   CheckCircle,
-  XCircle,
   Workflow
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -88,7 +84,7 @@ const processFormSchema = z.object({
   }),
   description: z.string().optional(),
   type: z.enum(['standard', 'approval', 'document', 'custom']),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 
 export default function ProcessesPage() {
@@ -254,23 +250,23 @@ export default function ProcessesPage() {
   };
   
   // Handler for duplicating a process
-  const handleDuplicateProcess = (id: string) => {
+  const handleDuplicateProcess = (_id: string) => {
     toast({
       title: 'Proces duplicat',
       description: 'Procesul a fost duplicat cu succes.',
     });
   };
-  
+
   // Handler for deleting a process
-  const handleDeleteProcess = (id: string) => {
+  const handleDeleteProcess = (_id: string) => {
     toast({
       title: 'Proces șters',
       description: 'Procesul a fost șters cu succes.',
     });
   };
-  
+
   // Handler for running a process instance
-  const handleRunProcess = (id: string) => {
+  const handleRunProcess = (_id: string) => {
     toast({
       title: 'Proces inițiat',
       description: 'Procesul a fost inițiat cu succes.',

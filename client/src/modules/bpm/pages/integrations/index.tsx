@@ -8,7 +8,6 @@ import React from 'react';
 import { BPMModuleLayout } from '../../components/common/BPMModuleLayout';
 import BPMEmptyState from '../../components/common/BPMEmptyState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Share2 } from 'lucide-react';
 
 export default function IntegrationsPage() {
@@ -30,7 +29,7 @@ export default function IntegrationsPage() {
               label: "Explorează posibilități",
               onClick: () => window.alert("Integrările vor fi disponibile în curând!"),
             }}
-            variant="default"
+            variant="inline"
             className="max-w-lg"
           />
         </CardContent>

@@ -8,8 +8,7 @@ import React from 'react';
 import { BPMModuleLayout } from '../../components/common/BPMModuleLayout';
 import BPMEmptyState from '../../components/common/BPMEmptyState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Cog, FileCog } from 'lucide-react';
+import { Cog } from 'lucide-react';
 
 export default function AutomationsPage() {
   return (
@@ -30,7 +29,7 @@ export default function AutomationsPage() {
               label: "Află mai multe",
               onClick: () => window.alert("Automatizările vor fi disponibile în curând!"),
             }}
-            variant="default"
+            variant="inline"
             className="max-w-lg"
           />
         </CardContent>

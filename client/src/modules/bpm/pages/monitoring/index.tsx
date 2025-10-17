@@ -8,7 +8,6 @@ import React from 'react';
 import { BPMModuleLayout } from '../../components/common/BPMModuleLayout';
 import BPMEmptyState from '../../components/common/BPMEmptyState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Gauge } from 'lucide-react';
 
 export default function MonitoringPage() {
@@ -30,7 +29,7 @@ export default function MonitoringPage() {
               label: "Înțelege monitorizarea",
               onClick: () => window.alert("Monitorizarea avansată va fi disponibilă în curând!"),
             }}
-            variant="default"
+            variant="inline"
             className="max-w-lg"
           />
         </CardContent>

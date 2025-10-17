@@ -26,7 +26,7 @@ export interface ProcessCardProps {
     status: string;
     type: string;
     createdAt: string;
-    updatedAt: string;
+    updatedAt?: string;
     owner?: string;
     version?: string;
     executionCount?: number;

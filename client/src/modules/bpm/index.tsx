@@ -6,7 +6,6 @@
 
 import React from 'react';
 import { Switch, Route } from 'wouter';
-import { ProtectedRoute } from '@/lib/protected-route';
 
 // Import pages
 import DashboardPage from './pages/dashboard';
@@ -22,16 +21,16 @@ import SchedulerPage from './pages/scheduler';
 export default function BPMModule() {
   return (
     <Switch>
-      <Route path="/bpm" exact>
+      <Route path="/bpm">
         <DashboardPage />
       </Route>
-      <Route path="/bpm/processes" exact>
+      <Route path="/bpm/processes">
         <ProcessesPage />
       </Route>
       <Route path="/bpm/processes/:id">
         <ProcessDetailPage />
       </Route>
-      <Route path="/bpm/designer" exact>
+      <Route path="/bpm/designer">
         <DesignerPage />
       </Route>
       <Route path="/bpm/designer/:id">

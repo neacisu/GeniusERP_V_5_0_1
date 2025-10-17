@@ -29,7 +29,7 @@ export default function SchedulerPage() {
               label: "Află despre programare",
               onClick: () => window.alert("Planificatorul de procese va fi disponibil în curând!"),
             }}
-            variant="default"
+            variant="inline"
             className="max-w-lg"
           />
         </CardContent>

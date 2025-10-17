@@ -5,14 +5,12 @@
  */
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Form,
@@ -35,7 +33,7 @@ const triggerFormSchema = z.object({
   }),
   description: z.string().optional(),
   type: z.enum(['schedule', 'event', 'webhook', 'email', 'manual']),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
   processId: z.string().min(1, {
     message: 'Selectați un proces.',
   }),
@@ -61,7 +59,7 @@ export interface Process {
 
 export interface TriggerFormProps {
   processes: Process[];
-  initialValues?: any;
+  initialValues?: Partial<z.infer<typeof triggerFormSchema>>;
   onSubmit: (data: z.infer<typeof triggerFormSchema>) => void;
   onCancel: () => void;
 }
