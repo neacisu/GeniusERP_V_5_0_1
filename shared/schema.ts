@@ -749,38 +749,8 @@ export const invoices = pgTable('invoices', {
   validationIndex: index('invoice_validation_idx').on(table.isValidated, table.validatedAt),
 }));
 
-// Invoice lines/items
-export const invoiceLines = pgTable('invoice_lines', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  invoiceId: uuid('invoice_id').notNull().references(() => invoices.id),
-  
-  // Product information
-  productId: uuid('product_id').references(() => inventoryProducts.id),
-  productName: text('product_name'), // Snapshot of product name at time of invoice
-  description: text('description'),
-  
-  // Quantities and prices
-  quantity: decimal('quantity', { precision: 10, scale: 3 }).notNull(),
-  unitPrice: decimal('unit_price', { precision: 12, scale: 2 }).notNull(),
-  
-  // Amounts (calculated)
-  netAmount: decimal('net_amount', { precision: 15, scale: 2 }).notNull(), // Quantity * Unit Price
-  vatRate: integer('vat_rate').default(19).notNull(),
-  vatAmount: decimal('vat_amount', { precision: 15, scale: 2 }).notNull(), // Net Amount * VAT Rate
-  grossAmount: decimal('gross_amount', { precision: 15, scale: 2 }).notNull(), // Net Amount + VAT Amount
-  totalAmount: decimal('total_amount', { precision: 12, scale: 2 }).notNull(), // Same as grossAmount (backward compatibility)
-  
-  // VAT Classification - Clasificare fiscală pentru jurnal de vânzări
-  vatCategory: vatCategory('vat_category').default('STANDARD_19'), // Categoria fiscală
-  vatCode: text('vat_code'), // Cod TVA specific (opțional, pentru mapare detaliată)
-  
-  // Reference to original item (for credit notes)
-  originalItemId: uuid('original_item_id'), // Reference to the original invoice line item
-  
-  // Audit fields
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+// Note: Invoice items are now defined in server/modules/invoicing/schema/invoice.schema.ts
+// The invoice_lines table has been unified into invoice_items
 
 // Invoice-related metadata (partners, payment terms, etc.)
 export const invoiceDetails = pgTable('invoice_details', {
@@ -803,24 +773,13 @@ export const invoiceDetails = pgTable('invoice_details', {
 });
 
 // Define relations
-export const invoiceRelations = relations(invoices, ({ one, many }) => ({
+export const invoiceRelations = relations(invoices, ({ one }) => ({
   company: one(companies, {
     fields: [invoices.companyId],
     references: [companies.id],
   }),
-  lines: many(invoiceLines),
   details: one(invoiceDetails),
-}));
-
-export const invoiceLineRelations = relations(invoiceLines, ({ one }) => ({
-  invoice: one(invoices, {
-    fields: [invoiceLines.invoiceId],
-    references: [invoices.id],
-  }),
-  product: one(inventoryProducts, {
-    fields: [invoiceLines.productId],
-    references: [inventoryProducts.id],
-  }),
+  // Note: items relation is defined in server/modules/invoicing/schema/invoice.schema.ts
 }));
 
 export const invoiceDetailRelations = relations(invoiceDetails, ({ one }) => ({
@@ -833,19 +792,16 @@ export const invoiceDetailRelations = relations(invoiceDetails, ({ one }) => ({
 // Schema validation
 export const insertInvoiceSchema = createInsertSchema(invoices); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertInvoiceLineSchema = createInsertSchema(invoiceLines); // Fixed: removed omit() for drizzle-zod compatibility;
-
 export const insertInvoiceDetailSchema = createInsertSchema(invoiceDetails); // Fixed: removed omit() for drizzle-zod compatibility;
 
 // Types for insertions and selections
 export type Invoice = typeof invoices.$inferSelect;
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
 
-export type InvoiceLine = typeof invoiceLines.$inferSelect;
-export type InsertInvoiceLine = z.infer<typeof insertInvoiceLineSchema>;
-
 export type InvoiceDetail = typeof invoiceDetails.$inferSelect;
 export type InsertInvoiceDetail = z.infer<typeof insertInvoiceDetailSchema>;
+
+// Note: InvoiceItem types are exported from server/modules/invoicing/schema/invoice.schema.ts
 
 // Invoice Payments - Tracking plăți pentru facturi
 export const invoicePayments = pgTable('invoice_payments', {

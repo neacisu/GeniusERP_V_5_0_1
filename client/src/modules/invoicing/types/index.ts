@@ -6,72 +6,96 @@
 
 /**
  * Invoice status enum
+ * Matches the database enum: invoice_status
  */
 export enum InvoiceStatus {
   DRAFT = 'draft',
-  VALIDATED = 'validated',
+  ISSUED = 'issued',
   SENT = 'sent',
-  PAID = 'paid',
-  PARTIALLY_PAID = 'partially_paid',
-  OVERDUE = 'overdue',
-  CANCELED = 'canceled'
+  CANCELED = 'canceled',
+  PAID = 'paid'
 }
 
 /**
  * Invoice item interface
+ * Maps to invoice_items table in DB
  */
 export interface InvoiceItem {
   id: string;
   invoiceId: string;
   productId?: string;
   productName: string;
+  productCode?: string;
   description?: string;
   quantity: number;
-  price: number;
-  unit?: string;
-  discountPercent?: number;
-  discountAmount?: number;
+  unitPrice: number;
+  netAmount: number;
   vatRate: number;
-  vatAmount?: number;
-  total: number;
-  createdAt?: string;
-  updatedAt?: string;
+  vatAmount: number;
+  grossAmount: number;
+  discount?: number;
+  sequence: number;
+  notes?: string;
+  vatCategory?: string;
+  vatCode?: string;
+  originalItemId?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**
  * Invoice interface
+ * Maps to invoices table in DB
+ * Note: customer* and company* fields come from invoice_details table
  */
 export interface Invoice {
   id: string;
-  invoiceNumber: string;
-  series?: string;
   companyId: string;
-  companyName?: string; 
-  companyVatNumber?: string;
-  companyRegNumber?: string;
-  companyAddress?: string;
-  customerId: string;
-  customerName: string;
+  franchiseId?: string;
+  invoiceNumber?: string;
+  series?: string;
+  number?: number;
+  customerId?: string;
+  customerName?: string;
+  date: string;
+  issueDate: string;
+  dueDate?: string;
+  amount: number;
+  totalAmount: number;
+  netAmount?: number;
+  vatAmount?: number;
+  currency: string;
+  exchangeRate: number;
+  status: InvoiceStatus;
+  type?: string;
+  isCashVat?: boolean;
+  relatedInvoiceId?: string;
+  description?: string;
+  notes?: string;
+  version: number;
+  isValidated: boolean;
+  validatedAt?: string;
+  ledgerEntryId?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  
+  // From invoice_details relation
   customerVatNumber?: string;
   customerRegNumber?: string;
   customerAddress?: string;
-  issueDate: string;
-  dueDate: string;
-  status: InvoiceStatus;
+  companyName?: string;
+  companyVatNumber?: string;
+  companyRegNumber?: string;
+  companyAddress?: string;
   paymentMethod?: string;
-  netTotal: number;
-  vatRate: number;
-  vatAmount: number;
-  grossTotal: number;
   paidAmount?: number;
   paidDate?: string;
   remainingAmount?: number;
-  currency: string;
-  notes?: string;
-  internalNotes?: string;
-  createdByUserId: string;
-  createdAt: string;
-  updatedAt: string;
+  
+  // Relations
   items?: InvoiceItem[];
 }
 
@@ -147,8 +171,13 @@ export interface InvoiceFilters {
   minAmount?: number;
   maxAmount?: number;
   searchTerm?: string;
+  searchQuery?: string;
   sortBy?: string;
   sortDirection?: 'asc' | 'desc';
+  sortDir?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+  paymentMethod?: string;
 }
 
 /**
@@ -157,12 +186,52 @@ export interface InvoiceFilters {
 export interface InvoiceSummary {
   totalCount: number;
   draftCount: number;
-  validatedCount: number;
+  issuedCount: number;
   sentCount: number;
   paidCount: number;
-  overdueCount: number;
   canceledCount: number;
   totalValue: number;
   paidValue: number;
-  overdueValue: number;
+}
+
+/**
+ * Invoice statistics interface
+ */
+export interface InvoiceStatistics {
+  totalInvoices: number;
+  totalPending: number;
+  totalValidated: number;
+  totalIssued: number;
+  totalPaid: number;
+  totalOverdue: number;
+  totalAmount: number;
+  totalVat: number;
+  pendingAmount: number;
+  overdueAmount: number;
+  avgPaymentDelay: number;
+}
+
+/**
+ * Additional types for API responses
+ */
+export interface PaginatedInvoices {
+  invoices: Invoice[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}
+
+export interface AccountingPreview {
+  debitAccount: string;
+  creditAccount: string;
+  amount: number;
+  description: string;
+}
+
+export interface ValidationResult {
+  success: boolean;
+  message: string;
+  journalEntryId?: string;
+  errors?: string[];
 }

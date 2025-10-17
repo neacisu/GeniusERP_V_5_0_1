@@ -229,10 +229,10 @@ export class InvoiceService extends BaseDrizzleService {
           quantity,
           unit_price as "unitPrice",
           vat_rate as "vatRate",
-          total_amount as "totalAmount"
-        FROM invoice_lines
+          gross_amount as "grossAmount"
+        FROM invoice_items
         WHERE invoice_id = $1
-        ORDER BY id
+        ORDER BY sequence
       `;
       
       const lines = await this.executeQuery(linesQuery, [id]);

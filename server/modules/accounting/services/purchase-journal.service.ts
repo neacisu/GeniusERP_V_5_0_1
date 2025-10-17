@@ -358,10 +358,10 @@ export class PurchaseJournalService {
         // Insert invoice items
         for (const item of items) {
           await client.query(`
-            INSERT INTO invoice_lines (
-              invoice_id, product_name, description, quantity,
-              unit_price, net_amount, vat_rate, vat_amount, gross_amount, total_amount
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            INSERT INTO invoice_items (
+              id, invoice_id, product_name, description, quantity,
+              unit_price, net_amount, vat_rate, vat_amount, gross_amount, sequence, created_at, updated_at
+            ) VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
           `, [
             actualInvoiceId,
             item.productName || null,
@@ -372,7 +372,7 @@ export class PurchaseJournalService {
             Number(item.vatRate),
             Number(item.vatAmount),
             Number(item.grossAmount),
-            Number(item.grossAmount)
+            1 // sequence
           ]);
         }
 
@@ -1190,16 +1190,16 @@ export class PurchaseJournalService {
           notes || `Purchase invoice ${invoiceData.invoiceNumber} from ${supplier.name}`
         ]);
 
-        // Delete existing invoice lines
-        await client.query('DELETE FROM invoice_lines WHERE invoice_id = $1', [invoiceId]);
+        // Delete existing invoice items
+        await client.query('DELETE FROM invoice_items WHERE invoice_id = $1', [invoiceId]);
 
         // Insert updated invoice items
         for (const item of items) {
           await client.query(`
-            INSERT INTO invoice_lines (
-              invoice_id, product_name, description, quantity,
-              unit_price, net_amount, vat_rate, vat_amount, gross_amount, total_amount
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            INSERT INTO invoice_items (
+              id, invoice_id, product_name, description, quantity,
+              unit_price, net_amount, vat_rate, vat_amount, gross_amount, sequence, created_at, updated_at
+            ) VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
           `, [
             invoiceId,
             item.productName || null,
@@ -1210,7 +1210,7 @@ export class PurchaseJournalService {
             Number(item.vatRate),
             Number(item.vatAmount),
             Number(item.grossAmount),
-            Number(item.grossAmount)
+            1 // sequence
           ]);
         }
 

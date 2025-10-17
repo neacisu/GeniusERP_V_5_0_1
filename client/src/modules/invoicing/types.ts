@@ -58,14 +58,14 @@ export enum PaymentMethod {
 
 /**
  * Invoice statuses
+ * Matches the database enum: invoice_status
  */
 export enum InvoiceStatus {
   DRAFT = 'draft',
   ISSUED = 'issued',
   SENT = 'sent',
-  PAID = 'paid',
-  OVERDUE = 'overdue',
-  CANCELED = 'canceled'
+  CANCELED = 'canceled',
+  PAID = 'paid'
 }
 
 /**

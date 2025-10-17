@@ -129,20 +129,26 @@ export class InvoiceMutationService extends BaseDrizzleService {
           await pgClient.unsafe(detailsQuery, detailsParams);
         }
         
-        // If lines are provided, insert invoice lines
+        // If lines are provided, insert invoice items
         if (data.lines && Array.isArray(data.lines) && data.lines.length > 0) {
           for (const line of data.lines) {
             const lineQuery = `
-              INSERT INTO invoice_lines (
+              INSERT INTO invoice_items (
+                id,
                 invoice_id,
                 product_id,
                 description,
                 quantity,
                 unit_price,
+                net_amount,
                 vat_rate,
-                total_amount
+                vat_amount,
+                gross_amount,
+                sequence,
+                created_at,
+                updated_at
               ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7
+                gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()
               )
               RETURNING id
             `;
@@ -153,8 +159,11 @@ export class InvoiceMutationService extends BaseDrizzleService {
               line.description || null,
               line.quantity || 0,
               line.unitPrice || 0,
+              line.netAmount || 0,
               line.vatRate || 0,
-              line.totalAmount || 0
+              line.vatAmount || 0,
+              line.grossAmount || (line.totalAmount || 0),
+              line.sequence || 1
             ];
             
             await pgClient.unsafe(lineQuery, lineParams);
@@ -357,13 +366,14 @@ export class InvoiceMutationService extends BaseDrizzleService {
         
         // Update invoice lines if provided
         if (data.lines && Array.isArray(data.lines) && data.lines.length > 0) {
-          // First, delete all existing lines for this invoice
-          await pgClient.unsafe('DELETE FROM invoice_lines WHERE invoice_id = $1', [id]);
+          // First, delete all existing items for this invoice
+          await pgClient.unsafe('DELETE FROM invoice_items WHERE invoice_id = $1', [id]);
           
-          // Then insert new lines
+          // Then insert new items
           for (const line of data.lines) {
             const lineQuery = `
-              INSERT INTO invoice_lines (
+              INSERT INTO invoice_items (
+                id,
                 invoice_id,
                 product_id,
                 description,

@@ -266,9 +266,9 @@ export class InvoiceService {
     // Delete the invoice and its related records using direct SQL for reliability
     try {
       await this.drizzle.base.transaction(async (client) => {
-        // Delete invoice lines
+        // Delete invoice items
         const deleteLinesQuery = `
-          DELETE FROM invoice_lines 
+          DELETE FROM invoice_items 
           WHERE invoice_id = $1
         `;
         
@@ -356,9 +356,9 @@ export class InvoiceService {
       `;
       
       const linesQuery = `
-        SELECT * FROM invoice_lines
+        SELECT * FROM invoice_items
         WHERE invoice_id = $1
-        ORDER BY line_number ASC
+        ORDER BY sequence ASC
       `;
       
       const [details, lines] = await Promise.all([
@@ -552,9 +552,9 @@ export class InvoiceService {
       `;
       
       const linesQuery = `
-        SELECT * FROM invoice_lines
+        SELECT * FROM invoice_items
         WHERE invoice_id = '${id}'
-        ORDER BY line_number ASC
+        ORDER BY sequence ASC
       `;
       
       const [details, lines] = await Promise.all([
@@ -695,7 +695,7 @@ export class InvoiceService {
       
       // Use direct SQL for reliable deletion without ORM
       const deleteLinesQuery = `
-        DELETE FROM invoice_lines 
+        DELETE FROM invoice_items 
         WHERE invoice_id = '${id}'
       `;
       

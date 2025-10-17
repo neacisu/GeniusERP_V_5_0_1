@@ -43,7 +43,7 @@ export const invoices = pgTable('invoices', {
 });
 
 /**
- * Invoice items table
+ * Invoice items table (unified from invoice_lines)
  */
 export const invoiceItems = pgTable('invoice_items', {
   id: uuid('id').primaryKey().notNull(),
@@ -60,6 +60,12 @@ export const invoiceItems = pgTable('invoice_items', {
   discount: numeric('discount').default('0'),
   sequence: integer('sequence').notNull().default(1),
   notes: text('notes'),
+  
+  // Additional fields (merged from invoice_lines)
+  description: text('description'),
+  vatCategory: text('vat_category').default('STANDARD_19'), // vat_category enum
+  vatCode: text('vat_code'),
+  originalItemId: uuid('original_item_id'),
   
   // Metadata
   createdAt: timestamp('created_at').notNull(),
