@@ -40,8 +40,8 @@ const NotesPage: React.FC = () => {
   
   // Obține lista de notițe
   const { data: notesData, isLoading, isError } = useNotes({
-    tag: tagFilter || undefined,
-    refresh: refreshTrigger
+    taskId: undefined, // Filter by task if needed
+    search: undefined
   });
   
   // Obține taguri populare

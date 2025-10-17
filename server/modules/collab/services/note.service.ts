@@ -4,7 +4,7 @@
  * Service for managing task notes in the Collaboration module.
  */
 
-import { eq, desc, sql } from 'drizzle-orm';
+import { eq, desc, sql, and } from 'drizzle-orm';
 import {
   collaborationNotes,
   NewCollaborationNote,
@@ -76,12 +76,14 @@ export class NoteService {
    */
   async getNoteById(noteId: string, companyId: string): Promise<CollaborationNote | null> {
     try {
-      const db = this.drizzleService.db;
-      
       // Filter by ID and company ID
-      const notes = await db.select().from(collaborationNotes)
-        .where(eq(collaborationNotes.id, noteId))
-        .where(eq(collaborationNotes.companyId, companyId));
+      const notes = await this.drizzleService.query(db => db.select()
+        .from(collaborationNotes)
+        .where(and(
+          eq(collaborationNotes.id, noteId),
+          eq(collaborationNotes.companyId, companyId)
+        ))
+      );
       
       return notes.length > 0 ? notes[0] : null;
     } catch (error) {
@@ -104,7 +106,6 @@ export class NoteService {
     isPinned?: boolean;
   } = {}): Promise<{ notes: CollaborationNote[]; total: number }> {
     try {
-      const db = this.drizzleService.db;
       const {
         limit = 50,
         offset = 0,
@@ -112,37 +113,33 @@ export class NoteService {
         isPinned
       } = options;
       
-      // Execute queries with conditional filtering
-      let notesResult;
-      let totalResult;
-      
-      // Create base query builder
-      let queryBuilder = db.select().from(collaborationNotes)
-        .where(eq(collaborationNotes.companyId, companyId));
-      
-      let countQuery = db.select({ count: sql`count(*)` })
-        .from(collaborationNotes)
-        .where(eq(collaborationNotes.companyId, companyId));
-        
-      // Add isPinned filter if needed
+      // Build where conditions
+      const conditions = [eq(collaborationNotes.companyId, companyId)];
       if (isPinned !== undefined) {
-        queryBuilder = queryBuilder.where(eq(collaborationNotes.isPinned, isPinned));
-        countQuery = countQuery.where(eq(collaborationNotes.isPinned, isPinned));
+        conditions.push(eq(collaborationNotes.isPinned, isPinned));
       }
       
-      // Apply ordering
-      if (sortOrder === 'asc') {
-        queryBuilder = queryBuilder.orderBy(collaborationNotes.createdAt);
-      } else {
-        queryBuilder = queryBuilder.orderBy(desc(collaborationNotes.createdAt));
-      }
+      // Execute query for notes
+      const notesResult = await this.drizzleService.query(db => {
+        let query = db.select().from(collaborationNotes).where(and(...conditions));
+        
+        // Apply ordering
+        if (sortOrder === 'asc') {
+          query = query.orderBy(collaborationNotes.createdAt);
+        } else {
+          query = query.orderBy(desc(collaborationNotes.createdAt));
+        }
+        
+        // Apply pagination
+        return query.limit(limit).offset(offset);
+      });
       
-      // Apply pagination
-      queryBuilder = queryBuilder.limit(limit).offset(offset);
-      
-      // Execute queries
-      notesResult = await queryBuilder;
-      totalResult = await countQuery;
+      // Get total count
+      const totalResult = await this.drizzleService.query(db => 
+        db.select({ count: sql`count(*)` })
+          .from(collaborationNotes)
+          .where(and(...conditions))
+      );
       
       const total = Number(totalResult[0]?.count || 0);
       
@@ -165,14 +162,15 @@ export class NoteService {
    */
   async getNotesByTaskId(taskId: string, companyId: string): Promise<CollaborationNote[]> {
     try {
-      const db = this.drizzleService.db;
-      
-      // Use multiple where clauses instead of and()
-      return await db.select()
-        .from(collaborationNotes)
-        .where(eq(collaborationNotes.taskId, taskId))
-        .where(eq(collaborationNotes.companyId, companyId))
-        .orderBy(desc(collaborationNotes.createdAt));
+      return await this.drizzleService.query(db => 
+        db.select()
+          .from(collaborationNotes)
+          .where(and(
+            eq(collaborationNotes.taskId, taskId),
+            eq(collaborationNotes.companyId, companyId)
+          ))
+          .orderBy(desc(collaborationNotes.createdAt))
+      );
     } catch (error) {
       this._logger.error('Failed to fetch notes for task', { error, taskId, companyId });
       throw error;
@@ -195,18 +193,19 @@ export class NoteService {
     userId: string
   ): Promise<CollaborationNote> {
     try {
-      const db = this.drizzleService.db;
-      
-      // Use multiple where clauses instead of and()
-      const updatedNotes = await db.update(collaborationNotes)
-        .set({
-          ...updates,
-          updatedAt: new Date(),
-          editedBy: userId
-        })
-        .where(eq(collaborationNotes.id, noteId))
-        .where(eq(collaborationNotes.companyId, companyId))
-        .returning();
+      const updatedNotes = await this.drizzleService.query(db =>
+        db.update(collaborationNotes)
+          .set({
+            ...updates,
+            updatedAt: new Date(),
+            editedBy: userId
+          })
+          .where(and(
+            eq(collaborationNotes.id, noteId),
+            eq(collaborationNotes.companyId, companyId)
+          ))
+          .returning()
+      );
       
       if (updatedNotes.length === 0) {
         throw new Error(`Note not found: ${noteId}`);
@@ -228,13 +227,14 @@ export class NoteService {
    */
   async deleteNote(noteId: string, companyId: string): Promise<boolean> {
     try {
-      const db = this.drizzleService.db;
-      
-      // Use multiple where clauses instead of and()
-      const result = await db.delete(collaborationNotes)
-        .where(eq(collaborationNotes.id, noteId))
-        .where(eq(collaborationNotes.companyId, companyId))
-        .returning();
+      const result = await this.drizzleService.query(db =>
+        db.delete(collaborationNotes)
+          .where(and(
+            eq(collaborationNotes.id, noteId),
+            eq(collaborationNotes.companyId, companyId)
+          ))
+          .returning()
+      );
       
       return result.length > 0;
     } catch (error) {

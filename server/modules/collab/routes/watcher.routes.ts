@@ -78,7 +78,7 @@ export function registerWatcherRoutes(app: Express, watcherService: WatcherServi
       // Validate request body
       const watcherSchema = z.object({
         taskId: z.string().uuid(),
-        notificationPreference: z.record(z.any()).optional()
+        notificationPreference: z.record(z.string(), z.any()).optional()
       });
       
       const { taskId, notificationPreference = { enabled: true } } = watcherSchema.parse(req.body);
@@ -109,7 +109,7 @@ export function registerWatcherRoutes(app: Express, watcherService: WatcherServi
       const addUserSchema = z.object({
         taskId: z.string().uuid(),
         userId: z.string().uuid(),
-        notificationPreference: z.record(z.any()).optional()
+        notificationPreference: z.record(z.string(), z.any()).optional()
       });
       
       const { taskId, userId, notificationPreference = { enabled: true } } = addUserSchema.parse(req.body);
@@ -140,7 +140,7 @@ export function registerWatcherRoutes(app: Express, watcherService: WatcherServi
       
       // Validate request body
       const updateSchema = z.object({
-        notificationPreference: z.record(z.any())
+        notificationPreference: z.record(z.string(), z.any())
       });
       
       const { notificationPreference } = updateSchema.parse(req.body);

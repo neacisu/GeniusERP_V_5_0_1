@@ -36,11 +36,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, className = '' }) =>
 
   const getStatusColor = (status: TaskStatus) => {
     switch (status) {
-      case TaskStatus.TO_DO:
+      case TaskStatus.PENDING:
         return 'bg-slate-500/20 text-slate-700 border-slate-300';
       case TaskStatus.IN_PROGRESS:
         return 'bg-blue-500/20 text-blue-700 border-blue-300';
-      case TaskStatus.IN_REVIEW:
+      case TaskStatus.REVIEW:
         return 'bg-purple-500/20 text-purple-700 border-purple-300';
       case TaskStatus.COMPLETED:
         return 'bg-emerald-500/20 text-emerald-700 border-emerald-300';
@@ -68,11 +68,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, className = '' }) =>
 
   const getStatusIcon = (status: TaskStatus) => {
     switch (status) {
-      case TaskStatus.TO_DO:
+      case TaskStatus.PENDING:
         return <Circle className="h-4 w-4" />;
       case TaskStatus.IN_PROGRESS:
         return <FileClock className="h-4 w-4" />;
-      case TaskStatus.IN_REVIEW:
+      case TaskStatus.REVIEW:
         return <Users className="h-4 w-4" />;
       case TaskStatus.COMPLETED:
         return <CheckCircle className="h-4 w-4" />;
@@ -157,7 +157,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, className = '' }) =>
               <span>Progres</span>
               <span>{task.progress}%</span>
             </div>
-            <Progress value={task.progress} className="h-2" />
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all" 
+                style={{ width: `${task.progress}%` }}
+              />
+            </div>
           </div>
         )}
         

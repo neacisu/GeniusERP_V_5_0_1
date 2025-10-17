@@ -56,11 +56,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CollabLayout from '../../components/layout/CollabLayout';
 import useCollabApi from '../../hooks/useCollabApi';
 import { CommunityCategory } from '../../types';
+import { useAuth } from '@/hooks/use-auth';
 
 /**
  * Pagina principală a secțiunii Comunitate
  */
 function CommunityPage() {
+  const { user } = useAuth();
   const { useCommunityThreads, useCreateCommunityThread } = useCollabApi();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
@@ -74,7 +76,7 @@ function CommunityPage() {
   const { data: communityResponse, isLoading } = useCommunityThreads();
   
   // Mutație pentru crearea unui thread nou
-  const { mutate: createThread, isLoading: isCreating } = useCreateCommunityThread();
+  const { mutate: createThread, isPending: isCreating } = useCreateCommunityThread();
   
   // Filtrează thread-urile în funcție de căutare și filtru
   const filteredThreads = communityResponse?.threads.filter(thread => {
@@ -96,13 +98,21 @@ function CommunityPage() {
       .map(tag => tag.trim())
       .filter(tag => tag.length > 0);
       
+    if (!user?.companyId || !user?.id) {
+      console.error('User not authenticated or missing company');
+      return;
+    }
+
     createThread({
       title: newThreadTitle,
       description: newThreadDescription,
       category: newThreadCategory,
       tags: tagsArray,
-      isPublic: true,
-      companyId: '7196288d-7314-4512-8b67-2c82449b5465' // Acesta ar fi preluat din contextul utilizatorului în aplicația reală
+      isPrivate: false,
+      isClosed: false,
+      lastMessageAt: new Date().toISOString(),
+      createdBy: user.id,
+      companyId: user.companyId
     });
     
     // Reset form și închide dialogul
@@ -409,7 +419,7 @@ function CommunityPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subiecte</span>
-                    <span className="font-medium">{communityResponse?.pagination?.total || 0}</span>
+                    <span className="font-medium">{communityResponse?.pagination?.totalItems || 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Membri activi</span>

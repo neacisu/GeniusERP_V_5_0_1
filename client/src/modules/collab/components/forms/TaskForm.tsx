@@ -43,7 +43,7 @@ import { Slider } from "@/components/ui/slider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
-import { Task, TaskStatus, TaskPriority } from '../../types';
+import { Task, TaskStatus, TaskPriority, TaskType } from '../../types';
 import useCollabApi from '../../hooks/useCollabApi';
 
 interface TaskFormProps {
@@ -62,32 +62,24 @@ const TaskForm: React.FC<TaskFormProps> = ({
   onCancel,
   isLoading = false 
 }) => {
-  const { useUsers, useTaskTags } = useCollabApi();
-  const [selectedUsers, setSelectedUsers] = useState<string[]>(
-    task?.assignedTo ? [task.assignedTo] : []
-  );
   const [selectedTags, setSelectedTags] = useState<string[]>(
     task?.tags || []
   );
   
-  // Obține lista de utilizatori pentru atribuire
-  const { data: users, isLoading: isLoadingUsers } = useUsers();
-  
-  // Obține taguri populare pentru sarcini
-  const { data: popularTags, isLoading: isLoadingTags } = useTaskTags();
+  // Popular tags placeholder (to be implemented)
+  const popularTags: string[] = [];
   
   // Schema de validare pentru formular
   const taskSchema = z.object({
     title: z.string().min(3, 'Titlul trebuie să conțină cel puțin 3 caractere').max(100),
-    description: z.string().optional(),
+    description: z.string().min(1, 'Descrierea este obligatorie'),
     status: z.nativeEnum(TaskStatus),
     priority: z.nativeEnum(TaskPriority),
     dueDate: z.date().optional().nullable(),
-    assignedTo: z.string().optional().nullable(),
+    assignedTo: z.string().min(1, 'Atribuirea este obligatorie'),
     tags: z.array(z.string()).optional(),
     progress: z.number().min(0).max(100).optional(),
-    estimatedHours: z.number().min(0).max(100).optional().nullable(),
-    isPublic: z.boolean().default(false),
+    estimatedHours: z.number().min(0).max(1000).optional().nullable(),
     parentTaskId: z.string().optional().nullable(),
   });
 
@@ -97,14 +89,13 @@ const TaskForm: React.FC<TaskFormProps> = ({
     defaultValues: {
       title: task?.title || '',
       description: task?.description || '',
-      status: task?.status || TaskStatus.TO_DO,
+      status: task?.status || TaskStatus.PENDING,
       priority: task?.priority || TaskPriority.NORMAL,
       dueDate: task?.dueDate ? new Date(task.dueDate) : null,
-      assignedTo: task?.assignedTo || null,
+      assignedTo: task?.assignedTo || '',
       tags: task?.tags || [],
       progress: task?.progress || 0,
       estimatedHours: task?.estimatedHours || null,
-      isPublic: task?.isPublic || false,
       parentTaskId: task?.parentTaskId || null,
     },
   });
@@ -112,16 +103,13 @@ const TaskForm: React.FC<TaskFormProps> = ({
   const handleSubmit = (values: z.infer<typeof taskSchema>) => {
     onSubmit({
       id: task?.id,
+      companyId: task?.companyId || '',
+      type: task?.type || TaskType.REGULAR,
+      isRecurring: task?.isRecurring || false,
       ...values,
       createdAt: task?.createdAt || new Date(),
       updatedAt: new Date(),
     } as Task);
-  };
-
-  // Handler pentru selectarea unui user
-  const handleSelectUser = (userId: string) => {
-    form.setValue('assignedTo', userId);
-    setSelectedUsers([userId]);
   };
 
   // Handler pentru adăugarea unui tag
@@ -286,8 +274,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
                     type="number"
                     placeholder="Număr de ore"
                     min={0}
-                    max={100}
-                    onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                    max={1000}
+                    onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
                     value={field.value || ''}
                   />
                 </FormControl>
@@ -299,69 +287,44 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
         <FormField
           control={form.control}
+          name="progress"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Progres (%)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="0-100"
+                  min={0}
+                  max={100}
+                  onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : 0)}
+                  value={field.value || 0}
+                />
+              </FormControl>
+              <FormDescription>
+                Procentul de completare al sarcinii (0-100%)
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="assignedTo"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Atribuire</FormLabel>
-              <div className="space-y-2">
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {selectedUsers.map(userId => {
-                    const user = users?.find((u: { id: string; name?: string }) => u.id === userId);
-                    return (
-                      <Badge 
-                        key={userId} 
-                        variant="secondary"
-                        className="gap-1 pl-1"
-                      >
-                        <Avatar className="h-4 w-4">
-                          <AvatarFallback className="text-[10px]">
-                            {user?.name?.substring(0, 2).toUpperCase() || 'UN'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{user?.name || userId}</span>
-                        <button
-                          type="button"
-                          className="ml-1 rounded-full hover:bg-muted p-0.5"
-                          onClick={() => {
-                            setSelectedUsers([]);
-                            field.onChange(null);
-                          }}
-                        >
-                          &times;
-                        </button>
-                      </Badge>
-                    );
-                  })}
-                </div>
-                
-                {selectedUsers.length === 0 && (
-                  <Select 
-                    onValueChange={handleSelectUser}
-                    value={field.value || ''}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Atribuiți utilizatorului" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {(users || []).map((user: { id: string; name?: string }) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarFallback>
-                                {user.name?.substring(0, 2).toUpperCase() || 'UN'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span>{user.name}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                <FormMessage />
-              </div>
+              <FormLabel>Atribuit către (User ID)</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="UUID al utilizatorului"
+                />
+              </FormControl>
+              <FormDescription>
+                Introduceți ID-ul utilizatorului căruia doriți să atribuiți această sarcină
+              </FormDescription>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -446,28 +409,6 @@ const TaskForm: React.FC<TaskFormProps> = ({
                   onValueChange={(values) => field.onChange(values[0])}
                 />
               </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="isPublic"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>Sarcină publică</FormLabel>
-                <FormDescription>
-                  Această sarcină va fi vizibilă pentru toți utilizatorii.
-                </FormDescription>
-              </div>
               <FormMessage />
             </FormItem>
           )}

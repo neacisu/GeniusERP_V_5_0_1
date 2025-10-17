@@ -9,7 +9,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest, getCompanyId } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useEffect } from 'react';
-import { TaskStatus, TaskPriority, CommunityCategory } from '../types';
+import { 
+  Task, 
+  Thread, 
+  Note, 
+  Message, 
+  CommunityThread,
+  TaskStatus, 
+  TaskPriority, 
+  CommunityCategory 
+} from '../types';
 
 // Pagination interface
 interface Pagination {
@@ -17,88 +26,6 @@ interface Pagination {
   totalPages: number;
   currentPage: number;
   pageSize: number;
-}
-
-// Task interface
-export interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  status: TaskStatus;
-  priority: TaskPriority;
-  assignedTo?: string;
-  dueDate?: Date | string;
-  companyId: string;
-  userId: string;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  // Extended properties
-  progress?: number;
-  estimatedHours?: number;
-  isPublic?: boolean;
-  type?: string;
-  isRecurring?: boolean;
-  commentCount?: number;
-  attachments?: any[];
-}
-
-// Thread interface
-export interface Thread {
-  id: string;
-  title: string;
-  description?: string;
-  category?: string;
-  companyId: string;
-  userId: string;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  createdBy: string;
-  // Extended properties
-  isPinned?: boolean;
-  isPublic?: boolean;
-  isPrivate?: boolean;
-  isClosed?: boolean;
-  lastMessageAt?: Date | string;
-  viewCount?: number;
-  replyCount?: number;
-  likeCount?: number;
-  expiryDate?: Date | string;
-  metadata?: Record<string, any>;
-}
-
-// Note interface
-export interface Note {
-  id: string;
-  content?: string;
-  taskId: string;
-  companyId: string;
-  userId: string;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  // Extended properties
-  title?: string;
-  isPublic?: boolean;
-  isPrivate?: boolean;
-  tags?: string[];
-  attachments?: any[];
-  attachmentCount?: number;
-  relatedItems?: { id: string; type: 'task' | 'thread'; title?: string }[];
-  createdBy?: string;
-}
-
-// Message interface
-export interface Message {
-  id: string;
-  threadId: string;
-  userId: string;
-  content: string;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-}
-
-// Community Thread (extended Thread with community-specific fields)
-export interface CommunityThread extends Thread {
-  replyCount: number;
 }
 
 // Query options interfaces

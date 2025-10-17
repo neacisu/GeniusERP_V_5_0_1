@@ -47,7 +47,7 @@ export interface CommunityThreadOptions {
  * Community service class
  */
 export class CommunityService {
-  private threadService: ThreadService;
+  private threadService: any; // Accept both ThreadService and ThreadDrizzleService
   
   /**
    * Create an instance of CommunityService
@@ -57,7 +57,7 @@ export class CommunityService {
    */
   constructor(
     private readonly drizzleService: DrizzleService,
-    threadService?: ThreadService
+    threadService?: any
   ) {
     // Since ThreadService still expects a database instance,
     // we get it from getDrizzleInstance()

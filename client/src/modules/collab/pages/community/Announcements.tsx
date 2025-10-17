@@ -52,11 +52,13 @@ import { Switch } from "@/components/ui/switch";
 import CollabLayout from '../../components/layout/CollabLayout';
 import useCollabApi from '../../hooks/useCollabApi';
 import { CommunityCategory } from '../../types';
+import { useAuth } from '@/hooks/use-auth';
 
 /**
  * Pagina de Anunțuri din comunitate
  */
 function CommunityAnnouncementsPage() {
+  const { user } = useAuth();
   const { useCommunityThreads, useCreateCommunityThread } = useCollabApi();
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -71,7 +73,7 @@ function CommunityAnnouncementsPage() {
   });
   
   // Mutație pentru crearea unui anunț nou
-  const { mutate: createThread, isLoading: isCreating } = useCreateCommunityThread();
+  const { mutate: createThread, isPending: isCreating } = useCreateCommunityThread();
   
   // Filtrează anunțurile în funcție de căutare
   const filteredAnnouncements = announcementsResponse?.threads.filter(thread => {
@@ -88,6 +90,11 @@ function CommunityAnnouncementsPage() {
   const handleCreateAnnouncement = () => {
     if (!newThreadTitle.trim()) return;
     
+    if (!user?.companyId || !user?.id) {
+      console.error('User not authenticated or missing company');
+      return;
+    }
+    
     const tagsArray = newThreadTags
       .split(',')
       .map(tag => tag.trim())
@@ -98,9 +105,11 @@ function CommunityAnnouncementsPage() {
       description: newThreadDescription,
       category: CommunityCategory.ANUNTURI,
       tags: tagsArray,
-      isPublic: true,
-      isPinned: isImportant,
-      companyId: '7196288d-7314-4512-8b67-2c82449b5465' // Acesta ar fi preluat din contextul utilizatorului în aplicația reală
+      isPrivate: false,
+      isClosed: false,
+      lastMessageAt: new Date().toISOString(),
+      createdBy: user.id,
+      companyId: user.companyId
     });
     
     // Reset form și închide dialogul

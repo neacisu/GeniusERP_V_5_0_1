@@ -16,8 +16,11 @@ interface ThreadModalProps {
   onClose: () => void;
   thread?: Thread;
   onSuccess?: () => void;
+  onSubmit?: (threadData: any) => Promise<void>;
   defaultTab?: string;
   isCommunityThread?: boolean;
+  category?: any;
+  extraFields?: any[];
 }
 
 /**
@@ -28,8 +31,11 @@ const ThreadModal: React.FC<ThreadModalProps> = ({
   onClose, 
   thread, 
   onSuccess,
+  onSubmit,
   defaultTab = "details",
-  isCommunityThread = false
+  isCommunityThread = false,
+  category,
+  extraFields
 }) => {
   const { useCreateThread, useUpdateThread } = useCollabApi();
   const [activeTab, setActiveTab] = useState(defaultTab);
@@ -43,10 +49,16 @@ const ThreadModal: React.FC<ThreadModalProps> = ({
   // Handler pentru salvarea sau actualizarea discuției
   const handleSubmit = async (data: Thread) => {
     try {
-      if (thread?.id) {
-        await updateThreadMutation.mutateAsync(data);
+      // Dacă avem onSubmit custom, îl folosim
+      if (onSubmit) {
+        await onSubmit(data);
       } else {
-        await createThreadMutation.mutateAsync(data);
+        // Altfel folosim logica default
+        if (thread?.id) {
+          await updateThreadMutation.mutateAsync(data);
+        } else {
+          await createThreadMutation.mutateAsync(data);
+        }
       }
       
       if (onSuccess) {

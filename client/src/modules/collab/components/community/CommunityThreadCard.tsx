@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { MessageSquare, ThumbsUp, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ro } from 'date-fns/locale';
-import { CommunityThread } from '../../hooks/useCollabApi';
+import { CommunityThread } from '../../types';
 
 interface CommunityThreadCardProps {
   thread: CommunityThread;
@@ -61,7 +61,7 @@ const CommunityThreadCard: React.FC<CommunityThreadCardProps> = ({
         
         <div className="mt-4 flex gap-2">
           {thread.metadata?.tags && Array.isArray(thread.metadata.tags) && (
-            thread.metadata.tags.map((tag, idx) => (
+            thread.metadata.tags.map((tag: string, idx: number) => (
               <Badge key={idx} variant="secondary">{tag}</Badge>
             ))
           )}

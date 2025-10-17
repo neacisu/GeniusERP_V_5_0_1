@@ -35,9 +35,7 @@ const ThreadsPage: React.FC = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   // Obține lista de discuții
-  const { data: threadsData, isLoading, isError } = useThreads({
-    refresh: refreshTrigger
-  });
+  const { data: threadsData, isLoading, isError } = useThreads({});
   
   // Mutația pentru ștergerea unei discuții
   const deleteThreadMutation = useDeleteThread();

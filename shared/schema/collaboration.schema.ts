@@ -59,6 +59,7 @@ export enum TaskType {
  * Community Category Enum
  */
 export enum CommunityCategory {
+  GENERAL = 'GENERAL',
   ANUNTURI = 'ANUNTURI',
   INTREBARI = 'INTREBARI',
   IDEI = 'IDEI',
@@ -117,6 +118,9 @@ export const collaborationTasks = pgTable('collaboration_tasks', {
   recurringPattern: jsonb('recurring_pattern').default({}),
   parentTaskId: uuid('parent_task_id'),
   relatedItems: jsonb('related_items').default({}), // Can store relations to documents, invoices, etc.
+  progress: varchar('progress', { length: 10 }).default('0'), // Progress percentage as string
+  estimatedHours: varchar('estimated_hours', { length: 10 }), // Estimated hours as string
+  commentCount: varchar('comment_count', { length: 10 }).default('0'), // Comment count as string
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
   createdBy: uuid('created_by'),
@@ -142,14 +146,19 @@ export const collaborationNotes = pgTable('collaboration_notes', {
   taskId: uuid('task_id').notNull(),
   companyId: uuid('company_id').notNull(),
   userId: uuid('user_id').notNull(),
+  title: varchar('title', { length: 255 }), // Title for note
   content: text('content').notNull(),
   contentHtml: text('content_html'),
   isPrivate: boolean('is_private').default(false),
+  isPublic: boolean('is_public').default(false), // Public visibility flag
   isPinned: boolean('is_pinned').default(false),
   attachments: jsonb('attachments').default([]),
+  tags: jsonb('tags').default([]), // Tags for categorization
+  relatedItems: jsonb('related_items').default([]), // Related tasks/threads
   metadata: jsonb('metadata').default({}),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
+  createdBy: uuid('created_by'), // Who created the note
   editedBy: uuid('edited_by')
 }, (table) => ({
   taskIdIdx: index('collaboration_notes_task_id_idx').on(table.taskId),
@@ -176,6 +185,10 @@ export const collaborationThreads = pgTable('collaboration_threads', {
   participants: jsonb('participants').default([]),
   lastMessageAt: timestamp('last_message_at').defaultNow(),
   metadata: jsonb('metadata').default({}),
+  viewCount: varchar('view_count', { length: 10 }).default('0'), // View count as string
+  replyCount: varchar('reply_count', { length: 10 }).default('0'), // Reply count as string
+  likeCount: varchar('like_count', { length: 10 }).default('0'), // Like count as string
+  expiryDate: timestamp('expiry_date'), // Expiry date for announcements
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
   createdBy: uuid('created_by').notNull(),

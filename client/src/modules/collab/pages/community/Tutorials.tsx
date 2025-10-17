@@ -34,12 +34,12 @@ function TutorialsPage() {
   
   // Obține lista de thread-uri din categoria Tutoriale
   const { data, isLoading } = useCollabApi().useCommunityThreads({
-    category: 'TUTORIALE',
+    category: CommunityCategory.TUTORIALE,
     search: searchQuery || undefined
   });
   
   // Mutație pentru crearea unui tutorial nou
-  const { mutate: createThread, isLoading: isCreating } = useCollabApi().useCreateCommunityThread();
+  const { mutate: createThread, isPending: isCreating } = useCollabApi().useCreateCommunityThread();
   
   // Filtrează tutorialele în funcție de căutare și filtru
   const tutorials = React.useMemo(() => {

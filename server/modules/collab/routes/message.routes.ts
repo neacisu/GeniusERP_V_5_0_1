@@ -30,6 +30,9 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
    */
   app.get(BASE_PATH, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
+      if (!req.user || !req.user.companyId) {
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
+      }
       const companyId = req.user.companyId;
       const threadId = req.query.threadId as string;
       
@@ -62,6 +65,9 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
    */
   app.get(`${BASE_PATH}/:id/replies`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
+      if (!req.user || !req.user.companyId) {
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
+      }
       const { id } = req.params;
       const companyId = req.user.companyId;
       
@@ -81,6 +87,9 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
    */
   app.get(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
+      if (!req.user || !req.user.companyId) {
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
+      }
       const { id } = req.params;
       const companyId = req.user.companyId;
       
@@ -104,6 +113,9 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
    */
   app.post(BASE_PATH, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
+      if (!req.user || !req.user.companyId) {
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
+      }
       const userId = req.user.id;
       const companyId = req.user.companyId;
       
@@ -139,6 +151,9 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
    */
   app.patch(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
+      if (!req.user || !req.user.companyId) {
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
+      }
       const { id } = req.params;
       const userId = req.user.id;
       const companyId = req.user.companyId;
@@ -167,6 +182,9 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
    */
   app.delete(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
+      if (!req.user || !req.user.companyId) {
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
+      }
       const { id } = req.params;
       const companyId = req.user.companyId;
       

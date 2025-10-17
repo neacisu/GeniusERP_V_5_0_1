@@ -42,7 +42,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   const handleSubmit = async (data: Task) => {
     try {
       if (task?.id) {
-        await updateTaskMutation.mutateAsync(data);
+        await updateTaskMutation.mutateAsync({ id: data.id, data });
       } else {
         await createTaskMutation.mutateAsync(data);
       }

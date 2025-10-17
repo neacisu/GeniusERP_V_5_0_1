@@ -58,20 +58,22 @@ export class TaskController {
   async listTasks(req: Request, res: Response): Promise<void> {
     try {
       // Check for company ID in header first (for client-side requests)
-      let companyId = req.headers['x-company-id'] as string;
+      let companyIdTemp = req.headers['x-company-id'] as string;
       
       // If not in header, get from user object
-      if (!companyId) {
-        companyId = req.user?.companyId;
+      if (!companyIdTemp) {
+        companyIdTemp = req.user?.companyId || '';
       }
       
-      this._logger.info(`[DEBUG] Task list request - companyId: ${companyId}, from header: ${req.headers['x-company-id']}, from user: ${req.user?.companyId}`);
+      this._logger.info(`[DEBUG] Task list request - companyId: ${companyIdTemp}, from header: ${req.headers['x-company-id']}, from user: ${req.user?.companyId}`);
       
-      if (!companyId) {
+      if (!companyIdTemp) {
         this._logger.error('[DEBUG] Company ID not found in request');
         res.status(401).json({ error: 'Company ID not found' });
         return;
       }
+      
+      const companyId: string = companyIdTemp;
       
       // Extract query parameters
       const {

@@ -95,7 +95,7 @@ const MessagesPage: React.FC = () => {
                   <MessagesTable 
                     messages={messagesData?.messages || []}
                     isLoading={isLoading}
-                    onToggleStar={handleToggleStar}
+                    onStar={handleToggleStar}
                   />
                 </div>
               </CardContent>
@@ -109,7 +109,7 @@ const MessagesPage: React.FC = () => {
                   <MessagesTable 
                     messages={(messagesData?.messages || []).filter(msg => !msg.isRead)}
                     isLoading={isLoading}
-                    onToggleStar={handleToggleStar}
+                    onStar={handleToggleStar}
                   />
                 </div>
               </CardContent>
@@ -123,7 +123,7 @@ const MessagesPage: React.FC = () => {
                   <MessagesTable 
                     messages={(messagesData?.messages || []).filter(msg => msg.isStarred)}
                     isLoading={isLoading}
-                    onToggleStar={handleToggleStar}
+                    onStar={handleToggleStar}
                   />
                 </div>
               </CardContent>

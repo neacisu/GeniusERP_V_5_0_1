@@ -120,8 +120,8 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
       <CardContent className={compact ? 'p-3' : 'p-4'}>
         <div className="flex items-start gap-3">
           {thread.category && (
-            <div className={`flex-shrink-0 p-2 rounded-full ${getCategoryColor(thread.category).split(' ')[0]}`}>
-              {getCategoryIcon(thread.category)}
+            <div className={`flex-shrink-0 p-2 rounded-full ${getCategoryColor(thread.category as CommunityCategory).split(' ')[0]}`}>
+              {getCategoryIcon(thread.category as CommunityCategory)}
             </div>
           )}
           
@@ -149,8 +149,8 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
             
             <div className="flex flex-wrap items-center gap-2 mt-2">
               {showCategory && thread.category && (
-                <Badge className={getCategoryColor(thread.category)}>
-                  {getCategoryIcon(thread.category)}
+                <Badge className={getCategoryColor(thread.category as CommunityCategory)}>
+                  {getCategoryIcon(thread.category as CommunityCategory)}
                   <span className="ml-1 text-xs">{thread.category}</span>
                 </Badge>
               )}

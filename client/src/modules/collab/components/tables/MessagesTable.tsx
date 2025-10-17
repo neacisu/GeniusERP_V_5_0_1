@@ -54,22 +54,7 @@ import {
 import { format } from 'date-fns';
 import { ro } from 'date-fns/locale';
 
-import { MessageType } from '../../types';
-
-export interface Message {
-  id: string;
-  subject: string;
-  content: string;
-  sender: string;
-  recipients: string[];
-  type: MessageType;
-  isRead: boolean;
-  isStarred: boolean;
-  createdAt: string | Date;
-  attachmentCount?: number;
-  threadId?: string;
-  parentId?: string;
-}
+import { MessageType, Message } from '../../types';
 
 interface MessagesTableProps {
   messages: Message[];

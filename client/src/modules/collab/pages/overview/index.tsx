@@ -27,7 +27,7 @@ import { Separator } from "@/components/ui/separator";
 
 import CollabLayout from '../../components/layout/CollabLayout';
 import useCollabApi from '../../hooks/useCollabApi';
-import { TaskStatus, TaskPriority } from '../../types';
+import { TaskStatus, TaskPriority, CommunityCategory } from '../../types';
 
 // Importăm componentele create
 import { TaskCard, ThreadCard, NoteCard, AnnouncementCard } from '../../components/cards';
@@ -50,7 +50,7 @@ const OverviewPage: React.FC = () => {
   const { data: recentThreads, isLoading: isLoadingThreads } = useRecentThreads();
   const { data: recentNotes, isLoading: isLoadingNotes } = useRecentNotes();
   const { data: announcements, isLoading: isLoadingAnnouncements } = useCommunityThreads({ 
-    category: 'ANUNTURI',
+    category: CommunityCategory.ANUNTURI,
     limit: 5
   });
   

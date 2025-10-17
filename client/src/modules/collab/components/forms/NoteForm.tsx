@@ -79,18 +79,20 @@ const NoteForm: React.FC<NoteFormProps> = ({
     title: z.string().min(3, 'Titlul trebuie să conțină cel puțin 3 caractere').max(200),
     content: z.string().optional(),
     tags: z.array(z.string()).optional(),
-    isPublic: z.boolean().default(false),
-    isPinned: z.boolean().default(false),
+    isPublic: z.boolean(),
+    isPinned: z.boolean(),
   });
 
+  type NoteFormValues = z.infer<typeof noteSchema>;
+
   // Inițializarea formularului
-  const form = useForm<z.infer<typeof noteSchema>>({
+  const form = useForm<NoteFormValues>({
     resolver: zodResolver(noteSchema),
     defaultValues: {
       title: note?.title || '',
       content: note?.content || '',
       tags: note?.tags || [],
-      isPublic: note?.isPublic ?? false,
+      isPublic: note?.isPublic || false,
       isPinned: note?.isPinned || false,
     },
   });
@@ -100,7 +102,7 @@ const NoteForm: React.FC<NoteFormProps> = ({
     const relatedItems = [...selectedRelatedItems];
     
     if (relatedTaskId && !relatedItems.some(item => item.id === relatedTaskId && item.type === 'task')) {
-      const task = tasks?.find((t: Task) => t.id === relatedTaskId);
+      const task = tasks?.tasks.find((t: Task) => t.id === relatedTaskId);
       if (task) {
         relatedItems.push({
           id: relatedTaskId,
@@ -111,7 +113,7 @@ const NoteForm: React.FC<NoteFormProps> = ({
     }
     
     if (relatedThreadId && !relatedItems.some(item => item.id === relatedThreadId && item.type === 'thread')) {
-      const thread = threads?.find((t: Thread) => t.id === relatedThreadId);
+      const thread = threads?.threads.find((t: Thread) => t.id === relatedThreadId);
       if (thread) {
         relatedItems.push({
           id: relatedThreadId,
@@ -123,6 +125,10 @@ const NoteForm: React.FC<NoteFormProps> = ({
     
     onSubmit({
       id: note?.id,
+      taskId: note?.taskId || relatedTaskId || '',
+      companyId: note?.companyId || '',
+      userId: note?.userId || '',
+      isPrivate: !values.isPublic,
       ...values,
       relatedItems,
       createdAt: note?.createdAt || new Date(),
@@ -153,7 +159,7 @@ const NoteForm: React.FC<NoteFormProps> = ({
     if (!taskId) return;
     
     if (!selectedRelatedItems.some(item => item.id === taskId && item.type === 'task')) {
-      const task = tasks?.find((t: Task) => t.id === taskId);
+      const task = tasks?.tasks.find((t: Task) => t.id === taskId);
       if (task) {
         const newRelatedItems = [
           ...selectedRelatedItems,
@@ -173,7 +179,7 @@ const NoteForm: React.FC<NoteFormProps> = ({
     if (!threadId) return;
     
     if (!selectedRelatedItems.some(item => item.id === threadId && item.type === 'thread')) {
-      const thread = threads?.find((t: Thread) => t.id === threadId);
+      const thread = threads?.threads.find((t: Thread) => t.id === threadId);
       if (thread) {
         const newRelatedItems = [
           ...selectedRelatedItems,
@@ -279,11 +285,11 @@ const NoteForm: React.FC<NoteFormProps> = ({
                   />
                 </div>
                 
-                {(popularTags?.length || 0) > 0 && (
+                {(popularTags?.tags?.length || 0) > 0 && (
                   <div className="mt-2">
                     <FormLabel className="text-xs">Etichete populare</FormLabel>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {(popularTags || []).map((tag: string) => (
+                      {(popularTags?.tags || []).map((tag: string) => (
                         <Badge 
                           key={tag} 
                           variant="outline"
@@ -342,7 +348,7 @@ const NoteForm: React.FC<NoteFormProps> = ({
                   <SelectValue placeholder="Asociați cu o sarcină" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(tasks || [])
+                  {(tasks?.tasks || [])
                     .filter((task: Task) => !selectedRelatedItems.some(
                       item => item.id === task.id && item.type === 'task')
                     )
@@ -365,7 +371,7 @@ const NoteForm: React.FC<NoteFormProps> = ({
                   <SelectValue placeholder="Asociați cu o discuție" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(threads || [])
+                  {(threads?.threads || [])
                     .filter((thread: Thread) => !selectedRelatedItems.some(
                       item => item.id === thread.id && item.type === 'thread')
                     )

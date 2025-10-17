@@ -24,12 +24,12 @@ function ResourcesPage() {
   
   // Obține lista de thread-uri din categoria Resurse
   const { data, isLoading } = useCollabApi().useCommunityThreads({
-    category: 'RESURSE',
+    category: CommunityCategory.RESURSE,
     search: searchQuery || undefined
   });
   
   // Mutație pentru crearea unei resurse noi
-  const { mutate: createThread, isLoading: isCreating } = useCollabApi().useCreateCommunityThread();
+  const { mutate: createThread, isPending: isCreating } = useCollabApi().useCreateCommunityThread();
   
   // Filtrează resursele în funcție de căutare și filtru
   const resources = React.useMemo(() => {

@@ -30,6 +30,9 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
    */
   app.get(BASE_PATH, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
+      if (!req.user || !req.user.companyId) {
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
+      }
       const companyId = req.user.companyId;
       
       // Extract query parameters
@@ -71,6 +74,9 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
    */
   app.get(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
+      if (!req.user || !req.user.companyId) {
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
+      }
       const { id } = req.params;
       const companyId = req.user.companyId;
       
@@ -94,6 +100,9 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
    */
   app.post(BASE_PATH, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
+      if (!req.user || !req.user.companyId) {
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
+      }
       const userId = req.user.id;
       const companyId = req.user.companyId;
       
@@ -129,6 +138,9 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
    */
   app.patch(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
+      if (!req.user || !req.user.companyId) {
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
+      }
       const { id } = req.params;
       const userId = req.user.id;
       const companyId = req.user.companyId;
@@ -157,6 +169,9 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
    */
   app.delete(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
+      if (!req.user || !req.user.companyId) {
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
+      }
       const { id } = req.params;
       const companyId = req.user.companyId;
       

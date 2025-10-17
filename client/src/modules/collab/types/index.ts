@@ -10,8 +10,8 @@
  * Interface for Community Thread objects, extends the Thread interface with community-specific fields
  */
 export interface CommunityThread extends Thread {
-  replyCount?: number;
-  metadata?: Record<string, any>;
+  // All properties inherited from Thread
+  // No additional required properties
 }
 
 /**
@@ -54,6 +54,7 @@ export enum TaskType {
  * Community Category Enum - Represents different sections of the community area
  */
 export enum CommunityCategory {
+  GENERAL = "GENERAL",
   ANUNTURI = "ANUNTURI",
   INTREBARI = "INTREBARI",
   IDEI = "IDEI",
@@ -126,6 +127,9 @@ export interface Task {
   recurringPattern?: Record<string, any>;
   parentTaskId?: string;
   relatedItems?: Record<string, any>;
+  progress?: number; // Progress percentage (0-100)
+  estimatedHours?: number; // Estimated hours for completion
+  commentCount?: number; // Number of comments on task
   createdAt: Date | string;
   updatedAt: Date | string;
   createdBy?: string;
@@ -145,21 +149,26 @@ export interface Note {
   taskId: string;
   companyId: string;
   userId: string;
+  title?: string; // Optional title for the note
   content: string;
   contentHtml?: string;
   isPrivate: boolean;
+  isPublic: boolean; // Public visibility flag
   isPinned: boolean;
   attachments?: any[];
+  tags?: string[]; // Tags for categorization
+  relatedItems?: { id: string; type: 'task' | 'thread'; title?: string }[]; // Related items
   metadata?: Record<string, any>;
   createdAt: Date | string;
   updatedAt: Date | string;
+  createdBy?: string; // Who created the note
   editedBy?: string;
   
   // UI convenience properties
   userName?: string;
   editedByName?: string;
   taskTitle?: string;
-  tags?: string[];
+  attachmentCount?: number; // Count of attachments
 }
 
 /**
@@ -178,6 +187,10 @@ export interface Thread {
   participants?: string[];
   lastMessageAt: Date | string;
   metadata?: Record<string, any>;
+  viewCount?: number; // Number of views
+  replyCount?: number; // Number of replies
+  likeCount?: number; // Number of likes
+  expiryDate?: Date | string; // Expiry date for announcements
   createdAt: Date | string;
   updatedAt: Date | string;
   createdBy: string;

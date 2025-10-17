@@ -35,8 +35,7 @@ const TasksPage: React.FC = () => {
   
   // Obține lista de sarcini
   const { data: tasksData, isLoading, isError } = useTasks({
-    status: statusFilter || undefined,
-    refresh: refreshTrigger
+    status: statusFilter || undefined
   });
   
   // Mutația pentru ștergerea unei sarcini
