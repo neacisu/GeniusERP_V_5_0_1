@@ -40,6 +40,7 @@ export interface UnifiedJwtPayload {
   id: string;
   username: string;
   email?: string;
+  fullName?: string; // Generated from firstName + lastName in auth.service.ts
   role?: string;  // Optional in one format, required in another
   roles?: string[]; // Optional in one format, required in another
   companyId?: string | null; // Optional in one format, required in another

@@ -15,7 +15,7 @@ import { invoices } from '@shared/schema';
  * Invoice items table (unified from invoice_lines)
  */
 export const invoiceItems = pgTable('invoice_items', {
-  id: uuid('id').primaryKey().notNull(),
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
   invoiceId: uuid('invoice_id').notNull().references(() => invoices.id, { onDelete: 'cascade' }),
   productId: uuid('product_id'),
   productName: text('product_name').notNull(),
@@ -37,8 +37,8 @@ export const invoiceItems = pgTable('invoice_items', {
   originalItemId: uuid('original_item_id'),
   
   // Metadata
-  createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull()
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
 
 /**

@@ -14,7 +14,7 @@ import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.serv
 import { getDrizzle } from '../../../common/drizzle';
 import { and, desc, eq, gte, lte, isNotNull, sql } from 'drizzle-orm';
 import { sql as drizzleSql } from 'drizzle-orm';
-import { invoices, invoiceLines, invoiceDetails, invoicePayments, companies, users, ledgerEntries, ledgerLines, insertInvoiceSchema, insertInvoiceLineSchema, insertInvoiceDetailSchema } from '../../../../shared/schema';
+import { invoices, invoiceItems, invoiceDetails, invoicePayments, companies, users, ledgerEntries, ledgerLines, insertInvoiceSchema, insertInvoiceDetailSchema } from '../../../../shared/schema';
 
 import { v4 as uuidv4 } from 'uuid';
 import { VATCategory, determineVATCategory } from '../types/vat-categories';
@@ -174,8 +174,8 @@ export class PurchaseJournalService {
         result.map(async (invoice) => {
           const lines = await db
             .select()
-            .from(invoiceLines)
-            .where(eq(invoiceLines.invoiceId, invoice.id));
+            .from(invoiceItems)
+            .where(eq(invoiceItems.invoiceId, invoice.id));
           return { ...invoice, lines };
         })
       );
@@ -246,8 +246,8 @@ export class PurchaseJournalService {
       const invoice = invoiceResult[0];
       const lines = await db
         .select()
-        .from(invoiceLines)
-        .where(eq(invoiceLines.invoiceId, invoice.id));
+        .from(invoiceItems)
+        .where(eq(invoiceItems.invoiceId, invoice.id));
 
       return { ...invoice, lines };
     } catch (error) {
@@ -898,7 +898,7 @@ export class PurchaseJournalService {
     for (const invoice of invoicesResult) {
       // Obține detalii furnizor (NOTE: customerId = supplierId for PURCHASE!)
       const [details] = await db.select().from(invoiceDetails).where(eq(invoiceDetails.invoiceId, invoice.id)).limit(1);
-      const lines = await db.select().from(invoiceLines).where(eq(invoiceLines.invoiceId, invoice.id));
+      const lines = await db.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, invoice.id));
       
       // 4. Grupare linii pe categorie fiscală (ca la Sales Journal)
       const linesByCategory = this.groupLinesByCategory(lines, details);
@@ -1266,7 +1266,7 @@ export class PurchaseJournalService {
 
       // Delete in correct order due to foreign keys
       await db.delete(invoiceDetails).where(eq(invoiceDetails.invoiceId, invoiceId));
-      await db.delete(invoiceLines).where(eq(invoiceLines.invoiceId, invoiceId));
+      await db.delete(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
       await db.delete(invoices).where(eq(invoices.id, invoiceId));
 
       console.log('Successfully deleted purchase invoice');

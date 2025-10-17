@@ -14,7 +14,7 @@ import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.serv
 import { v4 as uuidv4 } from 'uuid';
 import { getDrizzle } from '../../../common/drizzle';
 import { and, desc, eq, gte, lte, isNotNull } from 'drizzle-orm';
-import { invoices, invoiceLines, invoiceDetails, invoicePayments, users, ledgerEntries, ledgerLines, companies, type LedgerEntry, type LedgerLine } from '../../../../shared/schema';
+import { invoices, invoiceItems, invoiceDetails, invoicePayments, users, ledgerEntries, ledgerLines, companies, type LedgerEntry, type LedgerLine } from '../../../../shared/schema';
 import { VATCategory, determineVATCategory, VAT_CATEGORY_INFO } from '../types/vat-categories';
 import { 
   SalesJournalReport, 
@@ -199,8 +199,8 @@ export class SalesJournalService {
         result.map(async (invoice) => {
           const lines = await db
             .select()
-            .from(invoiceLines)
-            .where(eq(invoiceLines.invoiceId, invoice.id));
+            .from(invoiceItems)
+            .where(eq(invoiceItems.invoiceId, invoice.id));
           return { ...invoice, lines };
         })
       );
@@ -277,8 +277,8 @@ export class SalesJournalService {
       // Get invoice lines
       const lines = await db
         .select()
-        .from(invoiceLines)
-        .where(eq(invoiceLines.invoiceId, invoice.id));
+        .from(invoiceItems)
+        .where(eq(invoiceItems.invoiceId, invoice.id));
       
       return { ...invoice, lines };
     } catch (error) {
@@ -341,10 +341,10 @@ export class SalesJournalService {
         ));
       
       // Delete old lines and insert new ones
-      await db.delete(invoiceLines).where(eq(invoiceLines.invoiceId, invoiceData.id));
+      await db.delete(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceData.id));
       
       for (const item of items) {
-        await db.insert(invoiceLines).values({
+        await db.insert(invoiceItems).values({
           invoiceId: invoiceData.id,
           productId: item.productId,
           productName: item.productName,
@@ -353,8 +353,7 @@ export class SalesJournalService {
           netAmount: String(item.netAmount),
           vatRate: item.vatRate,
           vatAmount: String(item.vatAmount),
-          grossAmount: String(item.grossAmount),
-          totalAmount: String(item.grossAmount)
+          grossAmount: String(item.grossAmount)
         });
       }
     } catch (error) {
@@ -567,7 +566,7 @@ export class SalesJournalService {
       
       // Insert invoice items
       for (const item of items) {
-        await db.insert(invoiceLines).values({
+        await db.insert(invoiceItems).values({
           invoiceId: invoiceId,
           productId: item.productId,
           productName: item.productName,
@@ -576,8 +575,7 @@ export class SalesJournalService {
           netAmount: String(item.netAmount),
           vatRate: item.vatRate,
           vatAmount: String(item.vatAmount),
-          grossAmount: String(item.grossAmount),
-          totalAmount: String(item.grossAmount)
+          grossAmount: String(item.grossAmount)
         });
       }
       
@@ -645,8 +643,8 @@ export class SalesJournalService {
       // Get invoice lines
       const lines = await db
         .select()
-        .from(invoiceLines)
-        .where(eq(invoiceLines.invoiceId, invoice.id));
+        .from(invoiceItems)
+        .where(eq(invoiceItems.invoiceId, invoice.id));
       
       // Calculate totals
       const netAmount = items.reduce((sum, item) => sum + Number(item.netAmount), 0);
@@ -705,7 +703,7 @@ export class SalesJournalService {
       
       // Insert credit note items
       for (const item of items) {
-        await db.insert(invoiceLines).values({
+        await db.insert(invoiceItems).values({
           invoiceId: creditNoteId,
           productId: item.productId,
           productName: item.productName,
@@ -715,7 +713,6 @@ export class SalesJournalService {
           vatRate: item.vatRate,
           vatAmount: String(item.vatAmount),
           grossAmount: String(item.grossAmount),
-          totalAmount: String(item.grossAmount),
           originalItemId: item.originalItemId // Reference to original invoice item
         });
       }
@@ -871,8 +868,8 @@ export class SalesJournalService {
         invoiceResult.map(async (inv: any) => {
           const lines = await db
             .select()
-            .from(invoiceLines)
-            .where(eq(invoiceLines.invoiceId, inv.id));
+            .from(invoiceItems)
+            .where(eq(invoiceItems.invoiceId, inv.id));
           return { ...inv, lines };
         })
       );
@@ -1612,8 +1609,8 @@ export class SalesJournalService {
         // Obține liniile facturii
         const lines = await db
           .select()
-          .from(invoiceLines)
-          .where(eq(invoiceLines.invoiceId, invoice.id));
+          .from(invoiceItems)
+          .where(eq(invoiceItems.invoiceId, invoice.id));
         
         // Obține detalii client
         const [details] = await db
