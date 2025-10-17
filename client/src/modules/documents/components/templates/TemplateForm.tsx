@@ -20,7 +20,7 @@ import { Switch } from '@/components/ui/switch';
 import {
   Save,
   X,
-  Template,
+  LayoutTemplate,
   Tag
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -36,7 +36,7 @@ const templateSchema = z.object({
     message: "Selectați o categorie"
   }),
   tags: z.string(),
-  isPublic: z.boolean().default(false)
+  isPublic: z.boolean()
 });
 
 type TemplateFormValues = z.infer<typeof templateSchema>;

@@ -79,16 +79,16 @@ export class SignDocumentController {
           subject,
           message,
           fileName,
-          metadata,
-          tags,
-          userId: userId as string,
-          companyId: companyId as string,
-          additionalAuditInfo: {
+          metadata: {
+            ...metadata,
             documentSize: req.file.size,
             mimeType: req.file.mimetype,
             hasTags: !!tags,
             hasMetadata: !!metadata
-          }
+          },
+          tags,
+          userId: userId as string,
+          companyId: companyId as string
         }
       );
       
@@ -106,7 +106,7 @@ export class SignDocumentController {
       
       // Audit the failed operation
       if (req.user?.id && req.user?.companyId) {
-        await this.auditService.log({
+        await AuditService.log({
           userId: req.user.id,
           companyId: req.user.companyId,
           action: 'CREATE_FAILED',
@@ -182,7 +182,7 @@ export class SignDocumentController {
       
       // Audit the failed operation
       if (req.user?.id && req.user?.companyId) {
-        await this.auditService.log({
+        await AuditService.log({
           userId: req.user.id,
           companyId: req.user.companyId,
           action: 'SIGN_REQUEST_FAILED',
@@ -241,7 +241,7 @@ export class SignDocumentController {
       
       // Audit the failed operation
       if (req.user?.id && req.user?.companyId) {
-        await this.auditService.log({
+        await AuditService.log({
           userId: req.user.id,
           companyId: req.user.companyId,
           action: 'VIEW_FAILED',
@@ -302,7 +302,7 @@ export class SignDocumentController {
       
       // Audit the failed operation
       if (req.user?.id && req.user?.companyId) {
-        await this.auditService.log({
+        await AuditService.log({
           userId: req.user.id,
           companyId: req.user.companyId,
           action: 'GENERATE_LINK_FAILED',
@@ -351,7 +351,7 @@ export class SignDocumentController {
           );
           
           // Create webhook audit log
-          await this.auditService.log({
+          await AuditService.log({
             userId: 'system', // Webhook events are system-triggered
             companyId: 'system', // We'll need to map the document ID to a company ID in a real implementation
             action: 'DOCUMENT_STATUS_CHANGED',
@@ -372,7 +372,7 @@ export class SignDocumentController {
           
         case 'document_completed':
           // Create webhook audit log for completed document
-          await this.auditService.log({
+          await AuditService.log({
             userId: 'system',
             companyId: 'system',
             action: 'DOCUMENT_COMPLETED',
@@ -391,7 +391,7 @@ export class SignDocumentController {
           
         default:
           // Log other event types
-          await this.auditService.log({
+          await AuditService.log({
             userId: 'system',
             companyId: 'system',
             action: 'WEBHOOK_EVENT',
@@ -414,7 +414,7 @@ export class SignDocumentController {
       this.logger.error(`Error processing webhook:`, error);
       
       // Audit the failed webhook processing
-      await this.auditService.log({
+      await AuditService.log({
         userId: 'system',
         companyId: 'system',
         action: 'WEBHOOK_PROCESSING_FAILED',

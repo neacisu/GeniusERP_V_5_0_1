@@ -20,7 +20,7 @@ import {
   Download,
   Eye,
   FileText,
-  FilePdf,
+  File,
   ArrowUpDown,
   Search,
   UserCheck,
@@ -140,7 +140,7 @@ const RegistryTable: React.FC<RegistryTableProps> = ({
   const getDocumentTypeIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case 'pdf':
-        return <FilePdf className="h-4 w-4 text-red-500" />;
+        return <File className="h-4 w-4 text-red-500" />;
       case 'document':
       case 'text':
       default:

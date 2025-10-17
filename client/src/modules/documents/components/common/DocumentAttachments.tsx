@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-  PaperClip,
+  Paperclip,
   File,
-  FilePdf,
   FileImage,
   FileText,
   FileSpreadsheet,
@@ -64,7 +63,7 @@ const DocumentAttachments: React.FC<DocumentAttachmentsProps> = ({
   // Get appropriate icon based on file type
   const getFileIcon = (type: string) => {
     if (type.includes('pdf')) {
-      return <FilePdf className="h-8 w-8 text-red-500" />;
+      return <FileText className="h-8 w-8 text-red-500" />;
     } else if (type.includes('image')) {
       return <FileImage className="h-8 w-8 text-blue-500" />;
     } else if (type.includes('text') || type.includes('document')) {
@@ -134,7 +133,7 @@ const DocumentAttachments: React.FC<DocumentAttachmentsProps> = ({
     <Card className="border">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center">
-          <PaperClip className="h-5 w-5 mr-2" />
+          <Paperclip className="h-5 w-5 mr-2" />
           Atașamente
           <Badge className="ml-2">{attachments.length}</Badge>
         </CardTitle>
@@ -142,7 +141,7 @@ const DocumentAttachments: React.FC<DocumentAttachmentsProps> = ({
       <CardContent className="p-4">
         {attachments.length === 0 ? (
           <div className="text-center py-6 text-muted-foreground">
-            <PaperClip className="h-10 w-10 mx-auto mb-2" />
+            <Paperclip className="h-10 w-10 mx-auto mb-2" />
             <p>Nu există atașamente</p>
             {allowUpload && (
               <Button 
