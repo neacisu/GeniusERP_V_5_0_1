@@ -70,6 +70,10 @@ export class DepartmentController {
         return res.status(401).json({ error: 'Unauthorized' });
       }
       
+      if (!req.user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
+      
       const result = await this.departmentService.createDepartment(
         req.user.companyId,
         name,

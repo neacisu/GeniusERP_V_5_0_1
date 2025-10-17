@@ -40,6 +40,10 @@ export class PayrollController {
       
       const { employeeId, year, month } = req.body;
       
+      if (!req.user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
+      
       const result = await this.payrollService.calculateEmployeePayroll(
         employeeId,
         req.user.companyId,
@@ -66,6 +70,10 @@ export class PayrollController {
       
       const { year, month } = req.body;
       
+      if (!req.user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
+      
       const result = await this.payrollService.processCompanyPayroll(
         req.user.companyId,
         year,
@@ -90,6 +98,10 @@ export class PayrollController {
       }
       
       const { year, month } = req.params;
+      
+      if (!req.user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
       
       const report = await this.payrollService.getPayrollReport(
         req.user.companyId,
@@ -140,6 +152,10 @@ export class PayrollController {
       }
       
       const { year, month, format } = req.body;
+      
+      if (!req.user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
       
       const exportData = await this.payrollService.exportPayroll(
         req.user.companyId,

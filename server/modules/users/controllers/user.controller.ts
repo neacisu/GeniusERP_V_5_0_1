@@ -21,7 +21,7 @@ export class UserController {
   /**
    * Get all users
    */
-  async getUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getUsers(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       this.logger.debug("Getting all users");
       const users = await this.userService.getUsers();
@@ -35,7 +35,7 @@ export class UserController {
   /**
    * Get user by ID
    */
-  async getUserById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getUserById(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const { id } = req.params;
       this.logger.debug(`Getting user with ID: ${id}`);
@@ -64,7 +64,7 @@ export class UserController {
   /**
    * Create a new user
    */
-  async createUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async createUser(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       this.logger.debug("Creating new user");
       const user = await this.userService.createUser(req.body);
@@ -79,7 +79,7 @@ export class UserController {
   /**
    * Update user
    */
-  async updateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async updateUser(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const { id } = req.params;
       this.logger.debug(`Updating user with ID: ${id}`);
@@ -124,7 +124,7 @@ export class UserController {
   /**
    * Get user's roles
    */
-  async getUserRoles(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getUserRoles(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const { id } = req.params;
       this.logger.debug(`Getting roles for user ID: ${id}`);
@@ -132,7 +132,8 @@ export class UserController {
       // Users can only view their own roles unless they are admins
       if (req.user && id !== req.user.id && req.user.role !== "admin") {
         this.logger.warn(`Unauthorized access attempt to user roles ${id} by user ${req.user.id}`);
-        return res.status(403).json({ message: "Forbidden" });
+        res.status(403).json({ message: "Forbidden" });
+        return;
       }
       
       const roles = await this.userService.getUserRoles(id);

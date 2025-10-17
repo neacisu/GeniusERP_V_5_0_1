@@ -47,6 +47,10 @@ export class RevisalController {
         });
       }
       
+      if (!req.user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
+      
       const result = await this.revisalService.generateRevisalExport(
         req.user.companyId,
         exportType,
@@ -126,6 +130,10 @@ export class RevisalController {
       
       const status = req.query.status as string | undefined;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      
+      if (!req.user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
       
       const logs = await this.revisalService.getRevisalLogs(
         req.user.companyId,

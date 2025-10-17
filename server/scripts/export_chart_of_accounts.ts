@@ -74,7 +74,7 @@ async function exportChartOfAccounts() {
                                 .where(and(
                                   eq(syntheticAccounts.groupId, group.id),
                                   eq(syntheticAccounts.grade, 2),
-                                  eq(syntheticAccounts.parentId, null)
+                                  isNull(syntheticAccounts.parentId)
                                 ))
                                 .orderBy(asc(syntheticAccounts.code));
         

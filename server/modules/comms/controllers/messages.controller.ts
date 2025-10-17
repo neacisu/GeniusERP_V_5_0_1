@@ -27,6 +27,11 @@ export class MessagesController {
       const { threadId } = req.params;
       const { companyId } = req.user!;
       
+      if (!companyId) {
+        res.status(400).json({ error: 'Company ID is required' });
+        return;
+      }
+      
       const messageData = {
         ...req.body,
         threadId,
@@ -56,6 +61,12 @@ export class MessagesController {
     try {
       const { threadId } = req.params;
       const { companyId } = req.user!;
+      
+      if (!companyId) {
+        res.status(400).json({ error: 'Company ID is required' });
+        return;
+      }
+      
       const { 
         direction, 
         status, 
@@ -106,6 +117,11 @@ export class MessagesController {
       const { messageId } = req.params;
       const { companyId } = req.user!;
       
+      if (!companyId) {
+        res.status(400).json({ error: 'Company ID is required' });
+        return;
+      }
+      
       const message = await this.messagesService.getMessageById(messageId, companyId);
       
       if (!message) {
@@ -130,6 +146,11 @@ export class MessagesController {
     try {
       const { messageId } = req.params;
       const { companyId, userId } = req.user!;
+      
+      if (!companyId) {
+        res.status(400).json({ error: 'Company ID is required' });
+        return;
+      }
       
       const updateData = {
         ...req.body,
@@ -165,6 +186,16 @@ export class MessagesController {
       const { messageId } = req.params;
       const { companyId, userId } = req.user!;
       
+      if (!companyId) {
+        res.status(400).json({ error: 'Company ID is required' });
+        return;
+      }
+      
+      if (!userId) {
+        res.status(400).json({ error: 'User ID is required' });
+        return;
+      }
+      
       const message = await this.messagesService.markMessageAsRead(
         messageId,
         companyId,
@@ -194,6 +225,11 @@ export class MessagesController {
       const { messageId } = req.params;
       const { companyId } = req.user!;
       
+      if (!companyId) {
+        res.status(400).json({ error: 'Company ID is required' });
+        return;
+      }
+      
       const success = await this.messagesService.deleteMessage(messageId, companyId);
       
       if (!success) {
@@ -217,6 +253,12 @@ export class MessagesController {
   async searchMessages(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { companyId } = req.user!;
+      
+      if (!companyId) {
+        res.status(400).json({ error: 'Company ID is required' });
+        return;
+      }
+      
       const { query } = req.query;
       
       if (!query || typeof query !== 'string') {

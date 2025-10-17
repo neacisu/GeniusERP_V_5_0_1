@@ -199,7 +199,12 @@ export default function DashboardPage() {
                       fill="#8884d8"
                       paddingAngle={5}
                       dataKey="value"
-                      label={({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={(props: any) => {
+                        const { name, value } = props;
+                        const total = salesByCategory.reduce((sum, entry) => sum + entry.value, 0);
+                        const percent = ((value / total) * 100).toFixed(0);
+                        return `${name} ${percent}%`;
+                      }}
                     >
                       {salesByCategory.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />

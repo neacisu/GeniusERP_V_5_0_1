@@ -3,7 +3,7 @@ import { companies, users, accounts, accountClasses, accountGroups, syntheticAcc
   roles, permissions, userRoles, rolePermissions, auditLogs,
   invoices, invoiceDetails, invoiceStatus,
   journalEntries, journalLines } from "@shared/schema";
-import { invoiceItems, type InvoiceItem, type InsertInvoiceItem } from "@/modules/invoicing/schema/invoice.schema";
+import { invoiceItems, type InvoiceItem, type InsertInvoiceItem } from "./modules/invoicing/schema/invoice.schema";
 import type { User, InsertUser, Company, InsertCompany, 
   Account, InsertAccount, AccountClass, InsertAccountClass, 
   AccountGroup, InsertAccountGroup, SyntheticAccount, InsertSyntheticAccount,
