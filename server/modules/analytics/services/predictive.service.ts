@@ -163,7 +163,7 @@ export interface CashFlowForecastResult {
     recommendations: Array<{
       recommendation: string;
       impact: string;
-      urgency: 'low' | 'medium' | 'high';
+      urgency: string;
     }>;
   };
 }

@@ -67,7 +67,7 @@ async function pushAnalyticsSchema() {
       END $$;
     `;
 
-    await db.execute(sql.raw(createEnumsSQL));
+    await db.execute(sql`${createEnumsSQL}`);
     
     console.log('Created enum types');
     
