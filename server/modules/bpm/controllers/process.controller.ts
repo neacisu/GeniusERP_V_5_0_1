@@ -6,7 +6,7 @@
 
 import { Request, Response } from 'express';
 import { Logger } from '../../../common/logger';
-import { ProcessService } from '../services/process.service';
+import { ProcessService, ProcessFilter } from '../services/process.service';
 import { ProcessInstanceService } from '../services/process-instance.service';
 import { BpmProcessStatus } from '../schema/bpm.schema';
 
@@ -25,6 +25,10 @@ export class ProcessController {
    */
   async createProcess(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { companyId, userId } = req.user;
       const processData = {
         ...req.body,
@@ -79,7 +83,7 @@ export class ProcessController {
       } = req.query;
       
       // Build filter object
-      const filter: any = {};
+      const filter: ProcessFilter = {};
       
       if (page) {
         filter.page = parseInt(page as string, 10);
@@ -279,7 +283,7 @@ export class ProcessController {
       res.status(201).json(instance);
     } catch (error) {
       this._logger.error('Failed to start process', { error });
-      res.status(500).json({ error: error.message || 'Failed to start process' });
+      res.status(500).json({ error: (error as Error)?.message || 'Failed to start process' });
     }
   }
 }

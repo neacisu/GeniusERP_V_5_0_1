@@ -92,7 +92,7 @@ const ProcessCard: React.FC<ProcessCardProps> = ({
           
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Ultima actualizare</p>
-            <p className="text-sm">{formatDate(process.updatedAt)}</p>
+            <p className="text-sm">{process.updatedAt ? formatDate(process.updatedAt) : 'N/A'}</p>
           </div>
           
           {process.owner && (

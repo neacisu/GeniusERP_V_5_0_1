@@ -6,8 +6,8 @@
 
 import { Request, Response } from 'express';
 import { Logger } from '../../../common/logger';
-import { ProcessInstanceService } from '../services/process-instance.service';
-import { BpmProcessInstanceStatus } from '../schema/bpm.schema';
+import { ProcessInstanceService, ProcessInstanceFilter } from '../services/process-instance.service';
+import { BpmProcessInstanceStatus, ProcessInstance, ProcessInstanceHistory } from '../schema/bpm.schema';
 
 export class ProcessInstanceController {
   private _logger: Logger;
@@ -23,6 +23,10 @@ export class ProcessInstanceController {
    */
   async listProcessInstances(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { companyId } = req.user;
       const {
         page,
@@ -33,7 +37,7 @@ export class ProcessInstanceController {
       } = req.query;
       
       // Build filter object
-      const filter: any = {};
+      const filter: ProcessInstanceFilter = {};
       
       if (page) {
         filter.page = parseInt(page as string, 10);
@@ -71,6 +75,10 @@ export class ProcessInstanceController {
    */
   async getProcessInstanceById(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { id } = req.params;
       const { companyId } = req.user;
       
@@ -93,8 +101,12 @@ export class ProcessInstanceController {
    */
   async startProcess(req: Request, res: Response): Promise<void> {
     try {
-      const { processId, inputData } = req.body;
-      const { companyId, userId } = req.user;
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+      const { processId, _inputData } = req.body;
+      const { _companyId, _userId } = req.user;
       
       if (!processId) {
         res.status(400).json({ error: 'Process ID is required' });
@@ -119,6 +131,10 @@ export class ProcessInstanceController {
    */
   async cancelProcessInstance(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { id } = req.params;
       const { reason } = req.body;
       const { userId } = req.user;
@@ -142,6 +158,10 @@ export class ProcessInstanceController {
    */
   async pauseProcessInstance(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { id } = req.params;
       const { userId } = req.user;
       
@@ -159,7 +179,7 @@ export class ProcessInstanceController {
         { 
           status: BpmProcessInstanceStatus.PAUSED,
           variables: {
-            ...instance.variables,
+            ...(instance.variables as Record<string, any>),
             pausedAt: new Date().toISOString(),
             pausedBy: userId
           }
@@ -179,6 +199,10 @@ export class ProcessInstanceController {
    */
   async resumeProcessInstance(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { id } = req.params;
       const { userId } = req.user;
       
@@ -201,7 +225,7 @@ export class ProcessInstanceController {
         { 
           status: BpmProcessInstanceStatus.RUNNING,
           variables: {
-            ...instance.variables,
+            ...(instance.variables as Record<string, any>),
             resumedAt: new Date().toISOString(),
             resumedBy: userId
           }
@@ -245,6 +269,10 @@ export class ProcessInstanceController {
    */
   async getProcessInstanceStatus(req: Request, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
       const { id } = req.params;
       const { companyId } = req.user;
       
@@ -287,7 +315,7 @@ export class ProcessInstanceController {
  * Helper function to calculate progress percentage (simplified)
  * In a real system, this would use the process definition to determine total steps
  */
-function calculateProgressPercentage(instance: any, history: any[]): number {
+function calculateProgressPercentage(instance: ProcessInstance, history: ProcessInstanceHistory[]): number {
   // This is a simplified implementation
   // In a real system, we'd need to calculate based on the process definition
   

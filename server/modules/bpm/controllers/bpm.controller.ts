@@ -22,7 +22,7 @@ export class BpmController {
    */
   constructor() {
     this._logger = new Logger('BpmController');
-    this._auditService = AuditService;
+    this._auditService = new AuditService();
   }
 
   /**

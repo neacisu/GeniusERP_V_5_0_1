@@ -27,12 +27,12 @@ export function initBpmServices(db?: PostgresJsDatabase<any>) {
   // Use provided database connection or get default connection
   const dbConnection = db || getDrizzle();
   
-  // Create DrizzleService with the database connection
-  const drizzleService = new DrizzleService(dbConnection);
+  // Create DrizzleService
+  const drizzleService = new DrizzleService();
   
   // Initialize BPM services with DrizzleService
   const processService = new ProcessService(drizzleService);
-  const triggerService = new TriggerService(drizzleService, processService);
+  const triggerService = new TriggerService(drizzleService);
   const processInstanceService = new ProcessInstanceService(drizzleService, processService);
   const stepTemplateService = new StepTemplateService(drizzleService);
   

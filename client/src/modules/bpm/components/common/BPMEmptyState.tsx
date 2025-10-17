@@ -17,6 +17,7 @@ export interface BPMEmptyStateProps {
     onClick: () => void;
   };
   variant?: 'card' | 'inline';
+  className?: string;
 }
 
 const BPMEmptyState: React.FC<BPMEmptyStateProps> = ({
@@ -24,10 +25,11 @@ const BPMEmptyState: React.FC<BPMEmptyStateProps> = ({
   description,
   icon,
   action,
-  variant = 'inline'
+  variant = 'inline',
+  className
 }) => {
   const EmptyStateContent = () => (
-    <div className="flex flex-col items-center justify-center text-center space-y-4">
+    <div className={`flex flex-col items-center justify-center text-center space-y-4 ${className || ''}`}>
       <div className="bg-muted/30 rounded-full p-6 text-muted-foreground">
         {icon}
       </div>
@@ -47,7 +49,7 @@ const BPMEmptyState: React.FC<BPMEmptyStateProps> = ({
 
   if (variant === 'card') {
     return (
-      <Card className="border-dashed">
+      <Card className={`border-dashed ${className || ''}`}>
         <CardContent className="py-8">
           <EmptyStateContent />
         </CardContent>

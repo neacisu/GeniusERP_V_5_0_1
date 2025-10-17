@@ -24,6 +24,7 @@ export enum BpmProcessInstanceStatus {
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
   ERROR = 'ERROR',
+  PAUSED = 'PAUSED',
 }
 
 /**

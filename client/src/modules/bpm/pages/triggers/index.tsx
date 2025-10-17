@@ -55,7 +55,6 @@ import {
   Search,
   Filter,
   MoreVertical,
-  ArrowRight,
   Clock,
   Mail,
   Database,
@@ -65,10 +64,8 @@ import {
   Play,
   Edit,
   Trash2,
-  AlertTriangle,
   Check,
-  X,
-  List
+  X
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -83,7 +80,7 @@ const triggerFormSchema = z.object({
   description: z.string().optional(),
   type: z.enum(['schedule', 'webhook', 'data', 'email', 'manual']),
   processId: z.string().optional(),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 
 export default function TriggersPage() {
@@ -239,31 +236,31 @@ export default function TriggersPage() {
   };
   
   // Handler pentru editarea unui trigger
-  const handleEditTrigger = (id: string) => {
+  const handleEditTrigger = (_id: string) => {
     toast({
       title: 'Editare trigger',
       description: 'Funcționalitatea de editare va fi disponibilă în curând.',
     });
   };
-  
+
   // Handler pentru activarea/dezactivarea unui trigger
-  const handleToggleTrigger = (id: string, currentState: boolean) => {
+  const handleToggleTrigger = (_id: string, currentState: boolean) => {
     toast({
       title: currentState ? 'Trigger dezactivat' : 'Trigger activat',
       description: `Trigger-ul a fost ${currentState ? 'dezactivat' : 'activat'} cu succes.`,
     });
   };
-  
+
   // Handler pentru ștergerea unui trigger
-  const handleDeleteTrigger = (id: string) => {
+  const handleDeleteTrigger = (_id: string) => {
     toast({
       title: 'Trigger șters',
       description: 'Trigger-ul a fost șters cu succes.',
     });
   };
-  
+
   // Handler pentru executarea manuală a unui trigger
-  const handleRunTrigger = (id: string) => {
+  const handleRunTrigger = (_id: string) => {
     toast({
       title: 'Trigger executat',
       description: 'Trigger-ul a fost executat manual cu succes.',

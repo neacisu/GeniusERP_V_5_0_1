@@ -5,7 +5,7 @@
  */
 import { eq, and, like, or, desc, sql, not, isNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 import { Logger } from '../../../common/logger';
 import { 
   bpmTriggers, 
@@ -72,9 +72,9 @@ export class TriggerService {
   private _logger: Logger;
   private _processService: ProcessService;
 
-  constructor(private db: PostgresJsDatabase<any>) {
+  constructor(private drizzleService: DrizzleService) {
     this._logger = new Logger('TriggerService');
-    this._processService = new ProcessService(db);
+    this._processService = new ProcessService(drizzleService);
   }
 
   /**
@@ -85,7 +85,7 @@ export class TriggerService {
     
     try {
       const now = new Date();
-      const [trigger] = await this.db.insert(bpmTriggers).values({
+      const [trigger] = await this.drizzleService.query((tx) => tx.insert(bpmTriggers).values({
         id: uuidv4(),
         name: data.name,
         description: data.description || null,
@@ -98,7 +98,7 @@ export class TriggerService {
         updatedAt: now,
         createdBy: data.createdBy,
         updatedBy: data.updatedBy
-      }).returning();
+      }).returning());
       
       this._logger.info('Created trigger', { id: trigger.id, name: trigger.name });
       return trigger;
@@ -248,10 +248,10 @@ export class TriggerService {
       }
       
       // Update the trigger
-      const [updatedTrigger] = await this.db.update(bpmTriggers)
+      const [updatedTrigger] = await this.drizzleService.query((tx) => tx.update(bpmTriggers)
         .set(updateData)
         .where(eq(bpmTriggers.id, id))
-        .returning();
+        .returning());
       
       this._logger.info('Updated trigger', { id });
       return updatedTrigger;
@@ -276,8 +276,8 @@ export class TriggerService {
       }
       
       // Delete the trigger
-      await this.db.delete(bpmTriggers)
-        .where(eq(bpmTriggers.id, id));
+      await this.drizzleService.query((tx) => tx.delete(bpmTriggers)
+        .where(eq(bpmTriggers.id, id)));
       
       this._logger.info('Deleted trigger', { id });
       return true;
