@@ -214,18 +214,13 @@ export function createInventoryAssessmentController(
           ORDER BY a.created_at DESC
         `;
         
-        // Execute the query directly with PostgreSQL client
-        const client = await pool.connect();
-        try {
-          const result = await client.query(query, [companyId]);
-          
-          // Structure the response to match the expected format in the frontend
-          res.json({ 
-            assessments: result.rows 
-          });
-        } finally {
-          client.release();
-        }
+        // Execute the query directly with PostgreSQL
+        const result = await pool.unsafe(query, [companyId]);
+        
+        // Structure the response to match the expected format in the frontend
+        res.json({ 
+          assessments: result 
+        });
       } catch (error: any) {
         log(`Error fetching inventory assessments: ${error.message}`, 'inventory-assessment');
         res.status(500).json({ error: 'Eroare la obținerea documentelor de inventariere', details: error.message });
@@ -270,35 +265,29 @@ export function createInventoryAssessmentController(
           ORDER BY i.created_at
         `;
         
-        // Execute the queries directly with PostgreSQL client
-        const client = await pool.connect();
-        try {
-          // Get assessment
-          const assessmentResult = await client.query(assessmentQuery, [assessmentId, companyId]);
-          
-          if (assessmentResult.rows.length === 0) {
-            return res.status(404).json({ 
-              error: 'Document de inventariere negăsit',
-              details: 'Documentul de inventariere solicitat nu există sau nu aparține companiei dvs.'
-            });
-          }
-          
-          const assessment = assessmentResult.rows[0];
-          
-          // Get items
-          const itemsResult = await client.query(itemsQuery, [assessmentId]);
-          const items = itemsResult.rows;
-          
-          // Structure the response to match the expected format in the frontend
-          res.json({ 
-            assessment: {
-              ...assessment,
-              items
-            } 
+        // Execute the queries directly with PostgreSQL
+        // Get assessment
+        const assessmentResult = await pool.unsafe(assessmentQuery, [assessmentId, companyId]);
+        
+        if (assessmentResult.length === 0) {
+          return res.status(404).json({ 
+            error: 'Document de inventariere negăsit',
+            details: 'Documentul de inventariere solicitat nu există sau nu aparține companiei dvs.'
           });
-        } finally {
-          client.release();
         }
+        
+        const assessment = assessmentResult[0];
+        
+        // Get items
+        const items = await pool.unsafe(itemsQuery, [assessmentId]);
+        
+        // Structure the response to match the expected format in the frontend
+        res.json({ 
+          assessment: {
+            ...assessment,
+            items
+          } 
+        });
       } catch (error: any) {
         log(`Error fetching inventory assessment: ${error.message}`, 'inventory-assessment');
         res.status(error.message.includes('not found') ? 404 : 500)
@@ -334,25 +323,20 @@ export function createInventoryAssessmentController(
           const getAssessmentQuery = `
             SELECT * FROM inventory_assessments WHERE id = $1 AND company_id = $2
           `;
-          const client = await pool.connect();
-          try {
-            const assessmentResult = await client.query(getAssessmentQuery, [assessmentId, companyId]);
-            if (assessmentResult.rows.length === 0) {
-              return res.status(404).json({ error: 'Document de inventariere negăsit' });
-            }
-            
-            const assessment = assessmentResult.rows[0];
-            const warehouseId = assessment.warehouse_id;
-            
-            console.log(`[inventory-assessment-controller] Found assessment with warehouseId: ${warehouseId}`);
-            
-            // Now initialize the items with all required parameters
-            const result = await assessmentService.initializeAssessmentItems(assessmentId, warehouseId, companyId, userId);
-            console.log(`[inventory-assessment-controller] Successfully initialized assessment items:`, result ? 'Result returned' : 'No result');
-            res.json(result);
-          } finally {
-            client.release();
+          const assessmentResult = await pool.unsafe(getAssessmentQuery, [assessmentId, companyId]);
+          if (assessmentResult.length === 0) {
+            return res.status(404).json({ error: 'Document de inventariere negăsit' });
           }
+          
+          const assessment = assessmentResult[0];
+          const warehouseId = assessment.warehouse_id;
+          
+          console.log(`[inventory-assessment-controller] Found assessment with warehouseId: ${warehouseId}`);
+          
+          // Now initialize the items with all required parameters
+          const result = await assessmentService.initializeAssessmentItems(assessmentId, warehouseId, companyId, userId);
+          console.log(`[inventory-assessment-controller] Successfully initialized assessment items:`, result ? 'Result returned' : 'No result');
+          res.json(result);
         } catch (initError) {
           console.error(`[inventory-assessment-controller] Error in initializeAssessmentItems:`, initError);
           throw initError; // Re-throw to be caught by outer catch block
@@ -497,37 +481,32 @@ export function createInventoryAssessmentController(
           WHERE company_id = $1
         `;
         
-        // Execute the query directly with PostgreSQL client
-        const client = await pool.connect();
-        try {
-          const result = await client.query(query, [companyId]);
-          const summary = result.rows[0] || {
-            total_count: 0,
-            draft_count: 0,
-            in_progress_count: 0,
-            pending_approval_count: 0,
-            approved_count: 0,
-            finalized_count: 0,
-            cancelled_count: 0
-          };
-          
-          // Structure the response to match the expected format in the frontend
-          res.json({ 
-            summary: {
-              totalCount: parseInt(summary.total_count),
-              statusCounts: {
-                draft: parseInt(summary.draft_count),
-                in_progress: parseInt(summary.in_progress_count),
-                pending_approval: parseInt(summary.pending_approval_count),
-                approved: parseInt(summary.approved_count),
-                finalized: parseInt(summary.finalized_count),
-                cancelled: parseInt(summary.cancelled_count)
-              }
-            } 
-          });
-        } finally {
-          client.release();
-        }
+        // Execute the query directly with PostgreSQL
+        const result = await pool.unsafe(query, [companyId]);
+        const summary = result[0] || {
+          total_count: 0,
+          draft_count: 0,
+          in_progress_count: 0,
+          pending_approval_count: 0,
+          approved_count: 0,
+          finalized_count: 0,
+          cancelled_count: 0
+        };
+        
+        // Structure the response to match the expected format in the frontend
+        res.json({ 
+          summary: {
+            totalCount: parseInt(summary.total_count),
+            statusCounts: {
+              draft: parseInt(summary.draft_count),
+              in_progress: parseInt(summary.in_progress_count),
+              pending_approval: parseInt(summary.pending_approval_count),
+              approved: parseInt(summary.approved_count),
+              finalized: parseInt(summary.finalized_count),
+              cancelled: parseInt(summary.cancelled_count)
+            }
+          } 
+        });
       } catch (error: any) {
         log(`Error fetching assessment summary: ${error.message}`, 'inventory-assessment');
         res.status(500).json({ error: 'Eroare la obținerea rezumatului de inventariere', details: error.message });

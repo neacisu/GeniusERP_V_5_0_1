@@ -6,7 +6,7 @@
  * (depozit, magazin, custodie, transfer) as defined in Romanian legislation.
  */
 
-import { eq, desc, ilike, and, or, isNull } from 'drizzle-orm';
+import { eq, desc, ilike, and, or, isNull, sql } from 'drizzle-orm';
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
 // Note: pool is now a postgres-js Sql instance from server/db.ts
@@ -188,61 +188,57 @@ export class WarehouseService {
       parentId
     } = options;
 
-    // For total count
-    const countQuery = `
-      SELECT COUNT(*) as count
-      FROM warehouses
-      WHERE company_id = $1
-    `;
-    const countResult = await pool`${countQuery}`.values([companyId]);
-    const total = Number(countResult[0]?.count || 0);
+    // For total count using DrizzleService
+    const total = await this.db.query(async (db) => {
+      const result = await db.select({ count: sql<number>`count(*)::int` })
+        .from(warehouses)
+        .where(eq(warehouses.companyId, companyId));
+      return result[0]?.count || 0;
+    });
     
-    // Build the base query 
-    let query = `
-      SELECT * 
-      FROM warehouses 
-      WHERE company_id = $1
-    `;
-    
-    // Add additional conditions
-    const queryParams = [companyId];
-    let paramCounter = 2;
+    // Build dynamic filters for DrizzleService
+    const conditions = [eq(warehouses.companyId, companyId)];
     
     if (isActive !== undefined) {
-      query += ` AND is_active = $${paramCounter}`;
-      queryParams.push(isActive);
-      paramCounter++;
+      conditions.push(eq(warehouses.isActive, isActive));
     }
     
     if (type) {
-      query += ` AND type = $${paramCounter}`;
-      queryParams.push(type);
-      paramCounter++;
+      // Convert type from enum key to lowercase value for DB comparison
+      const typeValue = warehouseTypeEnum[type];
+      conditions.push(eq(warehouses.type, typeValue));
     }
     
     if (parentId !== undefined) {
       if (parentId === null) {
-        query += ` AND franchise_id IS NULL`; // Using franchiseId instead of parentId
+        conditions.push(isNull(warehouses.franchiseId));
       } else {
-        query += ` AND franchise_id = $${paramCounter}`; // Using franchiseId instead of parentId
-        queryParams.push(parentId);
-        paramCounter++;
+        conditions.push(eq(warehouses.franchiseId, parentId));
       }
     }
     
     if (search) {
-      query += ` AND (name ILIKE $${paramCounter} OR code ILIKE $${paramCounter} OR address ILIKE $${paramCounter})`;
-      queryParams.push(`%${search}%`);
-      paramCounter++;
+      const searchConditions = [
+        ilike(warehouses.name, `%${search}%`),
+        ilike(warehouses.code, `%${search}%`)
+      ];
+      if (warehouses.address) {
+        searchConditions.push(ilike(warehouses.address, `%${search}%`));
+      }
+      const searchOr = or(...searchConditions);
+      if (searchOr) {
+        conditions.push(searchOr);
+      }
     }
     
-    // Add sorting and pagination
-    query += ` ORDER BY created_at DESC LIMIT $${paramCounter} OFFSET $${paramCounter + 1}`;
-    const offset = (page - 1) * limit;
-    queryParams.push(limit, offset);
-    
-    // Execute the query
-    const warehouseRows = await pool.unsafe(query, queryParams);
+    const warehouseRows = await this.db.query(async (db) => 
+      db.select()
+        .from(warehouses)
+        .where(and(...conditions))
+        .orderBy(desc(warehouses.createdAt))
+        .limit(limit)
+        .offset((page - 1) * limit)
+    );
       
     return { warehouses: warehouseRows, total };
   }
@@ -255,17 +251,18 @@ export class WarehouseService {
    * @returns List of child warehouses
    */
   async getChildWarehouses(parentId: string, companyId: string): Promise<Warehouse[]> {
-    const query = `
-      SELECT *
-      FROM warehouses
-      WHERE franchise_id = $1
-        AND company_id = $2
-        AND is_active = true
-      ORDER BY name
-    `;
-    
-    const rows = await pool.unsafe(query, [parentId, companyId]);
-    return rows;
+    return await this.db.query(async (db) => 
+      db.select()
+        .from(warehouses)
+        .where(
+          and(
+            eq(warehouses.franchiseId, parentId),
+            eq(warehouses.companyId, companyId),
+            eq(warehouses.isActive, true)
+          )
+        )
+        .orderBy(warehouses.name)
+    );
   }
 
   /**

@@ -10,4 +10,5 @@ import { drizzleService } from '../../../common/drizzle/drizzle.service.instance
 import AuditService from '../../audit/services/audit.service';
 
 // Create the singleton instance of the products service
-export const productsService = new ProductsService(drizzleService, AuditService);
+const auditService = new AuditService();
+export const productsService = new ProductsService(drizzleService, auditService);

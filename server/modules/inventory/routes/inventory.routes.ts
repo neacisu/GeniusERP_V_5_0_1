@@ -57,10 +57,7 @@ export function setupInventoryRoutes() {
   // Initialize services for inventory assessment
   const drizzleService = new DrizzleService();
   const inventoryValuationService = new InventoryValuationService(drizzleService);
-  const inventoryAssessmentService = new InventoryAssessmentService(
-    drizzleService, 
-    inventoryValuationService
-  );
+  const inventoryAssessmentService = new InventoryAssessmentService();
   
   // Create controller instance for inventory assessment
   const assessmentController = createInventoryAssessmentController(

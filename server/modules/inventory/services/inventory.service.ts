@@ -38,7 +38,7 @@ export class InventoryService {
       };
       
       // Use direct SQL for now since we're working on the Drizzle ORM definitions
-      const result = await this.drizzle.execute(
+      const result = await this.drizzle.executeQuery(
         `INSERT INTO warehouses (
           id, company_id, franchise_id, name, code, location, address, type, is_active, created_at, updated_at
         ) VALUES (
@@ -94,7 +94,7 @@ export class InventoryService {
       
       query += ` ORDER BY name ASC`;
       
-      const result = await this.drizzle.execute(query, params);
+      const result = await this.drizzle.executeQuery(query, params);
       
       // Using any here as a temporary workaround for the type issues
       const resultAny = result as any;
@@ -117,7 +117,7 @@ export class InventoryService {
     console.log(`[InventoryService] 🔍 Getting warehouse: ${warehouseId}`);
     
     try {
-      const result = await this.drizzle.execute(
+      const result = await this.drizzle.executeQuery(
         `SELECT * FROM warehouses WHERE id = $1`,
         [warehouseId]
       );
@@ -207,7 +207,7 @@ export class InventoryService {
       params.push(warehouseId);
       
       // Execute the update query
-      const result = await this.drizzle.execute(
+      const result = await this.drizzle.executeQuery(
         `UPDATE warehouses SET ${updateFields} WHERE id = $${paramIndex} RETURNING *`,
         params
       );
@@ -248,7 +248,7 @@ export class InventoryService {
         params.push(warehouseId);
       }
       
-      const result = await this.drizzle.execute(query, params);
+      const result = await this.drizzle.executeQuery(query, params);
       
       // Using any as a temporary workaround for the type issues
       const resultAny = result as any;
@@ -281,7 +281,7 @@ export class InventoryService {
         ORDER BY p.name ASC
       `;
       
-      const result = await this.drizzle.execute(query, [warehouseId, companyId]);
+      const result = await this.drizzle.executeQuery(query, [warehouseId, companyId]);
       console.log(`[InventoryService] ✅ Found ${result.rows.length} products in warehouse`);
       
       return result.rows;
@@ -323,7 +323,7 @@ export class InventoryService {
     
     try {
       // First, check if there's enough stock
-      const stockResult = await this.drizzle.execute(
+      const stockResult = await this.drizzle.executeQuery(
         `SELECT * FROM stocks WHERE product_id = $1 AND warehouse_id = $2`,
         [productId, warehouseId]
       );
@@ -341,7 +341,7 @@ export class InventoryService {
       }
       
       // Update the reserved quantity
-      const result = await this.drizzle.execute(
+      const result = await this.drizzle.executeQuery(
         `UPDATE stocks 
          SET quantity_reserved = quantity_reserved + $1, updated_at = $2
          WHERE product_id = $3 AND warehouse_id = $4

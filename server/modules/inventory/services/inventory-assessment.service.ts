@@ -21,8 +21,6 @@ export class InventoryAssessmentService {
   async createAssessment(data: any, userId: string, companyId: string): Promise<any> {
     console.log(`[inventory-assessment] Creating assessment with data:`, JSON.stringify(data, null, 2));
     
-    const client = await pool.connect();
-    
     try {
       // Set default values and prepare data
       const assessmentId = uuidv4();
@@ -79,15 +77,13 @@ export class InventoryAssessmentService {
         insertData.updated_at
       ];
       
-      const result = await client.query(query, values);
+      const [result] = await pool.unsafe(query, values);
       console.log(`[inventory-assessment] Assessment created successfully`);
       
-      return result.rows[0];
+      return result;
     } catch (error) {
       console.error(`[inventory-assessment] Error creating assessment:`, error);
       throw error;
-    } finally {
-      client.release();
     }
   }
 
@@ -103,179 +99,92 @@ export class InventoryAssessmentService {
     console.log(`[inventory-assessment] Initializing assessment items for assessment: ${assessmentId}`);
     
     try {
-      const client = await pool.connect();
+      // Get assessment details first
+      const assessmentQuery = `
+        SELECT * FROM inventory_assessments 
+        WHERE id = $1
+      `;
       
-      try {
-        // Get assessment details first
-        const assessmentQuery = `
-          SELECT * FROM inventory_assessments 
-          WHERE id = $1
-        `;
-        
-        const assessmentResult = await client.query(assessmentQuery, [assessmentId]);
-        
-        if (assessmentResult.rows.length === 0) {
-          throw new Error(`Assessment not found: ${assessmentId}`);
-        }
-        
-        const assessment = assessmentResult.rows[0];
+      const assessmentResult = await pool.unsafe(assessmentQuery, [assessmentId]);
       
-        // Verify assessment status is DRAFT
-        if (assessment.status !== 'draft') {
-          throw new Error(`Assessment must be in DRAFT status to initialize items. Current status: ${assessment.status}`);
-        }
+      if (assessmentResult.length === 0) {
+        throw new Error(`Assessment not found: ${assessmentId}`);
+      }
+      
+      const assessment = assessmentResult[0];
+    
+      // Verify assessment status is DRAFT
+      if (assessment.status !== 'draft') {
+        throw new Error(`Assessment must be in DRAFT status to initialize items. Current status: ${assessment.status}`);
+      }
+      
+      console.log(`[inventory-assessment] Assessment warehouse ID: ${warehouseId}`);
+      
+      // Get all products with stock in the warehouse - using parameterized query
+      console.log(`[inventory-assessment] Getting stock items for warehouse ${warehouseId}`);
+      
+      // First try getting items from the stocks table
+      const stocksQuery = `
+        SELECT 
+          p.id as product_id, 
+          p.name as product_name,
+          p.sku as product_code,
+          COALESCE(u.name, 'buc') as unit_of_measure,
+          SUM(s.quantity) as theoretical_quantity,
+          COALESCE(SUM(s.quantity * s.purchase_price), 0) as theoretical_value
+        FROM 
+          stocks s
+        JOIN 
+          inventory_products p ON s.product_id = p.id
+        LEFT JOIN 
+          inventory_units u ON p.unit_id = u.id
+        WHERE 
+          s.warehouse_id = $1
+          AND s.quantity > 0
+        GROUP BY 
+          p.id, p.name, p.sku, u.name
+      `;
+      
+      const stockItems = await pool.unsafe(stocksQuery, [warehouseId]);
+      let stockItemsList = stockItems;
+      
+      console.log(`[inventory-assessment] Found ${stockItemsList.length} stock items in stocks table`);
+      
+      // If no items found in stocks, try the inventory_stock table (backup)
+      if (stockItemsList.length === 0) {
+        console.log(`[inventory-assessment] No items in stocks table, trying inventory_stock table`);
         
-        console.log(`[inventory-assessment] Assessment warehouse ID: ${warehouseId}`);
-        
-        // Get all products with stock in the warehouse - using parameterized query
-        console.log(`[inventory-assessment] Getting stock items for warehouse ${warehouseId}`);
-        
-        // First try getting items from the stocks table
-        const stocksQuery = `
+        const inventoryStockQuery = `
           SELECT 
-            p.id as product_id, 
+            s.product_id, 
             p.name as product_name,
-            p.sku as product_code,
-            COALESCE(u.name, 'buc') as unit_of_measure,
-            SUM(s.quantity) as theoretical_quantity,
-            COALESCE(SUM(s.quantity * s.purchase_price), 0) as theoretical_value
+            p.code as product_code,
+            s.quantity as theoretical_quantity,
+            p.unit_of_measure,
+            COALESCE(s.value, 0) as theoretical_value
           FROM 
-            stocks s
+            inventory_stock s
           JOIN 
             inventory_products p ON s.product_id = p.id
-          LEFT JOIN 
-            inventory_units u ON p.unit_id = u.id
           WHERE 
-            s.warehouse_id = $1
+            s.warehouse_id = $1 AND s.company_id = $2
             AND s.quantity > 0
-          GROUP BY 
-            p.id, p.name, p.sku, u.name
         `;
         
-        const stocksResult = await client.query(stocksQuery, [warehouseId]);
-        let stockItems = stocksResult.rows;
-        
-        console.log(`[inventory-assessment] Found ${stockItems.length} stock items in stocks table`);
-        
-        // If no items found in stocks, try the inventory_stock table (backup)
-        if (stockItems.length === 0) {
-          console.log(`[inventory-assessment] No items in stocks table, trying inventory_stock table`);
-          
-          const inventoryStockQuery = `
-            SELECT 
-              s.product_id, 
-              p.name as product_name,
-              p.code as product_code,
-              s.quantity as theoretical_quantity,
-              p.unit_of_measure,
-              COALESCE(s.value, 0) as theoretical_value
-            FROM 
-              inventory_stock s
-            JOIN 
-              inventory_products p ON s.product_id = p.id
-            WHERE 
-              s.warehouse_id = $1 AND s.company_id = $2
-              AND s.quantity > 0
-          `;
-          
-          const inventoryStockResult = await client.query(inventoryStockQuery, [warehouseId, companyId]);
-          stockItems = inventoryStockResult.rows;
-          console.log(`[inventory-assessment] Found ${stockItems.length} stock items in inventory_stock table`);
-        }
-        
-        // Create assessment items for each stock item
-        const assessmentItems = [];
-        let successCount = 0;
-        let errorCount = 0;
-        
-        if (stockItems.length === 0) {
-          console.log(`[inventory-assessment] No stock items found for warehouse: ${warehouseId}`);
-          
-          // Update assessment status to IN_PROGRESS even with no items
-          // This allows the user to proceed to the next step
-          const updateStatusQuery = `
-            UPDATE inventory_assessments
-            SET status = $1, updated_at = NOW()
-            WHERE id = $2
-            RETURNING *
-          `;
-          
-          await client.query(updateStatusQuery, ['in_progress', assessmentId]);
-          
-          return {
-            assessment: {
-              ...assessment,
-              status: 'in_progress'
-            },
-            items: []
-          };
-        }
-        
-        // Process each stock item and create an assessment item
-        console.log(`[inventory-assessment] Processing ${stockItems.length} stock items`);
-        
-        for (const item of stockItems) {
-          console.log(`[inventory-assessment] Processing stock item for ${item.product_name || 'unknown product'}`);
-          
-          try {
-            // Generate a UUID for the item
-            const itemId = uuidv4();
-            
-            // Build INSERT query with explicit CAST for numeric values
-            const insertQuery = `
-              INSERT INTO inventory_assessment_items (
-                id, assessment_id, product_id, accounting_quantity, actual_quantity,
-                unit_of_measure, accounting_value, actual_value, difference_quantity,
-                difference_value, result_type, is_processed, notes, created_at
-              ) VALUES (
-                $1, $2, $3, 
-                CAST($4 AS NUMERIC), CAST($5 AS NUMERIC),
-                $6, 
-                CAST($7 AS NUMERIC), CAST($8 AS NUMERIC), 
-                CAST($9 AS NUMERIC), CAST($10 AS NUMERIC),
-                $11, $12, $13, NOW()
-              ) RETURNING *
-            `;
-            
-            // Execute the insert with safe values
-            const insertResult = await client.query(insertQuery, [
-              itemId,
-              assessmentId,
-              item.product_id,
-              parseFloat(item.theoretical_quantity) || 0,
-              0, // actual_quantity
-              item.unit_of_measure || 'buc',
-              parseFloat(item.theoretical_value) || 0,
-              0, // actual_value
-              0, // difference_quantity
-              0, // difference_value
-              'MATCH', // result_type
-              false, // is_processed
-              `${item.product_code || ''} - ${item.product_name || 'Produs necunoscut'}`
-            ]);
-            
-            const assessmentItem = insertResult.rows[0];
-            console.log(`[inventory-assessment] Item created with ID: ${assessmentItem.id}`);
-            
-            assessmentItems.push(assessmentItem);
-            successCount++;
-          } catch (insertError) {
-            console.error(`[inventory-assessment] Error inserting item:`, insertError);
-            errorCount++;
-            // Continue with next item instead of failing the entire process
-          }
-        }
+        stockItemsList = await pool.unsafe(inventoryStockQuery, [warehouseId, companyId]);
+        console.log(`[inventory-assessment] Found ${stockItemsList.length} stock items in inventory_stock table`);
+      }
       
-        // After processing all items, update assessment status to IN_PROGRESS
-        console.log(`[inventory-assessment] Processed items with success: ${successCount}, errors: ${errorCount}`);
+      // Create assessment items for each stock item
+      const assessmentItems = [];
+      let successCount = 0;
+      let errorCount = 0;
+      
+      if (stockItemsList.length === 0) {
+        console.log(`[inventory-assessment] No stock items found for warehouse: ${warehouseId}`);
         
-        if (successCount === 0 && errorCount > 0) {
-          // All inserts failed - this is a real problem
-          throw new Error(`Failed to insert any assessment items. Please check the error logs.`);
-        }
-        
-        // Update assessment status to IN_PROGRESS using direct SQL
-        console.log(`[inventory-assessment] Updating assessment status to IN_PROGRESS`);
+        // Update assessment status to IN_PROGRESS even with no items
+        // This allows the user to proceed to the next step
         const updateStatusQuery = `
           UPDATE inventory_assessments
           SET status = $1, updated_at = NOW()
@@ -283,23 +192,102 @@ export class InventoryAssessmentService {
           RETURNING *
         `;
         
-        const updateResult = await client.query(updateStatusQuery, ['in_progress', assessmentId]);
+        await pool.unsafe(updateStatusQuery, ['in_progress', assessmentId]);
         
-        if (updateResult.rows.length === 0) {
-          throw new Error(`Failed to update assessment status to IN_PROGRESS`);
-        }
-        
-        const updatedAssessment = updateResult.rows[0];
-        
-        // Return the result
         return {
-          assessment: updatedAssessment,
-          items: assessmentItems
+          assessment: {
+            ...assessment,
+            status: 'in_progress'
+          },
+          items: []
         };
-      } finally {
-        // Always release the database client
-        client.release();
       }
+      
+      // Process each stock item and create an assessment item
+      console.log(`[inventory-assessment] Processing ${stockItemsList.length} stock items`);
+      
+      for (const item of stockItemsList) {
+        console.log(`[inventory-assessment] Processing stock item for ${item.product_name || 'unknown product'}`);
+        
+        try {
+          // Generate a UUID for the item
+          const itemId = uuidv4();
+          
+          // Build INSERT query with explicit CAST for numeric values
+          const insertQuery = `
+            INSERT INTO inventory_assessment_items (
+              id, assessment_id, product_id, accounting_quantity, actual_quantity,
+              unit_of_measure, accounting_value, actual_value, difference_quantity,
+              difference_value, result_type, is_processed, notes, created_at
+            ) VALUES (
+              $1, $2, $3, 
+              CAST($4 AS NUMERIC), CAST($5 AS NUMERIC),
+              $6, 
+              CAST($7 AS NUMERIC), CAST($8 AS NUMERIC), 
+              CAST($9 AS NUMERIC), CAST($10 AS NUMERIC),
+              $11, $12, $13, NOW()
+            ) RETURNING *
+          `;
+          
+          // Execute the insert with safe values
+          const insertResult = await pool.unsafe(insertQuery, [
+            itemId,
+            assessmentId,
+            item.product_id,
+            parseFloat(item.theoretical_quantity) || 0,
+            0, // actual_quantity
+            item.unit_of_measure || 'buc',
+            parseFloat(item.theoretical_value) || 0,
+            0, // actual_value
+            0, // difference_quantity
+            0, // difference_value
+            'MATCH', // result_type
+            false, // is_processed
+            `${item.product_code || ''} - ${item.product_name || 'Produs necunoscut'}`
+          ]);
+          
+          const assessmentItem = insertResult[0];
+          console.log(`[inventory-assessment] Item created with ID: ${assessmentItem.id}`);
+          
+          assessmentItems.push(assessmentItem);
+          successCount++;
+        } catch (insertError) {
+          console.error(`[inventory-assessment] Error inserting item:`, insertError);
+          errorCount++;
+          // Continue with next item instead of failing the entire process
+        }
+      }
+    
+      // After processing all items, update assessment status to IN_PROGRESS
+      console.log(`[inventory-assessment] Processed items with success: ${successCount}, errors: ${errorCount}`);
+      
+      if (successCount === 0 && errorCount > 0) {
+        // All inserts failed - this is a real problem
+        throw new Error(`Failed to insert any assessment items. Please check the error logs.`);
+      }
+      
+      // Update assessment status to IN_PROGRESS using direct SQL
+      console.log(`[inventory-assessment] Updating assessment status to IN_PROGRESS`);
+      const updateStatusQuery = `
+        UPDATE inventory_assessments
+        SET status = $1, updated_at = NOW()
+        WHERE id = $2
+        RETURNING *
+      `;
+      
+      const updateResult = await pool.unsafe(updateStatusQuery, ['in_progress', assessmentId]);
+      
+      if (updateResult.length === 0) {
+        throw new Error(`Failed to update assessment status to IN_PROGRESS`);
+      }
+      
+      const updatedAssessment = updateResult[0];
+      
+      // Return the result
+      return {
+        assessment: updatedAssessment,
+        items: assessmentItems
+      };
     } catch (error) {
       console.error(`[inventory-assessment] Error in initializeAssessmentItems:`, error);
       throw error;
@@ -313,23 +301,18 @@ export class InventoryAssessmentService {
     console.log(`[inventory-assessment] Getting assessment details for ID: ${assessmentId}`);
     
     try {
-      const client = await pool.connect();
-      try {
-        const query = `
-          SELECT * FROM inventory_assessments 
-          WHERE id = $1
-        `;
-        
-        const result = await client.query(query, [assessmentId]);
-        
-        if (result.rows.length === 0) {
-          return null;
-        }
-        
-        return result.rows[0];
-      } finally {
-        client.release();
+      const query = `
+        SELECT * FROM inventory_assessments 
+        WHERE id = $1
+      `;
+      
+      const result = await pool.unsafe(query, [assessmentId]);
+      
+      if (result.length === 0) {
+        return null;
       }
+      
+      return result[0];
     } catch (error) {
       console.error(`[inventory-assessment] Error in getAssessmentById:`, error);
       throw error;
@@ -350,25 +333,111 @@ export class InventoryAssessmentService {
       }
       
       // Get the items
-      const client = await pool.connect();
-      try {
-        const query = `
-          SELECT * FROM inventory_assessment_items 
-          WHERE assessment_id = $1
-        `;
-        
-        const result = await client.query(query, [assessmentId]);
-        const items = result.rows;
-        
-        return {
-          assessment,
-          items
-        };
-      } finally {
-        client.release();
-      }
+      const query = `
+        SELECT * FROM inventory_assessment_items 
+        WHERE assessment_id = $1
+      `;
+      
+      const items = await pool.unsafe(query, [assessmentId]);
+      
+      return {
+        assessment,
+        items
+      };
     } catch (error) {
       console.error(`[inventory-assessment] Error in getAssessmentWithItems:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update assessment status
+   * Placeholder method - implementation needed
+   */
+  async updateAssessmentStatus(assessmentId: string, status: string, userId: string): Promise<any> {
+    console.log(`[inventory-assessment] Updating assessment ${assessmentId} status to ${status}`);
+    
+    try {
+      const query = `
+        UPDATE inventory_assessments
+        SET status = $1, updated_at = NOW()
+        WHERE id = $2
+        RETURNING *
+      `;
+      
+      const result = await pool.unsafe(query, [status, assessmentId]);
+      
+      if (result.length === 0) {
+        throw new Error(`Assessment not found: ${assessmentId}`);
+      }
+      
+      return result[0];
+    } catch (error) {
+      console.error(`[inventory-assessment] Error updating assessment status:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Record actual item count
+   * Placeholder method - implementation needed
+   */
+  async recordItemCount(
+    itemId: string, 
+    actualQuantity: number, 
+    notes: string | null, 
+    countedBy: string, 
+    userId: string
+  ): Promise<any> {
+    console.log(`[inventory-assessment] Recording item count for ${itemId}: ${actualQuantity}`);
+    
+    try {
+      const query = `
+        UPDATE inventory_assessment_items
+        SET actual_quantity = $1, 
+            difference_quantity = accounting_quantity - $1,
+            notes = $2,
+            counted_by = $3,
+            updated_at = NOW()
+        WHERE id = $4
+        RETURNING *
+      `;
+      
+      const result = await pool.unsafe(query, [actualQuantity, notes, countedBy, itemId]);
+      
+      if (result.length === 0) {
+        throw new Error(`Assessment item not found: ${itemId}`);
+      }
+      
+      return result[0];
+    } catch (error) {
+      console.error(`[inventory-assessment] Error recording item count:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Process inventory differences
+   * Placeholder method - implementation needed
+   */
+  async processInventoryDifferences(assessmentId: string, userId: string): Promise<any> {
+    console.log(`[inventory-assessment] Processing inventory differences for ${assessmentId}`);
+    
+    try {
+      // This would typically:
+      // 1. Calculate all differences
+      // 2. Create accounting entries for surpluses/deficits
+      // 3. Update stock levels
+      // 4. Mark assessment as processed
+      
+      // For now, just return a placeholder
+      return {
+        success: true,
+        message: 'Inventory differences processing not yet fully implemented',
+        assessmentId
+      };
+    } catch (error) {
+      console.error(`[inventory-assessment] Error processing inventory differences:`, error);
       throw error;
     }
   }

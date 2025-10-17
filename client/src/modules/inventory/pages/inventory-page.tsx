@@ -54,14 +54,14 @@ export default function InventoryPage() {
   // Set up form when editing a product
   const setupEditForm = (product: InventoryProduct) => {
     reset({
-      code: product.code,
+      code: product.sku,
       name: product.name,
       description: product.description || "",
       categoryId: product.categoryId || "",
       unitId: product.unitId || "",
       purchasePrice: product.purchasePrice.toString(),
       sellingPrice: product.sellingPrice.toString(),
-      vatRate: product.vatRate.toString(),
+      vatRate: product.vatRate?.toString() || "19",
       stockAlert: product.stockAlert?.toString() || "0",
     });
     setIsProductDialogOpen(true);
@@ -74,8 +74,7 @@ export default function InventoryPage() {
         ? `/api/inventory/products/${selectedProduct.id}` 
         : '/api/inventory/products';
       const method = selectedProduct ? "PATCH" : "POST";
-      const response = await apiRequest(method, endpoint, data);
-      return await response.json();
+      return await apiRequest(endpoint, { method, body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/inventory/products'] });
@@ -125,7 +124,7 @@ export default function InventoryPage() {
 
   // Filter products based on search term
   const filteredProducts = products?.filter(product => 
-    product.code.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    product.sku.toLowerCase().includes(searchTerm.toLowerCase()) || 
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
@@ -184,7 +183,7 @@ export default function InventoryPage() {
                     ) : filteredProducts.length > 0 ? (
                       filteredProducts.map(product => (
                         <TableRow key={product.id}>
-                          <TableCell className="font-medium">{product.code}</TableCell>
+                          <TableCell className="font-medium">{product.sku}</TableCell>
                           <TableCell>{product.name}</TableCell>
                           <TableCell>
                             {categories?.find(c => c.id === product.categoryId)?.name || "-"}
