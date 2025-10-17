@@ -7,13 +7,15 @@
  */
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { Invoice, InvoiceDetail, InvoiceLine, InsertInvoice, InsertInvoiceDetail, InsertInvoiceLine } from '@shared/schema';
+import { Invoice, InvoiceDetail, InsertInvoice, InsertInvoiceDetail } from '@shared/schema';
+import { InvoiceItem } from '../schema/invoice.schema';
 import { ENTITY_NAME } from '../index';
 import { AuditService } from '../../audit/services/audit.service';
 import { AuditActionType } from '../../../common/enums/audit-action.enum';
 import { CurrencyService } from '../../integrations/services/currency.service';
 import { eq } from 'drizzle-orm';
-import { invoices, invoiceDetails, invoiceLines } from '@shared/schema';
+import { invoices, invoiceDetails } from '@shared/schema';
+import { invoiceItems } from '../schema/invoice.schema';
 
 export class InvoiceService {
   private static drizzle = new DrizzleService();
