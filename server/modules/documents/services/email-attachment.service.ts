@@ -164,7 +164,7 @@ export class EmailAttachmentService {
     // Get OCR text if available
     let ocrText = '';
     try {
-      const document = await this.documentService.getDocumentById(documentId);
+      const document = await this.documentService!.getDocumentById(documentId);
       ocrText = (document as any).ocrText || '';
     } catch (error) {
       console.warn(`[EmailAttachmentService] Couldn't get OCR text for classification:`, error);
