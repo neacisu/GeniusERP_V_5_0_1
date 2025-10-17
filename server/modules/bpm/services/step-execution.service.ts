@@ -249,12 +249,26 @@ export class StepExecutionService {
     logger.debug('Assigning step execution', { id, companyId, assignToUserId, assignedByUserId });
     
     try {
+      // First get the existing execution to preserve outputData
+      const [existingExecution] = await this.db
+        .select()
+        .from(bpmStepExecutions)
+        .where(and(
+          eq(bpmStepExecutions.id, id),
+          eq(bpmStepExecutions.companyId, companyId)
+        ))
+        .limit(1);
+      
+      if (!existingExecution) {
+        return null;
+      }
+      
       const [execution] = await this.db
         .update(bpmStepExecutions)
         .set({
           assignedTo: assignToUserId,
           outputData: {
-            ...execution.outputData,
+            ...(existingExecution.outputData as any || {}),
             assignedAt: new Date().toISOString(),
             assignedBy: assignedByUserId
           }

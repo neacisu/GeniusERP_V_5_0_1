@@ -33,7 +33,7 @@ export function initBpmServices(db?: PostgresJsDatabase<any>) {
   // Initialize BPM services with DrizzleService
   const processService = new ProcessService(drizzleService);
   const triggerService = new TriggerService(drizzleService);
-  const processInstanceService = new ProcessInstanceService(drizzleService, processService);
+  const processInstanceService = new ProcessInstanceService(drizzleService);
   const stepTemplateService = new StepTemplateService(drizzleService);
   
   // Initialize newly implemented services - they expect PostgresJsDatabase
