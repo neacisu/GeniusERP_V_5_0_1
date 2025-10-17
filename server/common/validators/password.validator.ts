@@ -95,11 +95,11 @@ export function validatePasswordWithUsername(password: string, username: string)
   errors: string[];
 } {
   const errors: string[] = [];
-  
+
   // Validare standard
   const result = passwordSchema.safeParse(password);
   if (!result.success) {
-    errors.push(...result.error.errors.map(e => e.message));
+    errors.push(...result.error.issues.map((e: any) => e.message));
   }
   
   // Verifică dacă parola conține username-ul
@@ -121,11 +121,11 @@ export function validatePasswordWithEmail(password: string, email: string): {
   errors: string[];
 } {
   const errors: string[] = [];
-  
+
   // Validare standard
   const result = passwordSchema.safeParse(password);
   if (!result.success) {
-    errors.push(...result.error.errors.map(e => e.message));
+    errors.push(...result.error.issues.map((e: any) => e.message));
   }
   
   // Verifică dacă parola conține partea locală a email-ului
