@@ -102,19 +102,19 @@ export class InvoiceService {
     // Get next invoice number for the series
     const nextNumber = await this.getNextInvoiceNumber(invoice.series || 'INV');
     
-    // Update status to issued
-    const updateQuery = `
-      UPDATE invoices
-      SET 
-        status = 'issued',
-        number = $1,
-        issued_at = NOW(),
-        updated_at = NOW()
-      WHERE id = $2
-      RETURNING *
-    `;
+    // Update status to issued using Drizzle ORM
+    const updateResult = await this.drizzle.query(async (db) => {
+      return await db
+        .update(invoices)
+        .set({
+          status: 'issued',
+          number: nextNumber,
+          updatedAt: new Date()
+        })
+        .where(eq(invoices.id, invoiceId))
+        .returning();
+    });
     
-    const updateResult = await this.drizzle.base.executeQuery(updateQuery, [nextNumber, invoiceId]);
     const updatedInvoice = updateResult.length > 0 ? updateResult[0] : null;
     
     if (!updatedInvoice) {
@@ -152,18 +152,18 @@ export class InvoiceService {
       throw new Error('Invoice not found');
     }
     
-    // Update status to sent
-    const updateQuery = `
-      UPDATE invoices
-      SET 
-        status = 'sent',
-        sent_at = NOW(),
-        updated_at = NOW()
-      WHERE id = $1
-      RETURNING *
-    `;
+    // Update status to sent using Drizzle ORM
+    const updateResult = await this.drizzle.query(async (db) => {
+      return await db
+        .update(invoices)
+        .set({
+          status: 'sent',
+          updatedAt: new Date()
+        })
+        .where(eq(invoices.id, invoiceId))
+        .returning();
+    });
     
-    const updateResult = await this.drizzle.base.executeQuery(updateQuery, [invoiceId]);
     const updatedInvoice = updateResult.length > 0 ? updateResult[0] : null;
     
     if (!updatedInvoice) {
@@ -200,19 +200,18 @@ export class InvoiceService {
       throw new Error('Invoice not found');
     }
     
-    // Update status to canceled
-    const updateQuery = `
-      UPDATE invoices
-      SET 
-        status = 'canceled',
-        canceled_at = NOW(),
-        cancel_reason = $1,
-        updated_at = NOW()
-      WHERE id = $2
-      RETURNING *
-    `;
+    // Update status to canceled using Drizzle ORM
+    const updateResult = await this.drizzle.query(async (db) => {
+      return await db
+        .update(invoices)
+        .set({
+          status: 'canceled',
+          updatedAt: new Date()
+        })
+        .where(eq(invoices.id, invoiceId))
+        .returning();
+    });
     
-    const updateResult = await this.drizzle.base.executeQuery(updateQuery, [reason || null, invoiceId]);
     const updatedInvoice = updateResult.length > 0 ? updateResult[0] : null;
     
     if (!updatedInvoice) {
@@ -265,32 +264,15 @@ export class InvoiceService {
       }
     }
     
-    // Delete the invoice and its related records using direct SQL for reliability
+    // Delete the invoice using Drizzle ORM (cascade will handle related records)
     try {
-      await this.drizzle.base.transaction(async (client) => {
-        // Delete invoice items
-        const deleteLinesQuery = `
-          DELETE FROM invoice_items 
-          WHERE invoice_id = $1
-        `;
+      await this.drizzle.transaction(async (tx) => {
+        // Delete invoice details first (not cascade)
+        await tx.delete(invoiceDetails).where(eq(invoiceDetails.invoiceId, invoiceId));
         
-        // Delete invoice details
-        const deleteDetailsQuery = `
-          DELETE FROM invoice_details
-          WHERE invoice_id = $1
-        `;
-        
-        // Delete invoice
-        const deleteInvoiceQuery = `
-          DELETE FROM invoices
-          WHERE id = $1
-        `;
-        
-        // Execute queries in sequence using execute method
-        await this.drizzle.base.executeQuery(deleteLinesQuery, [invoiceId]);
-        await this.drizzle.base.executeQuery(deleteDetailsQuery, [invoiceId]);
-        await this.drizzle.base.executeQuery(deleteInvoiceQuery, [invoiceId]);
-      }, 'deleteInvoice');
+        // Delete invoice (items will be deleted by cascade)
+        await tx.delete(invoices).where(eq(invoices.id, invoiceId));
+      });
     } catch (error) {
       console.error('[InvoiceService] Error deleting invoice:', error);
       throw new Error('Failed to delete invoice');
