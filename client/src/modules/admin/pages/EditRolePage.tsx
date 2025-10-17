@@ -88,8 +88,8 @@ export default function EditRolePage() {
           </div>
         ) : (
           <RoleForm
-            role={roleData?.data}
-            permissions={permissionsData?.data || []}
+            role={roleData && 'data' in roleData ? roleData.data : undefined}
+            permissions={permissionsData && 'data' in permissionsData ? permissionsData.data : []}
             onSubmit={handleSubmit}
             isPending={updateRoleMutation.isPending}
           />
