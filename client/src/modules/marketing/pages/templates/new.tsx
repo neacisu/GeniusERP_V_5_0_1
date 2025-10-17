@@ -71,7 +71,7 @@ const formSchema = z.object({
   subject: z.string().optional(),
   content: z.string().optional(),
   category: z.string().optional(),
-  isActive: z.boolean().optional().default(true),
+  isActive: z.boolean().default(true),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -82,7 +82,7 @@ const NewTemplatePage: React.FC = () => {
   const { createTemplate } = useTemplates();
   
   // Form definition
-  const form = useForm<FormValues>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
