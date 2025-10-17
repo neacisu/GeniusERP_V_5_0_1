@@ -104,7 +104,20 @@ const absenceSchema = z.object({
 );
 
 // Definim tipul pentru formularul de absențe
-type AbsenceFormValues = z.infer<typeof absenceSchema>;
+export interface AbsenceFormValues {
+  employeeId: string;
+  absenceType: string;
+  absenceCode?: string;
+  medicalLeaveCode?: string;
+  startDate: Date;
+  endDate: Date;
+  workingDays: number;
+  notes?: string;
+  medicalCertificateNumber?: string;
+  medicalCertificateDate?: Date;
+  medicalCertificateIssuedBy?: string;
+  status: string;
+}
 
 // Interfața pentru datele inițiale ale absenței
 interface AbsenceInitialData {

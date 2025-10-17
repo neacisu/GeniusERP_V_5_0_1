@@ -70,12 +70,11 @@ const EmployeeDetailPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("overview");
   
   // Use API hooks
-  const { 
-    useEmployee, 
-    useEmployeeContracts, 
-    useEmployeePayroll, 
+  const {
+    useEmployee,
+    useContracts,
     useDepartment,
-    useEmployeeAbsences,
+    useAbsences,
     useUpdateEmployee
   } = useHrApi();
   
@@ -90,19 +89,19 @@ const EmployeeDetailPage: React.FC = () => {
   const employee = employeeResponse?.data;
   
   // Fetch additional data based on employee
-  const { data: contractsResponse } = useEmployeeContracts(employeeId);
-  const contracts = contractsResponse?.data || [];
-  
+  const { data: contractsResponse } = useContracts({ employeeId });
+  const contracts = contractsResponse?.data?.items || [];
+
   const { data: departmentResponse } = useDepartment(employee?.departmentId || '');
   const department = departmentResponse?.data;
-  
-  const { data: absencesResponse } = useEmployeeAbsences(employeeId);
-  const absences = absencesResponse?.data || [];
+
+  const { data: absencesResponse } = useAbsences(1, 100, undefined, undefined, employeeId);
+  const absences = absencesResponse?.data?.items || [];
   
   // Update employee mutation
-  const { 
-    mutate: updateEmployee, 
-    isLoading: isUpdatingEmployee
+  const {
+    mutate: updateEmployee,
+    isPending: isUpdatingEmployee
   } = useUpdateEmployee();
   
   // Handle status toggle
@@ -175,14 +174,17 @@ const EmployeeDetailPage: React.FC = () => {
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} href="/hr">
-              Personal & HR
+            <BreadcrumbLink asChild>
+              <Link href="/hr">
+                Personal & HR
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} href="/hr/employees">
-              Angajați
+            <BreadcrumbLink asChild>
+              <Link href="/hr/employees">
+                Angajați
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />

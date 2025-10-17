@@ -7,8 +7,8 @@
  * - Retrieving absence records
  */
 
-import { Router, Response } from 'express';
-import { AbsenceService } from '../services/absence.service';
+import { Router, Request, Response } from 'express';
+import { AbsenceService, AbsenceStatus } from '../services/absence.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { AuthenticatedRequest } from '../../../types/express';
@@ -22,17 +22,37 @@ export class AbsenceController {
 
   registerRoutes(router: Router) {
     // Absence endpoints
-    router.post('/absences', this.createAbsence.bind(this));
-    router.get('/absences/employee/:id', this.getEmployeeAbsences.bind(this));
-    router.put('/absences/:id/approve', this.approveAbsence.bind(this));
-    router.put('/absences/:id/deny', this.denyAbsence.bind(this));
-    router.get('/absences/pending', this.getPendingAbsences.bind(this));
+    router.post('/absences',
+      AuthGuard.protect(JwtAuthMode.REQUIRED),
+      AuthGuard.roleGuard(['hr_team', 'admin']),
+      this.createAbsence.bind(this)
+    );
+    router.get('/absences/employee/:id',
+      AuthGuard.protect(JwtAuthMode.REQUIRED),
+      AuthGuard.roleGuard(['hr_team', 'admin']),
+      this.getEmployeeAbsences.bind(this)
+    );
+    router.put('/absences/:id/approve',
+      AuthGuard.protect(JwtAuthMode.REQUIRED),
+      AuthGuard.roleGuard(['hr_team', 'admin']),
+      this.approveAbsence.bind(this)
+    );
+    router.put('/absences/:id/deny',
+      AuthGuard.protect(JwtAuthMode.REQUIRED),
+      AuthGuard.roleGuard(['hr_team', 'admin']),
+      this.denyAbsence.bind(this)
+    );
+    router.get('/absences/pending',
+      AuthGuard.protect(JwtAuthMode.REQUIRED),
+      AuthGuard.roleGuard(['hr_team', 'admin']),
+      this.getPendingAbsences.bind(this)
+    );
   }
 
   /**
    * Create a new absence record
    */
-  async createAbsence(req: AuthenticatedRequest, res: Response) {
+  async createAbsence(req: Request, res: Response) {
     try {
       const { 
         employeeId, 
@@ -50,15 +70,17 @@ export class AbsenceController {
         });
       }
       
-      const result = await this.absenceService.recordAbsence(
-        req.user.companyId,
+      const user = req.user as JwtUserData;
+      const result = await this.absenceService.requestAbsence(
         employeeId,
+        user.companyId,
         new Date(startDate),
         new Date(endDate),
-        type,
-        reason,
+        type as any,
+        reason || '',
+        null, // medicalCertificateNumber
         documentUrl,
-        req.user.id
+        user.id
       );
       
       res.status(201).json(result);
@@ -71,14 +93,15 @@ export class AbsenceController {
   /**
    * Get all absences for a specific employee
    */
-  async getEmployeeAbsences(req: AuthenticatedRequest, res: Response) {
+  async getEmployeeAbsences(req: Request, res: Response) {
     try {
       const employeeId = req.params.id;
-      const year = req.query.year ? parseInt(req.query.year as string) : null;
+      const year = req.query.year ? parseInt(req.query.year as string) : undefined;
       
+      const user = req.user as JwtUserData;
       const absences = await this.absenceService.getEmployeeAbsences(
+        user.companyId,
         employeeId,
-        req.user.companyId,
         year
       );
       
@@ -92,15 +115,17 @@ export class AbsenceController {
   /**
    * Approve an absence request
    */
-  async approveAbsence(req: AuthenticatedRequest, res: Response) {
+  async approveAbsence(req: Request, res: Response) {
     try {
       const absenceId = req.params.id;
       const comments = req.body.comments;
       
-      const result = await this.absenceService.approveAbsence(
+      const user = req.user as JwtUserData;
+      const result = await this.absenceService.reviewAbsence(
         absenceId,
-        req.user.id,
-        comments
+        true,
+        comments,
+        user.id
       );
       
       res.json(result);
@@ -113,22 +138,24 @@ export class AbsenceController {
   /**
    * Deny an absence request
    */
-  async denyAbsence(req: AuthenticatedRequest, res: Response) {
+  async denyAbsence(req: Request, res: Response) {
     try {
       const absenceId = req.params.id;
       const reason = req.body.reason;
-      
+
       if (!reason) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Denial reason is required' 
+        return res.status(400).json({
+          success: false,
+          message: 'Denial reason is required'
         });
       }
-      
-      const result = await this.absenceService.denyAbsence(
+
+      const user = req.user as JwtUserData;
+      const result = await this.absenceService.reviewAbsence(
         absenceId,
-        req.user.id,
-        reason
+        false,
+        reason,
+        user.id
       );
       
       res.json(result);
@@ -141,10 +168,15 @@ export class AbsenceController {
   /**
    * Get all pending absence requests
    */
-  async getPendingAbsences(req: AuthenticatedRequest, res: Response) {
+  async getPendingAbsences(req: Request, res: Response) {
     try {
-      const pendingAbsences = await this.absenceService.getPendingAbsences(
-        req.user.companyId
+      const user = req.user as JwtUserData;
+      // Get all absences with status 'requested' (pending)
+      const pendingAbsences = await this.absenceService.getEmployeeAbsences(
+        user.companyId,
+        undefined, // no employee filter
+        undefined, // no year filter
+        AbsenceStatus.REQUESTED
       );
       
       res.json(pendingAbsences);

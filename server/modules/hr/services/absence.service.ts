@@ -156,7 +156,7 @@ export class AbsenceService {
       };
     } catch (error) {
       console.error('Error requesting absence:', error);
-      throw new Error(`Failed to request absence: ${error.message}`);
+      throw new Error(`Failed to request absence: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -252,7 +252,7 @@ export class AbsenceService {
       };
     } catch (error) {
       console.error('Error reviewing absence:', error);
-      throw new Error(`Failed to review absence: ${error.message}`);
+      throw new Error(`Failed to review absence: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -307,31 +307,38 @@ export class AbsenceService {
       };
     } catch (error) {
       console.error('Error cancelling absence:', error);
-      throw new Error(`Failed to cancel absence: ${error.message}`);
+      throw new Error(`Failed to cancel absence: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
   /**
-   * Get absences for an employee
-   * 
-   * @param employeeId Employee ID
+   * Get absences for employees in a company
+   *
+   * @param companyId Company ID
+   * @param employeeId Optional employee ID (if not provided, gets all employees)
    * @param year Optional year filter
    * @param status Optional status filter
    */
-  async getEmployeeAbsences(employeeId: string, year?: number, status?: AbsenceStatus) {
+  async getEmployeeAbsences(companyId: string, employeeId?: string, year?: number, status?: AbsenceStatus) {
     try {
       let query = `
         SELECT a.*, e.first_name, e.last_name
         FROM hr_absences a
         JOIN hr_employees e ON a.employee_id = e.id
-        WHERE a.employee_id = $1
+        WHERE a.company_id = $1
       `;
-      
-      const params = [employeeId];
+
+      const params = [companyId];
+
+      // If employeeId is provided, filter by specific employee
+      if (employeeId) {
+        query += ` AND a.employee_id = $${params.length + 1}`;
+        params.push(employeeId);
+      }
       
       if (year) {
         query += ` AND EXTRACT(YEAR FROM a.start_date) = $${params.length + 1}`;
-        params.push(year);
+        params.push(year.toString());
       }
       
       if (status) {
@@ -346,7 +353,7 @@ export class AbsenceService {
       return absences.rows || [];
     } catch (error) {
       console.error('Error retrieving employee absences:', error);
-      throw new Error(`Failed to retrieve employee absences: ${error.message}`);
+      throw new Error(`Failed to retrieve employee absences: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -394,7 +401,7 @@ export class AbsenceService {
       };
     } catch (error) {
       console.error('Error calculating remaining vacation days:', error);
-      throw new Error(`Failed to calculate remaining vacation days: ${error.message}`);
+      throw new Error(`Failed to calculate remaining vacation days: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -426,7 +433,7 @@ export class AbsenceService {
       return absences.rows || [];
     } catch (error) {
       console.error('Error retrieving upcoming company absences:', error);
-      throw new Error(`Failed to retrieve upcoming company absences: ${error.message}`);
+      throw new Error(`Failed to retrieve upcoming company absences: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 }

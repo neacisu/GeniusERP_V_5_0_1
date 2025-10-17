@@ -84,7 +84,7 @@ const AbsenceFormModal: React.FC<AbsenceFormModalProps> = ({
   const { useEmployees } = useHrApi();
   
   // Fetch employees for dropdown
-  const { data: employeesResponse } = useEmployees(1, 100);
+  const { data: employeesResponse } = useEmployees({ page: 1, limit: 100 });
   const employees = employeesResponse?.data?.items || [];
   
   // Track selected dates for business days calculation
