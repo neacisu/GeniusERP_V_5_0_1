@@ -68,7 +68,7 @@ const absenceSchema = z.object({
   endDate: z.date({
     message: "Data de sfârșit este obligatorie",
   }),
-  workingDays: z.coerce.number().positive({ message: 'Numărul zilelor lucrătoare trebuie să fie pozitiv' }),
+  workingDays: z.number().int().positive({ message: 'Numărul zilelor lucrătoare trebuie să fie pozitiv' }),
   notes: z.string().optional(),
   
   // Câmpuri pentru concediu medical
@@ -77,7 +77,7 @@ const absenceSchema = z.object({
   medicalCertificateIssuedBy: z.string().optional(),
   
   // Câmpuri de aprobare
-  status: z.string().default('pending')
+  status: z.string()
 })
 .refine(
   (data) => !isBefore(data.endDate, data.startDate), 
@@ -103,21 +103,8 @@ const absenceSchema = z.object({
   }
 );
 
-// Definim tipul pentru formularul de absențe
-export interface AbsenceFormValues {
-  employeeId: string;
-  absenceType: string;
-  absenceCode?: string;
-  medicalLeaveCode?: string;
-  startDate: Date;
-  endDate: Date;
-  workingDays: number;
-  notes?: string;
-  medicalCertificateNumber?: string;
-  medicalCertificateDate?: Date;
-  medicalCertificateIssuedBy?: string;
-  status: string;
-}
+// Definim tipul pentru formularul de absențe (inferred from Zod schema)
+type AbsenceFormValues = z.infer<typeof absenceSchema>;
 
 // Interfața pentru datele inițiale ale absenței
 interface AbsenceInitialData {
@@ -200,10 +187,10 @@ const AbsenceForm: React.FC<AbsenceFormProps> = ({
       endDate: initialData?.endDate || addDays(new Date(), 1),
       workingDays: initialData?.workingDays || 1,
       notes: initialData?.notes || '',
+      status: initialData?.status || 'pending',
       medicalCertificateNumber: initialData?.medicalCertificateNumber || '',
       medicalCertificateDate: initialData?.medicalCertificateDate || undefined,
-      medicalCertificateIssuedBy: initialData?.medicalCertificateIssuedBy || '',
-      status: initialData?.status || 'pending'
+      medicalCertificateIssuedBy: initialData?.medicalCertificateIssuedBy || ''
     }
   });
 

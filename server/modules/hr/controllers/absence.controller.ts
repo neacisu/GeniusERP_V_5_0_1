@@ -11,7 +11,7 @@ import { Router, Request, Response } from 'express';
 import { AbsenceService, AbsenceStatus } from '../services/absence.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { AuthenticatedRequest } from '../../../types/express';
+import { AuthenticatedRequest, JwtUserData } from '../../../types/express';
 import { Logger } from '../../../common/logger';
 
 // Initialize logger
