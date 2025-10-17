@@ -86,7 +86,7 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
       
       if (!isValid) {
         // Update status to error if connection test fails
-        await this.updateStatus(IntegrationStatus.ERROR, userId);
+        await this.updateStatus(integration.id, IntegrationStatus.ERROR, userId);
         throw new Error('Could not connect to ANAF e-Factura API, please check your credentials');
       }
       
@@ -224,8 +224,12 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
         }
       );
       
-      // Update last sync
-      await this.updateLastSync(userId);
+      // Get integration record for ID
+      const integration = await this.getIntegrationRecord();
+      if (integration) {
+        // Update last sync
+        await this.updateLastSynced(integration.id, userId);
+      }
       
       return response.data;
     } catch (error) {
@@ -233,7 +237,10 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
       
       // If the error is due to expired credentials, update the status
       if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
-        await this.updateStatus(IntegrationStatus.ERROR, userId);
+        const integration = await this.getIntegrationRecord();
+        if (integration) {
+          await this.updateStatus(integration.id, IntegrationStatus.ERROR, userId);
+        }
       }
       
       throw error;
@@ -275,8 +282,12 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
         }
       );
       
-      // Update last sync
-      await this.updateLastSync(userId);
+      // Get integration record for ID
+      const integration = await this.getIntegrationRecord();
+      if (integration) {
+        // Update last sync
+        await this.updateLastSynced(integration.id, userId);
+      }
       
       return response.data;
     } catch (error) {
@@ -284,7 +295,10 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
       
       // If the error is due to expired credentials, update the status
       if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
-        await this.updateStatus(IntegrationStatus.ERROR, userId);
+        const integration = await this.getIntegrationRecord();
+        if (integration) {
+          await this.updateStatus(integration.id, IntegrationStatus.ERROR, userId);
+        }
       }
       
       throw error;
@@ -327,7 +341,10 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
       
       // If the error is due to expired credentials, update the status
       if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
-        await this.updateStatus(IntegrationStatus.ERROR, userId);
+        const integration = await this.getIntegrationRecord();
+        if (integration) {
+          await this.updateStatus(integration.id, IntegrationStatus.ERROR, userId);
+        }
       }
       
       throw error;
@@ -370,7 +387,10 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
       
       // If the error is due to expired credentials, update the status
       if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
-        await this.updateStatus(IntegrationStatus.ERROR, userId);
+        const integration = await this.getIntegrationRecord();
+        if (integration) {
+          await this.updateStatus(integration.id, IntegrationStatus.ERROR, userId);
+        }
       }
       
       throw error;
@@ -413,7 +433,10 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
       
       // If the error is due to expired credentials, update the status
       if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
-        await this.updateStatus(IntegrationStatus.ERROR, userId);
+        const integration = await this.getIntegrationRecord();
+        if (integration) {
+          await this.updateStatus(integration.id, IntegrationStatus.ERROR, userId);
+        }
       }
       
       throw error;

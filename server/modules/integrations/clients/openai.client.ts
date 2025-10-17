@@ -36,15 +36,15 @@ export class OpenAIClient extends BaseIntegrationClient {
   /**
    * Initialize the OpenAI integration
    * @param apiKey OpenAI API key
+   * @param userId User ID initializing the integration
    * @param organization Optional OpenAI organization ID
    * @param defaultModel Default model to use
-   * @param userId User ID initializing the integration
    */
   async initialize(
     apiKey: string,
+    userId: string,
     organization?: string,
-    defaultModel: OpenAIModel = OpenAIModel.GPT_3_5_TURBO,
-    userId: string
+    defaultModel: OpenAIModel = OpenAIModel.GPT_3_5_TURBO
   ): Promise<Integration> {
     try {
       // Check for existing integration

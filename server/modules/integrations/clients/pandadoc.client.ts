@@ -102,7 +102,7 @@ export interface PandaDocDocument {
 /**
  * Document status response
  */
-export interface PandaDocDocumentStatus {
+export interface PandaDocDocumentStatusResponse {
   id: string;
   status: PandaDocDocumentStatus;
   statusTimestamps: Record<string, string>;
@@ -221,7 +221,7 @@ export class PandaDocClient extends BaseIntegrationClient {
         }
         
         this.integration = integration;
-        apiKey = integration.config.apiKey;
+        apiKey = (integration.config as Record<string, any>).apiKey;
       }
       
       if (!apiKey) {
@@ -252,7 +252,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.get('/templates', {
         headers: {
-          'Authorization': `API-Key ${integration.config.apiKey}`
+          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`
         }
       });
       
@@ -275,7 +275,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.get(`/templates/${templateId}`, {
         headers: {
-          'Authorization': `API-Key ${integration.config.apiKey}`
+          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`
         }
       });
       
@@ -326,7 +326,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.post('/documents', payload, {
         headers: {
-          'Authorization': `API-Key ${integration.config.apiKey}`
+          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`
         }
       });
       
@@ -381,7 +381,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.post('/documents', formData, {
         headers: {
-          'Authorization': `API-Key ${integration.config.apiKey}`,
+          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`,
           'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
         }
       });
@@ -439,7 +439,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.post('/documents', formData, {
         headers: {
-          'Authorization': `API-Key ${integration.config.apiKey}`,
+          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`,
           'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
         }
       });
@@ -465,7 +465,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.get(`/documents/${documentId}`, {
         headers: {
-          'Authorization': `API-Key ${integration.config.apiKey}`
+          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`
         }
       });
       
@@ -482,13 +482,13 @@ export class PandaDocClient extends BaseIntegrationClient {
    * @param documentId Document ID
    * @param userId User ID making the request
    */
-  async getDocumentStatus(documentId: string, userId: string): Promise<PandaDocDocumentStatus> {
+  async getDocumentStatus(documentId: string, userId: string): Promise<PandaDocDocumentStatusResponse> {
     try {
       // Get document details first - PandaDoc doesn't have a separate status endpoint
       const document = await this.getDocument(documentId, userId);
       
-      // Format the response to match expected PandaDocDocumentStatus structure
-      const statusResponse: PandaDocDocumentStatus = {
+      // Format the response to match expected PandaDocDocumentStatusResponse structure
+      const statusResponse: PandaDocDocumentStatusResponse = {
         id: document.id,
         status: document.status as PandaDocDocumentStatus,
         statusTimestamps: {} // We don't have timestamp details from the document endpoint
@@ -511,7 +511,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.get(`/documents/${documentId}/download`, {
         headers: {
-          'Authorization': `API-Key ${integration.config.apiKey}`
+          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`
         },
         responseType: 'arraybuffer'
       });
@@ -550,7 +550,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.post(`/documents/${documentId}/send`, payload, {
         headers: {
-          'Authorization': `API-Key ${integration.config.apiKey}`
+          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`
         }
       });
       
@@ -587,7 +587,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.post(`/documents/${documentId}/session`, payload, {
         headers: {
-          'Authorization': `API-Key ${integration.config.apiKey}`
+          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`
         }
       });
       

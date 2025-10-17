@@ -86,18 +86,18 @@ export abstract class BaseIntegrationClient {
   /**
    * Update an integration record
    * @param integrationId Integration ID to update
-   * @param updates Fields to update
+   * @param updates Fields to update (with config as Record<string, any>)
    * @param userId User ID performing the update
    */
   protected async updateIntegrationRecord(
     integrationId: string,
-    updates: Partial<Integration>,
+    updates: Partial<Omit<Integration, 'config'>> & { config?: Record<string, any>; webhookUrl?: string; webhookSecret?: string },
     userId: string
   ): Promise<Integration | null> {
     return await this.integrationsService.updateIntegration(
       integrationId,
       this.companyId,
-      updates,
+      updates as any,
       userId
     );
   }
@@ -133,6 +133,48 @@ export abstract class BaseIntegrationClient {
     await this.integrationsService.updateLastSyncedAt(
       integrationId,
       this.companyId,
+      userId
+    );
+  }
+
+  /**
+   * Check if the integration is connected
+   * @returns Boolean indicating connection status
+   */
+  protected async isConnected(): Promise<boolean> {
+    const integration = await this.getIntegrationRecord();
+    return integration?.isConnected ?? false;
+  }
+
+  /**
+   * Get the integration configuration
+   * @returns Integration configuration or null
+   */
+  protected async getConfig(): Promise<Record<string, any> | null> {
+    const integration = await this.getIntegrationRecord();
+    return integration?.config as Record<string, any> | null;
+  }
+
+  /**
+   * Update the integration configuration
+   * @param configUpdates Configuration updates
+   * @param userId User ID performing the update
+   */
+  protected async updateConfig(
+    configUpdates: Record<string, any>,
+    userId: string
+  ): Promise<void> {
+    const integration = await this.getIntegrationRecord();
+    if (!integration) {
+      throw new Error('Integration not found');
+    }
+
+    const currentConfig = (integration.config as Record<string, any>) || {};
+    const newConfig = { ...currentConfig, ...configUpdates };
+
+    await this.updateIntegrationRecord(
+      integration.id,
+      { config: newConfig },
       userId
     );
   }

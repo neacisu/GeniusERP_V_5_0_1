@@ -124,8 +124,9 @@ export class SameDayClient extends BaseIntegrationClient {
   /**
    * Get base URL based on environment
    */
-  private getBaseUrl(): string {
-    return this.getEnvironment() === SameDayEnvironment.PRODUCTION
+  private async getBaseUrl(): Promise<string> {
+    const environment = await this.getEnvironment();
+    return environment === SameDayEnvironment.PRODUCTION
       ? SameDayClient.PRODUCTION_API_URL
       : SameDayClient.DEMO_API_URL;
   }
@@ -178,7 +179,7 @@ export class SameDayClient extends BaseIntegrationClient {
       }
       
       // Get new token
-      const baseUrl = this.getBaseUrl();
+      const baseUrl = await this.getBaseUrl();
       
       const response = await axios.post(
         `${baseUrl}/api/authenticate`,
@@ -287,7 +288,7 @@ export class SameDayClient extends BaseIntegrationClient {
         throw new Error('Failed to authenticate with SameDay API');
       }
       
-      const baseUrl = this.getBaseUrl();
+      const baseUrl = await this.getBaseUrl();
       
       const response = await axios.get(`${baseUrl}/api/client/pickup-points`, {
         headers: {
@@ -318,7 +319,7 @@ export class SameDayClient extends BaseIntegrationClient {
         throw new Error('Failed to authenticate with SameDay API');
       }
       
-      const baseUrl = this.getBaseUrl();
+      const baseUrl = await this.getBaseUrl();
       
       const response = await axios.get(`${baseUrl}/api/client/services`, {
         headers: {
@@ -387,7 +388,7 @@ export class SameDayClient extends BaseIntegrationClient {
         throw new Error('Failed to authenticate with SameDay API');
       }
       
-      const baseUrl = this.getBaseUrl();
+      const baseUrl = await this.getBaseUrl();
       
       // Prepare request payload
       const payload = {
@@ -448,7 +449,7 @@ export class SameDayClient extends BaseIntegrationClient {
         throw new Error('Failed to authenticate with SameDay API');
       }
       
-      const baseUrl = this.getBaseUrl();
+      const baseUrl = await this.getBaseUrl();
       
       const response = await axios.get(`${baseUrl}/api/awb/${awbNumber}/status`, {
         headers: {
@@ -481,7 +482,7 @@ export class SameDayClient extends BaseIntegrationClient {
         throw new Error('Failed to authenticate with SameDay API');
       }
       
-      const baseUrl = this.getBaseUrl();
+      const baseUrl = await this.getBaseUrl();
       
       const response = await axios.get(`${baseUrl}/api/awb/${awbNumber}/download`, {
         headers: {
@@ -513,7 +514,7 @@ export class SameDayClient extends BaseIntegrationClient {
         throw new Error('Failed to authenticate with SameDay API');
       }
       
-      const baseUrl = this.getBaseUrl();
+      const baseUrl = await this.getBaseUrl();
       
       const response = await axios.delete(`${baseUrl}/api/awb/${awbNumber}`, {
         headers: {
@@ -561,7 +562,7 @@ export class SameDayClient extends BaseIntegrationClient {
         throw new Error('Failed to authenticate with SameDay API');
       }
       
-      const baseUrl = this.getBaseUrl();
+      const baseUrl = await this.getBaseUrl();
       
       // Prepare request payload
       const payload = {

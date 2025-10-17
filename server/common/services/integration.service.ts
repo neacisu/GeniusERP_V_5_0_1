@@ -8,42 +8,11 @@
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { v4 as uuidv4 } from 'uuid';
 import { Logger } from '../logger';
-import { integrations } from '../../../shared/schema/integrations.schema';
+import { integrations, IntegrationProvider, IntegrationStatus } from '../../modules/integrations/schema/integrations.schema';
 import { eq, and } from 'drizzle-orm';
 
 // Initialize logger
 const logger = new Logger('IntegrationService');
-
-/**
- * Integration provider enum
- */
-export enum IntegrationProvider {
-  STRIPE = 'stripe',
-  PAYPAL = 'paypal',
-  SHOPIFY = 'shopify',
-  PANDADOC = 'pandadoc',
-  ANAF_EFACTURA = 'anaf_efactura',
-  GOOGLE = 'google',
-  MICROSOFT = 'microsoft',
-  AMAZON = 'amazon',
-  FACEBOOK = 'facebook',
-  TWITTER = 'twitter',
-  HUBSPOT = 'hubspot',
-  MAILCHIMP = 'mailchimp',
-  QUICKBOOKS = 'quickbooks',
-  XERO = 'xero'
-}
-
-/**
- * Integration status enum
- */
-export enum IntegrationStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  FAILED = 'failed',
-  PENDING = 'pending',
-  DISABLED = 'disabled'
-}
 
 /**
  * Integration service for managing external integrations and their credentials
@@ -265,8 +234,12 @@ export class IntegrationService {
         return 'Stripe Payment Gateway';
       case IntegrationProvider.PAYPAL:
         return 'PayPal Payment Gateway';
-      case IntegrationProvider.SHOPIFY:
-        return 'Shopify E-commerce';
+      case IntegrationProvider.SHOPIFY_ADMIN:
+        return 'Shopify Admin E-commerce';
+      case IntegrationProvider.SHOPIFY_STOREFRONT:
+        return 'Shopify Storefront E-commerce';
+      case IntegrationProvider.SHOPIFY_INBOX:
+        return 'Shopify Inbox Messaging';
       case IntegrationProvider.PANDADOC:
         return 'PandaDoc Document Signing';
       case IntegrationProvider.ANAF_EFACTURA:

@@ -53,13 +53,13 @@ export class ElevenLabsClient extends BaseIntegrationClient {
   /**
    * Initialize the ElevenLabs integration
    * @param apiKey ElevenLabs API key
-   * @param defaultVoiceId Optional default voice ID
    * @param userId User ID initializing the integration
+   * @param defaultVoiceId Optional default voice ID
    */
   async initialize(
     apiKey: string,
-    defaultVoiceId?: string,
-    userId: string
+    userId: string,
+    defaultVoiceId?: string
   ): Promise<Integration> {
     try {
       // Check for existing integration

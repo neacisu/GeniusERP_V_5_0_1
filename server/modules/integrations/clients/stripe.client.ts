@@ -180,7 +180,7 @@ export class StripeClient extends BaseIntegrationClient {
       
       if (!isValid) {
         // Update status to error if connection test fails
-        await this.updateStatus(IntegrationStatus.ERROR, userId);
+        await this.updateStatus(integration.id, IntegrationStatus.ERROR, userId);
         throw new Error('Could not connect to Stripe API, please check your credentials');
       }
       
@@ -209,7 +209,7 @@ export class StripeClient extends BaseIntegrationClient {
     }
     
     this.stripe = new Stripe(config.apiKey, {
-      apiVersion: config.apiVersion || this.apiVersion
+      apiVersion: (config.apiVersion || this.apiVersion) as Stripe.LatestApiVersion
     });
     
     return this.stripe;
@@ -319,7 +319,10 @@ export class StripeClient extends BaseIntegrationClient {
       
       // If the error is due to authentication, update integration status
       if (error instanceof Stripe.errors.StripeAuthenticationError) {
-        await this.updateStatus(IntegrationStatus.ERROR, userId || 'system');
+        const integration = await this.getIntegrationRecord();
+        if (integration) {
+          await this.updateStatus(integration.id, IntegrationStatus.ERROR, userId || 'system');
+        }
       }
       
       throw error;
@@ -342,8 +345,8 @@ export class StripeClient extends BaseIntegrationClient {
       });
       
       // Get receipt URL from the first charge if available
-      const charges = paymentIntent.charges as Stripe.ApiList<Stripe.Charge>;
-      const receiptUrl = charges?.data?.[0]?.receipt_url;
+      const charges = (paymentIntent as any).charges as Stripe.ApiList<Stripe.Charge>;
+      const receiptUrl = charges?.data?.[0]?.receipt_url || undefined;
       
       // Map Stripe response to our interface
       const result: PaymentIntentData = {
@@ -372,7 +375,10 @@ export class StripeClient extends BaseIntegrationClient {
       
       // If the error is due to authentication, update integration status
       if (error instanceof Stripe.errors.StripeAuthenticationError) {
-        await this.updateStatus(IntegrationStatus.ERROR, userId);
+        const integration = await this.getIntegrationRecord();
+        if (integration) {
+          await this.updateStatus(integration.id, IntegrationStatus.ERROR, userId);
+        }
       }
       
       throw error;
@@ -467,7 +473,10 @@ export class StripeClient extends BaseIntegrationClient {
       
       // If the error is due to authentication, update integration status
       if (error instanceof Stripe.errors.StripeAuthenticationError) {
-        await this.updateStatus(IntegrationStatus.ERROR, userId || 'system');
+        const integration = await this.getIntegrationRecord();
+        if (integration) {
+          await this.updateStatus(integration.id, IntegrationStatus.ERROR, userId || 'system');
+        }
       }
       
       throw error;
@@ -521,7 +530,10 @@ export class StripeClient extends BaseIntegrationClient {
       
       // If the error is due to authentication, update integration status
       if (error instanceof Stripe.errors.StripeAuthenticationError) {
-        await this.updateStatus(IntegrationStatus.ERROR, userId);
+        const integration = await this.getIntegrationRecord();
+        if (integration) {
+          await this.updateStatus(integration.id, IntegrationStatus.ERROR, userId);
+        }
       }
       
       throw error;
@@ -618,12 +630,10 @@ export class StripeClient extends BaseIntegrationClient {
    */
   public async updateLastSynced(userId: string): Promise<void> {
     try {
-      await this.integrationsService.updateLastSyncedAt(
-        this.provider,
-        this.companyId,
-        userId,
-        this.franchiseId
-      );
+      const integration = await this.getIntegrationRecord();
+      if (integration) {
+        await super.updateLastSynced(integration.id, userId);
+      }
     } catch (error) {
       logger.warn('Error updating last synced timestamp', {
         error: error instanceof Error ? error.message : String(error),
