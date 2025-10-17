@@ -162,13 +162,13 @@ const MarketingDashboardPage: React.FC = () => {
                   title="Total Campanii"
                   value={stats.totalCampaigns}
                   description="Campanii de marketing"
-                  icon={<SendIcon className="h-4 w-4" />}
+                  icon={SendIcon}
                 />
                 <MarketingStatsCard
                   title="Campanii Active"
                   value={stats.activeCampaigns}
                   description="Campanii în desfășurare"
-                  icon={<Play className="h-4 w-4" />}
+                  icon={Play}
                   trend="up"
                   trendValue="+12.5% față de luna trecută"
                 />
@@ -176,13 +176,13 @@ const MarketingDashboardPage: React.FC = () => {
                   title="Audiență Totală"
                   value={stats.totalAudience.toLocaleString()}
                   description="Contacte în toate segmentele"
-                  icon={<UsersIcon className="h-4 w-4" />}
+                  icon={UsersIcon}
                 />
                 <MarketingStatsCard
                   title="Rată Deschidere"
                   value={`${Math.round(stats.openRate * 100)}%`}
                   description="Media ratei de deschidere"
-                  icon={<MailIcon className="h-4 w-4" />}
+                  icon={MailIcon}
                   trend={stats.openRate > 0.2 ? "up" : "down"}
                   trendValue={stats.openRate > 0.2 ? "Performanță bună" : "Sub medie"}
                 />
@@ -212,7 +212,7 @@ const MarketingDashboardPage: React.FC = () => {
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          label={(props: any) => `${props.name}: ${(props.percent * 100).toFixed(0)}%`}
                           outerRadius={100}
                           fill="#8884d8"
                           dataKey="value"
@@ -499,19 +499,19 @@ const MarketingDashboardPage: React.FC = () => {
               title="Rată Livrare"
               value={`${Math.round(stats.deliveryRate * 100)}%`}
               description="Mesaje livrate cu succes"
-              icon={<CheckCircle className="h-4 w-4" />}
+              icon={CheckCircle}
             />
             <MarketingStatsCard
               title="Rată Deschidere"
               value={`${Math.round(stats.openRate * 100)}%`}
               description="Mesaje deschise din cele livrate"
-              icon={<MailIcon className="h-4 w-4" />}
+              icon={MailIcon}
             />
             <MarketingStatsCard
               title="Rată Click"
               value={`${Math.round(stats.clickRate * 100)}%`}
               description="Utilizatori care au dat click pe link-uri"
-              icon={<TrendingUpIcon className="h-4 w-4" />}
+              icon={TrendingUpIcon}
             />
           </div>
 

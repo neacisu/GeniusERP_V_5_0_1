@@ -66,19 +66,12 @@ const formSchema = z.object({
   name: z.string().min(3, {
     message: "Numele șablonului trebuie să aibă cel puțin 3 caractere.",
   }),
-  type: z.enum([
-    CampaignType.EMAIL,
-    CampaignType.SMS,
-    CampaignType.SOCIAL,
-    CampaignType.PUSH,
-    CampaignType.WHATSAPP,
-    CampaignType.MULTI_CHANNEL
-  ]),
+  type: z.nativeEnum(CampaignType),
   description: z.string().optional(),
   subject: z.string().optional(),
   content: z.string().optional(),
   category: z.string().optional(),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean().optional().default(true),
 });
 
 type FormValues = z.infer<typeof formSchema>;

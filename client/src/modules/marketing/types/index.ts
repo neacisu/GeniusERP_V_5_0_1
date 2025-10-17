@@ -19,7 +19,8 @@ export enum CampaignStatus {
   ACTIVE = 'active',
   PAUSED = 'paused',
   COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
+  CANCELLED = 'cancelled',
+  FAILED = 'failed'
 }
 
 export enum AudienceType {

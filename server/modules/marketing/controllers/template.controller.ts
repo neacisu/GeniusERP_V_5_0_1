@@ -10,7 +10,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { Logger } from '../../../common/logger';
 import { TemplateService } from '../services/template.service';
-import { AuditService } from '../../../common/services/audit.service';
+import { AuditService } from '../../audit/services/audit.service';
+import { CampaignType } from '../../../../shared/schema/marketing.schema';
 
 /**
  * Template Controller Class
@@ -49,12 +50,12 @@ export class TemplateController {
         name: z.string().min(1).max(100),
         description: z.string().optional(),
         content: z.string(),
-        variables: z.array(z.string()).optional(),
-        tags: z.array(z.string()).optional(),
+        subject: z.string().optional(),
+        contentHtml: z.string().optional(),
+        category: z.string().optional(),
         isActive: z.boolean().optional().default(true),
-        type: z.string(),
-        channel: z.string(),
-        metadata: z.record(z.any()).optional()
+        type: z.nativeEnum(CampaignType),
+        metadata: z.record(z.string(), z.any()).optional()
       });
 
       const validation = templateSchema.safeParse(req.body);
@@ -74,17 +75,15 @@ export class TemplateController {
       }, userId);
 
       // Record audit log
-      await this._auditService.log({
-        action: 'template.create',
-        actionType: 'create',
-        entityType: 'template',
+      await this._auditService.logAction({
+        action: 'CREATE',
+        entity: 'template',
         entityId: template.id,
         userId,
         companyId,
         details: {
           name: template.name,
-          type: template.type,
-          channel: template.channel
+          type: template.type
         }
       });
 
@@ -122,10 +121,9 @@ export class TemplateController {
         page: z.coerce.number().int().positive().optional().default(1),
         pageSize: z.coerce.number().int().positive().max(100).optional().default(20),
         isActive: z.enum(['true', 'false']).optional().transform(val => val === 'true'),
-        type: z.string().optional(),
-        channel: z.string().optional(),
-        search: z.string().optional(),
-        tag: z.string().optional()
+        type: z.enum(['email', 'sms', 'social', 'push', 'whatsapp', 'multi_channel']).optional(),
+        category: z.string().optional(),
+        search: z.string().optional()
       });
 
       const validation = querySchema.safeParse(req.query);
@@ -138,12 +136,12 @@ export class TemplateController {
         });
       }
 
-      const { page, pageSize, isActive, type, channel, search, tag } = validation.data;
+      const { page, pageSize, isActive, type, category, search } = validation.data;
 
       // Get templates
       const { templates, total } = await this._templateService.listTemplates(
         companyId,
-        { isActive, type, channel, search, tag },
+        { isActive, type: type as CampaignType | undefined, category, search },
         page,
         pageSize
       );
@@ -263,12 +261,12 @@ export class TemplateController {
         name: z.string().min(1).max(100).optional(),
         description: z.string().optional(),
         content: z.string().optional(),
-        variables: z.array(z.string()).optional(),
-        tags: z.array(z.string()).optional(),
+        subject: z.string().optional(),
+        contentHtml: z.string().optional(),
+        category: z.string().optional(),
         isActive: z.boolean().optional(),
-        type: z.string().optional(),
-        channel: z.string().optional(),
-        metadata: z.record(z.any()).optional()
+        type: z.enum(['email', 'sms', 'social', 'push', 'whatsapp', 'multi_channel']).optional(),
+        metadata: z.record(z.string(), z.any()).optional()
       });
 
       const validation = templateSchema.safeParse(req.body);
@@ -285,7 +283,7 @@ export class TemplateController {
       const updatedTemplate = await this._templateService.updateTemplate(
         id,
         companyId,
-        validation.data,
+        validation.data as any,
         userId
       );
 
@@ -297,10 +295,9 @@ export class TemplateController {
       }
 
       // Record audit log
-      await this._auditService.log({
-        action: 'template.update',
-        actionType: 'update',
-        entityType: 'template',
+      await this._auditService.logAction({
+        action: 'UPDATE',
+        entity: 'template',
         entityId: id,
         userId,
         companyId,
@@ -376,17 +373,15 @@ export class TemplateController {
       }
 
       // Record audit log
-      await this._auditService.log({
-        action: 'template.delete',
-        actionType: 'delete',
-        entityType: 'template',
+      await this._auditService.logAction({
+        action: 'DELETE',
+        entity: 'template',
         entityId: id,
         userId,
         companyId,
         details: {
           name: template.name,
-          type: template.type,
-          channel: template.channel
+          type: template.type
         }
       });
 
@@ -438,7 +433,7 @@ export class TemplateController {
 
       // Validate request body
       const bodySchema = z.object({
-        variables: z.record(z.string()).optional().default({})
+        variables: z.record(z.string(), z.string()).optional().default({})
       });
 
       const bodyValidation = bodySchema.safeParse(req.body);
@@ -537,10 +532,9 @@ export class TemplateController {
       }
 
       // Record audit log
-      await this._auditService.log({
-        action: 'template.duplicate',
-        actionType: 'create',
-        entityType: 'template',
+      await this._auditService.logAction({
+        action: 'CREATE',
+        entity: 'template',
         entityId: duplicatedTemplate.id,
         userId,
         companyId,

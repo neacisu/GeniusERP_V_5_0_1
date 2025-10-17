@@ -34,7 +34,8 @@ export enum CampaignStatus {
   ACTIVE = 'active',
   PAUSED = 'paused',
   COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
+  CANCELLED = 'cancelled',
+  FAILED = 'failed'
 }
 
 /**
@@ -62,7 +63,7 @@ export enum AudienceType {
 
 // Define PostgreSQL enums
 export const campaignStatusEnum = pgEnum('campaign_status', [
-  'draft', 'scheduled', 'active', 'paused', 'completed', 'cancelled'
+  'draft', 'scheduled', 'active', 'paused', 'completed', 'cancelled', 'failed'
 ]);
 export const campaignTypeEnum = pgEnum('campaign_type', [
   'email', 'sms', 'social', 'push', 'whatsapp', 'multi_channel'

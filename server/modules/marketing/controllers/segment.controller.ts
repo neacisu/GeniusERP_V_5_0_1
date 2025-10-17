@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { Logger } from '../../../common/logger';
 import { SegmentService } from '../services/segment.service';
-import { AuditService } from '../../../common/services/audit.service';
+import { AuditService } from '../../audit/services/audit.service';
 
 /**
  * Segment Controller Class
@@ -48,9 +48,9 @@ export class SegmentController {
       const segmentSchema = z.object({
         name: z.string().min(1).max(100),
         description: z.string().optional(),
-        filterCriteria: z.record(z.any()).optional(),
+        filterCriteria: z.record(z.string(), z.any()).optional(),
         isActive: z.boolean().optional().default(true),
-        metadata: z.record(z.any()).optional()
+        metadata: z.record(z.string(), z.any()).optional()
       });
 
       const validation = segmentSchema.safeParse(req.body);
@@ -70,10 +70,9 @@ export class SegmentController {
       }, userId);
 
       // Record audit log
-      await this._auditService.log({
-        action: 'segment.create',
-        actionType: 'create',
-        entityType: 'segment',
+      await this._auditService.logAction({
+        action: 'CREATE',
+        entity: 'segment',
         entityId: segment.id,
         userId,
         companyId,
@@ -254,9 +253,9 @@ export class SegmentController {
       const segmentSchema = z.object({
         name: z.string().min(1).max(100).optional(),
         description: z.string().optional(),
-        filterCriteria: z.record(z.any()).optional(),
+        filterCriteria: z.record(z.string(), z.any()).optional(),
         isActive: z.boolean().optional(),
-        metadata: z.record(z.any()).optional()
+        metadata: z.record(z.string(), z.any()).optional()
       });
 
       const validation = segmentSchema.safeParse(req.body);
@@ -285,10 +284,9 @@ export class SegmentController {
       }
 
       // Record audit log
-      await this._auditService.log({
-        action: 'segment.update',
-        actionType: 'update',
-        entityType: 'segment',
+      await this._auditService.logAction({
+        action: 'UPDATE',
+        entity: 'segment',
         entityId: id,
         userId,
         companyId,
@@ -364,10 +362,9 @@ export class SegmentController {
       }
 
       // Record audit log
-      await this._auditService.log({
-        action: 'segment.delete',
-        actionType: 'delete',
-        entityType: 'segment',
+      await this._auditService.logAction({
+        action: 'DELETE',
+        entity: 'segment',
         entityId: id,
         userId,
         companyId,
@@ -433,10 +430,9 @@ export class SegmentController {
       }
 
       // Record audit log
-      await this._auditService.log({
-        action: 'segment.refresh',
-        actionType: 'update',
-        entityType: 'segment',
+      await this._auditService.logAction({
+        action: 'UPDATE',
+        entity: 'segment',
         entityId: id,
         userId,
         companyId,

@@ -44,14 +44,16 @@ export class TemplateService {
       // Set created and updated by fields
       const nowTimestamp = new Date();
       
-      const result = await this.drizzle.insert(campaignTemplates).values({
-        ...templateData,
-        id,
-        createdAt: nowTimestamp,
-        updatedAt: nowTimestamp,
-        createdBy: userId,
-        updatedBy: userId
-      }).returning();
+      const result = await this.drizzle.query((db) =>
+        db.insert(campaignTemplates).values({
+          ...templateData,
+          id,
+          createdAt: nowTimestamp,
+          updatedAt: nowTimestamp,
+          createdBy: userId,
+          updatedBy: userId
+        }).returning()
+      );
       
       if (!result || result.length === 0) {
         throw new Error('Failed to create template');
@@ -74,12 +76,14 @@ export class TemplateService {
     this._logger.info(`Getting template by ID: ${id}`);
     
     try {
-      const result = await this.drizzle.select()
-        .from(campaignTemplates)
-        .where(and(
-          eq(campaignTemplates.id, id),
-          eq(campaignTemplates.companyId, companyId)
-        ));
+      const result = await this.drizzle.query((db) =>
+        db.select()
+          .from(campaignTemplates)
+          .where(and(
+            eq(campaignTemplates.id, id),
+            eq(campaignTemplates.companyId, companyId)
+          ))
+      );
       
       if (!result || result.length === 0) {
         return null;
@@ -118,17 +122,19 @@ export class TemplateService {
       }
       
       // Update the template
-      const result = await this.drizzle.update(campaignTemplates)
-        .set({
-          ...updateData,
-          updatedAt: new Date(),
-          updatedBy: userId
-        })
-        .where(and(
-          eq(campaignTemplates.id, id),
-          eq(campaignTemplates.companyId, companyId)
-        ))
-        .returning();
+      const result = await this.drizzle.query((db) =>
+        db.update(campaignTemplates)
+          .set({
+            ...updateData,
+            updatedAt: new Date(),
+            updatedBy: userId
+          })
+          .where(and(
+            eq(campaignTemplates.id, id),
+            eq(campaignTemplates.companyId, companyId)
+          ))
+          .returning()
+      );
       
       if (!result || result.length === 0) {
         throw new Error('Failed to update template');
@@ -160,12 +166,14 @@ export class TemplateService {
       }
       
       // Delete the template
-      const result = await this.drizzle.delete(campaignTemplates)
-        .where(and(
-          eq(campaignTemplates.id, id),
-          eq(campaignTemplates.companyId, companyId)
-        ))
-        .returning({ id: campaignTemplates.id });
+      const result = await this.drizzle.query((db) =>
+        db.delete(campaignTemplates)
+          .where(and(
+            eq(campaignTemplates.id, id),
+            eq(campaignTemplates.companyId, companyId)
+          ))
+          .returning({ id: campaignTemplates.id })
+      );
       
       return result.length > 0;
     } catch (error) {
@@ -199,38 +207,44 @@ export class TemplateService {
       const offset = (page - 1) * pageSize;
       
       // Build the where clause based on filters
-      let whereClause = eq(campaignTemplates.companyId, companyId);
+      const conditions = [eq(campaignTemplates.companyId, companyId)];
       
       if (filters.type) {
-        whereClause = and(whereClause, eq(campaignTemplates.type, filters.type));
+        conditions.push(eq(campaignTemplates.type, filters.type));
       }
       
       if (filters.category) {
-        whereClause = and(whereClause, eq(campaignTemplates.category, filters.category));
+        conditions.push(eq(campaignTemplates.category, filters.category));
       }
       
       if (filters.isActive !== undefined) {
-        whereClause = and(whereClause, eq(campaignTemplates.isActive, filters.isActive));
+        conditions.push(eq(campaignTemplates.isActive, filters.isActive));
       }
       
       if (filters.search) {
-        whereClause = and(whereClause, like(campaignTemplates.name, `%${filters.search}%`));
+        conditions.push(like(campaignTemplates.name, `%${filters.search}%`));
       }
       
+      const whereClause = and(...conditions);
+      
       // Get the total count
-      const countResult = await this.drizzle.select({ count: sql<number>`count(*)` })
-        .from(campaignTemplates)
-        .where(whereClause);
+      const countResult = await this.drizzle.query((db) =>
+        db.select({ count: sql<number>`count(*)` })
+          .from(campaignTemplates)
+          .where(whereClause)
+      );
       
       const total = countResult[0]?.count || 0;
       
       // Get the templates for the requested page
-      const result = await this.drizzle.select()
-        .from(campaignTemplates)
-        .where(whereClause)
-        .orderBy(desc(campaignTemplates.createdAt))
-        .limit(pageSize)
-        .offset(offset);
+      const result = await this.drizzle.query((db) =>
+        db.select()
+          .from(campaignTemplates)
+          .where(whereClause)
+          .orderBy(desc(campaignTemplates.createdAt))
+          .limit(pageSize)
+          .offset(offset)
+      );
       
       return { templates: result, total };
     } catch (error) {
@@ -249,15 +263,17 @@ export class TemplateService {
     
     try {
       // Get distinct categories
-      const result = await this.drizzle.select({
-        category: campaignTemplates.category
-      })
-      .from(campaignTemplates)
-      .where(and(
-        eq(campaignTemplates.companyId, companyId),
-        not(isNull(campaignTemplates.category))
-      ))
-      .groupBy(campaignTemplates.category);
+      const result = await this.drizzle.query((db) =>
+        db.select({
+          category: campaignTemplates.category
+        })
+        .from(campaignTemplates)
+        .where(and(
+          eq(campaignTemplates.companyId, companyId),
+          not(isNull(campaignTemplates.category))
+        ))
+        .groupBy(campaignTemplates.category)
+      );
       
       // Extract category names
       return result
@@ -299,14 +315,14 @@ export class TemplateService {
         companyId,
         name: newName,
         description: original.description ? `Clone of: ${original.description}` : `Clone of template: ${original.name}`,
-        type: original.type,
+        type: original.type as any,
         subject: original.subject,
         content: original.content,
         contentHtml: original.contentHtml,
         previewImage: original.previewImage,
         category: original.category,
         isActive: true,
-        metadata: original.metadata
+        metadata: original.metadata as any
       }, userId);
       
       return clonedTemplate;
@@ -342,6 +358,86 @@ export class TemplateService {
       );
     } catch (error) {
       this._logger.error(`Error toggling status for template ${id}`, error instanceof Error ? error.message : String(error));
+      throw error;
+    }
+  }
+  
+  /**
+   * Preview a template with variable substitution
+   * @param id Template ID
+   * @param companyId Company ID
+   * @param variables Variables to substitute in the template
+   * @returns Preview of the template with variables substituted
+   */
+  async previewTemplate(
+    id: string,
+    companyId: string,
+    variables: Record<string, string>
+  ): Promise<{ subject?: string; content?: string; contentHtml?: string } | null> {
+    this._logger.info(`Previewing template ${id}`);
+    
+    try {
+      // Get the template
+      const template = await this.getTemplateById(id, companyId);
+      
+      if (!template) {
+        this._logger.warn(`Template with ID ${id} not found`);
+        return null;
+      }
+      
+      // Simple variable substitution function
+      const substitute = (text: string | null | undefined): string | undefined => {
+        if (!text) return undefined;
+        
+        let result = text;
+        for (const [key, value] of Object.entries(variables)) {
+          const regex = new RegExp(`{${key}}`, 'g');
+          result = result.replace(regex, value);
+        }
+        return result;
+      };
+      
+      return {
+        subject: substitute(template.subject),
+        content: substitute(template.content),
+        contentHtml: substitute(template.contentHtml)
+      };
+    } catch (error) {
+      this._logger.error(`Error previewing template ${id}`, error instanceof Error ? error.message : String(error));
+      throw error;
+    }
+  }
+  
+  /**
+   * Duplicate a template
+   * @param id Template ID to duplicate
+   * @param companyId Company ID
+   * @param userId ID of the user duplicating the template
+   * @param newName Optional new name for the duplicated template
+   * @returns The newly created template
+   */
+  async duplicateTemplate(
+    id: string,
+    companyId: string,
+    userId: string,
+    newName?: string
+  ): Promise<CampaignTemplate | null> {
+    this._logger.info(`Duplicating template ${id}`);
+    
+    try {
+      // Get the original template
+      const original = await this.getTemplateById(id, companyId);
+      
+      if (!original) {
+        this._logger.warn(`Template with ID ${id} not found`);
+        return null;
+      }
+      
+      // Use cloneTemplate method with appropriate name
+      const duplicateName = newName || `${original.name} (Copy)`;
+      return await this.cloneTemplate(id, companyId, duplicateName, userId);
+    } catch (error) {
+      this._logger.error(`Error duplicating template ${id}`, error instanceof Error ? error.message : String(error));
       throw error;
     }
   }

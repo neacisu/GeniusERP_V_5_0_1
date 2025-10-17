@@ -14,6 +14,9 @@ interface StatsCardProps {
   title: string;
   value: string | number;
   icon: LucideIcon;
+  description?: string;
+  trend?: 'up' | 'down';
+  trendValue?: string;
   change?: number;
   changeLabel?: string;
   loading?: boolean;
@@ -24,14 +27,17 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   title, 
   value, 
   icon: Icon,
+  description,
+  trend,
+  trendValue,
   change,
   changeLabel,
   loading = false,
   className = ""
 }) => {
   // Determine change indicator styling
-  const isPositiveChange = change && change > 0;
-  const isNegativeChange = change && change < 0;
+  const isPositiveChange = (change && change > 0) || trend === 'up';
+  const isNegativeChange = (change && change < 0) || trend === 'down';
   const changeValue = change ? Math.abs(change) : null;
   
   return (
@@ -50,7 +56,13 @@ export const StatsCard: React.FC<StatsCardProps> = ({
               )}
             </div>
             
-            {(change !== undefined && !loading) && (
+            {description && !loading && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {description}
+              </p>
+            )}
+            
+            {((change !== undefined || trendValue) && !loading) && (
               <div className="flex items-center mt-2">
                 <span 
                   className={cn(
@@ -59,12 +71,16 @@ export const StatsCard: React.FC<StatsCardProps> = ({
                     isNegativeChange && "text-red-600"
                   )}
                 >
-                  {isPositiveChange && "+"}
-                  {changeValue}%
+                  {change !== undefined && (
+                    <>
+                      {isPositiveChange && "+"}
+                      {changeValue}%
+                    </>
+                  )}
                 </span>
-                {changeLabel && (
+                {(changeLabel || trendValue) && (
                   <span className="text-xs text-muted-foreground ml-1">
-                    {changeLabel}
+                    {changeLabel || trendValue}
                   </span>
                 )}
               </div>

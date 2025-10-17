@@ -79,10 +79,10 @@ const formSchema = z.object({
   }),
   description: z.string().optional(),
   type: z.nativeEnum(CampaignType, {
-    errorMap: () => ({ message: "Selectați tipul campaniei." }),
+    message: "Selectați tipul campaniei.",
   }),
   audienceType: z.nativeEnum(AudienceType, {
-    errorMap: () => ({ message: "Selectați tipul de audiență." }),
+    message: "Selectați tipul de audiență.",
   }),
   audienceId: z.string().optional(),
   templateId: z.string().optional(),

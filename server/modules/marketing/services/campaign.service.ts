@@ -48,14 +48,16 @@ export class CampaignService {
       // Set created and updated by fields
       const nowTimestamp = new Date();
       
-      const result = await this.drizzle.insert(campaigns).values({
-        ...campaignData,
-        id,
-        createdAt: nowTimestamp,
-        updatedAt: nowTimestamp,
-        createdBy: userId,
-        updatedBy: userId
-      }).returning();
+      const result = await this.drizzle.query((db) => 
+        db.insert(campaigns).values({
+          ...campaignData,
+          id,
+          createdAt: nowTimestamp,
+          updatedAt: nowTimestamp,
+          createdBy: userId,
+          updatedBy: userId
+        }).returning()
+      );
       
       if (!result || result.length === 0) {
         throw new Error('Failed to create campaign');
@@ -78,12 +80,14 @@ export class CampaignService {
     this._logger.info(`Getting campaign by ID: ${id}`);
     
     try {
-      const result = await this.drizzle.select()
-        .from(campaigns)
-        .where(and(
-          eq(campaigns.id, id),
-          eq(campaigns.companyId, companyId)
-        ));
+      const result = await this.drizzle.query((db) =>
+        db.select()
+          .from(campaigns)
+          .where(and(
+            eq(campaigns.id, id),
+            eq(campaigns.companyId, companyId)
+          ))
+      );
       
       if (!result || result.length === 0) {
         return null;
@@ -122,17 +126,19 @@ export class CampaignService {
       }
       
       // Update the campaign
-      const result = await this.drizzle.update(campaigns)
-        .set({
-          ...updateData,
-          updatedAt: new Date(),
-          updatedBy: userId
-        })
-        .where(and(
-          eq(campaigns.id, id),
-          eq(campaigns.companyId, companyId)
-        ))
-        .returning();
+      const result = await this.drizzle.query((db) =>
+        db.update(campaigns)
+          .set({
+            ...updateData,
+            updatedAt: new Date(),
+            updatedBy: userId
+          })
+          .where(and(
+            eq(campaigns.id, id),
+            eq(campaigns.companyId, companyId)
+          ))
+          .returning()
+      );
       
       if (!result || result.length === 0) {
         throw new Error('Failed to update campaign');
@@ -164,12 +170,14 @@ export class CampaignService {
       }
       
       // Delete the campaign (cascade will handle related records)
-      const result = await this.drizzle.delete(campaigns)
-        .where(and(
-          eq(campaigns.id, id),
-          eq(campaigns.companyId, companyId)
-        ))
-        .returning({ id: campaigns.id });
+      const result = await this.drizzle.query((db) =>
+        db.delete(campaigns)
+          .where(and(
+            eq(campaigns.id, id),
+            eq(campaigns.companyId, companyId)
+          ))
+          .returning({ id: campaigns.id })
+      );
       
       return result.length > 0;
     } catch (error) {
@@ -202,34 +210,40 @@ export class CampaignService {
       const offset = (page - 1) * pageSize;
       
       // Build the where clause based on filters
-      let whereClause = eq(campaigns.companyId, companyId);
+      const conditions = [eq(campaigns.companyId, companyId)];
       
       if (filters.status) {
-        whereClause = and(whereClause, eq(campaigns.status, filters.status));
+        conditions.push(eq(campaigns.status, filters.status));
       }
       
       if (filters.type) {
-        whereClause = and(whereClause, eq(campaigns.type, filters.type));
+        conditions.push(eq(campaigns.type, filters.type));
       }
       
       if (filters.search) {
-        whereClause = and(whereClause, like(campaigns.name, `%${filters.search}%`));
+        conditions.push(like(campaigns.name, `%${filters.search}%`));
       }
       
+      const whereClause = and(...conditions);
+      
       // Get the total count
-      const countResult = await this.drizzle.select({ count: sql<number>`count(*)` })
-        .from(campaigns)
-        .where(whereClause);
+      const countResult = await this.drizzle.query((db) =>
+        db.select({ count: sql<number>`count(*)` })
+          .from(campaigns)
+          .where(whereClause)
+      );
       
       const total = countResult[0]?.count || 0;
       
       // Get the campaigns for the requested page
-      const result = await this.drizzle.select()
-        .from(campaigns)
-        .where(whereClause)
-        .orderBy(desc(campaigns.createdAt))
-        .limit(pageSize)
-        .offset(offset);
+      const result = await this.drizzle.query((db) =>
+        db.select()
+          .from(campaigns)
+          .where(whereClause)
+          .orderBy(desc(campaigns.createdAt))
+          .limit(pageSize)
+          .offset(offset)
+      );
       
       return { campaigns: result, total };
     } catch (error) {
@@ -487,29 +501,33 @@ export class CampaignService {
     
     try {
       // Create a record in the campaign messages table
-      const result = await this.drizzle.insert(campaignMessages).values({
-        id: uuidv4(),
-        campaignId,
-        messageId,
-        recipientId,
-        companyId,
-        status,
-        sentAt: new Date(),
-        variantId,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }).returning();
+      const result = await this.drizzle.query((db) =>
+        db.insert(campaignMessages).values({
+          id: uuidv4(),
+          campaignId,
+          messageId,
+          recipientId,
+          companyId,
+          status,
+          sentAt: new Date(),
+          variantId,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }).returning()
+      );
       
       // Update the campaign sent count
-      await this.drizzle.update(campaigns)
-        .set({
-          sentCount: sql`${campaigns.sentCount} + 1`,
-          updatedAt: new Date()
-        })
-        .where(and(
-          eq(campaigns.id, campaignId),
-          eq(campaigns.companyId, companyId)
-        ));
+      await this.drizzle.query((db) =>
+        db.update(campaigns)
+          .set({
+            sentCount: sql`${campaigns.sentCount} + 1`,
+            updatedAt: new Date()
+          })
+          .where(and(
+            eq(campaigns.id, campaignId),
+            eq(campaigns.companyId, companyId)
+          ))
+      );
       
       return result[0];
     } catch (error) {
@@ -556,13 +574,15 @@ export class CampaignService {
       }
       
       // Update the campaign message
-      const result = await this.drizzle.update(campaignMessages)
-        .set(updateData)
-        .where(and(
-          eq(campaignMessages.messageId, messageId),
-          eq(campaignMessages.campaignId, campaignId)
-        ))
-        .returning({ id: campaignMessages.id });
+      const result = await this.drizzle.query((db) =>
+        db.update(campaignMessages)
+          .set(updateData)
+          .where(and(
+            eq(campaignMessages.messageId, messageId),
+            eq(campaignMessages.campaignId, campaignId)
+          ))
+          .returning({ id: campaignMessages.id })
+      );
       
       // Update campaign level counts based on the status
       if (status === 'delivered') {
@@ -593,13 +613,15 @@ export class CampaignService {
   private async incrementCampaignField(campaignId: string, field: string): Promise<boolean> {
     try {
       // Dynamic update of the specified field
-      const result = await this.drizzle.update(campaigns)
-        .set({
-          [field]: sql`${campaigns[field as keyof typeof campaigns]} + 1`,
-          updatedAt: new Date()
-        })
-        .where(eq(campaigns.id, campaignId))
-        .returning({ id: campaigns.id });
+      const result = await this.drizzle.query((db) =>
+        db.update(campaigns)
+          .set({
+            [field]: sql`${campaigns[field as keyof typeof campaigns]} + 1`,
+            updatedAt: new Date()
+          })
+          .where(eq(campaigns.id, campaignId))
+          .returning({ id: campaigns.id })
+      );
       
       return result.length > 0;
     } catch (error) {

@@ -43,14 +43,16 @@ export class SegmentService {
       // Set created and updated by fields
       const nowTimestamp = new Date();
       
-      const result = await this.drizzle.insert(campaignSegments).values({
-        ...segmentData,
-        id,
-        createdAt: nowTimestamp,
-        updatedAt: nowTimestamp,
-        createdBy: userId,
-        updatedBy: userId
-      }).returning();
+      const result = await this.drizzle.query((db) =>
+        db.insert(campaignSegments).values({
+          ...segmentData,
+          id,
+          createdAt: nowTimestamp,
+          updatedAt: nowTimestamp,
+          createdBy: userId,
+          updatedBy: userId
+        }).returning()
+      );
       
       if (!result || result.length === 0) {
         throw new Error('Failed to create segment');
@@ -73,12 +75,14 @@ export class SegmentService {
     this._logger.info(`Getting segment by ID: ${id}`);
     
     try {
-      const result = await this.drizzle.select()
-        .from(campaignSegments)
-        .where(and(
-          eq(campaignSegments.id, id),
-          eq(campaignSegments.companyId, companyId)
-        ));
+      const result = await this.drizzle.query((db) =>
+        db.select()
+          .from(campaignSegments)
+          .where(and(
+            eq(campaignSegments.id, id),
+            eq(campaignSegments.companyId, companyId)
+          ))
+      );
       
       if (!result || result.length === 0) {
         return null;
@@ -117,17 +121,19 @@ export class SegmentService {
       }
       
       // Update the segment
-      const result = await this.drizzle.update(campaignSegments)
-        .set({
-          ...updateData,
-          updatedAt: new Date(),
-          updatedBy: userId
-        })
-        .where(and(
-          eq(campaignSegments.id, id),
-          eq(campaignSegments.companyId, companyId)
-        ))
-        .returning();
+      const result = await this.drizzle.query((db) =>
+        db.update(campaignSegments)
+          .set({
+            ...updateData,
+            updatedAt: new Date(),
+            updatedBy: userId
+          })
+          .where(and(
+            eq(campaignSegments.id, id),
+            eq(campaignSegments.companyId, companyId)
+          ))
+          .returning()
+      );
       
       if (!result || result.length === 0) {
         throw new Error('Failed to update segment');
@@ -159,12 +165,14 @@ export class SegmentService {
       }
       
       // Delete the segment
-      const result = await this.drizzle.delete(campaignSegments)
-        .where(and(
-          eq(campaignSegments.id, id),
-          eq(campaignSegments.companyId, companyId)
-        ))
-        .returning({ id: campaignSegments.id });
+      const result = await this.drizzle.query((db) =>
+        db.delete(campaignSegments)
+          .where(and(
+            eq(campaignSegments.id, id),
+            eq(campaignSegments.companyId, companyId)
+          ))
+          .returning({ id: campaignSegments.id })
+      );
       
       return result.length > 0;
     } catch (error) {
@@ -196,30 +204,36 @@ export class SegmentService {
       const offset = (page - 1) * pageSize;
       
       // Build the where clause based on filters
-      let whereClause = eq(campaignSegments.companyId, companyId);
+      const conditions = [eq(campaignSegments.companyId, companyId)];
       
       if (filters.isActive !== undefined) {
-        whereClause = and(whereClause, eq(campaignSegments.isActive, filters.isActive));
+        conditions.push(eq(campaignSegments.isActive, filters.isActive));
       }
       
       if (filters.search) {
-        whereClause = and(whereClause, like(campaignSegments.name, `%${filters.search}%`));
+        conditions.push(like(campaignSegments.name, `%${filters.search}%`));
       }
       
+      const whereClause = and(...conditions);
+      
       // Get the total count
-      const countResult = await this.drizzle.select({ count: sql<number>`count(*)` })
-        .from(campaignSegments)
-        .where(whereClause);
+      const countResult = await this.drizzle.query((db) =>
+        db.select({ count: sql<number>`count(*)` })
+          .from(campaignSegments)
+          .where(whereClause)
+      );
       
       const total = countResult[0]?.count || 0;
       
       // Get the segments for the requested page
-      const result = await this.drizzle.select()
-        .from(campaignSegments)
-        .where(whereClause)
-        .orderBy(desc(campaignSegments.createdAt))
-        .limit(pageSize)
-        .offset(offset);
+      const result = await this.drizzle.query((db) =>
+        db.select()
+          .from(campaignSegments)
+          .where(whereClause)
+          .orderBy(desc(campaignSegments.createdAt))
+          .limit(pageSize)
+          .offset(offset)
+      );
       
       return { segments: result, total };
     } catch (error) {
@@ -257,18 +271,20 @@ export class SegmentService {
       const estimatedReach = 0; // This should be calculated based on actual customer data
       
       // Update the segment with the new reach count and refresh timestamp
-      const result = await this.drizzle.update(campaignSegments)
-        .set({
-          estimatedReach,
-          lastRefreshedAt: new Date(),
-          updatedAt: new Date(),
-          updatedBy: userId
-        })
-        .where(and(
-          eq(campaignSegments.id, id),
-          eq(campaignSegments.companyId, companyId)
-        ))
-        .returning();
+      const result = await this.drizzle.query((db) =>
+        db.update(campaignSegments)
+          .set({
+            estimatedReach,
+            lastRefreshedAt: new Date(),
+            updatedAt: new Date(),
+            updatedBy: userId
+          })
+          .where(and(
+            eq(campaignSegments.id, id),
+            eq(campaignSegments.companyId, companyId)
+          ))
+          .returning()
+      );
       
       if (!result || result.length === 0) {
         throw new Error('Failed to update segment reach');
@@ -311,9 +327,9 @@ export class SegmentService {
         companyId,
         name: newName,
         description: original.description ? `Clone of: ${original.description}` : `Clone of segment: ${original.name}`,
-        filterCriteria: original.filterCriteria,
+        filterCriteria: original.filterCriteria as any,
         isActive: true,
-        metadata: original.metadata
+        metadata: original.metadata as any
       }, userId);
       
       return clonedSegment;
@@ -349,6 +365,60 @@ export class SegmentService {
       );
     } catch (error) {
       this._logger.error(`Error toggling status for segment ${id}`, error instanceof Error ? error.message : String(error));
+      throw error;
+    }
+  }
+  
+  /**
+   * Refresh segment (alias for refreshSegmentReach for controller compatibility)
+   * @param id Segment ID
+   * @param companyId Company ID
+   * @param userId ID of the user refreshing the segment
+   * @returns The updated segment with refreshed reach count
+   */
+  async refreshSegment(
+    id: string,
+    companyId: string,
+    userId: string
+  ): Promise<CampaignSegment | null> {
+    return this.refreshSegmentReach(id, companyId, userId);
+  }
+  
+  /**
+   * Get segment members (preview/pagination)
+   * @param id Segment ID
+   * @param companyId Company ID
+   * @param page Page number
+   * @param pageSize Number of items per page
+   * @returns List of members and total count
+   */
+  async getSegmentMembers(
+    id: string,
+    companyId: string,
+    page: number = 1,
+    pageSize: number = 20
+  ): Promise<{ members: any[]; total: number }> {
+    this._logger.info(`Getting members for segment ${id}`);
+    
+    try {
+      // Get the segment to verify it exists
+      const segment = await this.getSegmentById(id, companyId);
+      
+      if (!segment) {
+        this._logger.warn(`Segment with ID ${id} not found`);
+        return { members: [], total: 0 };
+      }
+      
+      // TODO: Implement actual logic to get members based on segment criteria
+      // For now, we'll return an empty result as this requires integration
+      // with the customer/contact management system
+      
+      return {
+        members: [],
+        total: 0
+      };
+    } catch (error) {
+      this._logger.error(`Error getting members for segment ${id}`, error instanceof Error ? error.message : String(error));
       throw error;
     }
   }

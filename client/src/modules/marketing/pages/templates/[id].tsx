@@ -101,7 +101,7 @@ const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({ id }) => {
   // Handle template deletion
   const handleDeleteTemplate = async () => {
     try {
-      await deleteTemplate.mutateAsync(id);
+      await deleteTemplate.mutateAsync();
       toast({
         title: "Șablon șters",
         description: "Șablonul a fost șters cu succes.",
@@ -122,10 +122,7 @@ const TemplateDetailPage: React.FC<TemplateDetailPageProps> = ({ id }) => {
     if (!template) return;
     
     try {
-      await updateTemplate.mutateAsync({
-        id: template.id,
-        data: { isActive: !template.isActive }
-      });
+      await updateTemplate.mutateAsync({ isActive: !template.isActive });
       
       toast({
         title: "Status actualizat",

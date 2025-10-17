@@ -29,9 +29,9 @@ import { templateRoutes } from './routes/template.routes';
  */
 export class MarketingModule {
   private static _instance: MarketingModule;
-  private _campaignService: CampaignService;
-  private _segmentService: SegmentService;
-  private _templateService: TemplateService;
+  private _campaignService!: CampaignService;
+  private _segmentService!: SegmentService;
+  private _templateService!: TemplateService;
   private _router: Router;
   private _logger: Logger;
   private _initialized: boolean = false;

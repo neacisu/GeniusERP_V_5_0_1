@@ -130,10 +130,7 @@ const EditTemplatePage: React.FC<EditTemplatePageProps> = ({ id }) => {
         isActive: values.isActive
       };
       
-      await updateTemplate.mutateAsync({
-        id: template.id,
-        data: templateData
-      });
+      await updateTemplate.mutateAsync(templateData);
       
       toast({
         title: "Șablon actualizat",

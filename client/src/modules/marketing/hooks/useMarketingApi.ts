@@ -601,6 +601,9 @@ export function useTemplates(filters: TemplateFilters = {}) {
  * Hook for fetching and managing a single template
  */
 export function useTemplate(id: string | null) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['/api/marketing/templates', id],
     queryFn: async () => {
@@ -614,11 +617,66 @@ export function useTemplate(id: string | null) {
     enabled: !!id
   });
 
+  // Update template mutation
+  const updateTemplate = useMutation({
+    mutationFn: async (data: Partial<CampaignTemplate>) => {
+      if (!id) throw new Error('Template ID is required');
+      const response = await apiRequest({
+        url: `/api/marketing/templates/${id}`,
+        method: "PUT",
+        data
+      });
+      return response.data as CampaignTemplate;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Șablon actualizat",
+        description: "Șablonul a fost actualizat cu succes",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/marketing/templates'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Eroare",
+        description: error.message || "Nu s-a putut actualiza șablonul",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Delete template mutation
+  const deleteTemplate = useMutation({
+    mutationFn: async () => {
+      if (!id) throw new Error('Template ID is required');
+      const response = await apiRequest({
+        url: `/api/marketing/templates/${id}`,
+        method: "DELETE"
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Șablon șters",
+        description: "Șablonul a fost șters cu succes",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/marketing/templates'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Eroare",
+        description: error.message || "Nu s-a putut șterge șablonul",
+        variant: "destructive"
+      });
+    }
+  });
+
   return {
     template: data,
     isLoading,
     isError,
-    error: error as Error | null
+    error: error as Error | null,
+    updateTemplate,
+    deleteTemplate
   };
 }
 

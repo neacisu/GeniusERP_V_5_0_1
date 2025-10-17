@@ -32,7 +32,7 @@ export class CampaignController {
   constructor() {
     this._logger = new Logger('CampaignController');
     this._campaignService = new CampaignService();
-    this._auditService = AuditService;
+    this._auditService = new AuditService();
   }
 
   /**
@@ -68,7 +68,7 @@ export class CampaignController {
       }, userId);
 
       // Record audit log
-      await this._auditService.log({
+      await this._auditService.logAction({
         userId,
         companyId,
         action: AuditAction.CREATE,
@@ -276,7 +276,7 @@ export class CampaignController {
       }
 
       // Record audit log
-      await this._auditService.log({
+      await this._auditService.logAction({
         userId,
         companyId,
         action: AuditAction.UPDATE,
@@ -354,7 +354,7 @@ export class CampaignController {
       }
 
       // Record audit log
-      await this._auditService.log({
+      await this._auditService.logAction({
         userId,
         companyId,
         action: AuditAction.DELETE,
@@ -504,7 +504,7 @@ export class CampaignController {
       }
 
       // Record audit log
-      await this._auditService.log({
+      await this._auditService.logAction({
         userId,
         companyId,
         action: AuditAction.UPDATE,
@@ -578,7 +578,7 @@ export class CampaignController {
       }
 
       // Record audit log
-      await this._auditService.log({
+      await this._auditService.logAction({
         userId,
         companyId,
         action: AuditAction.UPDATE,
@@ -652,7 +652,7 @@ export class CampaignController {
       }
 
       // Record audit log
-      await this._auditService.log({
+      await this._auditService.logAction({
         userId,
         companyId,
         action: AuditAction.UPDATE,
@@ -725,7 +725,7 @@ export class CampaignController {
       }
 
       // Record audit log
-      await this._auditService.log({
+      await this._auditService.logAction({
         userId,
         companyId,
         action: AuditAction.UPDATE,
