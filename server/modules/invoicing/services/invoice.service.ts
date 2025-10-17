@@ -8,7 +8,7 @@
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 import { Invoice, InvoiceDetail, InsertInvoice, InsertInvoiceDetail } from '@shared/schema';
-import { InvoiceItem, InsertInvoiceItem } from '../schema/invoice.schema';
+import { InvoiceItem, InsertInvoiceItem, InvoiceWithRelations } from '../schema/invoice.schema';
 import { ENTITY_NAME } from '../index';
 import { AuditService } from '../../audit/services/audit.service';
 import { AuditActionType } from '../../../common/enums/audit-action.enum';
@@ -45,7 +45,7 @@ export class InvoiceService {
     invoice.status = 'draft';
     
     // Calculate total amount from lines
-    invoice.totalAmount = lines.reduce((sum, line) => sum + Number(line.totalAmount), 0).toString();
+    invoice.totalAmount = lines.reduce((sum, line) => sum + Number(line.grossAmount), 0).toString();
     
     // Create the invoice using DrizzleService
     const transaction = await this.drizzle.transaction(async (tx) => {
@@ -286,10 +286,10 @@ export class InvoiceService {
           WHERE id = $1
         `;
         
-        // Execute queries in sequence
-        await client.$client.unsafe(deleteLinesQuery, [invoiceId]);
-        await client.$client.unsafe(deleteDetailsQuery, [invoiceId]);
-        await client.$client.unsafe(deleteInvoiceQuery, [invoiceId]);
+        // Execute queries in sequence using execute method
+        await this.drizzle.base.executeQuery(deleteLinesQuery, [invoiceId]);
+        await this.drizzle.base.executeQuery(deleteDetailsQuery, [invoiceId]);
+        await this.drizzle.base.executeQuery(deleteInvoiceQuery, [invoiceId]);
       }, 'deleteInvoice');
     } catch (error) {
       console.error('[InvoiceService] Error deleting invoice:', error);
@@ -326,14 +326,14 @@ export class InvoiceService {
       throw new Error('Invoice not found');
     }
     
-    // Delegate to internal method
-    await this._deleteInvoiceInternal(invoiceId, invoice, userId);
+    // Delegate to internal method - cast to Invoice for method signature
+    await this._deleteInvoiceInternal(invoiceId, invoice as any, userId);
   }
   
   /**
    * Get invoice by ID with optional related data
    */
-  static async getInvoice(invoiceId: string): Promise<Invoice | undefined> {
+  static async getInvoice(invoiceId: string): Promise<InvoiceWithRelations | undefined> {
     try {
       // Get the invoice with all related data
       const query = `
@@ -349,7 +349,7 @@ export class InvoiceService {
         return undefined;
       }
       
-      const invoice = results[0] as Invoice;
+      const invoice = results[0] as InvoiceWithRelations;
       
       // Get invoice details
       const detailsQuery = `
@@ -371,6 +371,7 @@ export class InvoiceService {
       // Add related data to invoice
       invoice.details = details.length > 0 ? details[0] : null;
       invoice.lines = lines;
+      invoice.items = lines;
       
       return invoice;
     } catch (error) {
@@ -522,7 +523,7 @@ export class InvoiceService {
   /**
    * Get invoice by ID with company check
    */
-  static async getInvoiceById(id: string, companyId: string): Promise<Invoice | null> {
+  static async getInvoiceById(id: string, companyId: string): Promise<InvoiceWithRelations | null> {
     try {
       // Get the invoice with customer information
       const query = `
@@ -545,7 +546,7 @@ export class InvoiceService {
         return null;
       }
       
-      const invoice = results[0] as Invoice;
+      const invoice = results[0] as InvoiceWithRelations;
       
       // Get invoice details
       const detailsQuery = `
@@ -567,6 +568,7 @@ export class InvoiceService {
       // Add related data to invoice
       invoice.details = details.length > 0 ? details[0] : null;
       invoice.lines = lines;
+      invoice.items = lines;
 
       return invoice;
     } catch (error) {

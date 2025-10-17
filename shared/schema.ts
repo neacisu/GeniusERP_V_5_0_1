@@ -707,6 +707,11 @@ export const invoices = pgTable('invoices', {
   netAmount: decimal('net_amount', { precision: 15, scale: 2 }), // Net amount (without VAT)
   vatAmount: decimal('vat_amount', { precision: 15, scale: 2 }), // VAT amount
   
+  // Alias columns for compatibility
+  netTotal: decimal('net_total', { precision: 15, scale: 2 }), // Alias for netAmount
+  vatTotal: decimal('vat_total', { precision: 15, scale: 2 }), // Alias for vatAmount
+  grossTotal: decimal('gross_total', { precision: 15, scale: 2 }), // Alias for amount
+  
   // Currency
   currency: varchar('currency', { length: 5 }).default('RON').notNull(),
   exchangeRate: decimal('exchange_rate', { precision: 10, scale: 4 }).default('1.0000').notNull(),
@@ -772,15 +777,8 @@ export const invoiceDetails = pgTable('invoice_details', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Define relations
-export const invoiceRelations = relations(invoices, ({ one }) => ({
-  company: one(companies, {
-    fields: [invoices.companyId],
-    references: [companies.id],
-  }),
-  details: one(invoiceDetails),
-  // Note: items relation is defined in server/modules/invoicing/schema/invoice.schema.ts
-}));
+// Note: Invoice relations including items are defined in server/modules/invoicing/schema/invoice.schema.ts
+// to avoid circular dependencies
 
 export const invoiceDetailRelations = relations(invoiceDetails, ({ one }) => ({
   invoice: one(invoices, {

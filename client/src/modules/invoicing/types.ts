@@ -97,10 +97,19 @@ export interface Invoice {
   date: string;
   issueDate: string;
   dueDate?: string;
+  
+  // Amount columns (main)
   amount: number;
   totalAmount: number;
   netAmount?: number;
   vatAmount?: number;
+  
+  // Amount alias columns (for compatibility)
+  netTotal?: number;
+  vatTotal?: number;
+  grossTotal?: number;
+  
+  // Other fields
   currency: string;
   exchangeRate: number;
   status: InvoiceStatus;
@@ -119,6 +128,9 @@ export interface Invoice {
   updatedAt: string;
   deletedAt?: string;
   
+  // Backward compatibility alias
+  vatRate?: number;
+  
   // From invoice_details relation
   customerVatNumber?: string;
   customerRegNumber?: string;
@@ -131,6 +143,11 @@ export interface Invoice {
   paidAmount?: number;
   paidDate?: string;
   remainingAmount?: number;
+  paymentDate?: string;
+  paymentReference?: string;
+  validatedBy?: string;
+  canceledAt?: string;
+  canceledBy?: string;
   
   // Relations
   items?: InvoiceItem[];

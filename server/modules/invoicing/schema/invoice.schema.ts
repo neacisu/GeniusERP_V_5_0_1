@@ -2,45 +2,14 @@
  * Invoice Schema
  * 
  * Database schema for invoices and related tables.
+ * 
+ * Note: Main invoice table schema is defined in shared/schema.ts
+ * This file only contains invoice_items (unified table)
  */
 
 import { pgTable, uuid, text, timestamp, numeric, boolean, integer } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-
-/**
- * Invoices table
- */
-export const invoices = pgTable('invoices', {
-  id: uuid('id').primaryKey().notNull(),
-  companyId: uuid('company_id').notNull(),
-  franchiseId: uuid('franchise_id'),
-  customerId: uuid('customer_id').notNull(),
-  invoiceNumber: text('invoice_number').notNull(),
-  fiscalReceiptNumber: text('fiscal_receipt_number'),
-  status: text('status').notNull().default('draft'),
-  issueDate: timestamp('issue_date').notNull(),
-  dueDate: timestamp('due_date').notNull(),
-  vatRate: numeric('vat_rate').notNull().default('19'),
-  netTotal: numeric('net_total').notNull().default('0'),
-  vatTotal: numeric('vat_total').notNull().default('0'),
-  grossTotal: numeric('gross_total').notNull().default('0'),
-  currency: text('currency').notNull().default('RON'),
-  exchangeRate: numeric('exchange_rate'),
-  paymentMethod: text('payment_method'),
-  paymentDetails: text('payment_details'),
-  notes: text('notes'),
-  
-  // Validation fields for accounting note generation
-  isValidated: boolean('is_validated').notNull().default(false),
-  validatedAt: timestamp('validated_at'),
-  validatedBy: uuid('validated_by'),
-  ledgerEntryId: uuid('ledger_entry_id'),
-  
-  // Metadata
-  createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull(),
-  createdBy: uuid('created_by')
-});
+import { invoices } from '@shared/schema';
 
 /**
  * Invoice items table (unified from invoice_lines)
@@ -73,7 +42,7 @@ export const invoiceItems = pgTable('invoice_items', {
 });
 
 /**
- * Relations for invoices
+ * Relations for invoices (extends shared schema relation)
  */
 export const invoicesRelations = relations(invoices, ({ many }) => ({
   items: many(invoiceItems)
@@ -89,11 +58,21 @@ export const invoiceItemsRelations = relations(invoiceItems, ({ one }) => ({
   })
 }));
 
-export type Invoice = typeof invoices.$inferSelect;
-export type InsertInvoice = typeof invoices.$inferInsert;
+// Re-export Invoice types from shared schema for consistency
+export type { Invoice, InsertInvoice } from '@shared/schema';
 
 export type InvoiceItem = typeof invoiceItems.$inferSelect;
 export type InsertInvoiceItem = typeof invoiceItems.$inferInsert;
+
+/**
+ * Extended Invoice type with relations
+ */
+export interface InvoiceWithRelations {
+  details?: any;
+  lines?: InvoiceItem[];
+  items?: InvoiceItem[];
+  [key: string]: any; // Allow dynamic properties from DB queries
+}
 
 export default {
   invoices,

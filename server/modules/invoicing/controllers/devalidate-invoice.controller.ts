@@ -43,7 +43,6 @@ export class DevalidateInvoiceController {
       // Devalidate the invoice
       const result = await DevalidateInvoiceService.devalidateInvoice(
         invoiceId,
-        companyId as string,
         userId as string,
         reason
       );
@@ -94,11 +93,27 @@ export class DevalidateInvoiceController {
         return;
       }
       
-      // Check if the invoice can be devalidated
-      const canDevalidate = await DevalidateInvoiceService.canDevalidate(
-        invoiceId,
-        companyId as string
-      );
+      // Check if the invoice can be devalidated from DB directly
+      const query = `
+        SELECT is_validated, ledger_entry_id 
+        FROM invoices 
+        WHERE id = $1 AND company_id = $2
+        LIMIT 1
+      `;
+      
+      const drizzle = new (await import('../../../common/drizzle/drizzle.service')).DrizzleService();
+      const results = await drizzle.base.executeQuery(query, [invoiceId, companyId]);
+      
+      if (!results || results.length === 0) {
+        res.status(404).json({ canDevalidate: false, message: 'Invoice not found' });
+        return;
+      }
+      
+      const invoice = results[0];
+      const canDevalidate = {
+        canDevalidate: invoice.is_validated && !!invoice.ledger_entry_id,
+        message: invoice.is_validated ? 'Invoice can be devalidated' : 'Invoice is not validated'
+      };
       
       this.logger.debug(`Devalidation check for invoice ${invoiceId}: ${canDevalidate.canDevalidate}`);
       res.json(canDevalidate);
@@ -123,19 +138,21 @@ export class DevalidateInvoiceController {
         return;
       }
       
-      // Get the devalidation history
-      const history = await DevalidateInvoiceService.getDevalidationHistory(
-        invoiceId,
-        companyId as string
-      );
+      // Get the devalidation history from audit logs
+      const query = `
+        SELECT * FROM audit_logs
+        WHERE entity = 'invoice' 
+          AND entity_id = $1 
+          AND action = 'DEVALIDATE'
+        ORDER BY created_at DESC
+        LIMIT 10
+      `;
       
-      if (!history) {
-        res.status(404).json({ message: 'Invoice not found or no devalidation history' });
-        return;
-      }
+      const drizzle = new (await import('../../../common/drizzle/drizzle.service')).DrizzleService();
+      const history = await drizzle.base.executeQuery(query, [invoiceId]);
       
       this.logger.debug(`Retrieved devalidation history for invoice ${invoiceId}`);
-      res.json(history);
+      res.json({ history: history || [] });
     } catch (error) {
       this.logger.error(`Error getting devalidation history for invoice ${req.params.invoiceId}:`, error);
       next(error);

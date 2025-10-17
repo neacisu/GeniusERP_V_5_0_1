@@ -60,17 +60,21 @@ export class CreateInvoiceService {
         log(`💰 Converted amount: ${finalAmount.toFixed(2)} ${finalCurrency}`, 'invoice-service');
       }
 
-      // Insert the invoice
-      const [newInvoice] = await this.drizzle.insert(invoices).values({
-        companyId,
-        franchiseId,
-        currency: finalCurrency,
-        totalAmount: finalAmount.toString(),
-        status: InvoiceStatus.DRAFT,
-        series,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }).returning();
+      // Insert the invoice using transaction
+      const newInvoice = await this.drizzle.transaction(async (tx) => {
+        const [invoice] = await tx.insert(invoices).values({
+          companyId,
+          franchiseId,
+          currency: finalCurrency,
+          totalAmount: finalAmount.toString(),
+          status: InvoiceStatus.DRAFT,
+          series,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }).returning();
+        
+        return invoice;
+      });
         
       const result = newInvoice;
       

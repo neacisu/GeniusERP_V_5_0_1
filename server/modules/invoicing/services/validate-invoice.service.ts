@@ -6,7 +6,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { invoices } from '../schema/invoice.schema';
+import { invoices } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { JournalService } from '../../accounting/services/journal.service';
 import { SalesJournalService } from '../../accounting/services/sales-journal.service';
@@ -54,10 +54,13 @@ interface InvoiceItem {
  * Validation result interface
  */
 export interface ValidationResult {
+  success: boolean;
+  message: string;
   invoiceId: string;
-  ledgerEntryId: string;
-  validatedAt: string;
-  validatedBy: string;
+  ledgerEntryId?: string;
+  validatedAt?: string;
+  validatedBy?: string;
+  errors?: string[];
 }
 
 /**
@@ -81,24 +84,26 @@ export class ValidateInvoiceService {
       throw new Error('User ID is required');
     }
     
-    // Get invoice data
-    const invoiceData = await this.drizzle.query.invoices.findFirst({
-      where: eq(invoices.id, invoiceId),
-      with: {
-        items: true,
-        customer: true,
-        company: true
-      }
-    });
+    // Get invoice data using base query method
+    const query = `
+      SELECT * FROM invoices 
+      WHERE id = $1 AND is_validated = false
+      LIMIT 1
+    `;
+    const results = await this.drizzle.base.executeQuery(query, [invoiceId]);
     
-    if (!invoiceData) {
-      throw new Error(`Invoice with ID ${invoiceId} not found`);
+    if (!results || results.length === 0) {
+      throw new Error(`Invoice with ID ${invoiceId} not found or already validated`);
     }
     
-    // Check if invoice is already validated
-    if (invoiceData.isValidated) {
-      throw new Error(`Invoice with ID ${invoiceId} is already validated`);
-    }
+    const invoiceData = results[0] as any;
+    
+    // Get invoice items
+    const itemsQuery = `
+      SELECT * FROM invoice_items WHERE invoice_id = $1
+    `;
+    const items = await this.drizzle.base.executeQuery(itemsQuery, [invoiceId]);
+    invoiceData.items = items;
     
     // Validate invoice data structure
     this.validateInvoiceStructure(invoiceData as unknown as InvoiceData);
@@ -111,8 +116,7 @@ export class ValidateInvoiceService {
       
       // Create accounting note (ledger entry)
       const journalService = new JournalService();
-      // SalesJournalService expects a JournalService instance
-      const salesJournal = new SalesJournalService(journalService);
+      const salesJournal = new SalesJournalService();
       
       // Generate ledger entry
       const ledgerEntryData = await salesJournal.createSalesInvoiceEntry({
@@ -135,15 +139,21 @@ export class ValidateInvoiceService {
       // Update invoice validation status
       const now = new Date();
       
-      await this.drizzle.update(invoices)
-        .set({
-          isValidated: true,
-          validatedAt: now,
-          validatedBy: userId,
-          ledgerEntryId: ledgerEntryData.id,
-          updatedAt: now
-        })
-        .where(eq(invoices.id, invoiceId));
+      const updateQuery = `
+        UPDATE invoices
+        SET is_validated = true,
+            validated_at = $1,
+            validated_by = $2,
+            ledger_entry_id = $3,
+            updated_at = NOW()
+        WHERE id = $4
+      `;
+      await this.drizzle.base.executeQuery(updateQuery, [
+        now,
+        userId,
+        ledgerEntryData.id,
+        invoiceId
+      ]);
       
       // Log audit event
       await AuditService.log({
@@ -163,6 +173,8 @@ export class ValidateInvoiceService {
       
       // Return validation result
       return {
+        success: true,
+        message: 'Invoice validated successfully',
         invoiceId,
         ledgerEntryId: ledgerEntryData.id,
         validatedAt: now.toISOString(),
