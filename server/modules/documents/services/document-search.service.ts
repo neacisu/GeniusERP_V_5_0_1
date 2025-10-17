@@ -9,7 +9,7 @@
  */
 
 import postgres from 'postgres';
-import { sql } from 'drizzle-orm';
+import { sql, SQL } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { eq, and, or, like, ilike, isNull, not, desc } from 'drizzle-orm';
 import { documents, documentVersions } from '@shared/schema';
@@ -36,26 +36,15 @@ export interface DocumentSearchResult {
  * Document Search Service for full-text and semantic document searching
  */
 export class DocumentSearchService {
-  private db: ReturnType<typeof drizzle>;
-  private queryClient: ReturnType<typeof postgres>;
+  private db!: ReturnType<typeof drizzle>;
   private ocrService: OcrService;
   
   constructor() {
-    this.initialize();
-  }
-  
-  private async initialize() {
-    try {
-      const drizzleService = new DrizzleService();
-      this.db = drizzleService.getDbInstance();
-      this.queryClient = drizzleService.queryClient;
-      this.ocrService = new OcrService();
-      
-      console.log('[DocumentSearchService] 🔍 Search service initialized');
-    } catch (error) {
-      console.error('[DocumentSearchService] Failed to initialize:', error);
-      throw error;
-    }
+    const drizzleService = new DrizzleService();
+    this.db = drizzleService.getDbInstance();
+    this.ocrService = new OcrService();
+    
+    console.log('[DocumentSearchService] 🔍 Search service initialized');
   }
   
   /**
@@ -99,7 +88,10 @@ export class DocumentSearchService {
       
       // Filter by document types if provided
       if (documentTypes && documentTypes.length > 0) {
-        conditions.push(or(...documentTypes.map(type => eq(documents.type, type))));
+        const typeConditions = or(...documentTypes.map(type => eq(documents.type, type)));
+        if (typeConditions) {
+          conditions.push(typeConditions);
+        }
       }
       
       // Date range filters
@@ -119,23 +111,25 @@ export class DocumentSearchService {
       
       // Full-text search condition for query
       if (query) {
-        conditions.push(
-          or(
-            ilike(documents.ocrText, `%${query}%`),
-            sql`EXISTS (
-              SELECT 1 FROM ${documentVersions} 
-              WHERE ${documentVersions.documentId} = ${documents.id} 
-              AND ${documentVersions.content} ILIKE ${'%' + query + '%'}
-            )`
-          )
+        const searchCondition = or(
+          ilike(documents.ocrText, `%${query}%`),
+          sql`EXISTS (
+            SELECT 1 FROM ${documentVersions} 
+            WHERE ${documentVersions.documentId} = ${documents.id} 
+            AND ${documentVersions.content} ILIKE ${'%' + query + '%'}
+          )`
         );
+        if (searchCondition) {
+          conditions.push(searchCondition);
+        }
       }
       
       // Count total results
+      const validConditions = conditions.filter((c): c is SQL<unknown> => c !== undefined);
       const [countResult] = await this.db
         .select({ count: sql<number>`count(*)` })
         .from(documents)
-        .where(and(...conditions));
+        .where(validConditions.length > 0 ? and(...validConditions) : undefined);
       
       const total = Number(countResult?.count || 0);
       
@@ -153,7 +147,7 @@ export class DocumentSearchService {
           ocrText: documents.ocrText,
         })
         .from(documents)
-        .where(and(...conditions))
+        .where(validConditions.length > 0 ? and(...validConditions) : undefined)
         .orderBy(desc(documents.updatedAt))
         .limit(limit)
         .offset(offset);
@@ -190,7 +184,7 @@ export class DocumentSearchService {
       };
     } catch (error) {
       console.error('[DocumentSearchService] Search error:', error);
-      throw new Error(`Failed to search documents: ${error.message}`);
+      throw new Error(`Failed to search documents: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 }

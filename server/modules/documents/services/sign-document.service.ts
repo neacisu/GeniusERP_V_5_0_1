@@ -10,6 +10,8 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
+import { eq } from 'drizzle-orm';
+import { documents } from '@shared/schema';
 import { pandaDocService } from './pandadoc.service';
 import { Services, logAction } from '../../../common/services';
 import { AuditAction } from '../../audit/services/audit.service';
@@ -183,10 +185,12 @@ export class SignDocumentService {
     try {
       this.logger.info(`Initiating signing process for document ${documentId}`);
       
-      // Get the document from the database using simple SQL query instead of drizzle query
-      const docsResult = await this.queryClient`
-        SELECT * FROM documents WHERE id = ${documentId} LIMIT 1
-      `;
+      // Get the document from the database using Drizzle ORM
+      const docsResult = await this.db
+        .select()
+        .from(documents)
+        .where(eq(documents.id, documentId))
+        .limit(1);
       
       const doc = docsResult[0];
 
@@ -322,13 +326,13 @@ export class SignDocumentService {
       };
       
       // Create document based on type
-      if (doc.file_path) {
+      if (doc.filePath) {
         // For documents with file paths, use URL approach
-        this.logger.info(`Creating document from URL: ${doc.file_path}`);
+        this.logger.info(`Creating document from URL: ${doc.filePath}`);
         
         // Create content options with URL
         const contentOptions = {
-          url: doc.file_path
+          url: doc.filePath
         };
         
         // Use createDocumentFromContent with URL
@@ -353,14 +357,12 @@ export class SignDocumentService {
       
       this.logger.info(`Document sent for signing, status: ${sendResponse.status}`);
       
-      // Update our document record with PandaDoc info using SQL instead of Drizzle ORM
+      // Update our document record with PandaDoc info using Drizzle ORM
       // This could be extended to store the PandaDoc ID in a separate table
-      const updatedAt = new Date().toISOString();
-      await this.queryClient`
-        UPDATE documents
-        SET updated_at = ${updatedAt}
-        WHERE id = ${documentId}
-      `;
+      await this.db
+        .update(documents)
+        .set({ updatedAt: new Date() })
+        .where(eq(documents.id, documentId));
       
       // Create audit log entry for signing process
       if (options?.userId && options?.companyId) {

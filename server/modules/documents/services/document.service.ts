@@ -401,50 +401,6 @@ export class DocumentService {
   }
   
   /**
-   * Get all versions of a document
-   * Returns all versions ordered by version number (descending)
-   */
-  async getDocumentVersionsByDocumentId(
-    documentId: string,
-    page: number = 1,
-    pageSize: number = 10
-  ): Promise<DocumentVersion[]> {
-    logger.info(`Fetching all versions for document: ${documentId}`);
-    
-    try {
-      // First check if document exists
-      const documentExists = await this.db.select({ id: documents.id })
-        .from(documents)
-        .where(eq(documents.id, documentId))
-        .limit(1);
-      
-      if (documentExists.length === 0) {
-        throw new DocumentNotFoundError(documentId);
-      }
-      
-      // Calculate pagination values
-      const offset = (page - 1) * pageSize;
-      
-      // Fetch all versions with pagination
-      const versions = await this.db.select()
-        .from(documentVersions)
-        .where(eq(documentVersions.documentId, documentId))
-        .orderBy(desc(documentVersions.version))
-        .limit(pageSize)
-        .offset(offset);
-      
-      logger.info(`Found ${versions.length} versions for document ${documentId}`);
-      return versions;
-    } catch (error: any) {
-      if (error instanceof DocumentError) {
-        throw error;
-      }
-      logger.error(`Failed to fetch versions for document ${documentId}: ${error.message}`);
-      throw new DocumentError(`Failed to fetch document versions: ${error.message}`);
-    }
-  }
-
-  /**
    * Get document versions by tag
    * Useful for finding all versions with a specific status (e.g., all APPROVED versions)
    */
@@ -519,23 +475,23 @@ export class DocumentService {
       const offset = (page - 1) * pageSize;
       
       // Build query conditions
-      let whereCondition = eq(documents.companyId, companyId);
+      const conditions = [eq(documents.companyId, companyId)];
       if (type) {
-        whereCondition = and(whereCondition, eq(documents.type, type));
+        conditions.push(eq(documents.type, type));
       }
       
       // Count total documents for pagination information
       const [countResult] = await this.db
         .select({ count: sql<number>`count(*)` })
         .from(documents)
-        .where(whereCondition);
+        .where(and(...conditions));
       
       const totalCount = Number(countResult.count);
       
       // Get paginated results
       const result = await this.db.select()
         .from(documents)
-        .where(whereCondition)
+        .where(and(...conditions))
         .orderBy(desc(documents.createdAt))
         .limit(pageSize)
         .offset(offset);
@@ -723,6 +679,30 @@ export class DocumentService {
       logger.error(`Failed to rollback document ${documentId} to version ${targetVersionNumber}: ${error.message}`);
       throw new DocumentError(`Failed to rollback document: ${error.message}`);
     }
+  }
+
+  /**
+   * Get document by ID (alias method for compatibility)
+   */
+  async getDocument(documentId: string): Promise<any> {
+    try {
+      const result = await this.db.select()
+        .from(documents)
+        .where(eq(documents.id, documentId))
+        .limit(1);
+      
+      return result[0] || null;
+    } catch (error: any) {
+      logger.error(`Failed to get document ${documentId}: ${error.message}`);
+      throw new DocumentError(`Failed to get document: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get latest version (alias for getLatestDocumentVersion)
+   */
+  async getLatestVersion(documentId: string): Promise<DocumentVersion> {
+    return this.getLatestDocumentVersion(documentId);
   }
 }
 

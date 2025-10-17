@@ -16,18 +16,17 @@ import { DocumentsModule } from './documents.module';
 /**
  * Initialize documents module
  */
-export function initDocumentsModule(): Router {
+export function initDocumentsModule(app: express.Express): Router {
   console.log('[documents-module] 📄 Initializing documents module');
   
-  // Initialize the module structure
-  const moduleInfo = DocumentsModule.initialize();
+  // Initialize the module structure and get info
+  const moduleInfo = DocumentsModule.structureReport();
   console.log(`[documents-module] 📚 Registered ${moduleInfo.serviceCount} document services`);
   
   const router = Router();
   
   // Register document routes
-  const documentRoutes = initDocumentRoutes();
-  router.use('/', documentRoutes);
+  initDocumentRoutes(app);
   
   console.log('[documents-module] 🔗 Document routes registered');
   

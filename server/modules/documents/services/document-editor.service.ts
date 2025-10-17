@@ -42,26 +42,15 @@ export interface DocumentEdit {
  * Document Editor Service for embedded document editing
  */
 export class DocumentEditorService {
-  private db: ReturnType<typeof drizzle>;
-  private queryClient: ReturnType<typeof postgres>;
+  private db!: ReturnType<typeof drizzle>;
   private documentService: DocumentService;
   
   constructor() {
-    this.initialize();
-  }
-  
-  private async initialize() {
-    try {
-      const drizzleService = new DrizzleService();
-      this.db = drizzleService.getDbInstance();
-      this.queryClient = drizzleService.queryClient;
-      this.documentService = new DocumentService();
-      
-      console.log('[DocumentEditorService] 📝 Document editor service initialized');
-    } catch (error) {
-      console.error('[DocumentEditorService] Failed to initialize:', error);
-      throw error;
-    }
+    const drizzleService = new DrizzleService();
+    this.db = drizzleService.getDbInstance();
+    this.documentService = new DocumentService(drizzleService);
+    
+    console.log('[DocumentEditorService] 📝 Document editor service initialized');
   }
   
   /**
@@ -108,7 +97,7 @@ export class DocumentEditorService {
       };
     } catch (error) {
       console.error('[DocumentEditorService] Error getting document for editing:', error);
-      throw new Error(`Failed to get document for editing: ${error.message}`);
+      throw new Error(`Failed to get document for editing: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`);
     }
   }
   
@@ -134,13 +123,12 @@ export class DocumentEditorService {
       console.log(`[DocumentEditorService] 📝 Saving document ${documentId}`);
       
       // Add a new version with the edited content
-      const result = await this.documentService.addDocumentVersion(documentId, {
+      const result = await this.documentService.addDocumentVersion(
+        documentId,
         content,
-        metadata: {
-          editedBy: userId,
-          comment: comment || 'Edited via document editor'
-        }
-      });
+        undefined, // tag
+        comment || 'Edited via document editor'
+      );
       
       return {
         id: documentId,
@@ -149,7 +137,7 @@ export class DocumentEditorService {
       };
     } catch (error) {
       console.error('[DocumentEditorService] Error saving document:', error);
-      throw new Error(`Failed to save document: ${error.message}`);
+      throw new Error(`Failed to save document: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
   
@@ -179,19 +167,16 @@ export class DocumentEditorService {
       const newContent = latestVersion.content;
       // In a real implementation, this would apply the actual edits
       
-      // Save as a new version
-      await this.documentService.addDocumentVersion(documentId, {
-        content: newContent,
-        metadata: {
-          editedBy: edit.userId,
-          username: edit.username,
-          timestamp: edit.timestamp.toISOString(),
-          changes: edit.changes
-        }
-      });
+      // Save as a new version with change tracking
+      await this.documentService.addDocumentVersion(
+        documentId,
+        newContent,
+        undefined, // tag
+        `Changes by ${edit.username} at ${edit.timestamp.toISOString()}`
+      );
     } catch (error) {
       console.error('[DocumentEditorService] Error tracking document changes:', error);
-      throw new Error(`Failed to track document changes: ${error.message}`);
+      throw new Error(`Failed to track document changes: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
   
@@ -220,7 +205,7 @@ export class DocumentEditorService {
       };
     } catch (error) {
       console.error('[DocumentEditorService] Error generating editing link:', error);
-      throw new Error(`Failed to generate editing link: ${error.message}`);
+      throw new Error(`Failed to generate editing link: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
   
