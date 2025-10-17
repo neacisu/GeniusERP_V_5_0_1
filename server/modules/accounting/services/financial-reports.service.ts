@@ -180,14 +180,21 @@ export class FinancialReportsService {
     const profitMargin = totalRevenue > 0 ? (profit / totalRevenue) * 100 : 0;
     const totalAssets = cashBalance + bankBalance;
     
-    // Get liabilities (suppliers balance)
+    // Get liabilities (suppliers balance - unpaid purchase invoices)
+    // Calculate unpaid amount by subtracting payments from invoice amounts
     const liabilitiesResult = await client<{ total: string }[]>`
-      SELECT COALESCE(SUM(amount - paid_amount), 0) as total 
-      FROM invoices 
-      WHERE company_id = ${companyId}
-      AND type = 'PURCHASE'
-      AND status != 'paid'
-      AND deleted_at IS NULL
+      SELECT COALESCE(SUM(i.amount - COALESCE(p.paid_amount, 0)), 0) as total 
+      FROM invoices i
+      LEFT JOIN (
+        SELECT invoice_id, SUM(amount) as paid_amount
+        FROM invoice_payments
+        WHERE company_id = ${companyId}
+        GROUP BY invoice_id
+      ) p ON i.id = p.invoice_id
+      WHERE i.company_id = ${companyId}
+      AND i.type = 'PURCHASE'
+      AND i.status IN ('issued', 'sent')
+      AND i.deleted_at IS NULL
     `;
     
     const totalLiabilities = Number(liabilitiesResult[0]?.total || 0);
