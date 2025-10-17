@@ -25,22 +25,8 @@ export * from "../server/modules/analytics/schema/predictive.schema";
 export * from "../server/modules/integrations/schema/integrations.schema";
 
 // Export E-commerce models for shared usage across the application
-export * from "../server/modules/ecommerce/schema";
-// Export only unique e-commerce models (carts, cartItems, ecommerceIntegrations) 
-// Note: ecommerceOrders and ecommerceTransactions are duplicates - already in server/modules/ecommerce
-export {
-  CartStatus,
-  cartStatusEnum,
-  carts,
-  cartItems,
-  ecommerceIntegrations,
-  insertCartSchema,
-  insertCartItemSchema,
-  insertEcommerceIntegrationSchema,
-  type Cart,
-  type CartItem,
-  type EcommerceIntegration
-} from "./schema/ecommerce.schema";
+// Using ONLY the new schema from shared/schema/ecommerce.schema.ts (with transaction_type)
+export * from "./schema/ecommerce.schema";
 
 // Export Collaboration models for shared usage across the application
 // Notă: Activity din Collaboration e redenumit în CollaborationActivity pentru a evita conflicte cu CRM
