@@ -17,17 +17,15 @@ import { log } from '../../vite';
  * @param app Express application instance
  * @returns Module information
  */
-export function initSettingsModule(app?: Express) {
+export function initSettingsModule(app: Express) {
   log('⚙️ Initializing settings module', 'settings-module');
   
   // Initialize the module
-  const moduleInfo = SettingsModule.initialize();
+  const moduleInfo = SettingsModule.initialize(app);
   
-  if (app) {
-    // Register the module with the Express app
-    app.use('/api/settings', settingsRouter);
-    log('⚙️ Settings module routes registered at /api/settings', 'settings-module');
-  }
+  // Register the module with the Express app
+  app.use('/api/settings', settingsRouter);
+  log('⚙️ Settings module routes registered at /api/settings', 'settings-module');
   
   // Return module info
   return {

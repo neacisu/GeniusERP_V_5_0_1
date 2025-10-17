@@ -156,4 +156,47 @@ export class DrizzleService {
       throw error;
     }
   }
+  
+  /**
+   * Select query builder - wrapper for db.select()
+   * Provides access to the Drizzle query builder
+   * 
+   * @returns Select query builder
+   */
+  select(...args: any[]) {
+    return this.getDbInstance().select(...args);
+  }
+  
+  /**
+   * Insert query builder - wrapper for db.insert()
+   * Provides access to the Drizzle query builder
+   * 
+   * @param table Table to insert into
+   * @returns Insert query builder
+   */
+  insert(table: any) {
+    return this.getDbInstance().insert(table);
+  }
+  
+  /**
+   * Update query builder - wrapper for db.update()
+   * Provides access to the Drizzle query builder
+   * 
+   * @param table Table to update
+   * @returns Update query builder
+   */
+  update(table: any) {
+    return this.getDbInstance().update(table);
+  }
+  
+  /**
+   * Delete query builder - wrapper for db.delete()
+   * Provides access to the Drizzle query builder
+   * 
+   * @param table Table to delete from
+   * @returns Delete query builder
+   */
+  delete(table: any) {
+    return this.getDbInstance().delete(table);
+  }
 }

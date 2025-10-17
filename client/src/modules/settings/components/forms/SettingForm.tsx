@@ -10,9 +10,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { Form } from "@/components/ui/form";
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, FieldValues } from "react-hook-form";
 
-interface SettingFormProps<TFormValues> {
+interface SettingFormProps<TFormValues extends FieldValues> {
   title: string;
   description?: string;
   form: UseFormReturn<TFormValues>;
@@ -27,7 +27,7 @@ interface SettingFormProps<TFormValues> {
   footerClassName?: string;
 }
 
-export default function SettingForm<TFormValues>({
+export default function SettingForm<TFormValues extends FieldValues>({
   title,
   description,
   form,

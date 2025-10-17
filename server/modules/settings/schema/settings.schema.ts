@@ -91,6 +91,7 @@ export const uiThemes = pgTable('settings_ui_themes', {
   id: uuid('id').defaultRandom().primaryKey(),
   companyId: uuid('company_id').references(() => companies.id),
   name: varchar('name', { length: 100 }).notNull(),
+  description: text('description'),
   isDefault: boolean('is_default').default(false),
   colors: jsonb('colors').notNull(),
   fonts: jsonb('fonts'),

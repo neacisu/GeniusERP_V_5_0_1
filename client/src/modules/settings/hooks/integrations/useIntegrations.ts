@@ -29,7 +29,10 @@ export enum IntegrationProvider {
   MICROSOFT_GRAPH = 'microsoft_graph',
   REVOLUT = 'revolut',
   SAMEDAY = 'sameday',
-  TERMENE_RO = 'termene_ro'
+  TERMENE_RO = 'termene_ro',
+  MAILCHIMP = 'mailchimp',
+  SENDGRID = 'sendgrid',
+  TWILIO = 'twilio'
 }
 
 export enum IntegrationStatus {

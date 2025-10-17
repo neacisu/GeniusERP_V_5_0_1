@@ -53,6 +53,20 @@ export interface FeatureToggle {
   updatedAt: Date;
 }
 
+export interface UITheme {
+  id: string;
+  companyId: string;
+  name: string;
+  description?: string;
+  isDefault: boolean;
+  colors: Record<string, any>;
+  fonts?: Record<string, any>;
+  logos?: Record<string, any>;
+  customCss?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Settings API Hook
 export const useSettingsApi = () => {
   const queryClient = useQueryClient();
@@ -251,6 +265,55 @@ export const useSettingsApi = () => {
       }
     });
 
+  // UI Themes
+  const useCompanyThemes = (companyId?: string) => 
+    useQuery<UITheme[]>({
+      queryKey: ['/api/settings/themes', companyId],
+      enabled: !!companyId,
+    });
+
+  const useDefaultTheme = (companyId?: string) => 
+    useQuery<UITheme>({
+      queryKey: ['/api/settings/themes/default', companyId],
+      enabled: !!companyId,
+    });
+
+  const useCreateTheme = () => 
+    useMutation({
+      mutationFn: (theme: Partial<UITheme>) => 
+        apiRequest('/api/settings/themes', {
+          method: 'POST',
+          body: theme
+        }),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['/api/settings/themes'] });
+      }
+    });
+
+  const useUpdateTheme = () => 
+    useMutation({
+      mutationFn: ({ id, data }: { id: string, data: Partial<UITheme> }) => 
+        apiRequest(`/api/settings/themes/${id}`, {
+          method: 'PATCH',
+          body: data
+        }),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['/api/settings/themes'] });
+      }
+    });
+
+  const useSetDefaultTheme = () => 
+    useMutation({
+      mutationFn: ({ id, companyId }: { id: string, companyId: string }) => 
+        apiRequest(`/api/settings/themes/${id}/set-default`, {
+          method: 'POST',
+          body: { companyId }
+        }),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['/api/settings/themes'] });
+      }
+    });
+
   return {
     useCompanyProfile,
     useGlobalSettings,
@@ -265,6 +328,11 @@ export const useSettingsApi = () => {
     useFeatureToggles,
     useCreateFeatureToggle,
     useEnableFeature,
-    useDisableFeature
+    useDisableFeature,
+    useCompanyThemes,
+    useDefaultTheme,
+    useCreateTheme,
+    useUpdateTheme,
+    useSetDefaultTheme
   };
 };

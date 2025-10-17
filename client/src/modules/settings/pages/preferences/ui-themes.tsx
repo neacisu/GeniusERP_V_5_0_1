@@ -6,8 +6,7 @@
 
 import React, { useState } from "react";
 import { useUser } from "@/hooks/use-user";
-// TODO: Install react-colorful package
-// import { HexColorPicker } from "react-colorful";
+import { HexColorPicker } from "react-colorful";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

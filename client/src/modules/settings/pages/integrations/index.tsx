@@ -77,28 +77,32 @@ export default function IntegrationsPage() {
       title: "Shopify",
       description: "Sincronizare magazin online, produse, comenzi și clienți.",
       icon: ShoppingCart,
-      status: IntegrationStatus.INACTIVE
+      status: IntegrationStatus.INACTIVE,
+      lastSynced: undefined as string | undefined
     },
     {
       provider: IntegrationProvider.STRIPE,
       title: "Stripe",
       description: "Procesare plăți și abonamente online cu Stripe.",
       icon: CreditCard,
-      status: IntegrationStatus.INACTIVE
+      status: IntegrationStatus.INACTIVE,
+      lastSynced: undefined as string | undefined
     },
     {
       provider: IntegrationProvider.ANAF,
       title: "ANAF & e-Factura",
       description: "Raportare e-Factura și integrare cu serviciile ANAF.",
       icon: FileWarning,
-      status: IntegrationStatus.INACTIVE
+      status: IntegrationStatus.INACTIVE,
+      lastSynced: undefined as string | undefined
     },
     {
       provider: IntegrationProvider.PANDADOC,
       title: "PandaDoc",
       description: "Documente electronice și semnături digitale.",
       icon: FileText,
-      status: IntegrationStatus.INACTIVE
+      status: IntegrationStatus.INACTIVE,
+      lastSynced: undefined as string | undefined
     }
   ];
 

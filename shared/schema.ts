@@ -234,6 +234,7 @@ export const companies = pgTable("companies", {
   country: text("country").notNull().default("Romania"),
   phone: text("phone"),
   email: text("email"),
+  website: varchar("website", { length: 255 }),
   bankAccount: text("bank_account"),
   bankName: text("bank_name"),
   vatPayer: boolean("vat_payer").default(true),
