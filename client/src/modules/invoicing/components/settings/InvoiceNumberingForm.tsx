@@ -40,13 +40,13 @@ const formSchema = z.object({
     .max(10, "Seria poate avea maxim 10 caractere")
     .regex(/^[A-Za-z0-9]+$/, "Seria poate conține doar litere și cifre"),
   description: z.string().max(100, "Descrierea poate avea maxim 100 caractere").optional(),
-  nextNumber: z.coerce
+  nextNumber: z
     .number()
     .int("Numărul trebuie să fie întreg")
     .min(1, "Numărul trebuie să fie cel puțin 1"),
   prefix: z.string().max(10, "Prefixul poate avea maxim 10 caractere").optional(),
   suffix: z.string().max(10, "Sufixul poate avea maxim 10 caractere").optional(),
-  year: z.coerce
+  year: z
     .number()
     .int("Anul trebuie să fie întreg")
     .min(2000, "Anul trebuie să fie cel puțin 2000")
@@ -54,8 +54,8 @@ const formSchema = z.object({
     .optional(),
   warehouseId: z.string().uuid("ID depozit invalid").optional().nullable(),
   franchiseId: z.string().uuid("ID franciză invalid").optional().nullable(),
-  isDefault: z.boolean().default(false),
-  isActive: z.boolean().default(true),
+  isDefault: z.boolean().optional(),
+  isActive: z.boolean().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -106,8 +106,8 @@ export function InvoiceNumberingForm({
         year: setting.year || new Date().getFullYear(),
         warehouseId: setting.warehouseId || null,
         franchiseId: setting.franchiseId || null,
-        isDefault: setting.isDefault,
-        isActive: setting.isActive,
+        isDefault: setting.isDefault || false,
+        isActive: setting.isActive !== undefined ? setting.isActive : true,
       });
     } else {
       form.reset({

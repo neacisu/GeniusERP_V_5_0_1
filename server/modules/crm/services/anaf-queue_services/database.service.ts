@@ -99,7 +99,7 @@ export class AnafDatabaseService {
       }
 
       // Datele pentru perioade TVA
-      let perioade_tva = [];
+      let perioade_tva: any[] = [];
       if (scopTva.perioade_TVA && Array.isArray(scopTva.perioade_TVA)) {
         perioade_tva = scopTva.perioade_TVA;
       }

@@ -75,14 +75,14 @@ const commissionFormSchema = z.object({
   }),
   commissionAmount: z.number().optional(),
   commissionRate: z.number().optional(),
-  status: z.nativeEnum(CommissionStatus).default(CommissionStatus.CALCULATED),
+  status: z.nativeEnum(CommissionStatus).optional(),
   referenceNumber: z.string().optional(),
   referenceDate: z.string().optional(),
   notes: z.string().optional(),
-  isPaid: z.boolean().default(false),
-  isRecurring: z.boolean().default(false),
+  isPaid: z.boolean().optional(),
+  isRecurring: z.boolean().optional(),
   recurringFrequency: z.string().optional(),
-  applyTaxes: z.boolean().default(true),
+  applyTaxes: z.boolean().optional(),
 });
 
 // Type definition based on form schema
@@ -126,10 +126,7 @@ export const CommissionForm: React.FC<CommissionFormProps> = ({
   // Get employees by role (for sales agents)
   const { data: employees, isLoading: isLoadingEmployees } = useQuery({
     queryKey: ['/api/hr/employees/by-role', 'sales'],
-    queryFn: async () => {
-      const res = await apiRequest('GET', '/api/hr/employees/by-role?role=sales');
-      return await res.json();
-    },
+    queryFn: () => apiRequest('/api/hr/employees/by-role?role=sales'),
   });
 
   // Initialize form with default values
@@ -159,8 +156,7 @@ export const CommissionForm: React.FC<CommissionFormProps> = ({
     if (commissionId) {
       const fetchCommissionData = async () => {
         try {
-          const res = await apiRequest('GET', `/api/hr/commissions/${commissionId}`);
-          const data = await res.json();
+          const data = await apiRequest(`/api/hr/commissions/${commissionId}`);
           
           if (data) {
             // Transform backend data to form format if needed
@@ -192,13 +188,11 @@ export const CommissionForm: React.FC<CommissionFormProps> = ({
     mutationFn: async (data: CommissionFormData) => {
       // If commission exists, update it
       if (commissionId) {
-        const res = await apiRequest('PATCH', `/api/hr/commissions/${commissionId}`, data);
-        return await res.json();
+        return await apiRequest(`/api/hr/commissions/${commissionId}`, { method: 'PATCH', data });
       } 
       // Otherwise create a new commission
       else {
-        const res = await apiRequest('POST', '/api/hr/commissions', data);
-        return await res.json();
+        return await apiRequest('/api/hr/commissions', { method: 'POST', data });
       }
     },
     onSuccess: (data) => {

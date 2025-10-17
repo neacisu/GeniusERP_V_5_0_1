@@ -52,10 +52,7 @@ import { getCompanyDataFromAnaf, formatAddressFromAnaf, getCityFromAnaf, getCoun
 const companyFormSchema = z.object({
   id: z.string().optional(), // ID-ul companiei (pentru editare)
   name: z.string().min(2, { message: 'Numele trebuie să aibă cel puțin 2 caractere' }),
-  fiscalCode: z.union([
-    z.string().min(1, { message: 'CUI-ul este obligatoriu' }),
-    z.number().transform(val => String(val))
-  ]),
+  fiscalCode: z.string().min(1, { message: 'CUI-ul este obligatoriu' }),
   cui: z.string().optional(), // CUI în format corect (cu/fără prefix RO conform stării TVA)
   regNumber: z.string().optional(),
   type: z.enum(['lead', 'prospect', 'customer', 'partner']),
@@ -73,28 +70,25 @@ const companyFormSchema = z.object({
   phone: z.string().optional(),
   email: z.string().email({ message: 'Email invalid' }).optional().or(z.literal('')),
   website: z.string().optional(),
-  vatPayer: z.boolean().default(false),
-  vatIncasare: z.boolean().default(false),
-  isSupplier: z.boolean().default(false),
-  isCustomer: z.boolean().default(true),
-  isActive: z.boolean().default(true),
+  vatPayer: z.boolean().optional(),
+  vatIncasare: z.boolean().optional(),
+  isSupplier: z.boolean().optional(),
+  isCustomer: z.boolean().optional(),
+  isActive: z.boolean().optional(),
   contactPerson: z.string().optional(),
   notes: z.string().optional(),
   leadScore: z.number().min(0).max(100).optional(),
   // Câmpuri financiare adăugate pentru datele ANAF
   bankAccount: z.string().optional(),
   bank: z.string().optional(),
-  socialCapital: z.union([z.string(), z.number()]).optional().transform(value => 
-    value !== undefined && value !== null ? String(value) : undefined
-  ),
+  socialCapital: z.string().optional(),
   // Conturi analitice
   analythic_401: z.string().optional(), // Cont analitic furnizori
   analythic_4111: z.string().optional() // Cont analitic clienți
 });
 
 // Date implicite pentru formular
-const defaultValues: CompanyFormValues = {
-  id: undefined,
+const defaultValues: Partial<CompanyFormValues> = {
   name: '',
   fiscalCode: '',
   cui: '',
@@ -124,6 +118,7 @@ const defaultValues: CompanyFormValues = {
   leadScore: 50,
   bankAccount: '',
   bank: '',
+  socialCapital: '',
   // Conturi analitice
   analythic_401: '',
   analythic_4111: ''

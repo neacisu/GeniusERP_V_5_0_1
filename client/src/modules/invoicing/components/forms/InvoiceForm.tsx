@@ -48,7 +48,7 @@ const invoiceFormSchema = z.object({
   dueDate: z.date({
     message: 'Data scadenței este obligatorie',
   }),
-  currency: z.string().default('RON'),
+  currency: z.string().optional(),
   exchangeRate: z.number().optional(),
   paymentMethod: z.enum([
     PaymentMethod.BANK_TRANSFER,
@@ -185,9 +185,7 @@ export function InvoiceForm({ defaultValues, onSubmit, isSubmitting = false }: I
         isCustomer: true,                // Marcăm explicit ca fiind client
         // Asigurăm-ne că CUI/fiscalCode este prezent în ambele formate pentru compatibilitate
         cui: data.cui || data.fiscalCode,
-        fiscalCode: data.fiscalCode || data.cui,
-        // Adăugăm companyId dacă nu există (folosim ID-ul companiei utilizatorului curent)
-        companyId: data.companyId || undefined
+        fiscalCode: data.fiscalCode || data.cui || ''
       };
       
       console.log("Date client pregătite pentru salvare:", clientData);
@@ -259,7 +257,7 @@ export function InvoiceForm({ defaultValues, onSubmit, isSubmitting = false }: I
       issueDate: format(values.issueDate, 'yyyy-MM-dd'),
       dueDate: format(values.dueDate, 'yyyy-MM-dd'),
       vatRate: 0, // This is calculated from items in the backend
-      currency: values.currency,
+      currency: values.currency || 'RON',
       exchangeRate: values.exchangeRate,
       paymentMethod: values.paymentMethod,
       paymentDetails: values.paymentDetails,
@@ -288,6 +286,7 @@ export function InvoiceForm({ defaultValues, onSubmit, isSubmitting = false }: I
         isEditing={false}
         initialData={{ 
           // Nu folosim ID temporar - pentru clienți noi, ID-ul va fi generat de server
+          id: '', // ID gol pentru client nou
           name: '',
           fiscalCode: searchQuery.trim(), // Precompletăm CUI-ul cu valoarea căutată
           cui: searchQuery.trim(),        // Completăm ambele câmpuri pentru compatibilitate

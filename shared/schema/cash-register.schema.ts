@@ -17,6 +17,7 @@ import { pgTable, uuid, text, timestamp, numeric, boolean, pgEnum, index } from 
 import { relations } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
 import { sql } from 'drizzle-orm';
+import { z } from 'zod';
 import { companies, users } from '../schema';
 
 /**
@@ -250,8 +251,8 @@ export const insertCashTransactionSchema = createInsertSchema(cashTransactions);
  * Types
  */
 export type CashRegister = typeof cashRegisters.$inferSelect;
-export type InsertCashRegister = typeof insertCashRegisterSchema._type;
+export type InsertCashRegister = z.infer<typeof insertCashRegisterSchema>;
 
 export type CashTransaction = typeof cashTransactions.$inferSelect;
-export type InsertCashTransaction = typeof insertCashTransactionSchema._type;
+export type InsertCashTransaction = z.infer<typeof insertCashTransactionSchema>;
 

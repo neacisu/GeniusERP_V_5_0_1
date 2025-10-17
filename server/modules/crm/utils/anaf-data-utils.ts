@@ -49,10 +49,10 @@ export const normalizeAnafData = (company: AnafCompanyData, userId: string, comp
     
     // Date registru
     dataInregistrare: safeIsoString(company.date_generale?.data_inregistrare),
-    dataRadiere: safeIsoString(company.date_generale?.data_radiere),
-    dataPublicare: safeIsoString(company.date_generale?.data_publicare),
-    dataInactivare: safeIsoString(company.date_generale?.data_inactivare),
-    dataReactivare: safeIsoString(company.date_generale?.data_reactivare),
+    dataRadiere: safeIsoString(company.stare_inactiv?.dataRadiere),
+    dataPublicare: safeIsoString(company.stare_inactiv?.dataPublicare),
+    dataInactivare: safeIsoString(company.stare_inactiv?.dataInactivare),
+    dataReactivare: safeIsoString(company.stare_inactiv?.dataReactivare),
     
     // Date TVA
     statusTva: company.inregistrare_scop_Tva?.scpTVA || false,
@@ -61,10 +61,10 @@ export const normalizeAnafData = (company: AnafCompanyData, userId: string, comp
     dataAnulareTva: safeIsoString(perioadeArray.length > 0 ? perioadeArray[0].data_anul_imp_ScpTVA : null),
     
     // Date TVA la încasare
-    statusTvaIncasare: company.inregistrare_RTVAI?.statusTVAI || false,
-    dataInceputTvaIncasare: safeIsoString(company.inregistrare_RTVAI?.dataInceputTVAI),
-    dataAnulareTvaIncasare: safeIsoString(company.inregistrare_RTVAI?.dataAnulareTVAI),
-    dataPanaLaTvaIncasare: safeIsoString(company.inregistrare_RTVAI?.dataOperareTVAI),
+    statusTvaIncasare: company.inregistrare_RTVAI?.statusTvaIncasare || false,
+    dataInceputTvaIncasare: safeIsoString(company.inregistrare_RTVAI?.dataInceputTvaInc),
+    dataAnulareTvaIncasare: safeIsoString(company.inregistrare_RTVAI?.dataSfarsitTvaInc),
+    dataPanaLaTvaIncasare: safeIsoString(company.inregistrare_RTVAI?.dataActualizareTvaInc),
     
     // Date Split TVA
     statusSplitTva: company.inregistrare_SplitTVA?.statusSplitTVA || false,
@@ -78,14 +78,14 @@ export const normalizeAnafData = (company: AnafCompanyData, userId: string, comp
     dataInceputInactivitate: safeIsoString(company.stare_inactiv?.dataInactivare),
     dataPublicareInactivitate: safeIsoString(company.stare_inactiv?.dataPublicare),
     dataRadiereInactivitate: safeIsoString(company.stare_inactiv?.dataReactivare),
-    statusInsolventa: company.stare_insolventa?.statusInsolventa || false,
-    dataInceputInsolventa: safeIsoString(company.stare_insolventa?.dataInceputInsolventa),
-    dataInchidereInsolventa: safeIsoString(company.stare_insolventa?.dataInchidereInsolventa),
+    statusInsolventa: false, // Nu există în API-ul ANAF actual
+    dataInceputInsolventa: null,
+    dataInchidereInsolventa: null,
     
     // Alte informații
     codCaen: company.date_generale?.cod_CAEN || null,
     iban: company.date_generale?.iban || null,
-    statusRoEFactura: company.e_factura?.statusRoEFactura || false,
+    statusRoEFactura: company.date_generale?.statusRO_e_Factura || false,
     organFiscalCompetent: company.date_generale?.organFiscalCompetent || null,
     formaJuridica: company.date_generale?.forma_juridica || null,
     formaOrganizare: company.date_generale?.forma_organizare || null,

@@ -369,21 +369,21 @@ export class FinancialQueueService extends BaseDrizzleService {
     return {
       dataQueue: {
         counts: dataCounts,
-        activeJobs: dataJobs.map(job => ({
+        activeJobs: await Promise.all(dataJobs.map(async (job) => ({
           id: job.id,
           name: job.name,
           data: job.data,
-          state: job.status()
-        }))
+          state: await job.getState()
+        })))
       },
       retryQueue: {
         counts: retryCounts,
-        activeJobs: retryJobs.map(job => ({
+        activeJobs: await Promise.all(retryJobs.map(async (job) => ({
           id: job.id,
           name: job.name,
           data: job.data,
-          state: job.status()
-        }))
+          state: await job.getState()
+        })))
       }
     };
   }

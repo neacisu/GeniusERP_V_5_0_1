@@ -382,7 +382,7 @@ const ForecastingPage: React.FC = () => {
                           {index === 1 && (
                             <Badge className="mr-2 bg-primary text-primary-foreground">Curent</Badge>
                           )}
-                          {forecast.quarter || forecast.month}
+                          {'quarter' in forecast ? forecast.quarter : forecast.month}
                         </div>
                         <div className="text-right">{formatCurrency(forecast.pipeline)}</div>
                         <div className="text-right">{formatCurrency(forecast.weighted)}</div>

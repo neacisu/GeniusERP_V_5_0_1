@@ -10,11 +10,13 @@ import { randomUUID } from "crypto";
 import { AuditService } from "../../audit/services/audit.service";
 
 export class ContactService {
-  private db: DrizzleService;
+  private drizzleService: DrizzleService;
+  private db: ReturnType<typeof DrizzleService.prototype.getDbInstance>;
   private auditService: AuditService;
 
   constructor() {
-    this.db = new DrizzleService();
+    this.drizzleService = new DrizzleService();
+    this.db = this.drizzleService.getDbInstance();
     this.auditService = new AuditService();
   }
 
@@ -185,15 +187,18 @@ export class ContactService {
       }
 
       if (searchTerm) {
-        conditions.push(
-          or(
-            like(contacts.firstName, `%${searchTerm}%`),
-            like(contacts.lastName, `%${searchTerm}%`),
-            like(contacts.email, `%${searchTerm}%`),
-            like(contacts.phone, `%${searchTerm}%`),
-            like(contacts.title, `%${searchTerm}%`)
-          )
-        );
+        const searchConditions = [
+          like(contacts.firstName, `%${searchTerm}%`),
+          like(contacts.lastName, `%${searchTerm}%`)
+        ];
+        if (contacts.email) searchConditions.push(like(contacts.email, `%${searchTerm}%`));
+        if (contacts.phone) searchConditions.push(like(contacts.phone, `%${searchTerm}%`));
+        if (contacts.title) searchConditions.push(like(contacts.title, `%${searchTerm}%`));
+        
+        const searchOr = or(...searchConditions);
+        if (searchOr) {
+          conditions.push(searchOr);
+        }
       }
 
       // Get total count
@@ -204,23 +209,12 @@ export class ContactService {
       const total = Number(totalResult[0]?.count || 0);
 
       // Get data with sorting
-      let query = this.db.select()
+      const data = await this.db.select()
         .from(contacts)
         .where(and(...conditions))
         .limit(limit)
-        .offset(offset);
-
-      // Add sorting
-      if (sortBy && contacts[sortBy as keyof typeof contacts]) {
-        const sortColumn = contacts[sortBy as keyof typeof contacts];
-        if (sortDirection === 'asc') {
-          query = query.orderBy(asc(sortColumn));
-        } else {
-          query = query.orderBy(desc(sortColumn));
-        }
-      }
-
-      const data = await query;
+        .offset(offset)
+        .orderBy(desc(contacts.createdAt));
 
       return { data, total };
     } catch (error) {

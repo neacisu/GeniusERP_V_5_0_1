@@ -61,8 +61,8 @@ export class CrmModule {
     logger.info('Initializing CRM Module with DrizzleService');
     
     // Initialize services
-    const customerService = new CustomerService(this.db);
-    const auditService = new AuditService(this.db);
+    const auditService = new AuditService();
+    const customerService = new CustomerService(this.db, auditService);
     
     // Initialize controllers with services
     this.customerController = new CustomerController(customerService);
@@ -73,7 +73,7 @@ export class CrmModule {
     this.pipelineController = new PipelineController();
     this.companyController = new CompanyController(this.db);
     this.financialDataController = new FinancialDataController();
-    this.companyFinancialDataHook = new CompanyFinancialDataHook(this.db, auditService);
+    this.companyFinancialDataHook = new CompanyFinancialDataHook(auditService);
     this.jwtService = new JwtService();
   }
   
@@ -180,7 +180,8 @@ export class CrmModule {
    * Get the count of customers
    */
   private async getCustomersCount(companyId: string): Promise<number> {
-    const result = await this.db.select({
+    const dbInstance = this.db.getDbInstance();
+    const result = await dbInstance.select({
       count: sql`COUNT(*)`
     })
     .from(customers)
@@ -196,7 +197,8 @@ export class CrmModule {
    * Get the count of deals
    */
   private async getDealsCount(companyId: string): Promise<number> {
-    const result = await this.db.select({
+    const dbInstance = this.db.getDbInstance();
+    const result = await dbInstance.select({
       count: sql`COUNT(*)`
     })
     .from(deals)
@@ -212,7 +214,8 @@ export class CrmModule {
    * Get the sum value of open deals
    */
   private async getOpenDealsValue(companyId: string): Promise<number> {
-    const result = await this.db.select({
+    const dbInstance = this.db.getDbInstance();
+    const result = await dbInstance.select({
       sum: sql`SUM(CAST(${deals.amount} AS NUMERIC))`
     })
     .from(deals)
@@ -229,7 +232,8 @@ export class CrmModule {
    * Get the count of activities
    */
   private async getActivitiesCount(companyId: string): Promise<number> {
-    const result = await this.db.select({
+    const dbInstance = this.db.getDbInstance();
+    const result = await dbInstance.select({
       count: sql`COUNT(*)`
     })
     .from(activities)

@@ -19,11 +19,11 @@ import * as dotenv from 'dotenv';
 import { RedisService } from '../../../../services/redis.service';
 
 export class AnafQueueService {
-  private queue: Queue;
-  private worker: Worker;
-  private cacheService: AnafCacheService;
-  private databaseService: AnafDatabaseService;
-  private batchService: AnafBatchService;
+  private queue!: Queue;
+  private worker!: Worker;
+  private cacheService!: AnafCacheService;
+  private databaseService!: AnafDatabaseService;
+  private batchService!: AnafBatchService;
   private config: AnafQueueConfig;
   private callbacks: Map<string, (result: AnafRequestResult) => void> = new Map();
   private initializeAttempts = 0;
@@ -97,12 +97,12 @@ export class AnafQueueService {
       });
       
       // Opțiuni pentru conexiunea BullMQ
-      const connectionOptions: ConnectionOptions = {
+      const queueOptions = {
         connection: redisClient
       };
 
       // Creăm instanța Queue pentru procesarea batch-urilor
-      this.queue = new Queue(this.config.queueName, connectionOptions);
+      this.queue = new Queue(this.config.queueName, queueOptions);
       
       // Adăugăm handler pentru erori la coadă
       this.queue.on('error', (error) => {
@@ -117,7 +117,9 @@ export class AnafQueueService {
       // Creăm worker-ul pentru procesarea batch-urilor
       this.worker = new Worker(this.config.queueName, 
         async (job) => await this.processBatch(job),
-        connectionOptions
+        {
+          connection: redisClient
+        }
       );
 
       // Asigurăm-ne că avem acces la date chiar dacă worker-ul întâmpină erori

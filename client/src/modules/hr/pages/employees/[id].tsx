@@ -185,6 +185,7 @@ const EmployeeDetailPage: React.FC = () => {
             <BreadcrumbLink asChild>
               <Link href="/hr/employees">
                 Angajați
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />

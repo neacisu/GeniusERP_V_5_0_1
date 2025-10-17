@@ -300,17 +300,17 @@ export const insertEcommerceOrderSchema = createInsertSchema(ecommerceOrders, {
   shipping: z.string().or(z.number()).transform(val => val.toString()),
   discount: z.string().or(z.number()).transform(val => val.toString()),
   total: z.string().or(z.number()).transform(val => val.toString()),
-  shippingAddress: z.record(z.any()).optional(),
-  billingAddress: z.record(z.any()).optional(),
-  platformData: z.record(z.any()).optional(),
+  shippingAddress: z.record(z.string(), z.any()).optional(),
+  billingAddress: z.record(z.string(), z.any()).optional(),
+  platformData: z.record(z.string(), z.any()).optional(),
   items: z.array(z.any()).min(1),
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export const insertEcommerceTransactionSchema = createInsertSchema(ecommerceTransactions, {
   amount: z.string().or(z.number()).transform(val => val.toString()),
   gatewayFee: z.string().or(z.number()).transform(val => val.toString()).optional(),
-  gatewayResponse: z.record(z.any()).optional(),
-  metadata: z.record(z.any()).optional()
+  gatewayResponse: z.record(z.string(), z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional()
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export const insertCartSchema = createInsertSchema(carts, {
@@ -318,14 +318,14 @@ export const insertCartSchema = createInsertSchema(carts, {
   taxAmount: z.string().or(z.number()).transform(val => val.toString()).optional(),
   discountAmount: z.string().or(z.number()).transform(val => val.toString()).optional(),
   total: z.string().or(z.number()).transform(val => val.toString()).optional(),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.string(), z.any()).optional()
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export const insertCartItemSchema = createInsertSchema(cartItems, {
   unitPrice: z.string().or(z.number()).transform(val => val.toString()),
   totalPrice: z.string().or(z.number()).transform(val => val.toString()),
-  options: z.record(z.any()).optional(),
-  metadata: z.record(z.any()).optional()
+  options: z.record(z.string(), z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional()
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
 /**
@@ -359,10 +359,10 @@ export const ecommerceIntegrations = pgTable("ecommerce_integrations", {
 
 // Create insert schema for integrations
 export const insertEcommerceIntegrationSchema = createInsertSchema(ecommerceIntegrations, {
-  credentials: z.record(z.any()),
-  settings: z.record(z.any()),
-  syncStatus: z.record(z.any()),
-  metadata: z.record(z.any())
+  credentials: z.record(z.string(), z.any()),
+  settings: z.record(z.string(), z.any()),
+  syncStatus: z.record(z.string(), z.any()),
+  metadata: z.record(z.string(), z.any())
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
 // Export types

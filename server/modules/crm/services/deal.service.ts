@@ -64,8 +64,8 @@ export class DealService {
             dealId,
             companyId: data.companyId,
             toStageId: data.stageId,
-            userId,
-            reason: "Initial stage"
+            changedBy: userId,
+            notes: "Initial stage"
           });
 
         await this.auditService.logAction({
@@ -116,9 +116,9 @@ export class DealService {
       // Check if status is changing to won or lost
       if (data.status) {
         if (data.status === 'won' && !data.actualCloseDate) {
-          data.actualCloseDate = new Date();
+          data.actualCloseDate = new Date().toISOString().split('T')[0];
         } else if (data.status === 'lost' && !data.actualCloseDate) {
-          data.actualCloseDate = new Date();
+          data.actualCloseDate = new Date().toISOString().split('T')[0];
         }
       }
 
@@ -145,7 +145,7 @@ export class DealService {
             .limit(1);
 
           let timeInStage = 0;
-          if (lastStageChange.length > 0) {
+          if (lastStageChange.length > 0 && lastStageChange[0].changedAt) {
             const lastChangeDate = new Date(lastStageChange[0].changedAt);
             const now = new Date();
             const diffTime = Math.abs(now.getTime() - lastChangeDate.getTime());
@@ -159,9 +159,9 @@ export class DealService {
               companyId: data.companyId || currentDeal[0].companyId,
               fromStageId: currentDeal[0].stageId,
               toStageId: data.stageId || '',
-              daysInStage,
-              userId,
-              reason: data.status === 'won' ? 'Deal won' : 
+              timeInStage,
+              changedBy: userId,
+              notes: data.status === 'won' ? 'Deal won' : 
                       data.status === 'lost' ? 'Deal lost' : 'Stage updated'
             });
         }
@@ -343,12 +343,16 @@ export class DealService {
       }
 
       if (searchTerm) {
-        conditions.push(
-          or(
-            like(deals.title, `%${searchTerm}%`),
-            like(deals.description || '', `%${searchTerm}%`)
-          )
-        );
+        const searchConditions = [
+          like(deals.title, `%${searchTerm}%`)
+        ];
+        if (deals.description) {
+          searchConditions.push(like(deals.description, `%${searchTerm}%`));
+        }
+        const searchOr = or(...searchConditions);
+        if (searchOr) {
+          conditions.push(searchOr);
+        }
       }
 
       // Get total count
@@ -359,23 +363,12 @@ export class DealService {
       const total = Number(totalResult[0]?.count || 0);
 
       // Get data with sorting
-      let query = this.db.select()
+      const data = await this.db.select()
         .from(deals)
         .where(and(...conditions))
         .limit(limit)
-        .offset(offset);
-
-      // Add sorting
-      if (sortBy && deals[sortBy as keyof typeof deals]) {
-        const sortColumn = deals[sortBy as keyof typeof deals];
-        if (sortDirection === 'asc') {
-          query = query.orderBy(asc(sortColumn));
-        } else {
-          query = query.orderBy(desc(sortColumn));
-        }
-      }
-
-      const data = await query;
+        .offset(offset)
+        .orderBy(desc(deals.createdAt));
 
       return { data, total };
     } catch (error) {
@@ -448,7 +441,7 @@ export class DealService {
         .limit(1);
 
       let daysInStage = 0;
-      if (lastStageChange.length > 0) {
+      if (lastStageChange.length > 0 && lastStageChange[0].changedAt) {
         const lastChangeDate = new Date(lastStageChange[0].changedAt);
         const now = new Date();
         const diffTime = Math.abs(now.getTime() - lastChangeDate.getTime());
@@ -465,10 +458,10 @@ export class DealService {
       // Check if this is a closing stage (won or lost)
       if (stage[0].stageType === 'closed_won') {
         updateData.status = 'won';
-        updateData.actualCloseDate = new Date();
+        updateData.actualCloseDate = new Date().toISOString().split('T')[0];
       } else if (stage[0].stageType === 'closed_lost') {
         updateData.status = 'lost';
-        updateData.actualCloseDate = new Date();
+        updateData.actualCloseDate = new Date().toISOString().split('T')[0];
       } else {
         updateData.status = 'open';
       }
@@ -486,6 +479,21 @@ export class DealService {
 
       // Create stage history entry
       if (result.length > 0) {
+        // Calculate time in current stage
+        const lastStageChange = await this.db.select()
+          .from(dealStageHistory)
+          .where(eq(dealStageHistory.dealId, id))
+          .orderBy(desc(dealStageHistory.changedAt))
+          .limit(1);
+
+        let timeInStage = 0;
+        if (lastStageChange.length > 0 && lastStageChange[0].changedAt) {
+          const lastChangeDate = new Date(lastStageChange[0].changedAt);
+          const now = new Date();
+          const diffTime = Math.abs(now.getTime() - lastChangeDate.getTime());
+          timeInStage = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
         await this.db.insert(dealStageHistory)
           .values({
             id: randomUUID(),
@@ -493,9 +501,9 @@ export class DealService {
             companyId,
             fromStageId: currentDeal[0].stageId,
             toStageId: stageId,
-            daysInStage,
-            userId,
-            reason: reason || `Moved to ${stage[0].name} stage`
+            timeInStage,
+            changedBy: userId,
+            notes: reason || `Moved to ${stage[0].name} stage`
           });
 
         await this.auditService.logAction({
@@ -670,7 +678,7 @@ export class DealService {
           .orderBy(desc(dealStageHistory.changedAt))
           .limit(1);
 
-        if (lastStageChange.length === 0) continue;
+        if (lastStageChange.length === 0 || !lastStageChange[0].changedAt) continue;
 
         // Get the stage expected duration
         const stage = await this.db.select()

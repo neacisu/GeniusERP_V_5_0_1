@@ -276,4 +276,72 @@ export class CustomerService extends BaseDrizzleService {
       };
     });
   }
+
+  // Alias methods for compatibility with controller
+  async create(data: InsertCustomer, userId?: string): Promise<Customer> {
+    const customer = await this.createCustomer(data);
+    if (userId && customer) {
+      await this.auditService.logAction({
+        userId,
+        action: 'CREATE',
+        entityType: 'customer',
+        entityId: customer.id,
+        changes: data
+      });
+    }
+    return customer;
+  }
+
+  async update(id: string, data: Partial<InsertCustomer>, userId?: string): Promise<Customer | undefined> {
+    const customer = await this.updateCustomer(id, data);
+    if (userId && customer) {
+      await this.auditService.logAction({
+        userId,
+        action: 'UPDATE',
+        entityType: 'customer',
+        entityId: id,
+        changes: data
+      });
+    }
+    return customer;
+  }
+
+  async delete(id: string, companyId: string, userId?: string): Promise<boolean> {
+    await this.deleteCustomer(id);
+    if (userId) {
+      await this.auditService.logAction({
+        userId,
+        action: 'DELETE',
+        entityType: 'customer',
+        entityId: id,
+        changes: { deleted: true }
+      });
+    }
+    return true;
+  }
+
+  async getStatistics(companyId: string): Promise<any> {
+    return this.db.query(async (db: PostgresJsDatabase) => {
+      const stats = await db.select({
+        total: sql`count(*)::int`,
+        activeCustomers: sql`count(*) filter (where type = 'customer')::int`,
+        leads: sql`count(*) filter (where type = 'lead')::int`,
+        prospects: sql`count(*) filter (where type = 'prospect')::int`,
+        partners: sql`count(*) filter (where type = 'partner')::int`,
+      })
+        .from(customers)
+        .where(and(
+          eq(customers.companyId, companyId),
+          eq(customers.isActive, true)
+        ));
+
+      return stats[0] || {
+        total: 0,
+        activeCustomers: 0,
+        leads: 0,
+        prospects: 0,
+        partners: 0
+      };
+    });
+  }
 }

@@ -94,7 +94,7 @@ export interface CompanyFormValues {
   notes?: string;
   bankAccount?: string; // Cont bancar (IBAN)
   bank?: string;        // Banca
-  socialCapital?: string | number; // Capital social
+  socialCapital?: string; // Capital social
   leadScore?: number;
   // Adăugăm câmpurile analitice pentru integrarea cu contabilitatea
   analythic_401?: string; // Cont analitic furnizori (401.x)

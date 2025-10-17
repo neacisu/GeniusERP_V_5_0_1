@@ -269,12 +269,16 @@ export class ActivityService {
       }
 
       if (searchTerm) {
-        conditions.push(
-          or(
-            like(activities.title, `%${searchTerm}%`),
-            like(activities.description || '', `%${searchTerm}%`)
-          )
-        );
+        const searchConditions = [
+          like(activities.title, `%${searchTerm}%`)
+        ];
+        if (activities.description) {
+          searchConditions.push(like(activities.description, `%${searchTerm}%`));
+        }
+        const searchOr = or(...searchConditions);
+        if (searchOr) {
+          conditions.push(searchOr);
+        }
       }
 
       // Get total count
@@ -291,15 +295,8 @@ export class ActivityService {
         .limit(limit)
         .offset(offset);
 
-      // Add sorting
-      if (sortBy && activities[sortBy as keyof typeof activities]) {
-        const sortColumn = activities[sortBy as keyof typeof activities];
-        if (sortDirection === 'asc') {
-          query = query.orderBy(asc(sortColumn));
-        } else {
-          query = query.orderBy(desc(sortColumn));
-        }
-      }
+      // Add sorting - default la createdAt
+      query = query.orderBy(desc(activities.createdAt));
 
       const data = await query;
 

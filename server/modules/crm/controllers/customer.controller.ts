@@ -15,7 +15,14 @@ export class CustomerController {
   private jwtService: any = null;
 
   constructor(customerService?: CustomerService) {
-    this.customerService = customerService || new CustomerService(new DrizzleService());
+    if (!customerService) {
+      const drizzleService = new DrizzleService();
+      const { AuditService } = require('../../audit/services/audit.service');
+      const auditService = new AuditService(drizzleService);
+      this.customerService = new CustomerService(drizzleService, auditService);
+    } else {
+      this.customerService = customerService;
+    }
 
     // Bind the methods to this instance
     this.createCustomer = this.createCustomer.bind(this);
