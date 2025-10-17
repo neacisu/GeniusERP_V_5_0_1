@@ -35,6 +35,25 @@ import { CashRegisterController } from "./controllers/cash-register.controller";
 import { SalesJournalController } from "./controllers/sales-journal.controller";
 import { PurchaseJournalController } from "./controllers/purchase-journal.controller";
 
+// Create service instances (moved before initAccountingModule to avoid hoisting issues)
+export const accountingService = new AccountingService(storage);
+export const journalService = new JournalService();
+export const salesJournalService = new SalesJournalService();
+export const purchaseJournalService = new PurchaseJournalService();
+export const bankJournalService = new BankJournalService();
+export const cashRegisterService = new CashRegisterService();
+export const noteContabilService = new NoteContabilService();
+export const validateDocumentService = new ValidateDocumentService();
+
+// Create controller instances (moved before initAccountingModule to avoid hoisting issues)
+export const accountingController = new AccountingController(accountingService);
+export const journalController = new JournalController(journalService);
+export const noteContabilController = new NoteContabilController(noteContabilService);
+export const bankJournalController = new BankJournalController(bankJournalService);
+export const cashRegisterController = new CashRegisterController(cashRegisterService);
+export const salesJournalController = new SalesJournalController(salesJournalService);
+export const purchaseJournalController = new PurchaseJournalController(purchaseJournalService);
+
 /**
  * Initialize the accounting module
  * This function sets up routes and registers services in the global registry
@@ -108,25 +127,6 @@ function registerLegacyAccountingService() {
     console.log('[Accounting Module] Registered legacy accounting service in global registry');
   }
 }
-
-// Create service instances
-export const accountingService = new AccountingService(storage);
-export const journalService = new JournalService();
-export const salesJournalService = new SalesJournalService();
-export const purchaseJournalService = new PurchaseJournalService();
-export const bankJournalService = new BankJournalService();
-export const cashRegisterService = new CashRegisterService();
-export const noteContabilService = new NoteContabilService();
-export const validateDocumentService = new ValidateDocumentService();
-
-// Create controller instances
-export const accountingController = new AccountingController(accountingService);
-export const journalController = new JournalController(journalService);
-export const noteContabilController = new NoteContabilController(noteContabilService);
-export const bankJournalController = new BankJournalController(bankJournalService);
-export const cashRegisterController = new CashRegisterController(cashRegisterService);
-export const salesJournalController = new SalesJournalController(salesJournalService);
-export const purchaseJournalController = new PurchaseJournalController(purchaseJournalService);
 
 // Group services in a namespace for easy access
 export const AccountingServices = {
