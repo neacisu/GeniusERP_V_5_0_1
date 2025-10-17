@@ -642,6 +642,102 @@ export class StripeClient extends BaseIntegrationClient {
       });
     }
   }
+
+  /**
+   * Create a subscription for a customer
+   * @param customerId Customer ID
+   * @param priceId Price ID
+   * @param quantity Quantity
+   * @param userId User ID for audit
+   * @returns Created subscription
+   */
+  public async createSubscription(
+    customerId: string,
+    priceId: string,
+    quantity: number,
+    userId: string
+  ): Promise<any> {
+    try {
+      const stripe = await this.getStripeInstance();
+      
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: priceId, quantity }]
+      });
+      
+      return subscription;
+    } catch (error) {
+      logger.error('Error creating subscription', {
+        error: error instanceof Error ? error.message : String(error),
+        customerId,
+        priceId
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Handle webhook events
+   * @param body Request body
+   * @param signature Stripe signature
+   * @param userId User ID for audit
+   * @returns Processed event
+   */
+  public async handleWebhook(
+    body: string,
+    signature: string,
+    userId: string
+  ): Promise<any> {
+    try {
+      const stripe = await this.getStripeInstance();
+      const config = await this.getIntegrationConfig();
+      
+      if (!config?.webhookSecret) {
+        throw new Error('Webhook secret not configured');
+      }
+      
+      const event = stripe.webhooks.constructEvent(
+        body,
+        signature,
+        config.webhookSecret
+      );
+      
+      return event;
+    } catch (error) {
+      logger.error('Error handling webhook', {
+        error: error instanceof Error ? error.message : String(error)
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get payment methods for a customer
+   * @param customerId Customer ID
+   * @param userId User ID for audit
+   * @returns List of payment methods
+   */
+  public async getPaymentMethods(
+    customerId: string,
+    userId: string
+  ): Promise<any[]> {
+    try {
+      const stripe = await this.getStripeInstance();
+      
+      const paymentMethods = await stripe.paymentMethods.list({
+        customer: customerId,
+        type: 'card'
+      });
+      
+      return paymentMethods.data;
+    } catch (error) {
+      logger.error('Error getting payment methods', {
+        error: error instanceof Error ? error.message : String(error),
+        customerId
+      });
+      throw error;
+    }
+  }
 }
 
 export default StripeClient;

@@ -51,6 +51,7 @@ export class AnafController {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'read',
         details: {
           message: 'VAT number validation',
@@ -107,6 +108,7 @@ export class AnafController {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'read',
         details: {
           message: 'Company info lookup',
@@ -150,23 +152,25 @@ export class AnafController {
         });
       }
 
-      const result = await eFacturaService.sendInvoice(invoiceId, xmlData, companyId, userId);
+      const result = await eFacturaService.sendInvoice(xmlData, { invoiceId, companyId, userId });
       
       // Audit log
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'create',
         details: {
           message: 'E-invoice sent to ANAF',
-          result: result.success ? 'success' : 'failure'
+          result: result.success ? 'success' : 'failure',
+          referenceId: result.referenceId
         }
       });
 
       return res.status(result.success ? 200 : 400).json({
         success: result.success,
         message: result.message,
-        data: result.data || null
+        referenceId: result.referenceId || null
       });
     } catch (error) {
       console.error('[AnafController] Send e-invoice error:', error instanceof Error ? error.message : String(error));
@@ -200,7 +204,7 @@ export class AnafController {
         });
       }
 
-      const status = await eFacturaService.checkInvoiceStatus(invoiceId, companyId, userId);
+      const status = await eFacturaService.checkInvoiceStatus(invoiceId);
       
       return res.status(200).json({
         success: true,

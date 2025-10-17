@@ -171,6 +171,51 @@ export class EFacturaService {
       throw new Error(`Failed to download invoice: ${error.message}`);
     }
   }
+
+  /**
+   * Send invoice (alias for submitInvoice)
+   */
+  async sendInvoice(invoiceXml: string, metadata: Record<string, any> = {}): Promise<EFacturaSubmissionResult> {
+    return this.submitInvoice(invoiceXml, metadata);
+  }
+
+  /**
+   * Generate invoice XML (alias for generateUblXml)
+   */
+  generateInvoiceXml(invoiceData: Record<string, any>): string {
+    return this.generateUblXml(invoiceData);
+  }
+
+  /**
+   * Validate invoice XML format
+   */
+  async validateInvoiceXml(invoiceXml: string): Promise<{ valid: boolean; errors?: string[] }> {
+    try {
+      // Basic XML validation
+      if (!invoiceXml || invoiceXml.trim().length === 0) {
+        return { valid: false, errors: ['XML content is empty'] };
+      }
+      
+      if (!invoiceXml.includes('<?xml')) {
+        return { valid: false, errors: ['Invalid XML format - missing XML declaration'] };
+      }
+      
+      return { valid: true };
+    } catch (error: any) {
+      return { valid: false, errors: [error.message] };
+    }
+  }
+
+  /**
+   * Download invoice metadata (alias for downloadInvoice)
+   */
+  async downloadInvoiceMetadata(referenceId: string): Promise<any> {
+    const data = await this.downloadInvoice(referenceId);
+    return {
+      referenceId,
+      data: data?.toString('base64')
+    };
+  }
 }
 
 // Create a default instance for common use

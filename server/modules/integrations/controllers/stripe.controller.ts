@@ -30,14 +30,14 @@ export class StripeController {
    */
   async initialize(req: Request, res: Response): Promise<Response> {
     try {
-      const { secretKey, publishableKey } = req.body;
+      const { secretKey, publishableKey, webhookSecret } = req.body;
       const userId = req.user?.id;
       const companyId = req.user?.companyId;
       
-      if (!secretKey || !publishableKey) {
+      if (!secretKey) {
         return res.status(400).json({
           success: false,
-          error: 'Secret key and publishable key are required'
+          error: 'Secret key is required'
         });
       }
       
@@ -65,26 +65,18 @@ export class StripeController {
       // Initialize Stripe client
       const stripeClient = new StripeClient(companyId);
       
-      // Test connection
-      const isConnected = await stripeClient.testConnection(secretKey);
-      
-      if (!isConnected) {
-        return res.status(400).json({
-          success: false,
-          error: 'Failed to connect to Stripe API'
-        });
-      }
-      
-      // Create integration
-      const integration = await stripeClient.initialize({
+      // Create integration (this will also test the connection)
+      const integration = await stripeClient.initialize(
         secretKey,
-        publishableKey
-      }, userId);
+        webhookSecret || '',
+        userId
+      );
       
       // Create audit log
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'create',
         details: {
           message: 'Stripe integration initialized'
@@ -157,6 +149,7 @@ export class StripeController {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'create',
         details: {
           amount,
@@ -220,10 +213,11 @@ export class StripeController {
       
       // Create customer
       const customer = await stripeClient.createCustomer(
+        name || email,
         email,
-        name,
         phone,
-        metadata,
+        undefined, // address
+        metadata as Record<string, string>,
         userId
       );
       
@@ -231,6 +225,7 @@ export class StripeController {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'create',
         details: {
           email,
@@ -296,7 +291,6 @@ export class StripeController {
         customerId,
         priceId,
         quantity,
-        metadata,
         userId
       );
       
@@ -304,6 +298,7 @@ export class StripeController {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'create',
         details: {
           customerId,
@@ -366,12 +361,13 @@ export class StripeController {
       const stripeClient = new StripeClient(companyId);
       
       // Handle webhook
-      const event = await stripeClient.handleWebhook(payload, signature);
+      const event = await stripeClient.handleWebhook(payload, signature, 'system');
       
       // Create system audit log
       await AuditService.createAuditLog({
         userId: 'system',
         companyId,
+        entity: 'integration',
         action: 'webhook',
         details: {
           type: event?.type || 'unknown',
@@ -433,7 +429,7 @@ export class StripeController {
       const stripeClient = new StripeClient(companyId);
       
       // Get payment methods
-      const paymentMethods = await stripeClient.getPaymentMethods(customerId);
+      const paymentMethods = await stripeClient.getPaymentMethods(customerId, userId);
       
       return res.status(200).json({
         success: true,

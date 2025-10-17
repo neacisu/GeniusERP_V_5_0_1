@@ -112,7 +112,7 @@ router.get('/exchange-rates/historical', async (req, res, next) => {
 
     log(`📈 Fetching historical rates for currencies: ${currencies.join(', ')} for the past ${days} days ${source ? `(source: ${source})` : ''}`, 'api');
     
-    const db = Services.db.db;
+    const db = Services.db;
     const endDate = new Date();
     endDate.setHours(23, 59, 59, 999); // End of today
     
@@ -121,7 +121,20 @@ router.get('/exchange-rates/historical', async (req, res, next) => {
     startDate.setHours(0, 0, 0, 0); // Start of day X days ago
     
     // Build the query with conditional source filter
-    let query = db
+    const whereConditions = [
+      eq(fx_rates.baseCurrency, 'RON'),
+      inArray(fx_rates.currency, currencies),
+      gte(fx_rates.date, startDate),
+      lte(fx_rates.date, endDate)
+    ];
+    
+    // Add source filter if specified
+    if (source) {
+      whereConditions.push(eq(fx_rates.source, source));
+    }
+    
+    // Execute the query with ordering
+    const ratesData = await db
       .select({
         currency: fx_rates.currency,
         rate: fx_rates.rate,
@@ -129,22 +142,8 @@ router.get('/exchange-rates/historical', async (req, res, next) => {
         source: fx_rates.source
       })
       .from(fx_rates)
-      .where(
-        and(
-          eq(fx_rates.baseCurrency, 'RON'),
-          inArray(fx_rates.currency, currencies),
-          gte(fx_rates.date, startDate),
-          lte(fx_rates.date, endDate)
-        )
-      );
-    
-    // Add source filter if specified
-    if (source) {
-      query = query.where(eq(fx_rates.source, source));
-    }
-    
-    // Execute the query with ordering
-    const ratesData = await query.orderBy(asc(fx_rates.date));
+      .where(and(...whereConditions))
+      .orderBy(asc(fx_rates.date));
     
     // Format the data for easy consumption in the frontend
     const dateMap = new Map();

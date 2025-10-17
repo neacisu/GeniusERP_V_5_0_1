@@ -82,6 +82,7 @@ export class PandaDocController {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'create',
         details: {
           message: 'PandaDoc integration initialized'
@@ -265,6 +266,7 @@ export class PandaDocController {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'create',
         details: {
           name,
@@ -382,6 +384,7 @@ export class PandaDocController {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'update',
         details: {
           message: 'Document sent for signing',
@@ -491,6 +494,7 @@ export class PandaDocController {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'read',
         details: {
           message: 'Document downloaded'

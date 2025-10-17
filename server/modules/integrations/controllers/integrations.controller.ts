@@ -450,6 +450,7 @@ export class IntegrationsController {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'activate',
         details: {
           provider: integration.provider,

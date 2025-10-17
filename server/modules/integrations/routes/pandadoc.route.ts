@@ -15,10 +15,9 @@ import { IntegrationProvider } from '../schema/integrations.schema';
 // Create router
 const router = express.Router();
 const integrationsService = new IntegrationsService();
-const auditService = new AuditService();
 
 // Resource type for audit logs
-const RESOURCE_TYPE = 'pandadoc';
+const RESOURCE_TYPE = IntegrationProvider.PANDADOC;
 
 /**
  * Initialize PandaDoc integration
@@ -51,7 +50,7 @@ router.post(
       
       // Check if integration already exists
       const existingIntegration = await integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -80,11 +79,11 @@ router.post(
       const integration = await pandaDocClient.initialize(apiKey, userId);
       
       // Create audit log
-      await auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'create',
-        resourceId: integration.id,
         details: {
           message: 'PandaDoc integration initialized'
         }
@@ -127,7 +126,7 @@ router.get(
       
       // Get integration
       const integration = await integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -182,7 +181,7 @@ router.get(
       
       // Get integration
       const integration = await integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -254,7 +253,7 @@ router.post(
       
       // Get integration
       const integration = await integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -282,11 +281,11 @@ router.post(
       );
       
       // Create audit log
-      await auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'create',
-        resourceId: document.id,
         details: {
           name,
           templateId,
@@ -332,7 +331,7 @@ router.get(
       
       // Get integration
       const integration = await integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -388,7 +387,7 @@ router.post(
       
       // Get integration
       const integration = await integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -412,11 +411,11 @@ router.post(
       );
       
       // Create audit log
-      await auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'update',
-        resourceId: documentId,
         details: {
           message: 'Document sent for signing',
           silent
@@ -461,7 +460,7 @@ router.get(
       
       // Get integration
       const integration = await integrationsService.getIntegrationByProvider(
-        'pandadoc' as IntegrationProvider,
+        IntegrationProvider.PANDADOC as IntegrationProvider,
         companyId
       );
       
@@ -516,7 +515,7 @@ router.get(
       
       // Get integration
       const integration = await integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -534,11 +533,11 @@ router.get(
       const fileBuffer = await pandaDocClient.downloadDocument(documentId, userId);
       
       // Create audit log
-      await auditService.createAuditLog({
+      await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'read',
-        resourceId: documentId,
         details: {
           message: 'Document downloaded'
         }

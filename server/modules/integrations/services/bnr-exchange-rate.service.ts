@@ -36,7 +36,7 @@ export class BnrExchangeRateService {
    * Get drizzle db instance
    */
   private get db() {
-    return Services.db.db;
+    return Services.db;
   }
   
   /**

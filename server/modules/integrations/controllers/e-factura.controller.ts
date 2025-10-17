@@ -50,7 +50,7 @@ export class EFacturaController {
       
       // Check if ANAF integration exists
       const anafIntegration = await this.integrationsService.getIntegrationByProvider(
-        'anaf_efactura',
+        IntegrationProvider.ANAF_EFACTURA,
         companyId
       );
       
@@ -62,23 +62,25 @@ export class EFacturaController {
       }
       
       // Send invoice to e-Factura
-      const result = await eFacturaService.sendInvoice(invoiceId, xmlData, companyId, userId);
+      const result = await eFacturaService.sendInvoice(xmlData, { invoiceId, companyId, userId });
       
       // Audit log
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'create',
         details: {
           message: 'Invoice sent to e-Factura',
-          result: result.success ? 'success' : 'failure'
+          result: result.success ? 'success' : 'failure',
+          referenceId: result.referenceId
         }
       });
       
       return res.status(result.success ? 200 : 400).json({
         success: result.success,
         message: result.message,
-        data: result.data || null
+        referenceId: result.referenceId || null
       });
     } catch (error) {
       console.error('[EFacturaController] Send invoice error:', error instanceof Error ? error.message : String(error));
@@ -115,7 +117,7 @@ export class EFacturaController {
       
       // Check if ANAF integration exists
       const anafIntegration = await this.integrationsService.getIntegrationByProvider(
-        'anaf_efactura',
+        IntegrationProvider.ANAF_EFACTURA,
         companyId
       );
       
@@ -127,7 +129,7 @@ export class EFacturaController {
       }
       
       // Check invoice status
-      const status = await eFacturaService.checkInvoiceStatus(invoiceId, companyId, userId);
+      const status = await eFacturaService.checkInvoiceStatus(invoiceId);
       
       return res.status(200).json({
         success: true,
@@ -167,7 +169,7 @@ export class EFacturaController {
       }
       
       // Generate XML
-      const xml = await eFacturaService.generateInvoiceXml(invoiceId, companyId, userId);
+      const xml = eFacturaService.generateInvoiceXml({ invoiceId, companyId, userId });
       
       if (!xml) {
         return res.status(404).json({
@@ -180,6 +182,7 @@ export class EFacturaController {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'read',
         details: {
           message: 'Generated e-Factura XML'
@@ -232,7 +235,7 @@ export class EFacturaController {
       }
       
       // Validate XML against e-Factura schema
-      const validationResult = await eFacturaService.validateInvoiceXml(xmlData, companyId);
+      const validationResult = await eFacturaService.validateInvoiceXml(xmlData);
       
       return res.status(200).json({
         success: true,
@@ -274,7 +277,7 @@ export class EFacturaController {
       
       // Check if ANAF integration exists
       const anafIntegration = await this.integrationsService.getIntegrationByProvider(
-        'anaf_efactura',
+        IntegrationProvider.ANAF_EFACTURA,
         companyId
       );
       
@@ -286,7 +289,7 @@ export class EFacturaController {
       }
       
       // Download invoice metadata
-      const metadata = await eFacturaService.downloadInvoiceMetadata(invoiceId, companyId, userId);
+      const metadata = await eFacturaService.downloadInvoiceMetadata(invoiceId);
       
       if (!metadata) {
         return res.status(404).json({
@@ -299,6 +302,7 @@ export class EFacturaController {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'read',
         details: {
           message: 'Downloaded e-Factura invoice metadata'

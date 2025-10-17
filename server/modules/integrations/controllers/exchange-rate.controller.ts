@@ -108,6 +108,7 @@ export class ExchangeRateController {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'update',
         details: {
           message: 'Manual BNR exchange rate update',
@@ -224,7 +225,7 @@ export class ExchangeRateController {
 
       console.log(`[ExchangeRateController] Fetching historical rates for currencies: ${currencies.join(', ')} for the past ${days} days`);
       
-      const db = Services.db.db;
+      const db = Services.db;
       const endDate = new Date();
       endDate.setHours(23, 59, 59, 999); // End of today
       

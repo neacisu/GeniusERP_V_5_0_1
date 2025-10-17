@@ -84,6 +84,7 @@ export class IntegrationsService {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'create',
         details: {
           provider,
@@ -231,6 +232,7 @@ export class IntegrationsService {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'update',
         details: {
           updates: validUpdates
@@ -282,6 +284,7 @@ export class IntegrationsService {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'update',
         details: {
           status,
@@ -359,6 +362,7 @@ export class IntegrationsService {
       await AuditService.createAuditLog({
         userId,
         companyId,
+        entity: 'integration',
         action: 'delete',
         details: {
           provider: integration.provider,
