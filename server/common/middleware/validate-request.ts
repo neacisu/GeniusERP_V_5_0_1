@@ -28,12 +28,12 @@ export function validateRequest(schemas: ValidationSchemas) {
       
       // Validate query parameters if schema provided
       if (schemas.query) {
-        req.query = await schemas.query.parseAsync(req.query);
+        req.query = await schemas.query.parseAsync(req.query) as any;
       }
-      
+
       // Validate URL parameters if schema provided
       if (schemas.params) {
-        req.params = await schemas.params.parseAsync(req.params);
+        req.params = await schemas.params.parseAsync(req.params) as any;
       }
       
       next();

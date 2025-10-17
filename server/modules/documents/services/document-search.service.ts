@@ -14,7 +14,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import { eq, and, or, like, ilike, isNull, not, desc } from 'drizzle-orm';
 import { documents, documentVersions } from '@shared/schema';
 import { OcrService } from './ocr.service';
-import { DrizzleModule } from '../../../common/drizzle';
+import { DrizzleService } from '../../../common/drizzle';
 
 /**
  * Search result with relevance scoring
@@ -46,8 +46,8 @@ export class DocumentSearchService {
   
   private async initialize() {
     try {
-      const drizzleService = await DrizzleModule.getService();
-      this.db = drizzleService.db;
+      const drizzleService = new DrizzleService();
+      this.db = drizzleService.getDbInstance();
       this.queryClient = drizzleService.queryClient;
       this.ocrService = new OcrService();
       

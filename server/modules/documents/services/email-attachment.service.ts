@@ -14,7 +14,7 @@ import { documents } from '@shared/schema';
 import { DocumentService } from './document.service';
 import { OcrService } from './ocr.service';
 import { DocumentRegistryService, DocumentFlow } from './document-registry.service';
-import { DrizzleModule } from '../../../common/drizzle';
+import { DrizzleService } from '../../../common/drizzle';
 
 /**
  * Email attachment metadata
@@ -61,8 +61,8 @@ export class EmailAttachmentService {
   
   private async initialize() {
     try {
-      const drizzleService = await DrizzleModule.getService();
-      this.db = drizzleService.db;
+      const drizzleService = new DrizzleService();
+      this.db = drizzleService.getDbInstance();
       this.queryClient = drizzleService.queryClient;
       this.documentService = new DocumentService();
       this.ocrService = new OcrService();

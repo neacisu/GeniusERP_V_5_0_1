@@ -1,5 +1,5 @@
-import { DrizzleModule } from '../common/drizzle';
-import { companies } from '@shared/schema';
+import { DrizzleService } from '../common/drizzle';
+import { companies } from '../../shared/schema';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -8,11 +8,11 @@ import { v4 as uuidv4 } from 'uuid';
  */
 async function seedDefaultCompany() {
   try {
-    const drizzleService = DrizzleModule.getService();
+    const drizzleService = new DrizzleService();
     
     console.log('Checking if default company exists...');
-    
-    const existingCompanies = await drizzleService.executeQuery(async (db: any) => {
+
+    const existingCompanies = await drizzleService.query(async (db: any) => {
       return await db.select().from(companies);
     });
     
@@ -22,9 +22,9 @@ async function seedDefaultCompany() {
     }
     
     console.log('No companies found. Creating default company...');
-    
+
     // Create a default company
-    await drizzleService.executeQuery(async (db: any) => {
+    await drizzleService.query(async (db: any) => {
       const [company] = await db.insert(companies).values({
         id: uuidv4(),
         name: 'GeniusERP Demo Company',

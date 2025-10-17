@@ -12,7 +12,7 @@ import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { documents, documentVersions } from '@shared/schema';
 import { DocumentService } from './document.service';
-import { DrizzleModule } from '../../../common/drizzle';
+import { DrizzleService } from '../../../common/drizzle';
 
 /**
  * Document editor types
@@ -52,8 +52,8 @@ export class DocumentEditorService {
   
   private async initialize() {
     try {
-      const drizzleService = await DrizzleModule.getService();
-      this.db = drizzleService.db;
+      const drizzleService = new DrizzleService();
+      this.db = drizzleService.getDbInstance();
       this.queryClient = drizzleService.queryClient;
       this.documentService = new DocumentService();
       
