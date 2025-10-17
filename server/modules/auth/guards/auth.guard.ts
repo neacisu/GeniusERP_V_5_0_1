@@ -20,7 +20,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { Service } from '../../../../shared/types';
+import { Service, JwtUserData } from '../../../../shared/types';
 import { JwtAuthMode } from '../constants/auth-mode.enum';
 import { JWT_SECRET } from '../services/auth.service';
 import { Logger } from '../../../common/logger';
@@ -28,34 +28,8 @@ import { Logger } from '../../../common/logger';
 // Create logger for AuthGuard
 const logger = new Logger('AuthGuard');
 
-// We'll use our UnifiedJwtPayload interface instead of importing conflicting JwtPayload types
-// Import the JWT_SECRET from auth.service for consistency
-
-/**
- * Unified JWT payload with additional features
- * We have two different JwtPayload interfaces (shared/types.ts and shared/types/index.ts)
- * This creates a unified interface that supports both formats
- */
-export interface UnifiedJwtPayload {
-  id: string;
-  username: string;
-  email?: string;
-  fullName?: string; // Generated from firstName + lastName in auth.service.ts
-  role?: string;  // Optional in one format, required in another
-  roles?: string[]; // Optional in one format, required in another
-  companyId?: string | null; // Optional in one format, required in another
-  userId?: string; // Added for compatibility with AI services
-  permissions?: string[]; // Optional permissions array for fine-grained access control
-  franchiseId?: string | null;
-  iat?: number;
-  exp?: number;
-}
-
 // Type alias for Request for better readability in our code
 export type AuthenticatedRequest = Request;
-
-// Type alias for consistency with existing code
-export type JwtUserData = UnifiedJwtPayload;
 
 @Service()
 export class AuthGuard {
@@ -143,10 +117,10 @@ export class AuthGuard {
         // Asigură compatibilitate între snake_case și camelCase pentru company_id/companyId
         if (decoded.companyId && !decoded.company_id) {
           // Adaugăm și company_id pentru compatibilitate cu cod mai vechi
-          (decoded as any).company_id = decoded.companyId;
+          decoded.company_id = decoded.companyId;
         } else if (decoded.company_id && !decoded.companyId) {
           // Adaugăm și companyId pentru compatibilitate cu cod mai nou
-          decoded.companyId = decoded.company_id as string;
+          decoded.companyId = decoded.company_id;
         }
         
         req.user = decoded;
@@ -188,10 +162,10 @@ export class AuthGuard {
         // Asigură compatibilitate între snake_case și camelCase pentru company_id/companyId
         if (decoded.companyId && !decoded.company_id) {
           // Adaugăm și company_id pentru compatibilitate cu cod mai vechi
-          (decoded as any).company_id = decoded.companyId;
+          decoded.company_id = decoded.companyId;
         } else if (decoded.company_id && !decoded.companyId) {
           // Adaugăm și companyId pentru compatibilitate cu cod mai nou
-          decoded.companyId = decoded.company_id as string;
+          decoded.companyId = decoded.company_id;
         }
         
         req.user = decoded;
@@ -222,8 +196,8 @@ export class AuthGuard {
         const decoded = jwt.verify(token, JWT_SECRET) as JwtUserData;
         req.user = decoded;
         
-        // Normalize inputs
-        const userRoles = decoded.roles || [decoded.role];
+        // Normalize inputs - handle both role and roles
+        const userRoles = decoded.roles || (decoded.role ? [decoded.role] : []);
         const requiredRoles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
         
         // Check if user has admin role (universal access)
@@ -291,8 +265,8 @@ export class AuthGuard {
           return next();
         }
         
-        // Get user roles (normalized)
-        const userRoles = decoded.roles || [decoded.role];
+        // Get user roles (normalized) - handle both role and roles
+        const userRoles = decoded.roles || (decoded.role ? [decoded.role] : []);
         
         // Admin roles can access any company
         if (userRoles.some(role => 
@@ -379,7 +353,7 @@ export class AuthGuard {
           : [requiredPermissions];
         
         // Check if user has admin role (universal access)
-        const userRoles = decoded.roles || [decoded.role];
+        const userRoles = decoded.roles || (decoded.role ? [decoded.role] : []);
         if (userRoles.some(role => ['admin', 'ADMIN'].includes(role))) {
           logger.debug('Admin role detected, granting access regardless of permissions');
           return next();

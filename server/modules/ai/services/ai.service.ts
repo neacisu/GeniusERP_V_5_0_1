@@ -50,15 +50,8 @@ export class AIService {
   ) {
     this.openAiService = new OpenAiService(drizzleService);
     
-    // Make sure we have a valid db property, which might be different from drizzleService itself
-    if (drizzleService && !this.drizzleService?.db && (drizzleService as any)?.db) {
-      this.drizzleService = {
-        ...drizzleService,
-        db: (drizzleService as any).db,
-        _db: (drizzleService as any)._db,
-        executeQuery: (drizzleService as any).executeQuery || ((sql: any) => Promise.resolve(sql))
-      } as DrizzleService;
-    }
+    // DrizzleService is already properly typed and initialized
+    // No need for additional property mapping
     
     // Check if DB is actually available and log status
     const dbAvailable = !!this.drizzleService?.db;

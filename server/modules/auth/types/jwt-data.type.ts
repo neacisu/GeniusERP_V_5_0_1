@@ -1,18 +1,7 @@
 /**
  * JWT User Data Type
  * 
- * Represents the user data stored in the JWT token
- * Must match JwtPayload from shared/types.ts for consistency
+ * RE-EXPORT from shared/types.ts to maintain backward compatibility
+ * DO NOT define this type here - it's defined canonically in shared/types.ts
  */
-export interface JwtUserData {
-  id: string;
-  username: string;  // Added to match JwtPayload
-  email: string;
-  role: string;      // Primary role - always present
-  roles?: string[];  // Array of all roles
-  companyId: string;
-  franchiseId?: string | null;
-  firstName?: string;
-  lastName?: string;
-  isVerified?: boolean;
-}
+export type { JwtUserData, JwtPayload } from '../../../../shared/types';

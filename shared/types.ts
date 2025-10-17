@@ -30,6 +30,8 @@ export function Service() {
 
 /**
  * JWT payload structure used in the application
+ * CANONICAL DEFINITION - This is the single source of truth for JWT user data
+ * Used across the entire application (client, server, all modules)
  * Based on the User type but with added roles array
  * Matches auth.service.ts generateToken() payload
  */
@@ -41,9 +43,22 @@ export interface JwtPayload {
   companyId: string | null;
   email?: string; // Added in auth.service.ts line 78
   fullName?: string; // Added in auth.service.ts line 79 - combines firstName + lastName
+  firstName?: string; // Optional first name
+  lastName?: string; // Optional last name
+  permissions?: string[]; // Optional permissions array for fine-grained access control
+  franchiseId?: string | null; // Optional franchise ID
+  company_id?: string | null; // For backward compatibility with snake_case
+  userId?: string; // For compatibility with AI services
   iat?: number;
   exp?: number;
 }
+
+/**
+ * JWT User Data - Alias for JwtPayload
+ * CANONICAL TYPE - Use this type everywhere instead of creating new definitions
+ * This ensures type consistency across the entire application
+ */
+export type JwtUserData = JwtPayload;
 
 /**
  * Extended User type that includes the roles array
@@ -53,10 +68,3 @@ export interface JwtPayload {
 export interface AuthUser extends DbUser {
   roles: string[];
 }
-
-/**
- * Type declaration to extend the Express Request user property
- * This allows TypeScript to recognize user.role and user.roles in requests
- */
-// Removed global Express.User declaration to avoid type conflicts
-// Using JwtUserData from auth module instead

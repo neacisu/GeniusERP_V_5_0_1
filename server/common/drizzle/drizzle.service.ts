@@ -112,10 +112,10 @@ export class DrizzleService {
    * @param queryFn Function that receives the DB instance and returns a result
    * @returns Promise resolving to the result of queryFn
    */
-  async query<T = any>(queryFn: (db: any) => Promise<T> | T): Promise<T> {
+  async query<T = any>(queryFn: (db: any) => Promise<T> | T, context?: string): Promise<T> {
     try {
       // Pass the query function and a context string for better logging
-      return await this.baseService.query(queryFn, 'DrizzleService.query');
+      return await this.baseService.query(queryFn, context || 'DrizzleService.query');
     } catch (error) {
       logger.error('Error in query operation', error);
       throw error;

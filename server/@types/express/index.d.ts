@@ -1,17 +1,16 @@
  
 import * as express from 'express';
-import { UnifiedJwtPayload } from '../../modules/auth/guards/auth.guard';
+import { JwtUserData } from '../../../shared/types';
 
 declare global {
   namespace Express {
     // Override the Request interface explicitly
     interface Request {
-      // Use UnifiedJwtPayload interface for the user property
-      // This includes all properties from both JwtPayload formats
-      user?: UnifiedJwtPayload; 
+      // Use canonical JwtUserData from shared/types.ts
+      user?: JwtUserData; 
     }
     
-    // Define User interface to match UnifiedJwtPayload format
-    interface User extends UnifiedJwtPayload {}
+    // Define User interface to match JwtUserData format
+    interface User extends JwtUserData {}
   }
 }

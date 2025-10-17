@@ -7,33 +7,13 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { Logger } from '../logger';
-import { User } from '../../../shared/schema';
+import { JwtUserData } from '../../../shared/types';
 
 // Import JWT_SECRET from auth service for consistency
 import { JWT_SECRET } from '../../modules/auth/services/auth.service';
 
 // Create logger for AuthGuard
 const logger = new Logger('AuthGuard');
-
-// Define user payload for JWT
-export interface JwtUserData {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-  roles?: string[];  // Added to match User interface
-  companyId?: string | null;
-  franchiseId?: string | null;
-}
-
-// Extend Express Request to include user data
-declare global {
-  namespace Express {
-    interface Request {
-      user?: User | JwtUserData;
-    }
-  }
-}
 
 export class AuthGuard {
   /**
@@ -51,11 +31,6 @@ export class AuthGuard {
       try {
         const decoded = jwt.verify(token, JWT_SECRET) as JwtUserData;
         req.user = decoded;
-        
-        // Add roles array for compatibility if it doesn't exist
-        if (!req.user.roles && req.user.role) {
-          (req.user as any).roles = [req.user.role];
-        }
         
         next();
       } catch (error) {
@@ -80,11 +55,6 @@ export class AuthGuard {
       try {
         const decoded = jwt.verify(token, JWT_SECRET) as JwtUserData;
         req.user = decoded;
-        
-        // Add roles array for compatibility if it doesn't exist
-        if (!req.user.roles && req.user.role) {
-          (req.user as any).roles = [req.user.role];
-        }
         
         next();
       } catch (error) {

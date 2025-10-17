@@ -6,23 +6,10 @@
  */
 
 import { Request } from 'express';
-import { JwtAuthMode, UserRole } from '../../auth/types';
+import { JwtAuthMode, UserRole, JwtUserData } from '../../auth/types';
 
 // Re-export the auth types
-export { JwtAuthMode, UserRole };
-
-/**
- * JWT user data structure
- */
-export interface JwtUserData {
-  id: string;
-  username: string;
-  role: string;
-  roles?: string[];
-  companyId: string;
-  franchiseId?: string;
-  [key: string]: any;
-}
+export { JwtAuthMode, UserRole, JwtUserData };
 
 /**
  * Extended Express Request with authenticated user data

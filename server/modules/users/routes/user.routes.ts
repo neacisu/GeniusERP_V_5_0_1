@@ -1,13 +1,13 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { UserService } from "../services/user.service";
-import { storage } from "../../../storage";
 import { AuthGuard } from "../../auth/guards/auth.guard";
 import { UserRole } from "../../auth/types";
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 
 export function setupUserRoutes() {
   const router = Router();
-  const userService = new UserService(storage);
+  // UserService now uses DrizzleService by default
+  const userService = new UserService();
   
   // Get all users - admin only
   router.get("/", 
@@ -28,7 +28,14 @@ export function setupUserRoutes() {
     async (req, res, next) => {
     try {
       // Users can only view their own profile unless they are admins
-      if (req.params.id !== req.user.id && req.user.role !== "admin") {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const userRoles = req.user.roles || (req.user.role ? [req.user.role] : []);
+      const isAdmin = userRoles.includes("admin") || userRoles.includes("ADMIN");
+      
+      if (req.params.id !== req.user.id && !isAdmin) {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -63,12 +70,19 @@ export function setupUserRoutes() {
     async (req, res, next) => {
     try {
       // Users can only update their own profile unless they are admins
-      if (req.params.id !== req.user.id && req.user.role !== "admin") {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const userRoles = req.user.roles || (req.user.role ? [req.user.role] : []);
+      const isAdmin = userRoles.includes("admin") || userRoles.includes("ADMIN");
+      
+      if (req.params.id !== req.user.id && !isAdmin) {
         return res.status(403).json({ message: "Forbidden" });
       }
       
       // Non-admins cannot change their role
-      if (req.params.id === req.user.id && req.user.role !== "admin" && req.body.role) {
+      if (req.params.id === req.user.id && !isAdmin && req.body.role) {
         delete req.body.role;
       }
       
@@ -99,7 +113,14 @@ export function setupUserRoutes() {
     async (req, res, next) => {
     try {
       // Users can only view their own roles unless they are admins
-      if (req.params.id !== req.user.id && req.user.role !== "admin") {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const userRoles = req.user.roles || (req.user.role ? [req.user.role] : []);
+      const isAdmin = userRoles.includes("admin") || userRoles.includes("ADMIN");
+      
+      if (req.params.id !== req.user.id && !isAdmin) {
         return res.status(403).json({ message: "Forbidden" });
       }
       

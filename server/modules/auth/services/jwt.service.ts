@@ -4,37 +4,34 @@
  * This service handles JWT token generation and verification.
  */
 
-import jwt from 'jsonwebtoken';
-import { JwtUserData } from '../types';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import { JwtUserData } from '../../../../shared/types';
 import { JWT_SECRET } from './auth.service';
 
 // Default expiration time (1 hour)
 const DEFAULT_EXPIRATION = '1h';
 
 export class JwtService {
-  private readonly secret: string;
-  private readonly refreshSecret: string;
+  private readonly secret: Secret;
+  private readonly refreshSecret: Secret;
 
   constructor() {
     // Use the JWT_SECRET from auth.service to ensure consistency throughout the app
     // JWT_SECRET is guaranteed to be a string as we throw an error in auth.service if not set
-    this.secret = JWT_SECRET;
+    this.secret = JWT_SECRET as Secret;
     
     // Get refresh secret from environment, but require it in production
-    // Initialize with empty string to satisfy TypeScript, but we'll validate it immediately
-    this.refreshSecret = '';
-    
     const refreshSecretEnv = process.env.JWT_REFRESH_SECRET;
     if (!refreshSecretEnv) {
       if (process.env.NODE_ENV === 'production') {
         console.error('[JwtService] ERROR: JWT_REFRESH_SECRET is not set in production environment');
         throw new Error('JWT_REFRESH_SECRET environment variable is required in production');
       } else {
-        this.refreshSecret = 'dev-refresh-secret-key';
+        this.refreshSecret = 'dev-refresh-secret-key' as Secret;
         console.warn('[JwtService] WARNING: Using default refresh secret in development environment');
       }
     } else {
-      this.refreshSecret = refreshSecretEnv;
+      this.refreshSecret = refreshSecretEnv as Secret;
     }
   }
 
@@ -45,6 +42,7 @@ export class JwtService {
    * @returns JWT token
    */
   generateToken(payload: JwtUserData, expiresIn: string = DEFAULT_EXPIRATION): string {
+    // @ts-ignore - expiresIn accepts string in jwt.sign but TypeScript is strict about it
     return jwt.sign(payload, this.secret, { expiresIn });
   }
 
@@ -55,6 +53,7 @@ export class JwtService {
    * @returns Refresh token
    */
   generateRefreshToken(userId: string, expiresIn: string = '7d'): string {
+    // @ts-ignore - expiresIn accepts string in jwt.sign but TypeScript is strict about it
     return jwt.sign({ id: userId }, this.refreshSecret, { expiresIn });
   }
 

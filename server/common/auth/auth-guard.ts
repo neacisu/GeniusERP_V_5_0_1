@@ -8,12 +8,12 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { Logger } from '../logger';
-import { JwtPayload } from '../../../shared/types';
+import { JwtUserData } from '../../../shared/types';
 
 // Note: Request.user type is already defined in server/@types/express/index.d.ts
-// as JwtPayload which includes: id, username, role, roles, companyId, email
+// as JwtUserData which includes: id, username, role, roles, companyId, email
 
-// Local JwtPayload interface is removed - using shared/types.ts instead
+// Using canonical JwtUserData from shared/types.ts
 
 // Create a logger for authentication operations
 const logger = new Logger('AuthGuard');
@@ -55,7 +55,7 @@ export const authGuard = (req: Request, res: Response, next: NextFunction) => {
     }
     
     // Decode and verify token
-    const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
+    const decoded = jwt.verify(token, jwtSecret) as JwtUserData;
     
     // Attach decoded JWT payload to request.user
     req.user = decoded;
@@ -95,8 +95,8 @@ export const roleGuard = (requiredRoles: string[]) => {
       }
       
       // roles is always array in JWT (auth.service.ts line 73: roles: [user.role])
-      // Using non-null assertion since req.user was verified above
-      const roles = req.user!.roles;
+      // Handle both role and roles for compatibility
+      const roles = req.user!.roles || (req.user!.role ? [req.user!.role] : []);
       
       // Check if user has admin role (universal access)
       if (roles.includes('admin')) {
@@ -157,7 +157,7 @@ export const companyGuard = (req: Request, res: Response, next: NextFunction) =>
     }
     
     const companyId = req.user.companyId;
-    const roles = req.user!.roles; // Always array in JWT, using ! since req.user verified
+    const roles = req.user!.roles || (req.user!.role ? [req.user!.role] : []); // Handle both role and roles
     
     // Allow admin roles to access any company data
     if (roles.includes('admin') || roles.includes('system_admin')) {
@@ -222,7 +222,7 @@ export const ownershipGuard = (
       
       const userId = req.user.id;
       const companyId = req.user.companyId;
-      const roles = req.user!.roles; // Always array in JWT, using ! since req.user verified
+      const roles = req.user!.roles || (req.user!.role ? [req.user!.role] : []); // Handle both role and roles
       
       // Admin or other privileged roles can access any resource
       if (roles.includes('admin') || roles.includes('manager')) {

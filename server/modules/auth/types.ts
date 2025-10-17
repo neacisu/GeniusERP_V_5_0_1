@@ -31,16 +31,11 @@ export enum UserRole {
 
 /**
  * JWT token payload structure
+ * RE-EXPORT from shared/types.ts for consistency
  */
-export interface JwtUserData {
-  id: string;
-  username: string;
-  role: string | UserRole;
-  roles?: string[] | UserRole[];
-  companyId: string;
-  franchiseId?: string;
-  [key: string]: any;
-}
+import type { JwtUserData as JwtUserDataType, JwtPayload as JwtPayloadType } from '../../../shared/types';
+export type JwtUserData = JwtUserDataType;
+export type JwtPayload = JwtPayloadType;
 
 /**
  * Extended Express Request with authenticated user data

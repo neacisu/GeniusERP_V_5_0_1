@@ -24,7 +24,14 @@ router.use(AuthGuard.protect(JwtAuthMode.REQUIRED));
 router.post('/setup', async (req, res) => {
   try {
     const userId = req.user!.id;
-    const email = req.user!.email;
+    const email = req.user!.email || '';
+    
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email address is required for MFA setup'
+      });
+    }
     
     logger.info(`MFA setup requested by user: ${userId}`);
     

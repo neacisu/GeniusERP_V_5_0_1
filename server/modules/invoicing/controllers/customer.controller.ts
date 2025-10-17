@@ -8,12 +8,12 @@ import { Request, Response, NextFunction } from 'express';
 import { Logger } from '../../../common/logger';
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 import { eq, and } from 'drizzle-orm';
-import { UnifiedJwtPayload } from '../../auth/guards/auth.guard';
+import { JwtUserData } from '../../../../shared/types';
 
 // Extindere Request pentru a suporta ambele formate de token
 declare global {
   namespace Express {
-    interface User extends UnifiedJwtPayload {
+    interface User extends JwtUserData {
       company_id?: string | null; // Adăugat pentru compatibilitate
     }
   }

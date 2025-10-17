@@ -61,7 +61,8 @@ export function roleGuard(roles: string[]) {
     }
     
     // Check if user has any of the required roles
-    const hasRole = req.user.roles?.some(role => roles.includes(role)) || roles.includes(req.user.role);
+    const userRoles = req.user.roles || (req.user.role ? [req.user.role] : []);
+    const hasRole = userRoles.some(role => roles.includes(role));
     
     if (!hasRole) {
       console.warn('[RoleGuard] Access denied for user:', req.user.username);

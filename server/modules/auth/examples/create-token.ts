@@ -5,10 +5,11 @@ const payload = {
   id: 'user-123',
   username: 'testuser',
   role: 'admin',
-  roles: ['admin', 'user']
+  roles: ['admin', 'user'],
+  companyId: null
 };
 
-const token = jwtService.sign(payload);
+const token = jwtService.generateToken(payload);
 
 // Simple endpoint to get a token for testing
 export function getDevToken() {

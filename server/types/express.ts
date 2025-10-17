@@ -1,20 +1,12 @@
 /**
  * Types for Express extended with authentication data
+ * RE-EXPORT from shared/types.ts for consistency
  */
 import { Request } from 'express';
+import { JwtUserData } from '../../shared/types';
 
-export interface JwtUserData {
-  id: string;
-  username: string;
-  email?: string;
-  role: string;
-  roles: string[];
-  companyId: string;
-  firstName?: string;
-  lastName?: string;
-  exp?: number;
-  iat?: number;
-}
+// Re-export for convenience
+export type { JwtUserData, JwtPayload } from '../../shared/types';
 
 export interface AuthenticatedRequest extends Request {
   user?: JwtUserData;
