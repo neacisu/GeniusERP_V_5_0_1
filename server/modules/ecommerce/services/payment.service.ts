@@ -99,31 +99,11 @@ export class PaymentService {
    * @param companyId Company ID
    * @returns Client configuration or null if not found
    */
-  private async getIntegrationConfig(provider: string, companyId: string): Promise<any | null> {
+  private async getIntegrationConfig(provider: IntegrationProvider, companyId: string): Promise<any | null> {
     try {
-      // First try to use the standard method if available
+      // Use the standard method to get integration credentials
       if (typeof this.integrationService.getIntegrationCredentials === 'function') {
         return await this.integrationService.getIntegrationCredentials(provider, companyId, 'system');
-      }
-      
-      // Then try the newer method if available
-      if (typeof this.integrationService.getClientConfig === 'function') {
-        return await this.integrationService.getClientConfig(provider, companyId);
-      }
-      
-      // If neither method is available, try to query the database directly
-      if (this.integrationService.db) {
-        const integrations = (this.integrationService.db).query.integrations;
-        if (integrations) {
-          // This will depend on the actual schema, so it's a simplified version
-          const result = await this.db.select().from(integrations)
-            .where(sql`${integrations.provider} = ${provider} AND ${integrations.companyId} = ${companyId} AND ${integrations.status} = 'active'`)
-            .limit(1);
-            
-          if (result && result.length > 0) {
-            return result[0].config;
-          }
-        }
       }
       
       return null;
@@ -143,11 +123,11 @@ export class PaymentService {
       // Initialize Stripe client if needed
       if (!this.stripeClient) {
         // Try to get from integration service
-        const stripeConfig = await this.getIntegrationConfig('stripe', companyId);
+        const stripeConfig = await this.getIntegrationConfig(IntegrationProvider.STRIPE, companyId);
 
         if (stripeConfig && stripeConfig.secretKey) {
           this.stripeClient = new Stripe(stripeConfig.secretKey, {
-            apiVersion: '2023-10-16',
+            apiVersion: '2025-09-30.clover',
           });
           logger.info(`Stripe client initialized for company ${companyId}`);
         } else {
@@ -162,7 +142,7 @@ export class PaymentService {
     // Try to initialize with environment variables as fallback
     if (!this.stripeClient && process.env.STRIPE_SECRET_KEY) {
       this.stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY, {
-        apiVersion: '2023-10-16',
+        apiVersion: '2025-09-30.clover',
       });
       logger.info('Stripe client initialized using environment variables');
     }
@@ -292,9 +272,9 @@ export class PaymentService {
         status: paymentIntent.status,
         paymentMethod: paymentIntent.payment_method?.toString() || undefined,
         customerId: paymentIntent.customer?.toString() || undefined,
-        receiptUrl: paymentIntent.charges?.data?.[0]?.receipt_url || undefined,
+        receiptUrl: paymentIntent.latest_charge && typeof paymentIntent.latest_charge === 'object' ? (paymentIntent.latest_charge as any).receipt_url : undefined,
         createdAt: paymentIntent.created,
-        metadata: paymentIntent.metadata
+        metadata: paymentIntent.metadata as Record<string, any> | undefined
       };
 
       return {
@@ -392,7 +372,7 @@ export class PaymentService {
         paymentIntentId: paymentIntentId,
         reason: refund.reason || reason,
         createdAt: refund.created,
-        metadata: refund.metadata
+        metadata: (refund.metadata as Record<string, any>) || undefined
       };
 
       return {

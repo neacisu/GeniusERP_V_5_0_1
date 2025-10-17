@@ -436,4 +436,67 @@ export class CartService {
       throw new Error('Failed to update cart status');
     }
   }
+
+  /**
+   * Get an active cart for a user
+   * 
+   * @param userId User ID
+   * @param companyId Company ID
+   * @returns The user's active cart or null
+   */
+  async getActiveCart(userId: string, companyId: string) {
+    try {
+      const existingCarts = await this.db.query(async (db) => {
+        return await db.select()
+          .from(carts)
+          .where(
+            and(
+              eq(carts.userId, userId),
+              eq(carts.companyId, companyId),
+              eq(carts.status, CartStatus.ACTIVE)
+            )
+          );
+      });
+      
+      if (existingCarts.length > 0) {
+        return this.getCartWithItems(existingCarts[0].id);
+      }
+      
+      return null;
+    } catch (error) {
+      logger.error('Failed to get active cart', error);
+      throw new Error('Failed to get active cart');
+    }
+  }
+
+  /**
+   * Get a cart by ID
+   * 
+   * @param cartId Cart ID
+   * @param companyId Company ID
+   * @returns The cart or null
+   */
+  async getCartById(cartId: string, companyId: string) {
+    try {
+      const cartsResult = await this.db.query(async (db) => {
+        return await db.select()
+          .from(carts)
+          .where(
+            and(
+              eq(carts.id, cartId),
+              eq(carts.companyId, companyId)
+            )
+          );
+      });
+      
+      if (cartsResult.length === 0) {
+        return null;
+      }
+      
+      return this.getCartWithItems(cartId);
+    } catch (error) {
+      logger.error(`Failed to get cart ${cartId}`, error);
+      throw new Error('Failed to get cart');
+    }
+  }
 }

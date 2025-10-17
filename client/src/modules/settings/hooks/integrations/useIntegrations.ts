@@ -12,8 +12,10 @@ import { toast } from '@/hooks/use-toast';
 export enum IntegrationProvider {
   SHOPIFY_ADMIN = 'shopify_admin',
   SHOPIFY_STOREFRONT = 'shopify_storefront',
+  SHOPIFY = 'shopify',
   PRESTASHOP = 'prestashop',
   WOOCOMMERCE = 'woocommerce',
+  CUSTOM_ECOMMERCE = 'custom_ecommerce',
   STRIPE = 'stripe',
   PAYPAL = 'paypal',
   EMAIL = 'email',

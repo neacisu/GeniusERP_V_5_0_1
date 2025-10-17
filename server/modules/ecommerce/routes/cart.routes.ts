@@ -177,10 +177,15 @@ export class CartRouter {
       }
       
       // Add item to cart
+      // If no cartId provided, get or create active cart first
+      let activeCartId = cartId;
+      if (!activeCartId) {
+        const activeCart = await this.cartService.getOrCreateCart(userId as string, companyId as string);
+        activeCartId = activeCart.id;
+      }
+      
       const updatedCart = await this.cartService.addItem(
-        cartId || null, // Cart ID may be null if adding to active cart
-        userId as string,
-        companyId as string,
+        activeCartId,
         productId,
         quantity,
         unitPrice,
@@ -236,8 +241,7 @@ export class CartRouter {
       // Update cart item quantity
       const updatedCart = await this.cartService.updateItemQuantity(
         itemId,
-        quantity,
-        companyId as string
+        quantity
       );
       
       res.json({
@@ -278,7 +282,7 @@ export class CartRouter {
       }
       
       // Remove item from cart
-      const updatedCart = await this.cartService.removeItem(itemId, companyId as string);
+      const updatedCart = await this.cartService.removeItem(itemId);
       
       res.json({
         success: true,
@@ -318,7 +322,7 @@ export class CartRouter {
       }
       
       // Clear cart
-      const clearedCart = await this.cartService.clearCart(cartId, companyId as string);
+      const clearedCart = await this.cartService.clearCart(cartId);
       
       res.json({
         success: true,
@@ -369,10 +373,8 @@ export class CartRouter {
       // Apply discount to cart
       const updatedCart = await this.cartService.applyDiscount(
         cartId,
-        companyId as string,
-        discountCode,
         discountAmount,
-        discountType
+        discountCode
       );
       
       res.json({

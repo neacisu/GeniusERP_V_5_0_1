@@ -109,6 +109,12 @@ export class OrdersRouter {
       let orders;
       if (user === 'true') {
         // Get orders for the current user
+        if (!userId) {
+          return res.status(400).json({
+            success: false,
+            message: 'User ID is required for user-specific orders'
+          });
+        }
         orders = await this.ordersService.getUserOrders(userId, companyId, options);
       } else {
         // Get all orders for the company
@@ -333,6 +339,13 @@ export class OrdersRouter {
       
       const { companyId } = req.user;
       
+      if (!companyId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Company ID is required'
+        });
+      }
+      
       const counts = await this.ordersService.getOrdersCountByStatus(companyId);
       
       res.json({
@@ -364,6 +377,13 @@ export class OrdersRouter {
       }
       
       const { companyId } = req.user;
+      
+      if (!companyId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Company ID is required'
+        });
+      }
       
       const orders = await this.ordersService.searchOrders(companyId, query);
       

@@ -34,21 +34,21 @@ export default function EcommercePage() {
   // Mock data for e-commerce integrations
   const ecommerceIntegrations = [
     {
-      provider: IntegrationProvider.SHOPIFY,
+      provider: IntegrationProvider.SHOPIFY as IntegrationProvider,
       title: "Shopify",
       description: "Conectați magazinul Shopify pentru sincronizarea produselor, comenzilor și inventarului.",
       icon: ShoppingBag,
       status: IntegrationStatus.INACTIVE
     },
     {
-      provider: IntegrationProvider.WOOCOMMERCE,
+      provider: IntegrationProvider.WOOCOMMERCE as IntegrationProvider,
       title: "WooCommerce",
       description: "Integrare cu platforma WooCommerce pentru magazine pe WordPress.",
       icon: Store,
       status: IntegrationStatus.INACTIVE
     },
     {
-      provider: IntegrationProvider.CUSTOM_ECOMMERCE,
+      provider: IntegrationProvider.CUSTOM_ECOMMERCE as IntegrationProvider,
       title: "Magazin personalizat",
       description: "Conectați un magazin personalizat prin API pentru sincronizare bidirectională.",
       icon: ShoppingCart,
