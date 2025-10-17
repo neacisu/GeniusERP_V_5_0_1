@@ -166,7 +166,7 @@ const NewAssessmentPage: React.FC<NewInventoryAssessmentPageProps> = ({ isEditin
   
   // Form setup
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       warehouseId: "",
       assessmentType: "annual",

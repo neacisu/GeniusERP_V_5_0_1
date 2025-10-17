@@ -121,7 +121,7 @@ const CategoriesPage: React.FC = () => {
   
   // Form setup
   const form = useForm<z.infer<typeof categoryFormSchema>>({
-    resolver: zodResolver(categoryFormSchema),
+    resolver: zodResolver(categoryFormSchema) as any,
     defaultValues: {
       name: "",
       description: "",
