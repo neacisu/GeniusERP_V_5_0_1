@@ -6,7 +6,7 @@
  */
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { eq, and, like, or, desc, SQL } from 'drizzle-orm';
+import { eq, and, like, or, desc, SQL, count } from 'drizzle-orm';
 import axios, { AxiosRequestConfig, Method } from 'axios';
 import { Logger } from '../../../common/logger';
 import { 
@@ -95,32 +95,35 @@ export class ApiConnectionService {
       }
       
       if (search) {
-        whereConditions.push(
-          or(
-            like(bpmApiConnections.name, `%${search}%`),
-            like(bpmApiConnections.description || '', `%${search}%`)
-          )
+        const searchCondition = or(
+          like(bpmApiConnections.name, `%${search}%`),
+          like(bpmApiConnections.description || '', `%${search}%`)
         );
+        if (searchCondition) {
+          whereConditions.push(searchCondition);
+        }
       }
       
       // Get total count
-      const [{ count }] = await this.db
+      const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
+      const countResult = await this.db
         .select({ count: count() })
         .from(bpmApiConnections)
-        .where(and(...whereConditions));
+        .where(whereClause);
+      const totalCount = Number(countResult[0]?.count || 0);
       
       // Get paginated data
       const connections = await this.db
         .select()
         .from(bpmApiConnections)
-        .where(and(...whereConditions))
+        .where(whereClause)
         .orderBy(desc(bpmApiConnections.updatedAt))
         .limit(limit)
         .offset(offset);
       
       return {
         data: connections,
-        total: Number(count),
+        total: totalCount,
         page,
         limit
       };
@@ -170,7 +173,7 @@ export class ApiConnectionService {
           eq(bpmApiConnections.companyId, companyId)
         ));
       
-      return result.rowCount > 0;
+      return result.length > 0;
     } catch (error) {
       logger.error('Failed to delete API connection', { error, id, companyId });
       throw error;
@@ -192,7 +195,7 @@ export class ApiConnectionService {
       }
       
       // Get connection configuration
-      const { configuration } = connection;
+      const configuration = connection.configuration as Record<string, any>;
       const { baseUrl, testEndpoint, method = 'GET', headers = {}, authData = {} } = configuration;
       
       if (!baseUrl) {
@@ -294,7 +297,7 @@ export class ApiConnectionService {
       }
       
       // Get connection configuration
-      const { configuration } = connection;
+      const configuration = connection.configuration as Record<string, any>;
       const { baseUrl, headers = {}, authData = {} } = configuration;
       
       if (!baseUrl) {

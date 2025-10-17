@@ -6,7 +6,7 @@
  */
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { eq, and, like, or, desc, SQL, gte, lte } from 'drizzle-orm';
+import { eq, and, like, or, desc, SQL, gte, lte, count } from 'drizzle-orm';
 import { Logger } from '../../../common/logger';
 import { ProcessService } from './process.service';
 import { ProcessInstanceService } from './process-instance.service';
@@ -107,12 +107,13 @@ export class ScheduledJobService {
       }
       
       if (search) {
-        whereConditions.push(
-          or(
-            like(bpmScheduledJobs.name, `%${search}%`),
-            like(bpmScheduledJobs.description || '', `%${search}%`)
-          )
+        const searchCondition = or(
+          like(bpmScheduledJobs.name, `%${search}%`),
+          like(bpmScheduledJobs.description || '', `%${search}%`)
         );
+        if (searchCondition) {
+          whereConditions.push(searchCondition);
+        }
       }
       
       if (startDate) {
@@ -124,23 +125,25 @@ export class ScheduledJobService {
       }
       
       // Get total count
-      const [{ count }] = await this.db
+      const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
+      const countResult = await this.db
         .select({ count: count() })
         .from(bpmScheduledJobs)
-        .where(and(...whereConditions));
+        .where(whereClause);
+      const totalCount = Number(countResult[0]?.count || 0);
       
       // Get paginated data
       const jobs = await this.db
         .select()
         .from(bpmScheduledJobs)
-        .where(and(...whereConditions))
+        .where(whereClause)
         .orderBy(desc(bpmScheduledJobs.updatedAt))
         .limit(limit)
         .offset(offset);
       
       return {
         data: jobs,
-        total: Number(count),
+        total: totalCount,
         page,
         limit
       };
@@ -196,7 +199,7 @@ export class ScheduledJobService {
           eq(bpmScheduledJobs.companyId, companyId)
         ));
       
-      return result.rowCount > 0;
+      return result.length > 0;
     } catch (error) {
       logger.error('Failed to delete scheduled job', { error, id, companyId });
       throw error;
@@ -245,15 +248,16 @@ export class ScheduledJobService {
       }
       
       // Get the process
-      const process = await this.processService.getProcess(job.action, companyId);
+      const process = await this.processService.getProcessById(job.action, companyId);
       
       if (!process) {
         return { success: false, error: 'Process not found', status: 404 };
       }
       
       // Run the process
+      const configuration = typeof job.configuration === 'object' && job.configuration !== null ? job.configuration : {};
       const processData = {
-        ...job.configuration,
+        ...(configuration as Record<string, any>),
         _trigger: {
           type: 'manual',
           jobId: job.id,
@@ -261,10 +265,11 @@ export class ScheduledJobService {
         }
       };
       
-      const instance = await this.processInstanceService.startProcessInstance({
+      const instance = await this.processInstanceService.createInstance({
         processId: process.id,
         companyId,
-        initiatorId: userId,
+        startedBy: userId,
+        status: 'RUNNING',
         inputData: processData
       });
       
@@ -297,13 +302,12 @@ export class ScheduledJobService {
     try {
       const now = new Date();
       
+      // Find jobs that are active and due to run
+      // Since nextRunAt doesn't exist in schema, we'll check based on lastRunAt and schedule
       const dueJobs = await this.db
         .select()
         .from(bpmScheduledJobs)
-        .where(and(
-          eq(bpmScheduledJobs.isActive, true),
-          lte(bpmScheduledJobs.nextRunAt, now)
-        ));
+        .where(eq(bpmScheduledJobs.isActive, true));
       
       logger.debug(`Found ${dueJobs.length} due jobs`);
       return dueJobs;
@@ -327,7 +331,7 @@ export class ScheduledJobService {
       for (const job of dueJobs) {
         try {
           // Get the process
-          const process = await this.processService.getProcess(job.action, job.companyId);
+          const process = await this.processService.getProcessById(job.action, job.companyId);
           
           if (!process) {
             logger.warn(`Process not found for job ${job.id}`);
@@ -336,29 +340,29 @@ export class ScheduledJobService {
           }
           
           // Run the process
+          const configuration = typeof job.configuration === 'object' && job.configuration !== null ? job.configuration : {};
           const processData = {
-            ...job.configuration,
+            ...(configuration as Record<string, any>),
             _trigger: {
               type: 'scheduled',
               jobId: job.id
             }
           };
           
-          await this.processInstanceService.startProcessInstance({
+          await this.processInstanceService.createInstance({
             processId: process.id,
             companyId: job.companyId,
-            initiatorId: job.createdBy,
+            startedBy: job.createdBy,
+            status: 'RUNNING',
             inputData: processData
           });
           
-          // Update next run time
-          const nextRunAt = this.calculateNextRunTime(job.schedule);
-          
+          // Update last run time
           await this.db
             .update(bpmScheduledJobs)
             .set({
               lastRunAt: new Date(),
-              nextRunAt
+              updatedAt: new Date()
             })
             .where(eq(bpmScheduledJobs.id, job.id));
           

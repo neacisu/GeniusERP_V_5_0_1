@@ -259,7 +259,7 @@ export class ProcessInstanceService {
       if (data.variables !== undefined) {
         // Merge variables rather than replacing them
         updateData.variables = {
-          ...instance.variables,
+          ...(typeof instance.variables === 'object' && instance.variables !== null ? instance.variables : {}),
           ...data.variables
         };
         changes.variablesUpdated = true;
@@ -325,7 +325,7 @@ export class ProcessInstanceService {
       
       if (outputData) {
         updateData.outputData = {
-          ...instance.outputData,
+          ...(typeof instance.outputData === 'object' && instance.outputData !== null ? instance.outputData : {}),
           ...outputData
         };
       }
@@ -373,7 +373,7 @@ export class ProcessInstanceService {
         status: BpmProcessInstanceStatus.CANCELLED,
         completedAt: new Date(),
         variables: {
-          ...instance.variables,
+          ...(typeof instance.variables === 'object' && instance.variables !== null ? instance.variables : {}),
           cancellationReason: reason || 'Manual cancellation',
           cancellationTime: new Date().toISOString()
         }
@@ -542,7 +542,7 @@ export class ProcessInstanceService {
         status: BpmProcessInstanceStatus.RUNNING,
         currentStep: stepId,
         variables: {
-          ...instance.variables,
+          ...(typeof instance.variables === 'object' && instance.variables !== null ? instance.variables : {}),
           lastExecutedStep: stepId,
           lastExecutedStepTime: new Date().toISOString(),
           ...(stepData ? { [`step_${stepId}_data`]: stepData } : {})
