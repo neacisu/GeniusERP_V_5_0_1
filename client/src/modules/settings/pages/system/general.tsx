@@ -57,8 +57,8 @@ const generalSettingsSchema = z.object({
   company_name_format: z.string().min(1, "Formatul este obligatoriu"),
   default_language: z.string().min(1, "Limba implicită este obligatorie"),
   default_timezone: z.string().min(1, "Fusul orar este obligatoriu"),
-  enable_notifications: z.boolean().default(true),
-  maintenance_mode: z.boolean().default(false),
+  enable_notifications: z.boolean(),
+  maintenance_mode: z.boolean(),
   maintenance_message: z.string().optional(),
 });
 
@@ -67,10 +67,10 @@ type GeneralSettingsFormValues = z.infer<typeof generalSettingsSchema>;
 // Schema for email settings
 const emailSettingsSchema = z.object({
   smtp_host: z.string().min(1, "Hostul SMTP este obligatoriu"),
-  smtp_port: z.coerce.number().int().min(1, "Portul SMTP este obligatoriu"),
+  smtp_port: z.number().int().min(1, "Portul SMTP este obligatoriu"),
   smtp_user: z.string().min(1, "Utilizatorul SMTP este obligatoriu"),
   smtp_password: z.string().min(1, "Parola SMTP este obligatorie"),
-  smtp_secure: z.boolean().default(true),
+  smtp_secure: z.boolean(),
   email_from: z.string().email("Adresa de email nu este validă"),
   email_reply_to: z.string().email("Adresa de email nu este validă").optional().or(z.literal("")),
 });
@@ -80,12 +80,12 @@ type EmailSettingsFormValues = z.infer<typeof emailSettingsSchema>;
 // Schema for document settings
 const documentSettingsSchema = z.object({
   invoice_prefix: z.string().min(1, "Prefixul facturii este obligatoriu"),
-  invoice_start_number: z.coerce.number().int().min(1, "Numărul de start al facturii este obligatoriu"),
+  invoice_start_number: z.number().int().min(1, "Numărul de start al facturii este obligatoriu"),
   invoice_number_format: z.string().min(1, "Formatul numărului de factură este obligatoriu"),
   receipt_prefix: z.string().min(1, "Prefixul chitanței este obligatoriu"),
-  receipt_start_number: z.coerce.number().int().min(1, "Numărul de start al chitanței este obligatoriu"),
+  receipt_start_number: z.number().int().min(1, "Numărul de start al chitanței este obligatoriu"),
   receipt_number_format: z.string().min(1, "Formatul numărului de chitanță este obligatoriu"),
-  default_payment_due_days: z.coerce.number().int().min(0, "Numărul de zile până la scadență trebuie să fie pozitiv"),
+  default_payment_due_days: z.number().int().min(0, "Numărul de zile până la scadență trebuie să fie pozitiv"),
 });
 
 type DocumentSettingsFormValues = z.infer<typeof documentSettingsSchema>;

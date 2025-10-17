@@ -17,25 +17,11 @@ import SettingCard from "../../components/cards/SettingCard";
 import FormSection from "../../components/forms/FormSection";
 import CustomFormField from "../../components/forms/FormField";
 import SettingForm from "../../components/forms/SettingForm";
-import { useSettingsApi } from "../../hooks/useSettingsApi";
+import { useSettingsApi, UITheme } from "../../hooks/useSettingsApi";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-// Type definition for UITheme
-interface UITheme {
-  id: string;
-  name: string;
-  colors: {
-    primary?: string;
-    secondary?: string;
-    accent?: string;
-    [key: string]: string | undefined;
-  };
-  isDefault?: boolean;
-  companyId?: string;
-}
 import {
   Select,
   SelectContent,
@@ -88,7 +74,7 @@ const themeTabs: TabItem[] = [
 const themeSchema = z.object({
   name: z.string().min(3, "Numele temei trebuie să aibă cel puțin 3 caractere"),
   description: z.string().optional(),
-  isDefault: z.boolean().default(false),
+  isDefault: z.boolean(),
 });
 
 type ThemeFormValues = z.infer<typeof themeSchema>;
@@ -292,7 +278,8 @@ export default function UIThemesPage() {
 
   // Handle setting a theme as default
   const handleSetDefault = (theme: UITheme) => {
-    setDefaultThemeMutation.mutate(theme.id);
+    if (!companyId) return;
+    setDefaultThemeMutation.mutate({ id: theme.id, companyId });
   };
 
   // Open dialog for creating a new theme

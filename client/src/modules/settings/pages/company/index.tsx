@@ -41,13 +41,13 @@ const companySchema = z.object({
   city: z.string().min(2, "Orașul este obligatoriu"),
   county: z.string().min(2, "Județul este obligatoriu"),
   country: z.string().min(2, "Țara este obligatorie"),
+  vatPayer: z.boolean(),
+  vatRate: z.number().min(0).max(100),
   phone: z.string().optional(),
   email: z.string().email("Adresa de email nu este validă").optional().or(z.literal("")),
   website: z.string().optional().or(z.literal("")),
   bankAccount: z.string().optional(),
   bankName: z.string().optional(),
-  vatPayer: z.boolean().default(true),
-  vatRate: z.number().min(0).max(100).default(19),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;

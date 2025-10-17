@@ -57,25 +57,25 @@ const userTabs: TabItem[] = [
 
 // Schema for interface preferences
 const interfaceSchema = z.object({
-  default_landing_page: z.string().default("dashboard"),
-  rows_per_page: z.coerce.number().int().min(5).max(100).default(10),
-  compact_tables: z.boolean().default(false),
-  confirm_actions: z.boolean().default(true),
-  show_help_tooltips: z.boolean().default(true),
-  auto_refresh_interval: z.coerce.number().int().min(0).max(300).default(0),
+  default_landing_page: z.string(),
+  rows_per_page: z.number().int().min(5).max(100),
+  compact_tables: z.boolean(),
+  confirm_actions: z.boolean(),
+  show_help_tooltips: z.boolean(),
+  auto_refresh_interval: z.number().int().min(0).max(300),
 });
 
 type InterfaceFormValues = z.infer<typeof interfaceSchema>;
 
 // Schema for notification preferences
 const notificationsSchema = z.object({
-  email_notifications: z.boolean().default(true),
-  browser_notifications: z.boolean().default(true),
-  notification_sound: z.boolean().default(true),
-  daily_summary_email: z.boolean().default(false),
-  notify_on_assignments: z.boolean().default(true),
-  notify_on_mentions: z.boolean().default(true),
-  notify_on_due_dates: z.boolean().default(true),
+  email_notifications: z.boolean(),
+  browser_notifications: z.boolean(),
+  notification_sound: z.boolean(),
+  daily_summary_email: z.boolean(),
+  notify_on_assignments: z.boolean(),
+  notify_on_mentions: z.boolean(),
+  notify_on_due_dates: z.boolean(),
 });
 
 type NotificationsFormValues = z.infer<typeof notificationsSchema>;

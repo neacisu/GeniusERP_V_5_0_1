@@ -7,7 +7,7 @@
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 import { featureToggles } from '../schema/settings.schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
 import { Logger } from '../../../common/logger';
 
 export class FeatureToggleService {
@@ -111,7 +111,7 @@ export class FeatureToggleService {
         query = query.where(eq(featureToggles.companyId, companyId));
       } else {
         // For global features, company ID should be null
-        query = query.where(eq(featureToggles.companyId, null));
+        query = query.where(isNull(featureToggles.companyId));
       }
       
       const result = await query.limit(1);
@@ -148,7 +148,7 @@ export class FeatureToggleService {
         query = query.where(eq(featureToggles.companyId, companyId));
       } else {
         // For global features, company ID should be null
-        query = query.where(eq(featureToggles.companyId, null));
+        query = query.where(isNull(featureToggles.companyId));
       }
       
       return await query;

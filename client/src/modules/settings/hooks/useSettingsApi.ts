@@ -85,9 +85,9 @@ export const useSettingsApi = () => {
     });
 
   // Module Settings
-  const useModuleSettings = (moduleId: string) => 
+  const useModuleSettings = (moduleId: string, companyId?: string) => 
     useQuery<GlobalSetting[]>({
-      queryKey: ['/api/settings/module', moduleId],
+      queryKey: ['/api/settings/module', moduleId, companyId],
       enabled: !!moduleId,
     });
 
