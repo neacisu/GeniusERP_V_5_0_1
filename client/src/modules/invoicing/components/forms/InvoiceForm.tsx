@@ -262,14 +262,22 @@ export function InvoiceForm({ defaultValues, onSubmit, isSubmitting = false }: I
       paymentMethod: values.paymentMethod,
       paymentDetails: values.paymentDetails,
       notes: values.notes,
-      items: values.items.map((item) => ({
+      items: values.items.map((item, index) => ({
+        id: `temp-${index}`,
+        invoiceId: '', // Will be set by backend
         productName: item.productName,
         productCode: item.productCode,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
+        netAmount: item.quantity * item.unitPrice,
         vatRate: item.vatRate,
+        vatAmount: (item.quantity * item.unitPrice * item.vatRate) / 100,
+        grossAmount: item.quantity * item.unitPrice * (1 + item.vatRate / 100),
         discount: item.discount,
+        sequence: index + 1,
         notes: item.notes,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       })),
     };
 

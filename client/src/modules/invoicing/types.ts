@@ -256,6 +256,7 @@ export interface RecurringInvoice {
 export interface InvoiceFilters {
   status?: InvoiceStatus | string;
   customer?: string;
+  customerId?: string;
   dateFrom?: string;
   dateTo?: string;
   minAmount?: number;

@@ -118,10 +118,9 @@ const InvoicesPage: React.FC = () => {
     let status = "";
     switch (tabId) {
       case "draft": status = InvoiceStatus.DRAFT; break;
-      case "pending": status = InvoiceStatus.PENDING; break;
-      case "validated": status = InvoiceStatus.VALIDATED; break;
+      case "issued": status = InvoiceStatus.ISSUED; break;
+      case "sent": status = InvoiceStatus.SENT; break;
       case "paid": status = InvoiceStatus.PAID; break;
-      case "overdue": status = InvoiceStatus.OVERDUE; break;
       // "all" tab doesn't filter by status
     }
     
@@ -437,7 +436,7 @@ const InvoicesPage: React.FC = () => {
                               </DropdownMenuItem>
                             )}
                             
-                            {invoice.status === InvoiceStatus.VALIDATED && (
+                            {invoice.status === InvoiceStatus.ISSUED && (
                               <DropdownMenuItem 
                                 onClick={() => handleCancelInvoice(invoice.id)}
                                 disabled={cancelInvoice.isPending}
@@ -491,7 +490,7 @@ const InvoicesPage: React.FC = () => {
                   <PaginationItem>
                     <PaginationPrevious 
                       onClick={() => handlePageChange(page - 1)}
-                      disabled={page === 1 || isLoading}
+                      className={page === 1 || isLoading ? 'pointer-events-none opacity-50' : ''}
                     />
                   </PaginationItem>
                   
@@ -528,7 +527,7 @@ const InvoicesPage: React.FC = () => {
                   <PaginationItem>
                     <PaginationNext 
                       onClick={() => handlePageChange(page + 1)}
-                      disabled={page === totalPages || isLoading}
+                      className={page === totalPages || isLoading ? 'pointer-events-none opacity-50' : ''}
                     />
                   </PaginationItem>
                 </PaginationContent>

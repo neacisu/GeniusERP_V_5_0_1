@@ -38,13 +38,19 @@ export function NewInvoiceDialog({ onSuccess, trigger }: NewInvoiceDialogProps) 
     items: [
       {
         id: nanoid(),
+        invoiceId: '',
         productName: 'Produs/Serviciu',
         productCode: '',
         quantity: 1,
         unitPrice: 0,
+        netAmount: 0,
         vatRate: 19,
+        vatAmount: 0,
+        grossAmount: 0,
         discount: 0,
-        unit: 'buc'
+        sequence: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     ]
   };

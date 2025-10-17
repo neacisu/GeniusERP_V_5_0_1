@@ -62,7 +62,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface InvoiceNumberingFormProps {
   setting?: InvoiceNumberingSetting;
-  onSubmit: (values: FormValues) => void;
+  onSubmit: (values: z.infer<typeof formSchema>) => void;
   onCancel: () => void;
   warehouses?: Array<{ id: string; name: string }>;
   franchises?: Array<{ id: string; name: string }>;

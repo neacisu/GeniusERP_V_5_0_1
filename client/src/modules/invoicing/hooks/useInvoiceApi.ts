@@ -88,8 +88,7 @@ export function useInvoices(filters: InvoiceFilters = {}) {
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           vatRate: item.vatRate,
-          discount: item.discount || 0,
-          unit: item.unit || "buc"
+          discount: item.discount || 0
         }))
       };
       
@@ -368,10 +367,9 @@ export function useInvoiceExport() {
     mutationFn: async (id: string) => {
       const response = await apiRequest({
         url: `/api/invoices/${id}/export`,
-        method: "GET",
-        responseType: "blob"
+        method: "GET"
       });
-      return response as Blob;
+      return response;
     },
     onSuccess: (data, id) => {
       // Create a blob URL and trigger download

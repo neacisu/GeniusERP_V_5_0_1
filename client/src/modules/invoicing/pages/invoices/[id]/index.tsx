@@ -130,9 +130,8 @@ export default function InvoiceDetailPage() {
   const downloadPdfMutation = useMutation({
     mutationFn: async () => {
       return apiRequest(`/api/invoicing/invoices/${invoiceId}/pdf`, {
-        method: 'GET',
-        responseType: 'blob',
-      });
+        method: 'GET'
+      }) as Promise<Blob>;
     },
     onSuccess: (response) => {
       // Create a blob from the response data
@@ -246,7 +245,7 @@ export default function InvoiceDetailPage() {
 
   // Determine which action buttons to show based on invoice status
   const showValidateButton = invoice.status === InvoiceStatus.DRAFT;
-  const showPayButton = [InvoiceStatus.VALIDATED, InvoiceStatus.PENDING, InvoiceStatus.OVERDUE].includes(invoice.status as InvoiceStatus);
+  const showPayButton = [InvoiceStatus.ISSUED, InvoiceStatus.SENT].includes(invoice.status as InvoiceStatus);
   const showCancelButton = ![InvoiceStatus.PAID, InvoiceStatus.CANCELED].includes(invoice.status as InvoiceStatus);
 
   return (
@@ -385,7 +384,7 @@ export default function InvoiceDetailPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="text-sm text-muted-foreground">Data scadenței</div>
-                    <div className="text-sm font-medium text-right">{formatDate(new Date(invoice.dueDate))}</div>
+                    <div className="text-sm font-medium text-right">{invoice.dueDate ? formatDate(new Date(invoice.dueDate)) : 'N/A'}</div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="text-sm text-muted-foreground">Metoda de plată</div>
@@ -434,7 +433,7 @@ export default function InvoiceDetailPage() {
                       </div>
                     </>
                   )}
-                  {invoice.status === InvoiceStatus.OVERDUE && (
+                  {invoice.dueDate && new Date(invoice.dueDate) < new Date() && invoice.status === InvoiceStatus.SENT && (
                     <div className="grid grid-cols-2 gap-2">
                       <div className="text-sm text-muted-foreground">Zile întârziere</div>
                       <div className="text-sm font-medium text-right text-red-600">
@@ -442,11 +441,11 @@ export default function InvoiceDetailPage() {
                       </div>
                     </div>
                   )}
-                  {invoice.status === InvoiceStatus.PENDING && (
+                  {invoice.status === InvoiceStatus.DRAFT && (
                     <div className="grid grid-cols-2 gap-2">
                       <div className="text-sm text-muted-foreground">Zile până la scadență</div>
                       <div className="text-sm font-medium text-right text-amber-600">
-                        {Math.max(0, Math.floor((new Date(invoice.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))} zile
+                        {invoice.dueDate ? Math.max(0, Math.floor((new Date(invoice.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) : 0} zile
                       </div>
                     </div>
                   )}
@@ -461,16 +460,16 @@ export default function InvoiceDetailPage() {
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-2">
                     <div className="text-sm text-muted-foreground">Subtotal</div>
-                    <div className="text-sm font-medium text-right">{formatCurrency(invoice.netTotal)}</div>
+                    <div className="text-sm font-medium text-right">{formatCurrency(invoice.netTotal || invoice.netAmount || 0)}</div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="text-sm text-muted-foreground">TVA ({invoice.vatRate}%)</div>
-                    <div className="text-sm font-medium text-right">{formatCurrency(invoice.vatTotal)}</div>
+                    <div className="text-sm font-medium text-right">{formatCurrency(invoice.vatTotal || invoice.vatAmount || 0)}</div>
                   </div>
                   <Separator className="my-2" />
                   <div className="grid grid-cols-2 gap-2">
                     <div className="font-medium">Total</div>
-                    <div className="font-bold text-right">{formatCurrency(invoice.grossTotal)}</div>
+                    <div className="font-bold text-right">{formatCurrency(invoice.grossTotal || invoice.amount || invoice.totalAmount || 0)}</div>
                   </div>
                 </div>
               </CardContent>
@@ -542,9 +541,9 @@ export default function InvoiceDetailPage() {
                     <tfoot>
                       <tr className="border-t">
                         <td colSpan={5} className="px-4 py-2 text-right font-medium">Total:</td>
-                        <td className="px-4 py-2 text-right">{formatCurrency(invoice.netTotal)}</td>
-                        <td className="px-4 py-2 text-right">{formatCurrency(invoice.vatTotal)}</td>
-                        <td className="px-4 py-2 text-right font-bold">{formatCurrency(invoice.grossTotal)}</td>
+                        <td className="px-4 py-2 text-right">{formatCurrency(invoice.netTotal || invoice.netAmount || 0)}</td>
+                        <td className="px-4 py-2 text-right">{formatCurrency(invoice.vatTotal || invoice.vatAmount || 0)}</td>
+                        <td className="px-4 py-2 text-right font-bold">{formatCurrency(invoice.grossTotal || invoice.amount || invoice.totalAmount || 0)}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -560,7 +559,7 @@ export default function InvoiceDetailPage() {
             <CardContent className="pt-6">
               <h3 className="text-lg font-medium mb-4">Înregistrări contabile</h3>
               
-              {invoice.status !== InvoiceStatus.VALIDATED && invoice.status !== InvoiceStatus.PAID ? (
+              {invoice.status !== InvoiceStatus.ISSUED && invoice.status !== InvoiceStatus.PAID ? (
                 <div className="text-center py-10 text-muted-foreground">
                   Înregistrările contabile vor fi disponibile după validarea facturii.
                 </div>
@@ -584,7 +583,7 @@ export default function InvoiceDetailPage() {
                       <tr className="border-b">
                         <td className="px-4 py-2">4111</td>
                         <td className="px-4 py-2">Clienți</td>
-                        <td className="px-4 py-2 text-right">{formatCurrency(invoice.grossTotal)}</td>
+                        <td className="px-4 py-2 text-right">{formatCurrency(invoice.grossTotal || invoice.amount || invoice.totalAmount || 0)}</td>
                         <td className="px-4 py-2 text-right">-</td>
                         <td className="px-4 py-2">Factura nr. {invoice.invoiceNumber}</td>
                       </tr>
@@ -592,14 +591,14 @@ export default function InvoiceDetailPage() {
                         <td className="px-4 py-2">707</td>
                         <td className="px-4 py-2">Venituri din vânzarea mărfurilor</td>
                         <td className="px-4 py-2 text-right">-</td>
-                        <td className="px-4 py-2 text-right">{formatCurrency(invoice.netTotal)}</td>
+                        <td className="px-4 py-2 text-right">{formatCurrency(invoice.netTotal || invoice.netAmount || 0)}</td>
                         <td className="px-4 py-2">Factura nr. {invoice.invoiceNumber}</td>
                       </tr>
                       <tr className="border-b">
                         <td className="px-4 py-2">4427</td>
                         <td className="px-4 py-2">TVA colectată</td>
                         <td className="px-4 py-2 text-right">-</td>
-                        <td className="px-4 py-2 text-right">{formatCurrency(invoice.vatTotal)}</td>
+                        <td className="px-4 py-2 text-right">{formatCurrency(invoice.vatTotal || invoice.vatAmount || 0)}</td>
                         <td className="px-4 py-2">Factura nr. {invoice.invoiceNumber}</td>
                       </tr>
                       {invoice.status === InvoiceStatus.PAID && (
@@ -607,7 +606,7 @@ export default function InvoiceDetailPage() {
                           <tr className="border-b">
                             <td className="px-4 py-2">5121</td>
                             <td className="px-4 py-2">Conturi la bănci în lei</td>
-                            <td className="px-4 py-2 text-right">{formatCurrency(invoice.grossTotal)}</td>
+                            <td className="px-4 py-2 text-right">{formatCurrency(invoice.grossTotal || invoice.amount || invoice.totalAmount || 0)}</td>
                             <td className="px-4 py-2 text-right">-</td>
                             <td className="px-4 py-2">Încasare factura nr. {invoice.invoiceNumber}</td>
                           </tr>
@@ -615,7 +614,7 @@ export default function InvoiceDetailPage() {
                             <td className="px-4 py-2">4111</td>
                             <td className="px-4 py-2">Clienți</td>
                             <td className="px-4 py-2 text-right">-</td>
-                            <td className="px-4 py-2 text-right">{formatCurrency(invoice.grossTotal)}</td>
+                            <td className="px-4 py-2 text-right">{formatCurrency(invoice.grossTotal || invoice.amount || invoice.totalAmount || 0)}</td>
                             <td className="px-4 py-2">Încasare factura nr. {invoice.invoiceNumber}</td>
                           </tr>
                         </>

@@ -165,6 +165,6 @@ const formSchema = z.object({
     .optional(),
   warehouseId: z.string().uuid("ID depozit invalid").optional().nullable(),
   franchiseId: z.string().uuid("ID franciză invalid").optional().nullable(),
-  isDefault: z.boolean().default(false),
-  isActive: z.boolean().default(true),
+  isDefault: z.boolean().optional(),
+  isActive: z.boolean().optional(),
 });

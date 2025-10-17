@@ -70,7 +70,7 @@ export function useInvoiceNumberingApi() {
         toast({
           title: 'Serie adăugată',
           description: 'Seria de facturi a fost adăugată cu succes',
-          variant: "success"
+          variant: "default"
         });
       },
       onError: (error: any) => {
@@ -104,13 +104,13 @@ export function useInvoiceNumberingApi() {
           toast({
             title: 'Serie implicită actualizată',
             description: 'Seria de facturi a fost setată ca implicită',
-            variant: "success"
+            variant: "default"
           });
         } else {
           toast({
             title: 'Serie actualizată',
             description: 'Seria de facturi a fost actualizată cu succes',
-            variant: "success"
+            variant: "default"
           });
         }
       },
@@ -141,7 +141,7 @@ export function useInvoiceNumberingApi() {
         toast({
           title: 'Serie ștearsă',
           description: 'Seria de facturi a fost ștearsă cu succes',
-          variant: "success"
+          variant: "default"
         });
       },
       onError: (error: any) => {
