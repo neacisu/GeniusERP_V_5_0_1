@@ -328,6 +328,9 @@ export class PredictiveService {
       console.log(`Creating predictive scenario: ${scenario.name} for model ${scenario.modelId}`);
       
       // Verify model exists
+      if (!scenario.modelId) {
+        throw new Error('Model ID is required for scenario creation');
+      }
       const model = await this.getModelById(scenario.modelId);
       
       const [createdScenario] = await this.drizzleService.getDbInstance().insert(analyticsScenarios).values({
@@ -374,6 +377,9 @@ export class PredictiveService {
         .where(eq(analyticsScenarios.id, scenarioId));
       
       // Get the associated model
+      if (!scenario.modelId) {
+        throw new Error('Scenario has no associated model');
+      }
       const model = await this.getModelById(scenario.modelId);
       
       // Run the appropriate prediction based on model type
@@ -619,7 +625,7 @@ export class PredictiveService {
     const includeChannels = inputs.includeChannels || true;
     
     // Generate date series (months)
-    const dates = [];
+    const dates: string[] = [];
     const currentDate = new Date();
     for (let i = 0; i < months; i++) {
       const date = new Date(currentDate);
@@ -865,7 +871,7 @@ export class PredictiveService {
     const months = inputs.months || 12;
     
     // Generate date series (months)
-    const dates = [];
+    const dates: string[] = [];
     const currentDate = new Date();
     for (let i = 0; i < months; i++) {
       const date = new Date(currentDate);
@@ -918,7 +924,7 @@ export class PredictiveService {
     
     // Determine severity of risk
     let severity: 'low' | 'medium' | 'high' = 'low';
-    if (shortfallDate) {
+    if (shortfallDate && shortfallAmount !== null) {
       severity = shortfallAmount > 100000 ? 'high' : 'medium';
     } else {
       // Check if we came close to a shortfall
@@ -935,12 +941,12 @@ export class PredictiveService {
       recommendations.push({
         recommendation: 'Secure short-term financing immediately',
         impact: 'Address critical cash shortfall',
-        urgency: 'high' as const
+        urgency: 'high'
       });
       recommendations.push({
         recommendation: 'Accelerate accounts receivable collection',
         impact: 'Improve short-term cash position',
-        urgency: 'high' as const
+        urgency: 'high'
       });
     }
     
@@ -948,19 +954,19 @@ export class PredictiveService {
       recommendations.push({
         recommendation: 'Negotiate extended payment terms with key suppliers',
         impact: 'Reduce immediate cash outflows',
-        urgency: (severity === 'high' ? 'high' : 'medium') as const
+        urgency: severity === 'high' ? 'high' : 'medium'
       });
       recommendations.push({
         recommendation: 'Review and potentially delay non-essential capital expenditures',
         impact: 'Preserve cash for critical operations',
-        urgency: (severity === 'high' ? 'high' : 'medium') as const
+        urgency: severity === 'high' ? 'high' : 'medium'
       });
     }
     
     recommendations.push({
       recommendation: 'Establish/review cash reserve policy',
       impact: 'Build resilience against future shortfalls',
-      urgency: (severity === 'low' ? 'low' : 'medium') as const
+      urgency: severity === 'low' ? 'low' : 'medium'
     });
     
     // Construct final result
@@ -1022,7 +1028,7 @@ export class PredictiveService {
     const includeConfidenceIntervals = inputs.includeConfidenceIntervals !== false;
     
     // Generate date series
-    const dates = [];
+    const dates: string[] = [];
     const currentDate = new Date();
     for (let i = 0; i < periods; i++) {
       const date = new Date(currentDate);

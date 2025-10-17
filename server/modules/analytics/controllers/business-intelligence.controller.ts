@@ -94,7 +94,6 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         const periodEnd = req.query.periodEnd as string;
         
         // TODO: Implement KPI functionality
-        const kpis = undefined;
         throw new Error('KPI functionality not yet implemented');
       } catch (error) {
         logger.error('Error fetching KPIs:', error);
@@ -127,8 +126,6 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         
         // TODO: Implement KPI functionality
         throw new Error('KPI creation not yet implemented');
-        
-        return res.status(201).json({ kpi });
       } catch (error) {
         logger.error('Error creating KPI:', error);
         return res.status(500).json({ 
@@ -157,8 +154,6 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         
         // TODO: Implement OLAP functionality
         throw new Error('OLAP dimensions not yet implemented');
-        
-        return res.status(200).json({ dimensions });
       } catch (error) {
         logger.error('Error fetching OLAP dimensions:', error);
         return res.status(500).json({ 
@@ -187,8 +182,6 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         
         // TODO: Implement OLAP functionality
         throw new Error('OLAP measures not yet implemented');
-        
-        return res.status(200).json({ measures });
       } catch (error) {
         logger.error('Error fetching OLAP measures:', error);
         return res.status(500).json({ 
@@ -217,8 +210,6 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         
         // TODO: Implement OLAP functionality
         throw new Error('OLAP query execution not yet implemented');
-        
-        return res.status(200).json({ results });
       } catch (error) {
         logger.error('Error executing OLAP query:', error);
         return res.status(500).json({ 
@@ -247,8 +238,6 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         
         // TODO: Implement ETL functionality
         throw new Error('ETL jobs not yet implemented');
-        
-        return res.status(200).json({ jobs });
       } catch (error) {
         logger.error('Error fetching ETL jobs:', error);
         return res.status(500).json({ 
@@ -280,8 +269,6 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         
         // TODO: Implement ETL functionality
         throw new Error('ETL job creation not yet implemented');
-        
-        return res.status(201).json({ job });
       } catch (error) {
         logger.error('Error creating ETL job:', error);
         return res.status(500).json({ 
@@ -310,8 +297,6 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         
         // TODO: Implement dataset functionality
         throw new Error('Dataset retrieval not yet implemented');
-        
-        return res.status(200).json({ datasets });
       } catch (error) {
         logger.error('Error fetching datasets:', error);
         return res.status(500).json({ 
@@ -343,8 +328,6 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
         
         // TODO: Implement dataset functionality
         throw new Error('Dataset creation not yet implemented');
-        
-        return res.status(201).json({ dataset });
       } catch (error) {
         logger.error('Error creating dataset:', error);
         return res.status(500).json({ 
