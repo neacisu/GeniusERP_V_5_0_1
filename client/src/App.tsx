@@ -34,7 +34,7 @@ import InvoicingModule from "@/modules/invoicing";
 import MarketingModule from "@/modules/marketing";
 import SettingsModule from "@/modules/settings";
 import SalesModule from "@/modules/sales";
-// CollabModule is lazy loaded
+import CollabModule from "@/modules/collab";
 // Import Settings Module pages directly
 // SystemGeneralPage, SystemIndexPage, ModuleSettingsPage - unused, removed
 import { AuthProvider } from "@/hooks/use-auth";
@@ -217,33 +217,9 @@ function Router() {
       <ProtectedRoute path="/crm/*" component={CRMModule} />
       <ProtectedRoute path="/crm" component={CRMModule} />
 
-      {/* Collaboration Module Routes - Important pentru rutele specifice */}
-      <ProtectedRoute
-        path="/collab/*"
-        component={() => {
-          const CollabModuleLazy = React.lazy(() => import("@/modules/collab"));
-          return (
-            <React.Suspense
-              fallback={<div>Se încarcă modulul de Colaborare...</div>}
-            >
-              <CollabModuleLazy />
-            </React.Suspense>
-          );
-        }}
-      />
-      <ProtectedRoute
-        path="/collab"
-        component={() => {
-          const CollabModuleLazy = React.lazy(() => import("@/modules/collab"));
-          return (
-            <React.Suspense
-              fallback={<div>Se încarcă modulul de Colaborare...</div>}
-            >
-              <CollabModuleLazy />
-            </React.Suspense>
-          );
-        }}
-      />
+      {/* Collaboration Module Routes - Import direct pentru încărcare rapidă */}
+      <ProtectedRoute path="/collab/*" component={CollabModule} />
+      <ProtectedRoute path="/collab" component={CollabModule} />
 
       {/* E-commerce Module Routes */}
       <ProtectedRoute path="/ecommerce/*" component={EcommerceModule} />
