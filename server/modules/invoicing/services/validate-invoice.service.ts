@@ -7,7 +7,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 import { invoices } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { invoiceItems } from '../schema/invoice.schema';
+import { eq, and } from 'drizzle-orm';
 import { JournalService } from '../../accounting/services/journal.service';
 import { SalesJournalService } from '../../accounting/services/sales-journal.service';
 import { AuditService, AuditAction } from '../../audit/services/audit.service';
@@ -84,25 +85,32 @@ export class ValidateInvoiceService {
       throw new Error('User ID is required');
     }
     
-    // Get invoice data using base query method
-    const query = `
-      SELECT * FROM invoices 
-      WHERE id = $1 AND is_validated = false
-      LIMIT 1
-    `;
-    const results = await this.drizzle.base.executeQuery(query, [invoiceId]);
+    // Get invoice data using Drizzle ORM
+    const invoiceResult = await this.drizzle.query(async (db) => {
+      return await db
+        .select()
+        .from(invoices)
+        .where(and(
+          eq(invoices.id, invoiceId),
+          eq(invoices.isValidated, false)
+        ))
+        .limit(1);
+    });
     
-    if (!results || results.length === 0) {
+    if (!invoiceResult || invoiceResult.length === 0) {
       throw new Error(`Invoice with ID ${invoiceId} not found or already validated`);
     }
     
-    const invoiceData = results[0] as any;
+    const invoiceData: any = invoiceResult[0];
     
-    // Get invoice items
-    const itemsQuery = `
-      SELECT * FROM invoice_items WHERE invoice_id = $1
-    `;
-    const items = await this.drizzle.base.executeQuery(itemsQuery, [invoiceId]);
+    // Get invoice items using Drizzle ORM
+    const items = await this.drizzle.query(async (db) => {
+      return await db
+        .select()
+        .from(invoiceItems)
+        .where(eq(invoiceItems.invoiceId, invoiceId));
+    });
+    
     invoiceData.items = items;
     
     // Validate invoice data structure
@@ -136,24 +144,21 @@ export class ValidateInvoiceService {
         description: `Sales invoice ${invoiceData.invoiceNumber} to ${invoiceData.customer?.name || 'customer'}`
       });
       
-      // Update invoice validation status
+      // Update invoice validation status using Drizzle ORM
       const now = new Date();
       
-      const updateQuery = `
-        UPDATE invoices
-        SET is_validated = true,
-            validated_at = $1,
-            validated_by = $2,
-            ledger_entry_id = $3,
-            updated_at = NOW()
-        WHERE id = $4
-      `;
-      await this.drizzle.base.executeQuery(updateQuery, [
-        now,
-        userId,
-        ledgerEntryData.id,
-        invoiceId
-      ]);
+      await this.drizzle.query(async (db) => {
+        return await db
+          .update(invoices)
+          .set({
+            isValidated: true,
+            validatedAt: now,
+            validatedBy: userId,
+            ledgerEntryId: ledgerEntryData.id,
+            updatedAt: now
+          })
+          .where(eq(invoices.id, invoiceId));
+      });
       
       // Log audit event
       await AuditService.log({

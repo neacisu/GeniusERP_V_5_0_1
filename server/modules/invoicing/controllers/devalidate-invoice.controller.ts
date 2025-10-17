@@ -93,16 +93,22 @@ export class DevalidateInvoiceController {
         return;
       }
       
-      // Check if the invoice can be devalidated from DB directly
-      const query = `
-        SELECT is_validated, ledger_entry_id 
-        FROM invoices 
-        WHERE id = $1 AND company_id = $2
-        LIMIT 1
-      `;
-      
+      // Check if the invoice can be devalidated using Drizzle ORM
       const drizzle = new (await import('../../../common/drizzle/drizzle.service')).DrizzleService();
-      const results = await drizzle.base.executeQuery(query, [invoiceId, companyId]);
+      
+      const results = await drizzle.query(async (db) => {
+        return await db
+          .select({
+            isValidated: invoices.isValidated,
+            ledgerEntryId: invoices.ledgerEntryId
+          })
+          .from(invoices)
+          .where(and(
+            eq(invoices.id, invoiceId),
+            eq(invoices.companyId, companyId as string)
+          ))
+          .limit(1);
+      });
       
       if (!results || results.length === 0) {
         res.status(404).json({ canDevalidate: false, message: 'Invoice not found' });
@@ -111,8 +117,8 @@ export class DevalidateInvoiceController {
       
       const invoice = results[0];
       const canDevalidate = {
-        canDevalidate: invoice.is_validated && !!invoice.ledger_entry_id,
-        message: invoice.is_validated ? 'Invoice can be devalidated' : 'Invoice is not validated'
+        canDevalidate: invoice.isValidated && !!invoice.ledgerEntryId,
+        message: invoice.isValidated ? 'Invoice can be devalidated' : 'Invoice is not validated'
       };
       
       this.logger.debug(`Devalidation check for invoice ${invoiceId}: ${canDevalidate.canDevalidate}`);
@@ -138,18 +144,23 @@ export class DevalidateInvoiceController {
         return;
       }
       
-      // Get the devalidation history from audit logs
-      const query = `
-        SELECT * FROM audit_logs
-        WHERE entity = 'invoice' 
-          AND entity_id = $1 
-          AND action = 'DEVALIDATE'
-        ORDER BY created_at DESC
-        LIMIT 10
-      `;
-      
+      // Get the devalidation history from audit logs using Drizzle ORM
       const drizzle = new (await import('../../../common/drizzle/drizzle.service')).DrizzleService();
-      const history = await drizzle.base.executeQuery(query, [invoiceId]);
+      const { auditLogs } = await import('@shared/schema');
+      const { desc } = await import('drizzle-orm');
+      
+      const history = await drizzle.query(async (db) => {
+        return await db
+          .select()
+          .from(auditLogs)
+          .where(and(
+            eq(auditLogs.entity, 'invoice'),
+            eq(auditLogs.entityId, invoiceId),
+            eq(auditLogs.action, 'DEVALIDATE')
+          ))
+          .orderBy(desc(auditLogs.createdAt))
+          .limit(10);
+      });
       
       this.logger.debug(`Retrieved devalidation history for invoice ${invoiceId}`);
       res.json({ history: history || [] });

@@ -49,27 +49,31 @@ export class CustomerController {
       this.logger.debug(`Getting invoicing customers for company ${companyId}`);
       this.logger.debug(`Token info: userPresent=${!!req.user}, companyIdFormat=${typeof companyId}, hasAuth=${!!req.headers.authorization}`);
       
-      // Query companies marked as clients for the current company
-      const query = sql`
-        SELECT 
-          id, 
-          name, 
-          vat_number AS "fiscalCode",
-          registration_number AS "registrationNumber",
-          address,
-          city,
-          postal_code AS county,
-          country,
-          email,
-          phone
-        FROM crm_companies 
-        WHERE company_id = ${companyId}
-        AND is_customer = true
-      `;
+      // Query companies marked as clients using Drizzle ORM
+      this.logger.debug(`Getting customers for company ID: ${companyId}`);
       
-      // Utilizăm direct drizzle.executeQuery care a fost actualizat pentru a accepta obiecte SQL
-      this.logger.debug(`Executing query for company ID: ${companyId}`);
-      const customers = await this.drizzle.executeQuery(query);
+      const { crmCompanies } = await import('../../../server/modules/crm/schema/crm.schema');
+      
+      const customers = await this.drizzle.query(async (db) => {
+        return await db
+          .select({
+            id: crmCompanies.id,
+            name: crmCompanies.name,
+            fiscalCode: crmCompanies.vatNumber,
+            registrationNumber: crmCompanies.registrationNumber,
+            address: crmCompanies.address,
+            city: crmCompanies.city,
+            county: crmCompanies.postalCode,
+            country: crmCompanies.country,
+            email: crmCompanies.email,
+            phone: crmCompanies.phone
+          })
+          .from(crmCompanies)
+          .where(and(
+            eq(crmCompanies.companyId, companyId as string),
+            eq(crmCompanies.isCustomer, true)
+          ));
+      });
       
       this.logger.debug(`Found ${customers.length} customers for invoicing`);
       if (customers.length > 0) {

@@ -6,7 +6,7 @@
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 import { invoices } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
 import { JournalService } from '../../accounting/services/journal.service';
 import { AuditService, AuditAction } from '../../audit/services/audit.service';
 
@@ -50,28 +50,23 @@ export class DevalidateInvoiceService {
       throw new Error('Devalidation reason is required');
     }
     
-    // Get invoice data using base query method
-    const query = `
-      SELECT * FROM invoices 
-      WHERE id = $1 AND is_validated = true
-      LIMIT 1
-    `;
-    const results = await this.drizzle.base.executeQuery(query, [invoiceId]);
+    // Get invoice data using Drizzle ORM
+    const invoiceResult = await this.drizzle.query(async (db) => {
+      return await db
+        .select()
+        .from(invoices)
+        .where(and(
+          eq(invoices.id, invoiceId),
+          eq(invoices.isValidated, true)
+        ))
+        .limit(1);
+    });
     
-    if (!results || results.length === 0) {
+    if (!invoiceResult || invoiceResult.length === 0) {
       throw new Error(`Invoice with ID ${invoiceId} not found or not validated`);
     }
     
-    const invoiceData = results[0] as any;
-    
-    if (!invoiceData) {
-      throw new Error(`Invoice with ID ${invoiceId} not found`);
-    }
-    
-    // Check if invoice is validated
-    if (!invoiceData.isValidated) {
-      throw new Error(`Invoice with ID ${invoiceId} is not validated`);
-    }
+    const invoiceData = invoiceResult[0];
     
     // Check if there's a ledger entry to revert
     if (!invoiceData.ledgerEntryId) {
@@ -88,19 +83,21 @@ export class DevalidateInvoiceService {
         `Reversed due to invoice devalidation: ${reason}`
       );
       
-      // Update invoice validation status using raw SQL
+      // Update invoice validation status using Drizzle ORM
       const now = new Date();
       
-      const updateQuery = `
-        UPDATE invoices
-        SET is_validated = false,
-            validated_at = NULL,
-            validated_by = NULL,
-            ledger_entry_id = NULL,
-            updated_at = NOW()
-        WHERE id = $1
-      `;
-      await this.drizzle.base.executeQuery(updateQuery, [invoiceId]);
+      await this.drizzle.query(async (db) => {
+        return await db
+          .update(invoices)
+          .set({
+            isValidated: false,
+            validatedAt: null,
+            validatedBy: null,
+            ledgerEntryId: null,
+            updatedAt: now
+          })
+          .where(eq(invoices.id, invoiceId));
+      });
       
       // Log audit event
       await AuditService.log({

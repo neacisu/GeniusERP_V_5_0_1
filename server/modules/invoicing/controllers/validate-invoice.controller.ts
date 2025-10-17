@@ -163,16 +163,24 @@ export class ValidateInvoiceController {
         return;
       }
       
-      // Get the validation status from DB directly
-      const query = `
-        SELECT is_validated, validated_at, validated_by, ledger_entry_id
-        FROM invoices
-        WHERE id = $1 AND company_id = $2
-        LIMIT 1
-      `;
-      
+      // Get the validation status using Drizzle ORM
       const drizzle = new (await import('../../../common/drizzle/drizzle.service')).DrizzleService();
-      const results = await drizzle.base.executeQuery(query, [invoiceId, companyId]);
+      
+      const results = await drizzle.query(async (db) => {
+        return await db
+          .select({
+            isValidated: invoices.isValidated,
+            validatedAt: invoices.validatedAt,
+            validatedBy: invoices.validatedBy,
+            ledgerEntryId: invoices.ledgerEntryId
+          })
+          .from(invoices)
+          .where(and(
+            eq(invoices.id, invoiceId),
+            eq(invoices.companyId, companyId as string)
+          ))
+          .limit(1);
+      });
       
       if (!results || results.length === 0) {
         res.status(404).json({ message: 'Invoice not found' });
@@ -203,16 +211,19 @@ export class ValidateInvoiceController {
         return;
       }
       
-      // Get invoice data for preview
-      const query = `
-        SELECT i.*, d.* FROM invoices i
-        LEFT JOIN invoice_details d ON i.id = d.invoice_id
-        WHERE i.id = $1 AND i.company_id = $2
-        LIMIT 1
-      `;
-      
+      // Get invoice data for preview using Drizzle ORM
       const drizzle = new (await import('../../../common/drizzle/drizzle.service')).DrizzleService();
-      const results = await drizzle.base.executeQuery(query, [invoiceId, companyId]);
+      
+      const results = await drizzle.query(async (db) => {
+        return await db
+          .select()
+          .from(invoices)
+          .where(and(
+            eq(invoices.id, invoiceId),
+            eq(invoices.companyId, companyId as string)
+          ))
+          .limit(1);
+      });
       
       if (!results || results.length === 0) {
         res.status(404).json({ message: 'Invoice not found' });
@@ -224,8 +235,8 @@ export class ValidateInvoiceController {
       const preview = {
         debitAccount: '4111', // Client account
         creditAccount: '7071', // Sales revenue
-        amount: invoice.total_amount || invoice.amount,
-        description: `Sales invoice ${invoice.invoice_number}`
+        amount: Number(invoice.totalAmount || invoice.amount),
+        description: `Sales invoice ${invoice.invoiceNumber}`
       };
       
       this.logger.debug(`Generated accounting entries preview for invoice ${invoiceId}`);
