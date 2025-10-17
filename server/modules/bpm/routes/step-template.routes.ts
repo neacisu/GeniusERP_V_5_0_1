@@ -18,7 +18,8 @@ export const initStepTemplateRoutes = (app: any, db: any) => {
   const stepTemplateController = new StepTemplateController(stepTemplateService, auditService);
 
   // Apply authentication middleware to all routes
-  router.use(AuthGuard.requireAuth());
+  const authGuard = new AuthGuard();
+  router.use(authGuard.requireAuth());
 
   // Get all step templates for a company
   router.get('/', (req, res) => stepTemplateController.getStepTemplates(req, res));

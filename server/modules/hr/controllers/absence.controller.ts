@@ -71,6 +71,9 @@ export class AbsenceController {
       }
       
       const user = req.user as JwtUserData;
+      if (!user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
       const result = await this.absenceService.requestAbsence(
         employeeId,
         user.companyId,
@@ -99,6 +102,9 @@ export class AbsenceController {
       const year = req.query.year ? parseInt(req.query.year as string) : undefined;
       
       const user = req.user as JwtUserData;
+      if (!user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
       const absences = await this.absenceService.getEmployeeAbsences(
         user.companyId,
         employeeId,
@@ -171,6 +177,9 @@ export class AbsenceController {
   async getPendingAbsences(req: Request, res: Response) {
     try {
       const user = req.user as JwtUserData;
+      if (!user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
       // Get all absences with status 'requested' (pending)
       const pendingAbsences = await this.absenceService.getEmployeeAbsences(
         user.companyId,

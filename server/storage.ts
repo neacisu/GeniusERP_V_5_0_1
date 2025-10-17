@@ -1,8 +1,9 @@
 import { companies, users, accounts, accountClasses, accountGroups, syntheticAccounts, analyticAccounts, 
   inventoryProducts, inventoryCategories, inventoryUnits, 
   roles, permissions, userRoles, rolePermissions, auditLogs,
-  invoices, invoiceLines, invoiceDetails, invoiceStatus,
+  invoices, invoiceDetails, invoiceStatus,
   journalEntries, journalLines } from "@shared/schema";
+import { invoiceItems, type InvoiceItem, type InsertInvoiceItem } from "@/modules/invoicing/schema/invoice.schema";
 import type { User, InsertUser, Company, InsertCompany, 
   Account, InsertAccount, AccountClass, InsertAccountClass, 
   AccountGroup, InsertAccountGroup, SyntheticAccount, InsertSyntheticAccount,
@@ -12,8 +13,8 @@ import type { User, InsertUser, Company, InsertCompany,
   InventoryStockMovement, InsertInventoryStockMovement,
   Role, Permission, UserRole, RolePermission,
   AuditLog, InsertAuditLog, InsertRole, InsertPermission,
-  Invoice, InvoiceLine, InvoiceDetail, 
-  InsertInvoice, InsertInvoiceLine, InsertInvoiceDetail } from "@shared/schema";
+  Invoice, InvoiceDetail, 
+  InsertInvoice, InsertInvoiceDetail } from "@shared/schema";
   
 // Import insert schemas directly
 import { insertRoleSchema, insertPermissionSchema, insertUserRoleSchema, insertRolePermissionSchema } from "@shared/schema";
@@ -154,7 +155,7 @@ export interface IStorage {
   }): Promise<Invoice[]>;
   getInvoice(id: string): Promise<Invoice | undefined>;
   getInvoiceBySeriesAndNumber(series: string, number: number): Promise<Invoice | undefined>;
-  createInvoice(invoice: InsertInvoice, details: InsertInvoiceDetail, lines: InsertInvoiceLine[]): Promise<Invoice>;
+  createInvoice(invoice: InsertInvoice, details: InsertInvoiceDetail, items: InsertInvoiceItem[]): Promise<Invoice>;
   updateInvoice(id: string, invoiceData: Partial<InsertInvoice>): Promise<Invoice>;
   updateInvoiceStatus(id: string, status: string): Promise<Invoice>;
   deleteInvoice(id: string): Promise<void>;
@@ -812,7 +813,7 @@ export class DatabaseStorage implements IStorage {
     });
   }
   
-  async createInvoice(invoice: InsertInvoice, details: InsertInvoiceDetail, lines: InsertInvoiceLine[]): Promise<Invoice> {
+  async createInvoice(invoice: InsertInvoice, details: InsertInvoiceDetail, items: InsertInvoiceItem[]): Promise<Invoice> {
     return drizzleService.executeQuery(async (db) => {
       // Start a transaction to ensure all-or-nothing insertion
       return await db.transaction(async (tx: any) => {
@@ -825,10 +826,10 @@ export class DatabaseStorage implements IStorage {
           invoiceId: newInvoice.id
         });
         
-        // 3. Insert invoice lines
-        for (const line of lines) {
-          await tx.insert(invoiceLines).values({
-            ...line,
+        // 3. Insert invoice items
+        for (const item of items) {
+          await tx.insert(invoiceItems).values({
+            ...item,
             invoiceId: newInvoice.id
           });
         }

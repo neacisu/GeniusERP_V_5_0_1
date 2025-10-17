@@ -65,10 +65,10 @@ export class AuthGuard {
    * Static method to require access to specific company
    * This is kept for backward compatibility with existing code
    * 
-   * @param companyIdParam Name of the parameter containing company ID
+   * @param companyIdParam Name of the parameter containing company ID (defaults to 'companyId')
    * @returns Express middleware
    */
-  static companyGuard(companyIdParam: string) {
+  static companyGuard(companyIdParam: string = 'companyId') {
     // Use the instance methods of the default exported instance
     const instance = new AuthGuard();
     return instance.requireCompanyAccess(companyIdParam);

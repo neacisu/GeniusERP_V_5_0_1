@@ -52,10 +52,10 @@ export class MessagesController {
   /**
    * Get messages for a thread
    */
-  async getThreadMessages(req: Request, res: Response): Promise<void> {
+  async getThreadMessages(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { threadId } = req.params;
-      const { companyId } = req.user;
+      const { companyId } = req.user!;
       const { 
         direction, 
         status, 
@@ -101,10 +101,10 @@ export class MessagesController {
   /**
    * Get message by ID
    */
-  async getMessageById(req: Request, res: Response): Promise<void> {
+  async getMessageById(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { messageId } = req.params;
-      const { companyId } = req.user;
+      const { companyId } = req.user!;
       
       const message = await this.messagesService.getMessageById(messageId, companyId);
       
@@ -126,10 +126,10 @@ export class MessagesController {
   /**
    * Update a message
    */
-  async updateMessage(req: Request, res: Response): Promise<void> {
+  async updateMessage(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { messageId } = req.params;
-      const { companyId, userId } = req.user;
+      const { companyId, userId } = req.user!;
       
       const updateData = {
         ...req.body,
@@ -160,10 +160,10 @@ export class MessagesController {
   /**
    * Mark a message as read
    */
-  async markMessageAsRead(req: Request, res: Response): Promise<void> {
+  async markMessageAsRead(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { messageId } = req.params;
-      const { companyId, userId } = req.user;
+      const { companyId, userId } = req.user!;
       
       const message = await this.messagesService.markMessageAsRead(
         messageId,
@@ -189,10 +189,10 @@ export class MessagesController {
   /**
    * Delete a message
    */
-  async deleteMessage(req: Request, res: Response): Promise<void> {
+  async deleteMessage(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { messageId } = req.params;
-      const { companyId } = req.user;
+      const { companyId } = req.user!;
       
       const success = await this.messagesService.deleteMessage(messageId, companyId);
       
@@ -214,9 +214,9 @@ export class MessagesController {
   /**
    * Search messages
    */
-  async searchMessages(req: Request, res: Response): Promise<void> {
+  async searchMessages(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const { companyId } = req.user;
+      const { companyId } = req.user!;
       const { query } = req.query;
       
       if (!query || typeof query !== 'string') {

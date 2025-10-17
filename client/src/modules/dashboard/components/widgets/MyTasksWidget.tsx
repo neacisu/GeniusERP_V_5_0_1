@@ -55,7 +55,9 @@ const statusColors = {
   [TaskStatus.IN_PROGRESS]: 'bg-blue-100 text-blue-700',
   [TaskStatus.COMPLETED]: 'bg-green-100 text-green-700',
   [TaskStatus.REVIEW]: 'bg-amber-100 text-amber-700',
-  [TaskStatus.CANCELED]: 'bg-gray-100 text-gray-700'
+  [TaskStatus.BLOCKED]: 'bg-red-100 text-red-700',
+  [TaskStatus.DEFERRED]: 'bg-purple-100 text-purple-700',
+  [TaskStatus.CANCELLED]: 'bg-gray-100 text-gray-700'
 };
 
 const formatDueDate = (dueDate: Date) => {
@@ -100,7 +102,7 @@ export default function MyTasksWidget({ userId, limit = 6 }: MyTasksWidgetProps)
   
   // Handle the case when we might receive an error response with items
   const taskResponseData = tasksData && typeof tasksData === 'object' && 'error' in tasksData && 'items' in tasksData
-    ? { tasks: tasksData.items }
+    ? { tasks: Array.isArray(tasksData.items) ? tasksData.items : [] }
     : tasksData;
   
   const updateTaskStatusMutation = useUpdateTaskStatus();
@@ -274,7 +276,7 @@ export default function MyTasksWidget({ userId, limit = 6 }: MyTasksWidgetProps)
                          task.status === TaskStatus.IN_PROGRESS ? 'În lucru' :
                          task.status === TaskStatus.COMPLETED ? 'Finalizat' :
                          task.status === TaskStatus.REVIEW ? 'În verificare' :
-                         task.status === TaskStatus.CANCELED ? 'Anulat' : 
+                         task.status === TaskStatus.CANCELLED ? 'Anulat' : 
                          task.status}
                       </Badge>
                       

@@ -53,6 +53,10 @@ export class CommissionController {
         });
       }
       
+      if (!req.user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
+      
       const result = await this.commissionService.createCommissionStructure(
         req.user.companyId,
         name,
@@ -103,6 +107,10 @@ export class CommissionController {
       
       const includeInactive = req.query.includeInactive === 'true';
       
+      if (!req.user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
+      
       const structures = await this.commissionService.getCommissionStructures(
         req.user.companyId,
         includeInactive
@@ -131,6 +139,10 @@ export class CommissionController {
           success: false, 
           message: 'Employee ID, structure ID, and sale amount are required' 
         });
+      }
+      
+      if (!req.user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
       }
       
       const result = await this.commissionService.calculateCommission(
@@ -231,6 +243,10 @@ export class CommissionController {
       const year = req.query.year ? parseInt(req.query.year as string) : new Date().getFullYear();
       const month = req.query.month ? parseInt(req.query.month as string) : undefined;
       
+      if (!req.user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
+      
       const summary = await this.commissionService.getCommissionSummary(
         req.user.companyId,
         year,
@@ -269,6 +285,10 @@ export class CommissionController {
           success: false, 
           message: 'Employee ID, structure ID, sale amount, and period are required' 
         });
+      }
+      
+      if (!req.user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
       }
       
       // Calculate the commission using the service
@@ -313,6 +333,10 @@ export class CommissionController {
       const month = req.query.month ? parseInt(req.query.month as string) : null;
       const status = req.query.status as string || null;
       
+      if (!req.user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
+      
       // Retrieves all commissions with optional filtering
       const commissions = await this.commissionService.getCompanyCommissions(
         req.user.companyId,
@@ -338,6 +362,10 @@ export class CommissionController {
       }
       
       const commissionId = req.params.id;
+      
+      if (!req.user.companyId) {
+        return res.status(400).json({ error: 'Company ID is required' });
+      }
       
       const commission = await this.commissionService.getCommissionById(
         req.user.companyId,

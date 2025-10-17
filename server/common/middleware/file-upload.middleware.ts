@@ -55,7 +55,7 @@ export const ALLOWED_EXTENSIONS = {
   IMAGES: ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
   ARCHIVES: ['.zip'],
   DATA: ['.json', '.xml']
-} as const;
+};
 
 /**
  * Dimensiuni maxime pentru diferite tipuri de fișiere
