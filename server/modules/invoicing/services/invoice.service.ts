@@ -8,7 +8,7 @@
 
 import { DrizzleService } from '../../../common/drizzle/drizzle.service';
 import { Invoice, InvoiceDetail, InsertInvoice, InsertInvoiceDetail } from '@shared/schema';
-import { InvoiceItem } from '../schema/invoice.schema';
+import { InvoiceItem, InsertInvoiceItem } from '../schema/invoice.schema';
 import { ENTITY_NAME } from '../index';
 import { AuditService } from '../../audit/services/audit.service';
 import { AuditActionType } from '../../../common/enums/audit-action.enum';
@@ -38,7 +38,7 @@ export class InvoiceService {
   static async createDraftInvoice(
     invoice: InsertInvoice,
     details: InsertInvoiceDetail,
-    lines: InsertInvoiceLine[],
+    lines: InsertInvoiceItem[],
     userId?: string
   ): Promise<Invoice> {
     // Force draft status
@@ -58,9 +58,9 @@ export class InvoiceService {
         invoiceId: newInvoice.id
       });
       
-      // Insert invoice lines
+      // Insert invoice items
       for (const line of lines) {
-        await tx.insert(invoiceLines).values({
+        await tx.insert(invoiceItems).values({
           ...line,
           invoiceId: newInvoice.id
         });

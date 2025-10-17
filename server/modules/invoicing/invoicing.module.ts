@@ -5,7 +5,9 @@
  */
 
 import { Router } from 'express';
-import { logger } from '../../common/logger';
+import { Logger } from '../../common/logger';
+
+const logger = new Logger('InvoicingModule');
 import { InvoiceNumberingRoutes } from './routes/invoice-numbering.routes';
 
 export class InvoicingModule {
