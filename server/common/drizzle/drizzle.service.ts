@@ -86,6 +86,16 @@ export class DrizzleService {
   }
   
   /**
+   * Get the raw Drizzle database instance
+   * This is useful for services that need direct access to the database instance
+   * 
+   * @returns Raw PostgresJsDatabase instance
+   */
+  getDbInstance(): any {
+    return getDrizzleInstance();
+  }
+  
+  /**
    * Execute a function with the Drizzle database instance
    * This is a convenience method that delegates to the base service
    * 

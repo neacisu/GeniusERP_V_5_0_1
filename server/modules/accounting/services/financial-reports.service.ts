@@ -193,7 +193,7 @@ export class FinancialReportsService {
       ) p ON i.id = p.invoice_id
       WHERE i.company_id = ${companyId}
       AND i.type = 'PURCHASE'
-      AND i.status IN ('issued', 'sent')
+      AND i.status != 'paid'
       AND i.deleted_at IS NULL
     `;
     

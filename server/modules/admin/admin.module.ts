@@ -6,10 +6,10 @@
  * and all other modules.
  */
 
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Express } from 'express';
 import { Logger } from '../../common/logger';
 import { BaseModule } from '../../types/module';
+import { DrizzleService } from '../../common/drizzle';
 import { UserService } from './services/user.service';
 import { RoleService } from './services/role.service';
 import { SetupService } from './services/setup.service';
@@ -21,7 +21,7 @@ import { LicenseService } from './services/license.service';
 export class AdminModule implements BaseModule {
   private static instance: AdminModule;
   private logger = new Logger('AdminModule');
-  private db!: PostgresJsDatabase<any>;
+  private db!: DrizzleService;
   private initialized = false;
 
   // Services
@@ -50,7 +50,7 @@ export class AdminModule implements BaseModule {
   /**
    * Initialize the module with database connection
    */
-  public initialize(db: PostgresJsDatabase<any>): void {
+  public initialize(db: DrizzleService): void {
     if (this.initialized) {
       this.logger.warn('AdminModule already initialized');
       return;
@@ -59,13 +59,16 @@ export class AdminModule implements BaseModule {
     this.logger.info('Initializing AdminModule...');
     this.db = db;
 
+    // Get raw DB instance for services that need it
+    const rawDb = db.getDbInstance();
+
     // Initialize services
-    this.setupService = new SetupService(this.db);
-    this.userService = new UserService(this.db);
-    this.roleService = new RoleService(this.db);
+    this.setupService = new SetupService(rawDb);
+    this.userService = new UserService(rawDb);
+    this.roleService = new RoleService(rawDb);
     this.healthCheckService = new HealthCheckService(this.db);
-    this.apiKeyService = new ApiKeyService(this.db);
-    this.configService = new ConfigService(this.db);
+    this.apiKeyService = new ApiKeyService(rawDb);
+    this.configService = new ConfigService(rawDb);
     this.licenseService = new LicenseService(this.db);
 
     this.initialized = true;

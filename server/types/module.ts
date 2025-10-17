@@ -6,14 +6,14 @@
  */
 
 import { Express } from 'express';
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { DrizzleService } from '../common/drizzle';
 
 export interface BaseModule {
   /**
    * Initialize the module with a database connection
-   * @param db Database connection
+   * @param db Database connection (DrizzleService)
    */
-  initialize(db: PostgresJsDatabase<any>): void;
+  initialize(db: DrizzleService): void;
   
   /**
    * Register the module's routes with the Express application
