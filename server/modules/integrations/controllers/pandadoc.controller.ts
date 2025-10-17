@@ -7,10 +7,11 @@
 import { Request, Response } from 'express';
 import { PandaDocClient } from '../clients';
 import { IntegrationsService } from '../services/integrations.service';
+import { IntegrationProvider } from '../schema/integrations.schema';
 import { AuditService } from '../../audit/services/audit.service';
 
 // Resource type for audit logs
-const RESOURCE_TYPE = 'pandadoc';
+const RESOURCE_TYPE = IntegrationProvider.PANDADOC;
 
 /**
  * Controller for PandaDoc document operations
@@ -49,7 +50,7 @@ export class PandaDocController {
       
       // Check if integration already exists
       const existingIntegration = await this.integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -82,8 +83,6 @@ export class PandaDocController {
         userId,
         companyId,
         action: 'create',
-        resourceType: RESOURCE_TYPE,
-        resourceId: integration.id,
         details: {
           message: 'PandaDoc integration initialized'
         }
@@ -120,7 +119,7 @@ export class PandaDocController {
       
       // Get integration
       const integration = await this.integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -169,7 +168,7 @@ export class PandaDocController {
       
       // Get integration
       const integration = await this.integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -235,7 +234,7 @@ export class PandaDocController {
       
       // Get integration
       const integration = await this.integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -267,8 +266,6 @@ export class PandaDocController {
         userId,
         companyId,
         action: 'create',
-        resourceType: 'document',
-        resourceId: document.id,
         details: {
           name,
           templateId,
@@ -308,7 +305,7 @@ export class PandaDocController {
       
       // Get integration
       const integration = await this.integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -358,7 +355,7 @@ export class PandaDocController {
       
       // Get integration
       const integration = await this.integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -386,8 +383,6 @@ export class PandaDocController {
         userId,
         companyId,
         action: 'update',
-        resourceType: 'document',
-        resourceId: documentId,
         details: {
           message: 'Document sent for signing',
           silent
@@ -426,7 +421,7 @@ export class PandaDocController {
       
       // Get integration
       const integration = await this.integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -475,7 +470,7 @@ export class PandaDocController {
       
       // Get integration
       const integration = await this.integrationsService.getIntegrationByProvider(
-        'pandadoc',
+        IntegrationProvider.PANDADOC,
         companyId
       );
       
@@ -497,8 +492,6 @@ export class PandaDocController {
         userId,
         companyId,
         action: 'read',
-        resourceType: 'document',
-        resourceId: documentId,
         details: {
           message: 'Document downloaded'
         }

@@ -52,8 +52,6 @@ export class AnafController {
         userId,
         companyId,
         action: 'read',
-        resourceType: RESOURCE_TYPE,
-        resourceId: vatNumber,
         details: {
           message: 'VAT number validation',
           valid: !!validationResult.valid
@@ -110,8 +108,6 @@ export class AnafController {
         userId,
         companyId,
         action: 'read',
-        resourceType: RESOURCE_TYPE,
-        resourceId: fiscalCode,
         details: {
           message: 'Company info lookup',
           companyName: companyInfo.name || 'N/A'
@@ -161,8 +157,6 @@ export class AnafController {
         userId,
         companyId,
         action: 'create',
-        resourceType: 'e_invoice',
-        resourceId: invoiceId,
         details: {
           message: 'E-invoice sent to ANAF',
           result: result.success ? 'success' : 'failure'

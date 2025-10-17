@@ -451,8 +451,6 @@ export class IntegrationsController {
         userId,
         companyId,
         action: 'activate',
-        resourceType: RESOURCE_TYPE,
-        resourceId: id,
         details: {
           provider: integration.provider,
           franchiseId: integration.franchiseId

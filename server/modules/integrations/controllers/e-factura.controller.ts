@@ -7,6 +7,7 @@
 import { Request, Response } from 'express';
 import { eFacturaService } from '../services/e-factura.service';
 import { IntegrationsService } from '../services/integrations.service';
+import { IntegrationProvider } from '../schema/integrations.schema';
 import { AuditService } from '../../audit/services/audit.service';
 
 // Resource type for audit logs
@@ -68,8 +69,6 @@ export class EFacturaController {
         userId,
         companyId,
         action: 'create',
-        resourceType: RESOURCE_TYPE,
-        resourceId: invoiceId,
         details: {
           message: 'Invoice sent to e-Factura',
           result: result.success ? 'success' : 'failure'
@@ -182,8 +181,6 @@ export class EFacturaController {
         userId,
         companyId,
         action: 'read',
-        resourceType: RESOURCE_TYPE,
-        resourceId: invoiceId,
         details: {
           message: 'Generated e-Factura XML'
         }
@@ -303,8 +300,6 @@ export class EFacturaController {
         userId,
         companyId,
         action: 'read',
-        resourceType: RESOURCE_TYPE,
-        resourceId: invoiceId,
         details: {
           message: 'Downloaded e-Factura invoice metadata'
         }

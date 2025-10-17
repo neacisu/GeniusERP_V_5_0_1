@@ -5,7 +5,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, isNull } from 'drizzle-orm';
 import { DrizzleService } from '../../../common/drizzle';
 import { 
   integrations, 
@@ -85,8 +85,6 @@ export class IntegrationsService {
         userId,
         companyId,
         action: 'create',
-        resourceType: RESOURCE_TYPE,
-        resourceId: id,
         details: {
           provider,
           franchiseId
@@ -147,7 +145,7 @@ export class IntegrationsService {
       if (franchiseId) {
         query = query.where(eq(integrations.franchiseId, franchiseId));
       } else {
-        query = query.where(eq(integrations.franchiseId, null));
+        query = query.where(isNull(integrations.franchiseId));
       }
       
       const [integration] = await query;
@@ -234,8 +232,6 @@ export class IntegrationsService {
         userId,
         companyId,
         action: 'update',
-        resourceType: RESOURCE_TYPE,
-        resourceId: id,
         details: {
           updates: validUpdates
         }
@@ -287,8 +283,6 @@ export class IntegrationsService {
         userId,
         companyId,
         action: 'update',
-        resourceType: RESOURCE_TYPE,
-        resourceId: id,
         details: {
           status,
           isConnected: status === IntegrationStatus.ACTIVE
@@ -366,8 +360,6 @@ export class IntegrationsService {
         userId,
         companyId,
         action: 'delete',
-        resourceType: RESOURCE_TYPE,
-        resourceId: id,
         details: {
           provider: integration.provider,
           franchiseId: integration.franchiseId

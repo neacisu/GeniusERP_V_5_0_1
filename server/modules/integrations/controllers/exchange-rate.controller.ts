@@ -109,8 +109,6 @@ export class ExchangeRateController {
         userId,
         companyId,
         action: 'update',
-        resourceType: RESOURCE_TYPE,
-        resourceId: 'bnr_rates',
         details: {
           message: 'Manual BNR exchange rate update',
           currencyCount: Object.keys(rates).length

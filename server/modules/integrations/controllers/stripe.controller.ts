@@ -7,10 +7,11 @@
 import { Request, Response } from 'express';
 import { StripeClient } from '../clients';
 import { IntegrationsService } from '../services/integrations.service';
+import { IntegrationProvider } from '../schema/integrations.schema';
 import { AuditService } from '../../audit/services/audit.service';
 
 // Resource type for audit logs
-const RESOURCE_TYPE = 'stripe';
+const RESOURCE_TYPE = IntegrationProvider.STRIPE;
 
 /**
  * Controller for Stripe payment operations
@@ -49,7 +50,7 @@ export class StripeController {
       
       // Check if integration already exists
       const existingIntegration = await this.integrationsService.getIntegrationByProvider(
-        'stripe',
+        IntegrationProvider.STRIPE,
         companyId
       );
       
@@ -85,8 +86,6 @@ export class StripeController {
         userId,
         companyId,
         action: 'create',
-        resourceType: RESOURCE_TYPE,
-        resourceId: integration.id,
         details: {
           message: 'Stripe integration initialized'
         }
@@ -131,7 +130,7 @@ export class StripeController {
       
       // Get integration
       const integration = await this.integrationsService.getIntegrationByProvider(
-        'stripe',
+        IntegrationProvider.STRIPE,
         companyId
       );
       
@@ -159,8 +158,6 @@ export class StripeController {
         userId,
         companyId,
         action: 'create',
-        resourceType: 'payment_intent',
-        resourceId: paymentIntent.id,
         details: {
           amount,
           currency,
@@ -207,7 +204,7 @@ export class StripeController {
       
       // Get integration
       const integration = await this.integrationsService.getIntegrationByProvider(
-        'stripe',
+        IntegrationProvider.STRIPE,
         companyId
       );
       
@@ -235,8 +232,6 @@ export class StripeController {
         userId,
         companyId,
         action: 'create',
-        resourceType: 'stripe_customer',
-        resourceId: customer.id,
         details: {
           email,
           name: name || 'N/A'
@@ -282,7 +277,7 @@ export class StripeController {
       
       // Get integration
       const integration = await this.integrationsService.getIntegrationByProvider(
-        'stripe',
+        IntegrationProvider.STRIPE,
         companyId
       );
       
@@ -310,8 +305,6 @@ export class StripeController {
         userId,
         companyId,
         action: 'create',
-        resourceType: 'subscription',
-        resourceId: subscription.id,
         details: {
           customerId,
           priceId,
@@ -358,7 +351,7 @@ export class StripeController {
       
       // Get integration
       const integration = await this.integrationsService.getIntegrationByProvider(
-        'stripe',
+        IntegrationProvider.STRIPE,
         companyId
       );
       
@@ -380,8 +373,6 @@ export class StripeController {
         userId: 'system',
         companyId,
         action: 'webhook',
-        resourceType: RESOURCE_TYPE,
-        resourceId: event?.id || 'unknown',
         details: {
           type: event?.type || 'unknown',
           object: event?.object || 'unknown'
@@ -427,7 +418,7 @@ export class StripeController {
       
       // Get integration
       const integration = await this.integrationsService.getIntegrationByProvider(
-        'stripe',
+        IntegrationProvider.STRIPE,
         companyId
       );
       

@@ -11,6 +11,9 @@ import { Logger } from '../logger';
 import { integrations, IntegrationProvider, IntegrationStatus } from '../../modules/integrations/schema/integrations.schema';
 import { eq, and } from 'drizzle-orm';
 
+// Re-export IntegrationProvider and IntegrationStatus for convenience
+export { IntegrationProvider, IntegrationStatus };
+
 // Initialize logger
 const logger = new Logger('IntegrationService');
 

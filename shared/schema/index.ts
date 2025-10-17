@@ -12,7 +12,8 @@ export * from './collaboration.schema';
 export * from './inventory-assessment';
 export * from './cash-register.schema';
 export * from './bank-journal.schema';
-export * from './integrations.schema';
+// Integrations schema moved to server modules
+export * from '../../server/modules/integrations/schema/integrations.schema';
 
 // Export invoicing schemas from server modules  
 // Note: Path is relative to shared/schema/index.ts location

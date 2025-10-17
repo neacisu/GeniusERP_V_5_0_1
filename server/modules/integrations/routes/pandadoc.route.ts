@@ -84,7 +84,6 @@ router.post(
         userId,
         companyId,
         action: 'create',
-        resourceType: RESOURCE_TYPE,
         resourceId: integration.id,
         details: {
           message: 'PandaDoc integration initialized'
@@ -287,7 +286,6 @@ router.post(
         userId,
         companyId,
         action: 'create',
-        resourceType: 'document',
         resourceId: document.id,
         details: {
           name,
@@ -418,7 +416,6 @@ router.post(
         userId,
         companyId,
         action: 'update',
-        resourceType: 'document',
         resourceId: documentId,
         details: {
           message: 'Document sent for signing',
@@ -541,7 +538,6 @@ router.get(
         userId,
         companyId,
         action: 'read',
-        resourceType: 'document',
         resourceId: documentId,
         details: {
           message: 'Document downloaded'
