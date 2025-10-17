@@ -4,11 +4,7 @@
     "utils/testing",
     "build",
     "dist",
-    "**/node_modules",
-    "!node_modules/@types",
-    "node_modules/@types/cypress",
-    "node_modules/@types/chai",
-    "node_modules/cypress/**/*"
+    "node_modules"
   ],
   "compilerOptions": {
     "incremental": true,
@@ -24,6 +20,7 @@
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
     "baseUrl": ".",
+    "types": ["node"],
     "paths": {
       "@/*": ["./client/src/*"],
       "@shared/*": ["./shared/*"]
