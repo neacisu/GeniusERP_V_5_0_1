@@ -65,6 +65,7 @@ export const accountingLedgerEntries = pgTable('accounting_ledger_entries', {
   // Reversal info
   isReversal: boolean('is_reversal').notNull().default(false),
   originalEntryId: uuid('original_entry_id'),
+  reversalEntryId: uuid('reversal_entry_id'),
   reversalReason: varchar('reversal_reason', { length: 500 }),
   
   // Metadata
