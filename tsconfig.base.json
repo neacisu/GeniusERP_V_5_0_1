@@ -14,7 +14,19 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "noEmitHelpers": true,
+    
+    /* Strict Type-Checking */
     "strict": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    
+    /* Module Resolution */
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,

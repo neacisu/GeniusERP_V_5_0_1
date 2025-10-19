@@ -1,0 +1,61 @@
+{
+  "include": ["client/src/**/*", "shared/**/*", "server/**/*"],
+  "exclude": [
+    "utils/testing",
+    "build",
+    "dist",
+    "node_modules"
+  ],
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",
+    "noEmit": true,
+    "module": "ESNext",
+    "target": "es2018",
+    
+    // ============================================================================
+    // STRICT TYPE CHECKING (Already enabled - GOOD!)
+    // ============================================================================
+    "strict": true,                              // ✅ Master switch for all strict checks
+    "forceConsistentCasingInFileNames": true,   // ✅ Prevents case-sensitivity bugs
+    
+    // ============================================================================
+    // CODE QUALITY CHECKS (RECOMMENDED - Add these incrementally)
+    // ============================================================================
+    
+    // Phase 1: Enable immediately (Critical for bug prevention)
+    // "noImplicitReturns": true,               // ⚠️ TODO: Fix 8 errors first
+    // "noFallthroughCasesInSwitch": true,      // ⚠️ TODO: Check switch statements
+    
+    // Phase 2: Enable after server-side cleanup (2 weeks)
+    // "noUnusedParameters": true,              // ⚠️ TODO: Fix 200 server errors first
+    
+    // Phase 3: Enable module-by-module (1-3 months)
+    // "noUnusedLocals": true,                  // ⚠️ TODO: Fix 2,103 errors incrementally
+    
+    // Phase 4: Advanced strictness (Long-term)
+    // "noUncheckedIndexedAccess": true,        // 🔮 Future: Safer array/object access
+    // "exactOptionalPropertyTypes": true,      // 🔮 Future: Stricter optional properties
+    // "noPropertyAccessFromIndexSignature": true, // 🔮 Future: Safer index signatures
+    
+    // ============================================================================
+    // MODULE RESOLUTION
+    // ============================================================================
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "moduleResolution": "bundler",
+    
+    // ============================================================================
+    // PATH MAPPING
+    // ============================================================================
+    "baseUrl": ".",
+    "types": ["node"],
+    "paths": {
+      "@/*": ["./client/src/*"],
+      "@shared/*": ["./shared/*"]
+    }
+  }
+}
