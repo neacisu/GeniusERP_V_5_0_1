@@ -6,6 +6,14 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import type postgres from 'postgres';
+import { log } from '../../../vite';
+import type {
+  CreateAssessmentData,
+  InventoryAssessment,
+  InventoryAssessmentItem,
+  AssessmentWithItems,
+  ProcessDifferencesResult
+} from './types/inventory-assessment.types';
 
 // Get PostgreSQL connection pool from global
 // Note: Pool is now a postgres-js Sql instance, not Neon Pool
@@ -17,8 +25,8 @@ export class InventoryAssessmentService {
   /**
    * Create a new inventory assessment document
    */
-  async createAssessment(data: any, userId: string, companyId: string): Promise<any> {
-    console.log(`[inventory-assessment] Creating assessment with data:`, JSON.stringify(data, null, 2));
+  async createAssessment(data: CreateAssessmentData, userId: string, companyId: string): Promise<InventoryAssessment> {
+    log(`Creating assessment with data: ${JSON.stringify(data, null, 2)}`, 'inventory-assessment');
     
     try {
       // Set default values and prepare data
@@ -77,11 +85,11 @@ export class InventoryAssessmentService {
       ];
       
       const [result] = await pool.unsafe(query, values);
-      console.log(`[inventory-assessment] Assessment created successfully`);
+      log('Assessment created successfully', 'inventory-assessment');
       
-      return result;
+      return result as unknown as InventoryAssessment;
     } catch (error) {
-      console.error(`[inventory-assessment] Error creating assessment:`, error);
+      console.error('[inventory-assessment] Error creating assessment:', error);
       throw error;
     }
   }
@@ -93,9 +101,9 @@ export class InventoryAssessmentService {
     assessmentId: string, 
     warehouseId: string, 
     companyId: string, 
-    userId: string
-  ): Promise<any> {
-    console.log(`[inventory-assessment] Initializing assessment items for assessment: ${assessmentId}`);
+    _userId: string
+  ): Promise<AssessmentWithItems> {
+    log(`Initializing assessment items for assessment: ${assessmentId}`, 'inventory-assessment');
     
     try {
       // Get assessment details first
@@ -117,10 +125,10 @@ export class InventoryAssessmentService {
         throw new Error(`Assessment must be in DRAFT status to initialize items. Current status: ${assessment.status}`);
       }
       
-      console.log(`[inventory-assessment] Assessment warehouse ID: ${warehouseId}`);
+      log(`Assessment warehouse ID: ${warehouseId}`, 'inventory-assessment');
       
       // Get all products with stock in the warehouse - using parameterized query
-      console.log(`[inventory-assessment] Getting stock items for warehouse ${warehouseId}`);
+      log(`Getting stock items for warehouse ${warehouseId}`, 'inventory-assessment');
       
       // First try getting items from the stocks table
       const stocksQuery = `
@@ -147,11 +155,11 @@ export class InventoryAssessmentService {
       const stockItems = await pool.unsafe(stocksQuery, [warehouseId]);
       let stockItemsList = stockItems;
       
-      console.log(`[inventory-assessment] Found ${stockItemsList.length} stock items in stocks table`);
+      log(`Found ${stockItemsList.length} stock items in stocks table`, 'inventory-assessment');
       
       // If no items found in stocks, try the inventory_stock table (backup)
       if (stockItemsList.length === 0) {
-        console.log(`[inventory-assessment] No items in stocks table, trying inventory_stock table`);
+        log('No items in stocks table, trying inventory_stock table', 'inventory-assessment');
         
         const inventoryStockQuery = `
           SELECT 
@@ -171,7 +179,7 @@ export class InventoryAssessmentService {
         `;
         
         stockItemsList = await pool.unsafe(inventoryStockQuery, [warehouseId, companyId]);
-        console.log(`[inventory-assessment] Found ${stockItemsList.length} stock items in inventory_stock table`);
+        log(`Found ${stockItemsList.length} stock items in inventory_stock table`, 'inventory-assessment');
       }
       
       // Create assessment items for each stock item
@@ -180,7 +188,7 @@ export class InventoryAssessmentService {
       let errorCount = 0;
       
       if (stockItemsList.length === 0) {
-        console.log(`[inventory-assessment] No stock items found for warehouse: ${warehouseId}`);
+        log(`No stock items found for warehouse: ${warehouseId}`, 'inventory-assessment');
         
         // Update assessment status to IN_PROGRESS even with no items
         // This allows the user to proceed to the next step
@@ -197,16 +205,16 @@ export class InventoryAssessmentService {
           assessment: {
             ...assessment,
             status: 'in_progress'
-          },
+          } as unknown as InventoryAssessment,
           items: []
         };
       }
       
       // Process each stock item and create an assessment item
-      console.log(`[inventory-assessment] Processing ${stockItemsList.length} stock items`);
+      log(`Processing ${stockItemsList.length} stock items`, 'inventory-assessment');
       
       for (const item of stockItemsList) {
-        console.log(`[inventory-assessment] Processing stock item for ${item.product_name || 'unknown product'}`);
+        log(`Processing stock item for ${item.product_name || 'unknown product'}`, 'inventory-assessment');
         
         try {
           // Generate a UUID for the item
@@ -246,19 +254,19 @@ export class InventoryAssessmentService {
           ]);
           
           const assessmentItem = insertResult[0];
-          console.log(`[inventory-assessment] Item created with ID: ${assessmentItem.id}`);
+          log(`Item created with ID: ${assessmentItem.id}`, 'inventory-assessment');
           
           assessmentItems.push(assessmentItem);
           successCount++;
         } catch (insertError) {
-          console.error(`[inventory-assessment] Error inserting item:`, insertError);
+          console.error('[inventory-assessment] Error inserting item:', insertError);
           errorCount++;
           // Continue with next item instead of failing the entire process
         }
       }
     
       // After processing all items, update assessment status to IN_PROGRESS
-      console.log(`[inventory-assessment] Processed items with success: ${successCount}, errors: ${errorCount}`);
+      log(`Processed items with success: ${successCount}, errors: ${errorCount}`, 'inventory-assessment');
       
       if (successCount === 0 && errorCount > 0) {
         // All inserts failed - this is a real problem
@@ -266,7 +274,7 @@ export class InventoryAssessmentService {
       }
       
       // Update assessment status to IN_PROGRESS using direct SQL
-      console.log(`[inventory-assessment] Updating assessment status to IN_PROGRESS`);
+      log('Updating assessment status to IN_PROGRESS', 'inventory-assessment');
       const updateStatusQuery = `
         UPDATE inventory_assessments
         SET status = $1, updated_at = NOW()
@@ -284,11 +292,11 @@ export class InventoryAssessmentService {
       
       // Return the result
       return {
-        assessment: updatedAssessment,
-        items: assessmentItems
+        assessment: updatedAssessment as unknown as InventoryAssessment,
+        items: assessmentItems as unknown as InventoryAssessmentItem[]
       };
     } catch (error) {
-      console.error(`[inventory-assessment] Error in initializeAssessmentItems:`, error);
+      console.error('[inventory-assessment] Error in initializeAssessmentItems:', error);
       throw error;
     }
   }
@@ -296,8 +304,8 @@ export class InventoryAssessmentService {
   /**
    * Get assessment by ID
    */
-  async getAssessmentById(assessmentId: string): Promise<any> {
-    console.log(`[inventory-assessment] Getting assessment details for ID: ${assessmentId}`);
+  async getAssessmentById(assessmentId: string): Promise<InventoryAssessment | null> {
+    log(`Getting assessment details for ID: ${assessmentId}`, 'inventory-assessment');
     
     try {
       const query = `
@@ -311,9 +319,9 @@ export class InventoryAssessmentService {
         return null;
       }
       
-      return result[0];
+      return result[0] as unknown as InventoryAssessment;
     } catch (error) {
-      console.error(`[inventory-assessment] Error in getAssessmentById:`, error);
+      console.error('[inventory-assessment] Error in getAssessmentById:', error);
       throw error;
     }
   }
@@ -321,8 +329,8 @@ export class InventoryAssessmentService {
   /**
    * Get assessment with items
    */
-  async getAssessmentWithItems(assessmentId: string): Promise<any> {
-    console.log(`[inventory-assessment] Getting assessment details with items for ID: ${assessmentId}`);
+  async getAssessmentWithItems(assessmentId: string): Promise<AssessmentWithItems | null> {
+    log(`Getting assessment details with items for ID: ${assessmentId}`, 'inventory-assessment');
     
     try {
       // Get the assessment first
@@ -341,20 +349,19 @@ export class InventoryAssessmentService {
       
       return {
         assessment,
-        items
+        items: items as unknown as InventoryAssessmentItem[]
       };
     } catch (error) {
-      console.error(`[inventory-assessment] Error in getAssessmentWithItems:`, error);
+      console.error('[inventory-assessment] Error in getAssessmentWithItems:', error);
       throw error;
     }
   }
-
   /**
    * Update assessment status
    * Placeholder method - implementation needed
    */
-  async updateAssessmentStatus(assessmentId: string, status: string, userId: string): Promise<any> {
-    console.log(`[inventory-assessment] Updating assessment ${assessmentId} status to ${status}`);
+  async updateAssessmentStatus(assessmentId: string, status: string, _userId: string): Promise<InventoryAssessment> {
+    log(`Updating assessment ${assessmentId} status to ${status}`, 'inventory-assessment');
     
     try {
       const query = `
@@ -370,9 +377,9 @@ export class InventoryAssessmentService {
         throw new Error(`Assessment not found: ${assessmentId}`);
       }
       
-      return result[0];
+      return result[0] as unknown as InventoryAssessment;
     } catch (error) {
-      console.error(`[inventory-assessment] Error updating assessment status:`, error);
+      console.error('[inventory-assessment] Error updating assessment status:', error);
       throw error;
     }
   }
@@ -386,9 +393,9 @@ export class InventoryAssessmentService {
     actualQuantity: number, 
     notes: string | null, 
     countedBy: string, 
-    userId: string
-  ): Promise<any> {
-    console.log(`[inventory-assessment] Recording item count for ${itemId}: ${actualQuantity}`);
+    _userId: string
+  ): Promise<InventoryAssessmentItem> {
+    log(`Recording item count for ${itemId}: ${actualQuantity}`, 'inventory-assessment');
     
     try {
       const query = `
@@ -408,9 +415,9 @@ export class InventoryAssessmentService {
         throw new Error(`Assessment item not found: ${itemId}`);
       }
       
-      return result[0];
+      return result[0] as unknown as InventoryAssessmentItem;
     } catch (error) {
-      console.error(`[inventory-assessment] Error recording item count:`, error);
+      console.error('[inventory-assessment] Error recording item count:', error);
       throw error;
     }
   }
@@ -419,8 +426,8 @@ export class InventoryAssessmentService {
    * Process inventory differences
    * Placeholder method - implementation needed
    */
-  async processInventoryDifferences(assessmentId: string, userId: string): Promise<any> {
-    console.log(`[inventory-assessment] Processing inventory differences for ${assessmentId}`);
+  async processInventoryDifferences(assessmentId: string, _userId: string): Promise<ProcessDifferencesResult> {
+    log(`Processing inventory differences for ${assessmentId}`, 'inventory-assessment');
     
     try {
       // This would typically:
@@ -436,7 +443,7 @@ export class InventoryAssessmentService {
         assessmentId
       };
     } catch (error) {
-      console.error(`[inventory-assessment] Error processing inventory differences:`, error);
+      console.error('[inventory-assessment] Error processing inventory differences:', error);
       throw error;
     }
   }

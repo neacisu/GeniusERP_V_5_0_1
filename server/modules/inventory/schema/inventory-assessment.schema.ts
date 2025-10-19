@@ -5,7 +5,7 @@
  * Implements tables for assessment documents, items, and valuation methods.
  */
 
-import { pgTable, text, uuid, boolean, timestamp, pgEnum, numeric, date, index, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, uuid, boolean, timestamp, pgEnum, numeric, date, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { inventoryProducts } from '../../../../shared/schema';
@@ -55,6 +55,12 @@ export const inventoryAssessments = pgTable("inventory_assessments", {
   notes: text("notes"),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  // Additional columns added via migration 20251019
+  name: text("name"),
+  createdBy: uuid("created_by"),
+  legalBasis: text("legal_basis"),
+  documentNumber: text("document_number"),
+  valuationMethod: text("valuation_method"),
 }, (table) => {
   return {
     warehouseIdx: index("warehouse_assessment_idx").on(table.warehouseId),
@@ -83,6 +89,8 @@ export const inventoryAssessmentItems = pgTable("inventory_assessment_items", {
   notes: text("notes"),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  // Additional column added via migration 20251019
+  unitOfMeasure: text("unit_of_measure").default("buc"),
 }, (table) => {
   return {
     assessmentIdx: index("assessment_items_idx").on(table.assessmentId),
