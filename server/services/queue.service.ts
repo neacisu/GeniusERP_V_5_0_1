@@ -54,17 +54,11 @@ export class QueueService implements IQueueService {
         console.log('Successfully retrieved Redis client for BullMQ');
       } catch (error) {
         console.warn('Redis client not available, queue service will use sync processing:', error);
-        
-        // Ensure we can still proceed with the application even without Redis
-        console.warn('Redis Cloud note: Using volatile-lru policy instead of noeviction. Some features may be affected.');
         return; // Skip queue initialization
       }
       
       if (!redisClient) {
         console.warn('Redis client not available, queue service will use sync processing');
-        
-        // Log more information to help diagnose the issue
-        console.warn('Redis Cloud note: Using volatile-lru policy instead of noeviction. Some features may be affected.');
         return; // Skip queue initialization
       }
       
@@ -100,11 +94,8 @@ export class QueueService implements IQueueService {
         }
       };
       
-      console.log('Redis Cloud note: Using volatile-lru policy instead of noeviction. Some features may be affected.');
-      
       try {
         // Start with just one queue as a test
-        console.log('Initializing balance queue...');
         this.balanceQueue = new Queue('balance-updates', {
           connection: connectionOptions.connection,
           defaultJobOptions: {

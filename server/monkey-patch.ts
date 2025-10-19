@@ -1,22 +1,16 @@
 /**
- * This file suppresses Redis policy warnings and makes BullMQ work with Redis Cloud
+ * This file suppresses duplicate Redis policy warnings
  */
 
-// Make the eviction policy warning much less verbose
+// Suppress duplicate eviction policy warnings from BullMQ
 const originalConsoleWarn = console.warn;
 console.warn = function(...args: any[]) {
-  // If it's an eviction policy warning, just print it once
+  // If it's an eviction policy warning, suppress it (already handled in redis.service.ts)
   if (args[0] && typeof args[0] === 'string' && args[0].includes('Eviction policy')) {
-    if (!(global as any).__evictionPolicyWarned) {
-      originalConsoleWarn('Redis Cloud note: Using volatile-lru policy instead of noeviction. Some features may be affected.');
-      (global as any).__evictionPolicyWarned = true;
-    }
-    return;
+    return; // Silently ignore - main warning is in redis.service.ts
   }
   originalConsoleWarn.apply(console, args);
 };
 
-// This will help silence eviction policy warnings
+// This will help silence eviction policy warnings from BullMQ
 process.env.BULLMQ_IGNORE_EVICTION_POLICY = "true";
-
-console.log('Applied Redis eviction policy warning suppression');

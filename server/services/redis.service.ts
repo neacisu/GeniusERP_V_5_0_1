@@ -115,33 +115,41 @@ export class RedisService {
       throw new Error('Redis client not connected');
     }
     
-    // Check if we've already warned about eviction policy
-    if (!this.client.__policyChecked) {
+    // Check if we've already warned about eviction policy (only once globally)
+    if (!this.client.__policyChecked && !(global as any).__redisEvictionPolicyWarned) {
       // Implement workaround for eviction policy issue
       this.client.config("GET", "maxmemory-policy").then((policyResponse: any) => {
         const policy = policyResponse as string[];
         if (policy && policy.length > 1 && policy[1] !== "noeviction") {
-          console.warn(`WARNING: Redis eviction policy is set to ${policy[1]} instead of 'noeviction'.`);
-          console.warn('This may cause issues with BullMQ. Consider using a Redis instance with noeviction policy.');
-          console.warn('Implementing application-level workaround to minimize impacts.');
+          console.warn(`⚠️  Redis Cloud Eviction Policy: ${policy[1]}`);
+          console.warn('📋 Action Required: Change Redis Cloud maxmemory-policy to "noeviction"');
+          console.warn('   1. Login to Redis Cloud console (https://app.redislabs.com)');
+          console.warn('   2. Go to Database Settings');
+          console.warn('   3. Set "Data eviction policy" to "noeviction"');
+          console.warn('✅ Workaround active: All cache operations use TTL to work with volatile-lru');
+          
+          // Mark as globally warned to prevent duplicate warnings
+          (global as any).__redisEvictionPolicyWarned = true;
           
           // Implement additional error handling for BullMQ operations
           if (this.client) {
             this.client.on('error', (err) => {
               if (err.message && err.message.includes('OOM')) {
-                console.error('Redis OOM error detected. This is likely due to eviction policy not being set to noeviction.');
-                // Additional recovery logic could be implemented here
+                console.error('❌ Redis OOM error: Memory full. Consider upgrading Redis Cloud plan.');
               }
             });
           }
         }
         
-        // Mark as checked to avoid repeated warnings
+        // Mark as checked to avoid repeated checks
         if (this.client) {
           this.client.__policyChecked = true;
         }
       }).catch(err => {
-        console.warn('Could not check Redis maxmemory-policy:', err.message);
+        // Silently fail if can't check policy (Redis Cloud may restrict CONFIG command)
+        if (!err.message.includes('unknown command') && !err.message.includes('not allowed')) {
+          console.warn('Could not check Redis maxmemory-policy:', err.message);
+        }
       });
     }
     
