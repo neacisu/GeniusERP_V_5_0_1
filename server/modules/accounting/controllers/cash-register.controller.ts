@@ -66,11 +66,12 @@ export class CashRegisterController extends BaseController {
           ...register,
           message: "Cash register created successfully"
         };
-      } catch (error: any) {
-        if (error.message && error.message.includes("validation")) {
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+        if (err.message && err.message.includes("validation")) {
           throw {
             statusCode: 400,
-            message: error.message
+            message: err.message
           };
         }
         
@@ -106,11 +107,12 @@ export class CashRegisterController extends BaseController {
           ...updatedRegister,
           message: "Cash register updated successfully"
         };
-      } catch (error: any) {
-        if (error.message && error.message.includes("validation")) {
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+        if (err.message && err.message.includes("validation")) {
           throw {
             statusCode: 400,
-            message: error.message
+            message: err.message
           };
         }
         
@@ -230,11 +232,12 @@ export class CashRegisterController extends BaseController {
           ...transaction,
           message: "Cash receipt recorded successfully"
         };
-      } catch (error: any) {
-        if (error.message && error.message.includes("validation")) {
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+        if (err.message && err.message.includes("validation")) {
           throw {
             statusCode: 400,
-            message: error.message
+            message: err.message
           };
         }
         
@@ -277,11 +280,12 @@ export class CashRegisterController extends BaseController {
           ...transaction,
           message: "Cash payment recorded successfully"
         };
-      } catch (error: any) {
-        if (error.message && error.message.includes("validation")) {
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+        if (err.message && err.message.includes("validation")) {
           throw {
             statusCode: 400,
-            message: error.message
+            message: err.message
           };
         }
         
@@ -324,11 +328,12 @@ export class CashRegisterController extends BaseController {
           toTransactionId: result.toTransactionId,
           message: "Cash transfer recorded successfully"
         };
-      } catch (error: any) {
-        if (error.message && (error.message.includes("validation") || error.message.includes("not found"))) {
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+        if (err.message && (err.message.includes("validation") || err.message.includes("not found"))) {
           throw {
             statusCode: 400,
-            message: error.message
+            message: err.message
           };
         }
         
@@ -374,11 +379,12 @@ export class CashRegisterController extends BaseController {
           ...deposit,
           message: "Cash deposit to bank recorded successfully"
         };
-      } catch (error: any) {
-        if (error.message && (error.message.includes("validation") || error.message.includes("not found"))) {
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+        if (err.message && (err.message.includes("validation") || err.message.includes("not found"))) {
           throw {
             statusCode: 400,
-            message: error.message
+            message: err.message
           };
         }
         
@@ -424,11 +430,12 @@ export class CashRegisterController extends BaseController {
           ...withdrawal,
           message: "Cash withdrawal from bank recorded successfully"
         };
-      } catch (error: any) {
-        if (error.message && (error.message.includes("validation") || error.message.includes("not found"))) {
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+        if (err.message && (err.message.includes("validation") || err.message.includes("not found"))) {
           throw {
             statusCode: 400,
-            message: error.message
+            message: err.message
           };
         }
         
@@ -469,11 +476,12 @@ export class CashRegisterController extends BaseController {
             ? "No adjustment needed - balance matches"
             : "Cash register reconciliation completed successfully"
         };
-      } catch (error: any) {
-        if (error.message && (error.message.includes("validation") || error.message.includes("not found"))) {
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+        if (err.message && (err.message.includes("validation") || err.message.includes("not found"))) {
           throw {
             statusCode: 400,
-            message: error.message
+            message: err.message
           };
         }
         
@@ -523,11 +531,12 @@ export class CashRegisterController extends BaseController {
         );
         
         return report;
-      } catch (error: any) {
-        if (error.message && error.message.includes("date")) {
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+        if (err.message && err.message.includes("date")) {
           throw {
             statusCode: 400,
-            message: error.message
+            message: err.message
           };
         }
         
