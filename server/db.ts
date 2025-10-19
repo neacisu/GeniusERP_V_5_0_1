@@ -8,6 +8,7 @@
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import * as schema from "@shared/schema";
+import { log } from './vite';
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
@@ -33,4 +34,4 @@ export const pool = queryClient;
 // Make pool available globally for backward compatibility
 globalThis.pool = pool;
 
-console.log('✅ Database connection initialized (PostgreSQL 17 local)');
+log('✅ Database connection initialized (PostgreSQL 17 local)', 'db-init');
