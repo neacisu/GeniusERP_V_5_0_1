@@ -1,8 +1,8 @@
-import { Queue, Worker, QueueEvents } from 'bullmq';
+import { Queue, Worker } from 'bullmq';
 import { RedisService } from './redis.service';
-import { AccountingService } from '../modules/accounting/services/accounting.service';
-import { InventoryService } from '../modules/inventory/services/inventory.service';
-import { storage } from '../storage';
+import { Logger } from '../utils/logger';
+
+const logger = new Logger('QueueService');
 
 // Define job types
 export interface BalanceUpdateJob {
@@ -17,7 +17,7 @@ export interface StockUpdateJob {
 
 export interface ReportGenerationJob {
   reportType: string;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   userId: string;
 }
 
@@ -26,8 +26,8 @@ export interface IQueueService {
   init(): Promise<void>;
   addBalanceUpdateJob(data: BalanceUpdateJob): Promise<void>;
   addStockUpdateJob(data: StockUpdateJob): Promise<void>;
-  addReportGenerationJob(data: ReportGenerationJob): Promise<any>;
-  getJobStatus(queueName: string, jobId: string): Promise<any>;
+  addReportGenerationJob(data: ReportGenerationJob): Promise<{ jobId: string; status: string }>;
+  getJobStatus(queueName: string, jobId: string): Promise<{ id: string; state: string } | null>;
   close(): Promise<void>;
 }
 
@@ -43,15 +43,11 @@ export class QueueService implements IQueueService {
   
   async init() {
     try {
-      // Initialize services
-      const accountingService = new AccountingService(storage);
-      const inventoryService = new InventoryService(storage);
-      
       // Try to get Redis client - might be null if Redis isn't available
       let redisClient = null;
       try {
         redisClient = this.redisService.getClient();
-        console.log('Successfully retrieved Redis client for BullMQ');
+        logger.info('Successfully retrieved Redis client for BullMQ');
       } catch (error) {
         console.warn('Redis client not available, queue service will use sync processing:', error);
         return; // Skip queue initialization
@@ -62,12 +58,7 @@ export class QueueService implements IQueueService {
         return; // Skip queue initialization
       }
       
-      console.log('Using Redis client with options:', {
-        host: redisClient.options?.host,
-        port: redisClient.options?.port,
-        tls: !!redisClient.options?.tls,
-        username: !!redisClient.options?.username
-      });
+      logger.info(`Using Redis client - host: ${redisClient.options?.host}, port: ${redisClient.options?.port}, tls: ${!!redisClient.options?.tls}, username: ${!!redisClient.options?.username}`);
       
       // Create simplified connection options for BullMQ
       const connectionOptions = {
@@ -107,7 +98,7 @@ export class QueueService implements IQueueService {
           },
         });
         
-        console.log('Balance queue initialized successfully');
+        logger.info('Balance queue initialized successfully');
         
         // Add error handlers
         this.balanceQueue.on('error', (err) => {
@@ -115,14 +106,14 @@ export class QueueService implements IQueueService {
         });
         
         // Initialize the worker for the balance queue
-        console.log('Initializing balance worker...');
+        logger.info('Initializing balance worker...');
         this.balanceWorker = new Worker('balance-updates', 
           async (job) => {
-            console.log(`Processing balance update job: ${job.id}`);
+            logger.info(`Processing balance update job: ${job.id}`);
             const { journalEntryId, companyId } = job.data as BalanceUpdateJob;
             
             // Here we would update account balances based on the journal entry
-            console.log(`Updating balances for journal entry: ${journalEntryId}, company: ${companyId}`);
+            logger.info(`Updating balances for journal entry: ${journalEntryId}, company: ${companyId}`);
             
             // Actual implementation would involve fetching the journal entry,
             // its lines, and updating the corresponding account balances
@@ -132,7 +123,7 @@ export class QueueService implements IQueueService {
           { connection: connectionOptions.connection }
         );
         
-        console.log('Balance worker initialized, registering event handlers...');
+        logger.info('Balance worker initialized, registering event handlers...');
         
         // Add error handlers
         this.balanceWorker.on('error', (err) => {
@@ -143,7 +134,7 @@ export class QueueService implements IQueueService {
           console.error(`Balance update job ${job?.id} failed:`, err);
         });
         
-        console.log('Successfully initialized balance queue and worker');
+        logger.info('Successfully initialized balance queue and worker');
         
         // Initialize the other queues only if the first one was successful
         this.stockQueue = new Queue('stock-updates', {
@@ -168,17 +159,17 @@ export class QueueService implements IQueueService {
           },
         });
         
-        console.log('Stock and report queues initialized successfully');
+        logger.info('Stock and report queues initialized successfully');
         
         // Initialize the other workers
         this.stockWorker = new Worker('stock-updates',
           async (job) => {
-            console.log(`Processing stock update job: ${job.id}`);
-            const { movementId, productId } = job.data as StockUpdateJob;
+            logger.info(`Processing stock update job: ${job.id}`);
+            const { movementId } = job.data as StockUpdateJob;
             
             // Update stock based on the stock movement
             // TODO: Implement updateStock method in InventoryService
-            console.log(`Stock update for movement ${movementId} - method not yet implemented`);
+            logger.info(`Stock update for movement ${movementId} - method not yet implemented`);
             
             return { success: true, message: 'Stock updated successfully' };
           },
@@ -187,11 +178,11 @@ export class QueueService implements IQueueService {
         
         this.reportWorker = new Worker('report-generation',
           async (job) => {
-            console.log(`Processing report generation job: ${job.id}`);
-            const { reportType, parameters, userId } = job.data as ReportGenerationJob;
+            logger.info(`Processing report generation job: ${job.id}`);
+            const { reportType, parameters } = job.data as ReportGenerationJob;
             
             // Generate report based on type and parameters
-            console.log(`Generating ${reportType} report with parameters:`, parameters);
+            logger.info(`Generating ${reportType} report with parameters: ${JSON.stringify(parameters)}`);
             
             // Here we would generate the report and store it for later retrieval
             
@@ -221,7 +212,7 @@ export class QueueService implements IQueueService {
           console.error(`Report generation job ${job?.id} failed:`, err);
         });
         
-        console.log('All workers initialized successfully');
+        logger.info('All workers initialized successfully');
       } catch (queueErr) {
         console.error('Failed to initialize queues or workers:', queueErr);
         
@@ -246,7 +237,7 @@ export class QueueService implements IQueueService {
         console.warn('Falling back to synchronous processing');
       }
       
-      console.log('Queue service initialization completed');
+      logger.info('Queue service initialization completed');
       
     } catch (error) {
       console.error('Failed to initialize queue service:', error);
@@ -266,7 +257,7 @@ export class QueueService implements IQueueService {
       this.reportWorker?.close(),
     ]);
     
-    console.log('Queue service closed');
+    logger.info('Queue service closed');
   }
   
   // Add jobs to queues
@@ -292,19 +283,20 @@ export class QueueService implements IQueueService {
     await this.stockQueue.add('update-stock', data);
   }
   
-  async addReportGenerationJob(data: ReportGenerationJob) {
+  async addReportGenerationJob(data: ReportGenerationJob): Promise<{ jobId: string; status: string }> {
     if (!this.reportQueue) {
       // Fallback: process synchronously
       console.warn('Report queue not available, processing synchronously');
       // Implementation would be here
-      return;
+      return { jobId: 'sync-' + Date.now(), status: 'completed' };
     }
     
-    return await this.reportQueue.add('generate-report', data);
+    const job = await this.reportQueue.add('generate-report', data);
+    return { jobId: job.id || 'unknown', status: 'queued' };
   }
   
   // Get job status
-  async getJobStatus(queueName: string, jobId: string) {
+  async getJobStatus(queueName: string, jobId: string): Promise<{ id: string; state: string } | null> {
     let queue;
     
     switch (queueName) {
@@ -318,26 +310,22 @@ export class QueueService implements IQueueService {
         queue = this.reportQueue;
         break;
       default:
-        throw new Error(`Unknown queue: ${queueName}`);
+        return null;
     }
     
     if (!queue) {
-      throw new Error(`Queue ${queueName} not initialized`);
+      return null;
     }
     
     const job = await queue.getJob(jobId);
     if (!job) {
-      throw new Error(`Job ${jobId} not found`);
+      return null;
     }
     
     const state = await job.getState();
     return {
-      id: job.id,
-      state,
-      data: job.data,
-      returnValue: job.returnvalue,
-      failedReason: job.failedReason,
-      progress: job.progress,
+      id: job.id || jobId,
+      state: state || 'unknown',
     };
   }
 }

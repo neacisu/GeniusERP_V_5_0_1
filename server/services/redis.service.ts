@@ -1,4 +1,7 @@
 import Redis from 'ioredis';
+import { Logger } from '../utils/logger';
+
+const logger = new Logger('RedisService');
 
 // Extend Redis type to include our custom properties
 interface ExtendedRedis extends Redis {
@@ -83,7 +86,7 @@ export class RedisService {
             setTimeout(() => reject(new Error('Redis ping timeout')), 3000)
           )
         ]);
-        console.log('Connected to Redis Cloud successfully');
+        logger.info('Connected to Redis Cloud successfully');
         return this.client;
       } catch (pingError) {
         console.error('Redis ping failed:', pingError);
@@ -106,7 +109,7 @@ export class RedisService {
     if (this.client) {
       await this.client.quit();
       this.client = null;
-      console.log('Disconnected from Redis');
+      logger.info('Disconnected from Redis');
     }
   }
   
@@ -116,9 +119,9 @@ export class RedisService {
     }
     
     // Check if we've already warned about eviction policy (only once globally)
-    if (!this.client.__policyChecked && !(global as any).__redisEvictionPolicyWarned) {
+    if (!this.client.__policyChecked && !(global as { __redisEvictionPolicyWarned?: boolean }).__redisEvictionPolicyWarned) {
       // Implement workaround for eviction policy issue
-      this.client.config("GET", "maxmemory-policy").then((policyResponse: any) => {
+      this.client.config("GET", "maxmemory-policy").then((policyResponse: unknown) => {
         const policy = policyResponse as string[];
         if (policy && policy.length > 1 && policy[1] !== "noeviction") {
           console.warn(`⚠️  Redis Cloud Eviction Policy: ${policy[1]}`);
@@ -129,7 +132,7 @@ export class RedisService {
           console.warn('✅ Workaround active: All cache operations use TTL to work with volatile-lru');
           
           // Mark as globally warned to prevent duplicate warnings
-          (global as any).__redisEvictionPolicyWarned = true;
+          (global as { __redisEvictionPolicyWarned?: boolean }).__redisEvictionPolicyWarned = true;
           
           // Implement additional error handling for BullMQ operations
           if (this.client) {
@@ -276,7 +279,7 @@ export class RedisService {
       
       try {
         return JSON.parse(value) as T;
-      } catch (parseError) {
+      } catch {
         // If not JSON, return as-is (cast to unknown first for type safety)
         return value as unknown as T;
       }
@@ -502,7 +505,7 @@ export class RedisService {
       }
       
       await this.client.flushdb();
-      console.log('Redis database flushed');
+      logger.info('Redis database flushed');
     } catch (error) {
       console.error('Redis flushDB error:', error);
       throw error;
