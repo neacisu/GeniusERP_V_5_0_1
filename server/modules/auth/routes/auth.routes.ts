@@ -42,7 +42,9 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
         if (!user || !(await authService.comparePasswords(password, user.password))) {
           return done(null, false, { message: "Nume de utilizator sau parolă incorecte" });
         } else {
-          return done(null, user);
+          // Transform SelectUser to AuthUser by adding roles array
+          const authUser = { ...user, roles: [user.role] };
+          return done(null, authUser);
         }
       } catch (error) {
         return done(error);
@@ -62,7 +64,9 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
           if (!user) {
             return done(null, false);
           }
-          return done(null, user);
+          // Transform SelectUser to AuthUser by adding roles array
+          const authUser = { ...user, roles: [user.role] };
+          return done(null, authUser);
         } catch (error) {
           return done(error);
         }
@@ -74,7 +78,9 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
   passport.deserializeUser(async (id: string, done) => {
     try {
       const user = await authService.getUserById(id);
-      done(null, user);
+      // Transform SelectUser to AuthUser by adding roles array
+      const authUser = user ? { ...user, roles: [user.role] } : null;
+      done(null, authUser);
     } catch (error) {
       done(error, null);
     }
@@ -144,7 +150,7 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
           id: user.id,
           username: user.username,
           role: user.role,
-          companyId: user.company_id
+          companyId: user.companyId
         }
       });
     } catch (error: any) {

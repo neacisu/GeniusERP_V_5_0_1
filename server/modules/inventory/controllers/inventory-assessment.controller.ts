@@ -163,7 +163,7 @@ export function createInventoryAssessmentController(
           franchiseId: req.user?.franchiseId || undefined,
           // Map to assessment_type column
           assessment_type: req.body.type || req.body.assessmentType,
-          warehouse_id: req.body.warehouseId,
+          warehouseId: req.body.warehouseId,
           // Set both name and assessment_number for compatibility
           name: req.body.name || req.body.assessmentNumber || `Inventariere ${new Date().toLocaleDateString('ro-RO')}`,
           assessment_number: req.body.assessmentNumber || req.body.name || `Inventariere ${new Date().toLocaleDateString('ro-RO')}`,
