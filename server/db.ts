@@ -31,7 +31,6 @@ export const db = drizzle(queryClient, { schema });
 export const pool = queryClient;
 
 // Make pool available globally for backward compatibility
-// @ts-ignore - Adding pool to globalThis
 globalThis.pool = pool;
 
 console.log('✅ Database connection initialized (PostgreSQL 17 local)');

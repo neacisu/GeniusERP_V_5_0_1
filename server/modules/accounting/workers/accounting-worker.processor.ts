@@ -452,7 +452,6 @@ async function handleBatchExport(job: Job): Promise<any> {
   try {
     const fs = await import('fs');
     const path = await import('path');
-    // @ts-ignore - archiver types might not be available
     const archiver = (await import('archiver')).default;
     
     const { getDrizzle } = await import('../../../common/drizzle');

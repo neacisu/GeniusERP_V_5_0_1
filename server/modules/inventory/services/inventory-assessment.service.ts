@@ -9,7 +9,6 @@ import type postgres from 'postgres';
 
 // Get PostgreSQL connection pool from global
 // Note: Pool is now a postgres-js Sql instance, not Neon Pool
-// @ts-ignore - Pool is defined in server/db.ts and attached to global
 const pool = globalThis.pool as ReturnType<typeof postgres>;
 
 export class InventoryAssessmentService {

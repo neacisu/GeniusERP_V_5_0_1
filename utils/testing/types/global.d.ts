@@ -4,9 +4,16 @@
 
 import type { Express } from 'express';
 
-// Mock Database Type - folosim any pentru flexibilitate în teste
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type MockDatabase = any;
+/**
+ * Mock Database Type - Interface pentru mock database în teste
+ * Permite orice metodă și proprietate pentru flexibilitate în testing
+ */
+export interface MockDatabase {
+  query?: (...args: unknown[]) => Promise<unknown>;
+  execute?: (...args: unknown[]) => Promise<unknown>;
+  transaction?: (...args: unknown[]) => Promise<unknown>;
+  [key: string]: unknown;
+}
 
 declare global {
   var testApp: Express;

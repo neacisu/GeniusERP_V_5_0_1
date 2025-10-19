@@ -4,7 +4,7 @@
  * This service handles JWT token generation and verification.
  */
 
-import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import { JwtUserData } from '../../../../shared/types';
 import { JWT_SECRET } from './auth.service';
 
@@ -41,9 +41,10 @@ export class JwtService {
    * @param expiresIn Token expiration time
    * @returns JWT token
    */
-  generateToken(payload: JwtUserData, expiresIn: string = DEFAULT_EXPIRATION): string {
-    // @ts-ignore - expiresIn accepts string in jwt.sign but TypeScript is strict about it
-    return jwt.sign(payload, this.secret, { expiresIn });
+  generateToken(payload: JwtUserData, expiresIn = DEFAULT_EXPIRATION): string {
+    // Note: We need to use type assertion here because @types/jsonwebtoken has overly strict typing
+    // for expiresIn, but the actual library accepts string values like '1h', '7d', etc.
+    return jwt.sign(payload, this.secret, { expiresIn } as jwt.SignOptions);
   }
 
   /**
@@ -52,9 +53,10 @@ export class JwtService {
    * @param expiresIn Token expiration time
    * @returns Refresh token
    */
-  generateRefreshToken(userId: string, expiresIn: string = '7d'): string {
-    // @ts-ignore - expiresIn accepts string in jwt.sign but TypeScript is strict about it
-    return jwt.sign({ id: userId }, this.refreshSecret, { expiresIn });
+  generateRefreshToken(userId: string, expiresIn = '7d'): string {
+    // Note: We need to use type assertion here because @types/jsonwebtoken has overly strict typing
+    // for expiresIn, but the actual library accepts string values like '1h', '7d', etc.
+    return jwt.sign({ id: userId }, this.refreshSecret, { expiresIn } as jwt.SignOptions);
   }
 
   /**
@@ -102,21 +104,21 @@ export class JwtService {
    */
   async blacklistToken(token: string): Promise<void> {
     // Store in Redis with expiry matching token
-    const decoded = jwt.decode(token) as any;
+    const decoded = jwt.decode(token) as jwt.JwtPayload | null;
     if (decoded?.exp) {
-      const ttl = decoded.exp - Math.floor(Date.now() / 1000);
+      const _ttl = decoded.exp - Math.floor(Date.now() / 1000);
       // Uncomment and implement Redis integration when needed
-      // await redis.setex(`blacklist:${token}`, ttl, '1');
-      console.log(`Token blacklisted for ${ttl} seconds`);
+      // await redis.setex(`blacklist:${token}`, _ttl, '1');
+      // Token would be blacklisted for ${_ttl} seconds
     }
   }
 
   /**
    * Check if token is blacklisted
    */
-  async isBlacklisted(token: string): Promise<boolean> {
+  async isBlacklisted(_token: string): Promise<boolean> {
     // Uncomment and implement Redis integration when needed
-    // return !!(await redis.get(`blacklist:${token}`));
+    // return !!(await redis.get(`blacklist:${_token}`));
     return false; // Placeholder, always returns false until Redis is implemented
   }
 }

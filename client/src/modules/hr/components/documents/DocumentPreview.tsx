@@ -54,8 +54,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   const handleDownload = () => {
     const printContent = document.getElementById('document-print-content');
     
-    if (printContent && window && 'html2pdf' in window) {
-      // @ts-ignore - html2pdf library is loaded globally
+    if (printContent && window.html2pdf) {
       window.html2pdf()
         .from(printContent)
         .save(`${type === 'gdpr' ? 'consimtamant-gdpr' : 'acord-utilizare-cont'}-${employee.lastName}-${employee.firstName}.pdf`);

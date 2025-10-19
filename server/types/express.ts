@@ -11,3 +11,14 @@ export type { JwtUserData, JwtPayload } from '../../shared/types';
 export interface AuthenticatedRequest extends Request {
   user?: JwtUserData;
 }
+
+// Extend Express Request to include Multer file
+declare global {
+  namespace Express {
+    interface Request {
+      user?: JwtUserData;
+      file?: Multer.File;
+      files?: Multer.File[] | { [fieldname: string]: Multer.File[] };
+    }
+  }
+}

@@ -25,10 +25,8 @@ export function loggingMiddleware(req: Request, res: Response, next: NextFunctio
       {
         ip: req.ip || req.socket.remoteAddress,
         userAgent: req.get('user-agent'),
-        // @ts-ignore - user might be added by auth middleware
         userId: req.user?.id,
-        // @ts-ignore - companyId might be added by auth middleware
-        companyId: req.user?.company_id,
+        companyId: req.user?.company_id ?? undefined,
       }
     );
   });

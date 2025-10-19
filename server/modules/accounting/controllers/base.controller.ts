@@ -4,6 +4,11 @@ import { createModuleLogger } from '../../../common/logger/loki-logger';
 
 const logger = createModuleLogger('BaseController');
 
+interface ErrorWithStatus extends Error {
+  statusCode?: number;
+  details?: unknown;
+}
+
 /**
  * BaseController
  * 
@@ -15,10 +20,10 @@ export class BaseController {
   /**
    * Handle API request with standardized error handling
    */
-  protected async handleRequest(
+  protected async handleRequest<T>(
     req: Request, 
     res: Response, 
-    handler: () => Promise<any>,
+    handler: () => Promise<T>,
     context?: {
       module?: string;
       operation?: string;
@@ -38,21 +43,20 @@ export class BaseController {
 
       const result = await handler();
       res.status(200).json(result);
-    } catch (error: any) {
-      logger.error('Controller error', error, {
+    } catch (error) {
+      const err = error as ErrorWithStatus;
+      logger.error('Controller error', err, {
         method: req.method,
         path: req.path,
         operation: context?.operation,
       });
       
       // Capture exception in Sentry with full context
-      captureException(error, {
+      captureException(err, {
         module: context?.module || 'accounting',
         operation: context?.operation || req.path,
-        // @ts-ignore
         userId: req.user?.id,
-        // @ts-ignore
-        companyId: req.user?.companyId,
+        companyId: req.user?.companyId ?? undefined,
         extra: {
           method: req.method,
           path: req.path,
@@ -62,13 +66,13 @@ export class BaseController {
         },
       });
       
-      const statusCode = error.statusCode || 500;
-      const message = error.message || 'Internal server error';
+      const statusCode = err.statusCode || 500;
+      const message = err.message || 'Internal server error';
       
       res.status(statusCode).json({
         error: true,
         message: message,
-        details: error.details || null
+        details: err.details || null
       });
     }
   }
@@ -111,7 +115,7 @@ export class BaseController {
     }
     
     // Franchise ID might be attached to the user object by middleware
-    return (req.user as any).franchiseId || null;
+    return req.user.franchiseId || null;
   }
   
   /**
@@ -142,7 +146,7 @@ export class BaseController {
       }
       
       return date;
-    } catch (error) {
+    } catch (_error) {
       return undefined;
     }
   }

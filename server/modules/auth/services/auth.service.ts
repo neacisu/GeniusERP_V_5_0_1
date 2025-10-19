@@ -55,27 +55,33 @@ export class AuthService {
   generateToken(user: SelectUser): string {
     console.log('[AuthService] User object for token:', user);
     
-    // Handle both camelCase and snake_case for companyId
-    const companyId = (user as any).companyId || (user as any).company_id;
+    // Handle both camelCase and snake_case for companyId - type safe access
+    const userWithExtras = user as SelectUser & { 
+      companyId?: string | null; 
+      company_id?: string | null;
+      permissions?: string[];
+      franchiseId?: string | null;
+    };
+    const companyId = userWithExtras.companyId || userWithExtras.company_id;
     
-    const payload: any = {
+    const payload: JwtPayload = {
       id: user.id,
       userId: user.id, // Alias pentru compatibilitate cu frontend
       username: user.username,
       role: user.role,
       roles: [user.role],
-      companyId: companyId,
-      company_id: companyId, // Pentru compatibilitate snake_case
-      permissions: (user as any).permissions || [],
-      franchiseId: (user as any).franchiseId || null,
+      companyId: companyId ?? null,
+      company_id: companyId ?? null, // Pentru compatibilitate snake_case
+      permissions: userWithExtras.permissions || [],
+      franchiseId: userWithExtras.franchiseId || null,
       email: user.email || undefined,
       fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || undefined
     };
     
     console.log('[AuthService] Generated token payload:', payload);
     
-    // @ts-ignore - expiresIn accepts string but TypeScript complains
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    // Note: Using type assertion for SignOptions because @types/jsonwebtoken has overly strict typing
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as SignOptions);
   }
 
   /**

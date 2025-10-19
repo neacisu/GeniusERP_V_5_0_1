@@ -275,12 +275,10 @@ export class BankJournalController extends BaseController {
         throw { statusCode: 404, message: 'Bank account not found' };
       }
       
-      // @ts-ignore - req.file comes from multer middleware
       if (!req.file) {
         throw { statusCode: 400, message: 'No file uploaded' };
       }
       
-      // @ts-ignore - req.file comes from multer middleware
       const { path } = req.file;
       const { format, dateFormat, transactions } = req.body;
       

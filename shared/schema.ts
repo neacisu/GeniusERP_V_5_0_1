@@ -287,7 +287,6 @@ export const accountGroupRelations = relations(accountGroups, ({ one, many }) =>
 }));
 
 // 3. Synthetic Accounts (Grade 1: 3 digits, Grade 2: 4 digits)
-// @ts-ignore - Referință circulară validă în Drizzle ORM (parentId referențiază syntheticAccounts.id)
 export const syntheticAccounts = pgTable("synthetic_accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
   code: varchar("code", { length: 4 }).notNull().unique(), // 3-4 digits (e.g., 101, 1011)
@@ -300,11 +299,16 @@ export const syntheticAccounts = pgTable("synthetic_accounts", {
   accountFunction: text("account_function").notNull(),
   grade: integer("grade").notNull(), // 1 (3 digits) or 2 (4 digits)
   groupId: uuid("group_id").notNull().references(() => accountGroups.id),
-  parentId: uuid("parent_id").references((): any => syntheticAccounts.id), // For Grade 2 accounts - explicit return type
+  // Self-reference: Grade 2 accounts can reference Grade 1 accounts as parents
+  // Using function with explicit return to allow TypeScript to resolve the circular reference
+  parentId: uuid("parent_id"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  // Define foreign key constraint separately to avoid circular reference issues
+  parentReference: index("synthetic_accounts_parent_idx").on(table.parentId),
+}));
 
 export const syntheticAccountRelations = relations(syntheticAccounts, ({ one, many }) => ({
   group: one(accountGroups, {
@@ -345,7 +349,6 @@ export const analyticAccountRelations = relations(analyticAccounts, ({ one, many
 }));
 
 // Legacy accounts table maintained for backward compatibility
-// @ts-ignore - Referință circulară validă în Drizzle ORM (parentId referențiază accounts.id)
 export const accounts = pgTable("accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
   code: varchar("code", { length: 20 }).notNull().unique(),
@@ -353,13 +356,17 @@ export const accounts = pgTable("accounts", {
   description: text("description"),
   type: text("type").notNull(), // A (Active), P (Passive), B (Bifunctional)
   classId: uuid("class_id").notNull().references(() => accountClasses.id),
-  parentId: uuid("parent_id").references((): any => accounts.id), // Self-reference - explicit return type
+  // Self-reference: accounts can have parent accounts
+  parentId: uuid("parent_id"),
   isActive: boolean("is_active").default(true),
   syntheticId: uuid("synthetic_id").references(() => syntheticAccounts.id),
   analyticId: uuid("analytic_id").references(() => analyticAccounts.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  // Define foreign key constraint separately to avoid circular reference issues
+  parentReference: index("accounts_parent_idx").on(table.parentId),
+}));
 
 export const accountRelations = relations(accounts, ({ one, many }) => ({
   class: one(accountClasses, {
@@ -484,16 +491,19 @@ export const journalLineRelations = relations(journalLines, ({ one }) => ({
 }));
 
 // Inventory Management
-// @ts-ignore - Referință circulară validă în Drizzle ORM (parentId referențiază inventoryCategories.id)
 export const inventoryCategories = pgTable("inventory_categories", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull().unique(), // Adăugare constrângere de unicitate
   description: text("description"),
-  parentId: uuid("parent_id").references((): any => inventoryCategories.id), // Self-reference - explicit return type
+  // Self-reference: categories can have parent categories
+  parentId: uuid("parent_id"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  // Define foreign key constraint separately to avoid circular reference issues
+  parentReference: index("inventory_categories_parent_idx").on(table.parentId),
+}));
 
 export const inventoryCategoryRelations = relations(inventoryCategories, ({ one, many }) => ({
   parent: one(inventoryCategories, {
