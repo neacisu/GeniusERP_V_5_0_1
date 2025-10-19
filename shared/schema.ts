@@ -34,6 +34,8 @@ export * from "./schema/collaboration.schema";
 
 // Export Invoicing models for shared usage across the application
 export * from "../server/modules/invoicing/schema/invoice.schema";
+// Import invoiceItems explicitly for relations (needed to avoid circular dependency)
+import { invoiceItems } from "../server/modules/invoicing/schema/invoice.schema";
 export * from "./schema/invoice-numbering.schema";
 
 // Export Warehouse models for shared usage across the application
@@ -797,6 +799,23 @@ export const invoiceDetailRelations = relations(invoiceDetails, ({ one }) => ({
     fields: [invoiceDetails.invoiceId],
     references: [invoices.id],
   }),
+}));
+
+/**
+ * Relations for invoices - links to invoice items
+ */
+export const invoicesRelations = relations(invoices, ({ many }) => ({
+  items: many(invoiceItems)
+}));
+
+/**
+ * Relations for invoice items - links back to invoice
+ */
+export const invoiceItemsRelations = relations(invoiceItems, ({ one }) => ({
+  invoice: one(invoices, {
+    fields: [invoiceItems.invoiceId],
+    references: [invoices.id]
+  })
 }));
 
 // Schema validation

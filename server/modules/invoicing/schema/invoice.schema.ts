@@ -7,9 +7,8 @@
  * This file only contains invoice_items (unified table)
  */
 
-import { pgTable, uuid, text, timestamp, numeric, boolean, integer } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
-import { invoices } from '@shared/schema';
+import { pgTable, uuid, text, timestamp, numeric, integer } from 'drizzle-orm/pg-core';
+import { invoices, type Invoice } from '@shared/schema';
 
 /**
  * Invoice items table (unified from invoice_lines)
@@ -41,22 +40,8 @@ export const invoiceItems = pgTable('invoice_items', {
   updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
 
-/**
- * Relations for invoices (extends shared schema relation)
- */
-export const invoicesRelations = relations(invoices, ({ many }) => ({
-  items: many(invoiceItems)
-}));
-
-/**
- * Relations for invoice items
- */
-export const invoiceItemsRelations = relations(invoiceItems, ({ one }) => ({
-  invoice: one(invoices, {
-    fields: [invoiceItems.invoiceId],
-    references: [invoices.id]
-  })
-}));
+// Note: Relations for invoices and invoiceItems are defined in shared/schema.ts
+// to avoid circular dependency issues
 
 // Re-export Invoice types from shared schema for consistency
 export type { Invoice, InsertInvoice } from '@shared/schema';
@@ -66,17 +51,15 @@ export type InsertInvoiceItem = typeof invoiceItems.$inferInsert;
 
 /**
  * Extended Invoice type with relations
+ * Extends base Invoice type with additional relation properties
  */
-export interface InvoiceWithRelations {
-  details?: any;
+export interface InvoiceWithRelations extends Invoice {
+  details?: unknown;
   lines?: InvoiceItem[];
   items?: InvoiceItem[];
-  [key: string]: any; // Allow dynamic properties from DB queries
+  [key: string]: unknown; // Allow dynamic properties from DB queries
 }
 
 export default {
-  invoices,
-  invoiceItems,
-  invoicesRelations,
-  invoiceItemsRelations
+  invoiceItems
 };
