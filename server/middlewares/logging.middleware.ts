@@ -9,9 +9,6 @@ import { logHttpRequest } from '../common/logger/loki-logger';
 export function loggingMiddleware(req: Request, res: Response, next: NextFunction) {
   const start = Date.now();
   
-  // Capture original end function
-  const originalEnd = res.end;
-  
   // Log on response finish event instead of overriding res.end
   res.on('finish', () => {
     const duration = Date.now() - start;
