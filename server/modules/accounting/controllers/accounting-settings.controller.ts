@@ -4,7 +4,7 @@
  * API controller for managing accounting settings
  */
 
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { BaseController } from './base.controller';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
 import { AccountingSettingsService } from '../services/accounting-settings.service';
@@ -26,7 +26,7 @@ export class AccountingSettingsController extends BaseController {
    */
   async getSettings(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
+      const companyId = req.params['companyId'];
       
       // Verify user has access to this company
       this.verifyCompanyAccess(req, companyId);
@@ -42,7 +42,7 @@ export class AccountingSettingsController extends BaseController {
    */
   async updateGeneralSettings(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
+      const companyId = req.params['companyId'];
       const userId = req.user?.id;
       
       if (!userId) {
@@ -71,7 +71,7 @@ export class AccountingSettingsController extends BaseController {
    */
   async getVatSettings(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
+      const companyId = req.params['companyId'];
       
       // Verify user has access to this company
       this.verifyCompanyAccess(req, companyId);
@@ -87,7 +87,7 @@ export class AccountingSettingsController extends BaseController {
    */
   async updateVatSettings(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
+      const companyId = req.params['companyId'];
       
       // Verify user has access to this company
       this.verifyCompanyAccess(req, companyId);
@@ -106,7 +106,7 @@ export class AccountingSettingsController extends BaseController {
    */
   async getAccountMappings(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
+      const companyId = req.params['companyId'];
       
       // Verify user has access to this company
       this.verifyCompanyAccess(req, companyId);
@@ -122,8 +122,8 @@ export class AccountingSettingsController extends BaseController {
    */
   async updateAccountMapping(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
-      const mappingType = req.params.type;
+      const companyId = req.params['companyId'];
+      const mappingType = req.params['type'];
       const { accountCode } = req.body;
       
       if (!accountCode) {
@@ -149,7 +149,7 @@ export class AccountingSettingsController extends BaseController {
    */
   async resetAccountMappings(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
+      const companyId = req.params['companyId'];
       
       // Verify user has access to this company
       this.verifyCompanyAccess(req, companyId);
@@ -166,7 +166,7 @@ export class AccountingSettingsController extends BaseController {
    */
   async getAccountRelationships(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
+      const companyId = req.params['companyId'];
       
       // Verify user has access to this company
       this.verifyCompanyAccess(req, companyId);
@@ -182,7 +182,7 @@ export class AccountingSettingsController extends BaseController {
    */
   async createAccountRelationship(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
+      const companyId = req.params['companyId'];
       
       // Verify user has access to this company
       this.verifyCompanyAccess(req, companyId);
@@ -205,7 +205,7 @@ export class AccountingSettingsController extends BaseController {
    */
   async updateAccountRelationship(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const relationshipId = req.params.id;
+      const relationshipId = req.params['id'];
       
       // Validate input
       const validatedData = updateAccountRelationshipsSchema.parse(req.body);
@@ -225,7 +225,7 @@ export class AccountingSettingsController extends BaseController {
    */
   async deleteAccountRelationship(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const relationshipId = req.params.id;
+      const relationshipId = req.params['id'];
       
       await this.settingsService.deleteAccountRelationship(relationshipId);
       
@@ -239,7 +239,7 @@ export class AccountingSettingsController extends BaseController {
    */
   async getDocumentCounters(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
+      const companyId = req.params['companyId'];
       
       // Verify user has access to this company
       this.verifyCompanyAccess(req, companyId);
@@ -255,8 +255,8 @@ export class AccountingSettingsController extends BaseController {
    */
   async updateDocumentCounterSeries(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
-      const counterType = req.params.type;
+      const companyId = req.params['companyId'];
+      const counterType = req.params['type'];
       const { series, year } = req.body;
       
       if (!series || !year) {
@@ -283,7 +283,7 @@ export class AccountingSettingsController extends BaseController {
    */
   async createDocumentCounterSeries(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
+      const companyId = req.params['companyId'];
       const { counterType, series, year } = req.body;
       
       if (!counterType || !series || !year) {
@@ -313,8 +313,8 @@ export class AccountingSettingsController extends BaseController {
    */
   async deleteDocumentCounterSeries(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
-      const counterId = req.params.counterId;
+      const companyId = req.params['companyId'];
+      const counterId = req.params['counterId'];
       
       // Verify user has access to this company
       this.verifyCompanyAccess(req, companyId);
@@ -333,7 +333,7 @@ export class AccountingSettingsController extends BaseController {
    */
   async getFiscalPeriods(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
+      const companyId = req.params['companyId'];
       
       // Verify user has access to this company
       this.verifyCompanyAccess(req, companyId);
@@ -349,8 +349,8 @@ export class AccountingSettingsController extends BaseController {
    */
   async getOpeningBalances(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
-      const fiscalYear = parseInt(req.query.fiscalYear as string, 10);
+      const companyId = req.params['companyId'];
+      const fiscalYear = parseInt(req.query['fiscalYear'] as string, 10);
       
       if (!fiscalYear) {
         throw { statusCode: 400, message: 'fiscalYear query parameter is required' };
@@ -370,7 +370,7 @@ export class AccountingSettingsController extends BaseController {
    */
   async importOpeningBalances(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
+      const companyId = req.params['companyId'];
       const userId = req.user?.id;
       const { balances, fiscalYear, importSource } = req.body;
       
