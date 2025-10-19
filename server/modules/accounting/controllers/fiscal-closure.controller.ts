@@ -12,7 +12,7 @@ import { AuthenticatedRequest } from '../../../types/express';
 import FiscalClosureService from '../services/fiscal-closure.service';
 import AccountingPeriodsService from '../services/accounting-periods.service';
 import VATClosureService from '../services/vat-closure.service';
-import { bulkOperationsService } from '../services/bulk-operations.service';
+import { log } from '../../../vite';
 
 export class FiscalClosureController {
   private closureService: FiscalClosureService;
@@ -45,7 +45,7 @@ export class FiscalClosureController {
         return;
       }
 
-      console.log(`📅 Request închidere lună: ${month}/${year} pentru compania ${companyId}`);
+      log(`📅 Request închidere lună: ${month}/${year} pentru compania ${companyId}`, 'fiscal-closure');
 
       const result = await this.closureService.closeMonth({
         companyId,
@@ -101,7 +101,7 @@ export class FiscalClosureController {
         return;
       }
 
-      console.log(`📅 Request închidere an: ${fiscalYear} pentru compania ${companyId}`);
+      log(`📅 Request închidere an: ${fiscalYear} pentru compania ${companyId}`, 'fiscal-closure');
 
       const result = await this.closureService.closeYear({
         companyId,
@@ -165,7 +165,7 @@ export class FiscalClosureController {
         return;
       }
 
-      console.log(`🔓 Request redeschidere perioadă: ${periodId} de către ${userId}`);
+      log(`🔓 Request redeschidere perioadă: ${periodId} de către ${userId}`, 'fiscal-closure');
 
       const result = await this.closureService.reopenPeriod(
         companyId,
@@ -246,7 +246,7 @@ export class FiscalClosureController {
         return;
       }
 
-      console.log(`📅 Generare perioade pentru anul ${year}, compania ${companyId}`);
+      log(`📅 Generare perioade pentru anul ${year}, compania ${companyId}`, 'fiscal-closure');
 
       const periods = await this.periodsService.generateYearlyPeriods(
         companyId,
@@ -356,7 +356,7 @@ export class FiscalClosureController {
         return;
       }
 
-      console.log(`📅 Request închidere lună ASYNC: ${month}/${year} pentru compania ${companyId}`);
+      log(`📅 Request închidere lună ASYNC: ${month}/${year} pentru compania ${companyId}`, 'fiscal-closure');
 
       const result = await this.closureService.closeMonthAsync({
         companyId,
@@ -404,7 +404,7 @@ export class FiscalClosureController {
         return;
       }
 
-      console.log(`📅 Request închidere an ASYNC: ${fiscalYear} pentru compania ${companyId}`);
+      log(`📅 Request închidere an ASYNC: ${fiscalYear} pentru compania ${companyId}`, 'fiscal-closure');
 
       const result = await this.closureService.closeYearAsync({
         companyId,
@@ -450,7 +450,7 @@ export class FiscalClosureController {
         return;
       }
 
-      console.log(`📅 Request închidere TVA ASYNC: ${month}/${year} pentru compania ${companyId}`);
+      log(`📅 Request închidere TVA ASYNC: ${month}/${year} pentru compania ${companyId}`, 'fiscal-closure');
 
       const result = await this.vatService.closeVATPeriodAsync({
         companyId,
