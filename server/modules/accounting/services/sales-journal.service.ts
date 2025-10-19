@@ -14,7 +14,7 @@ import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.serv
 import { v4 as uuidv4 } from 'uuid';
 import { getDrizzle } from '../../../common/drizzle';
 import { and, desc, eq, gte, lte, isNotNull } from 'drizzle-orm';
-import { invoices, invoiceItems, invoiceDetails, invoicePayments, users, companies } from '../../../../shared/schema';
+import { invoices, invoiceItems, invoiceDetails, invoicePayments, users, companies, type InvoicePayment } from '../../../../shared/schema';
 import { accountingLedgerEntries, accountingLedgerLines } from '../schema/accounting.schema';
 import { VATCategory, determineVATCategory } from '../types/vat-categories';
 import { 
@@ -23,6 +23,18 @@ import {
   SalesJournalTotals,
   GenerateSalesJournalParams 
 } from '../types/sales-journal-types';
+import { 
+  type InvoiceData,
+  type InvoiceItemData,
+  type CustomerData,
+  type TaxRatesData,
+  type PaymentTermsData,
+  type LedgerEntryInputData,
+  type WhereCondition,
+  type PaginatedResponse,
+  type ReportData,
+  type InvoiceDetail
+} from '../types/sales-journal-data-types';
 import { accountingCacheService } from './accounting-cache.service';
 import { accountingQueueService } from './accounting-queue.service';
 import { log } from '../../../vite';
@@ -42,7 +54,7 @@ export interface SalesJournalEntry {
   updatedAt: Date;
   customerId?: string;
   customerName?: string;
-  lines: any[];
+  lines: InvoiceItemData[];
 }
 
 /**
@@ -131,13 +143,13 @@ export class SalesJournalService {
     endDate?: Date,
     customerId?: string,
     status?: string
-  ): Promise<{ data: any[]; total: number; page: number; limit: number }> {
+  ): Promise<PaginatedResponse<InvoiceData>> {
     try {
       const db = getDrizzle();
       const offset = (page - 1) * limit;
       
       // Build where conditions
-      const conditions: any[] = [eq(invoices.companyId, companyId)];
+      const conditions: WhereCondition[] = [eq(invoices.companyId, companyId)];
       
       if (startDate) {
         conditions.push(gte(invoices.date, startDate));
@@ -214,7 +226,7 @@ export class SalesJournalService {
       
       // Enrich invoices with user names
       const enrichedData = await Promise.all(
-        invoicesWithLines.map(async (invoice: any) => {
+        invoicesWithLines.map(async (invoice: InvoiceData) => {
           let createdByName: string | null = null;
           if (invoice.createdBy) {
             const userResult = await db
@@ -257,7 +269,7 @@ export class SalesJournalService {
    * @param companyId Company ID
    * @returns Customer invoice or null
    */
-  public async getCustomerInvoice(invoiceId: string, companyId: string): Promise<any | null> {
+  public async getCustomerInvoice(invoiceId: string, companyId: string): Promise<InvoiceData | null> {
     try {
       const db = getDrizzle();
       const invoiceResult = await db
@@ -299,11 +311,11 @@ export class SalesJournalService {
    * @returns Created invoice ID
    */
   public async createCustomerInvoice(
-    invoiceData: any,
-    customer: any,
-    items: any[],
-    taxRates: any,
-    paymentTerms: any,
+    invoiceData: Partial<InvoiceData>,
+    customer: CustomerData,
+    items: InvoiceItemData[],
+    taxRates: TaxRatesData,
+    paymentTerms: PaymentTermsData,
     notes?: string
   ): Promise<string> {
     // Folosește metoda existentă createSalesInvoice
@@ -314,11 +326,11 @@ export class SalesJournalService {
    * Update customer invoice
    */
   public async updateCustomerInvoice(
-    invoiceData: any,
-    customer: any,
-    items: any[],
-    _taxRates: any,
-    _paymentTerms: any,
+    invoiceData: Partial<InvoiceData>,
+    customer: CustomerData,
+    items: InvoiceItemData[],
+    _taxRates: TaxRatesData,
+    _paymentTerms: PaymentTermsData,
     notes?: string
   ): Promise<void> {
     try {
@@ -495,11 +507,11 @@ export class SalesJournalService {
    * @returns Created entry ID
    */
   public async createSalesInvoice(
-    invoiceData: any,
-    customer: any,
-    items: any[],
-    taxRates: any,
-    paymentTerms: any,
+    invoiceData: Partial<InvoiceData>,
+    customer: CustomerData,
+    items: InvoiceItemData[],
+    taxRates: TaxRatesData,
+    paymentTerms: PaymentTermsData,
     notes: string
   ): Promise<string> {
     try {
@@ -618,11 +630,11 @@ export class SalesJournalService {
    * @returns Created entry ID
    */
   public async createCreditNote(
-    creditNoteData: any,
+    creditNoteData: Partial<InvoiceData>,
     relatedInvoiceId: string,
-    customer: any,
-    items: any[],
-    taxRates: any,
+    customer: CustomerData,
+    items: InvoiceItemData[],
+    taxRates: TaxRatesData,
     reason: string,
     _notes: string
   ): Promise<string> {
@@ -799,7 +811,7 @@ export class SalesJournalService {
         totalAmount += Number(entry.totalAmount ?? 0);
         
         // Get VAT amount from ledger lines (using fullAccountNumber instead of accountId)
-        const vatLines = entry.lines.filter((line: any) => 
+        const vatLines = entry.lines.filter((line: { fullAccountNumber?: string }) => 
           line.fullAccountNumber === SALES_ACCOUNTS.VAT_COLLECTED
         );
         
@@ -808,7 +820,7 @@ export class SalesJournalService {
         }
       }
       
-      const mappedEntries = entries.map((entry: any) => this.mapToSalesJournalEntry(entry));
+      const mappedEntries = entries.map((entry: { id: string; lines: unknown[] }) => this.mapToSalesJournalEntry(entry));
       
       // Create report
       const report: SalesReport = {
@@ -860,7 +872,7 @@ export class SalesJournalService {
       
       // Get lines for each invoice
       const invoiceEntries = await Promise.all(
-        invoiceResult.map(async (inv: any) => {
+        invoiceResult.map(async (inv: InvoiceData) => {
           const lines = await db
             .select()
             .from(invoiceItems)
@@ -1000,24 +1012,24 @@ export class SalesJournalService {
   /**
    * Metode pentru receipts (bonuri de vânzare cash)
    */
-  public async createSalesReceipt(_receiptData: any): Promise<string> {
+  public async createSalesReceipt(_receiptData: Partial<InvoiceData>): Promise<string> {
     // Placeholder - ar trebui implementat complet
     return uuidv4();
   }
   
-  public async getSalesReceipt(_receiptId: string, _companyId: string): Promise<any | null> {
+  public async getSalesReceipt(_receiptId: string, _companyId: string): Promise<InvoiceData | null> {
     // Placeholder
     return null;
   }
   
-  public async getSalesReceipts(_companyId: string, page: number, limit: number, _startDate?: Date, _endDate?: Date, _customerId?: string): Promise<any> {
+  public async getSalesReceipts(_companyId: string, page: number, limit: number, _startDate?: Date, _endDate?: Date, _customerId?: string): Promise<PaginatedResponse<InvoiceData>> {
     return { data: [], total: 0, page, limit };
   }
   
   /**
    * Metode pentru ledger entries
    */
-  public async createSalesLedgerEntry(ledgerEntryData: any): Promise<string> {
+  public async createSalesLedgerEntry(ledgerEntryData: LedgerEntryInputData): Promise<string> {
     // Folosește JournalService
     const entry = await this.journalService.createLedgerEntry({
       companyId: ledgerEntryData.companyId,
@@ -1032,18 +1044,18 @@ export class SalesJournalService {
     return entry.id;
   }
   
-  public async getSalesLedgerEntry(entryId: string, companyId: string): Promise<any | null> {
+  public async getSalesLedgerEntry(entryId: string, companyId: string): Promise<SalesJournalEntry | null> {
     return await this.getSalesJournalEntry(entryId, companyId);
   }
   
-  public async getSalesLedgerEntries(companyId: string, page: number, limit: number, _startDate?: Date, _endDate?: Date): Promise<any> {
+  public async getSalesLedgerEntries(companyId: string, page: number, limit: number, _startDate?: Date, _endDate?: Date): Promise<{ entries: SalesJournalEntry[]; total: number; page: number; limit: number }> {
     return await this.getSalesJournalEntries(companyId, page, limit);
   }
   
   /**
    * Customer statements and balances
    */
-  public async generateCustomerAccountStatement(companyId: string, customerId: string, startDate?: Date, endDate?: Date): Promise<any> {
+  public async generateCustomerAccountStatement(companyId: string, customerId: string, startDate?: Date, endDate?: Date): Promise<ReportData> {
     // Simplified implementation
     return {
       companyId,
@@ -1055,7 +1067,7 @@ export class SalesJournalService {
     };
   }
   
-  public async getCustomerBalanceAsOf(companyId: string, customerId: string, asOfDate: Date): Promise<any> {
+  public async getCustomerBalanceAsOf(companyId: string, customerId: string, asOfDate: Date): Promise<{ companyId: string; customerId: string; asOfDate: Date; balance: number; currency: string }> {
     return {
       companyId,
       customerId,
@@ -1068,11 +1080,11 @@ export class SalesJournalService {
   /**
    * Sales reports by period/product
    */
-  public async generateSalesByPeriodReport(companyId: string, startDate?: Date, _endDate?: Date, _groupBy?: string): Promise<any> {
+  public async generateSalesByPeriodReport(companyId: string, startDate?: Date, _endDate?: Date, _groupBy?: string): Promise<SalesReport> {
     return await this.generateSalesReport(companyId, startDate?.getFullYear() || new Date().getFullYear());
   }
   
-  public async generateSalesByProductReport(companyId: string, startDate?: Date, endDate?: Date): Promise<any> {
+  public async generateSalesByProductReport(companyId: string, startDate?: Date, endDate?: Date): Promise<{ companyId: string; period: { start?: Date; end?: Date }; products: unknown[]; totalSales: number }> {
     return {
       companyId,
       period: { start: startDate, end: endDate },
@@ -1226,7 +1238,7 @@ export class SalesJournalService {
    * @param entry Ledger entry with lines
    * @returns Sales journal entry
    */
-  private mapToSalesJournalEntry(entry: any): SalesJournalEntry {
+  private mapToSalesJournalEntry(entry: { id: string; companyId: string; franchiseId?: string | null; type: string; documentNumber?: string | null; totalAmount?: string | null; description?: string | null; createdAt: Date | string; updatedAt?: Date | string | null; lines: unknown[] }): SalesJournalEntry {
     // Extract customer information from the entry
     const customerId = '';
     let customerName = '';
@@ -1271,7 +1283,7 @@ export class SalesJournalService {
    * @param invoiceData Sales invoice data
    * @returns Validation result
    */
-  public validateSalesInvoice(invoiceData: any): { valid: boolean; errors: string[] } {
+  public validateSalesInvoice(invoiceData: Partial<InvoiceData> & { lines?: InvoiceItemData[] }): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
     
     // Check required fields
@@ -1322,7 +1334,7 @@ export class SalesJournalService {
       }
       
       // Check totals
-      const totalNet = invoiceData.lines.reduce((sum: number, item: any) => {
+      const totalNet = invoiceData.lines.reduce((sum: number, item: InvoiceItemData) => {
         return sum + Number(item.netAmount);
       }, 0);
       
@@ -1330,7 +1342,7 @@ export class SalesJournalService {
         errors.push("Invoice net total does not match sum of line net amounts");
       }
       
-      const totalVat = invoiceData.lines.reduce((sum: number, item: any) => {
+      const totalVat = invoiceData.lines.reduce((sum: number, item: InvoiceItemData) => {
         return sum + Number(item.vatAmount);
       }, 0);
       
@@ -1338,7 +1350,7 @@ export class SalesJournalService {
         errors.push("Invoice VAT total does not match sum of line VAT amounts");
       }
       
-      const totalGross = invoiceData.lines.reduce((sum: number, item: any) => {
+      const totalGross = invoiceData.lines.reduce((sum: number, item: InvoiceItemData) => {
         return sum + Number(item.grossAmount);
       }, 0);
       
@@ -1439,7 +1451,7 @@ export class SalesJournalService {
   /**
    * Obține toate plățile pentru o factură
    */
-  public async getInvoicePayments(invoiceId: string, companyId: string): Promise<any[]> {
+  public async getInvoicePayments(invoiceId: string, companyId: string): Promise<InvoicePayment[]> {
     try {
       const db = getDrizzle();
       
@@ -1462,7 +1474,7 @@ export class SalesJournalService {
   /**
    * Obține o plată specifică
    */
-  public async getInvoicePayment(paymentId: string, companyId: string): Promise<any | null> {
+  public async getInvoicePayment(paymentId: string, companyId: string): Promise<InvoicePayment | null> {
     try {
       const db = getDrizzle();
       
@@ -1546,7 +1558,7 @@ export class SalesJournalService {
       }
       
       // 2. Construire condiții WHERE pentru facturi
-      const conditions: any[] = [
+      const conditions: WhereCondition[] = [
         eq(invoices.companyId, companyId),
         gte(invoices.issueDate, periodStart),
         lte(invoices.issueDate, periodEnd),
@@ -1686,10 +1698,10 @@ export class SalesJournalService {
    * Grupează liniile facturii pe categorie fiscală
    */
   private groupLinesByVATCategory(
-    lines: any[],
-    clientDetails: any
-  ): Map<VATCategory, any[]> {
-    const grouped = new Map<VATCategory, any[]>();
+    lines: InvoiceItemData[],
+    clientDetails: InvoiceDetail | undefined
+  ): Map<VATCategory, InvoiceItemData[]> {
+    const grouped = new Map<VATCategory, InvoiceItemData[]>();
     
     for (const line of lines) {
       // Determină categoria fiscală
@@ -1712,7 +1724,10 @@ export class SalesJournalService {
       if (!grouped.has(category)) {
         grouped.set(category, []);
       }
-      grouped.get(category)!.push(line);
+      const categoryLines = grouped.get(category);
+      if (categoryLines) {
+        categoryLines.push(line);
+      }
     }
     
     return grouped;
@@ -1721,7 +1736,7 @@ export class SalesJournalService {
   /**
    * Calculează totalurile pentru o categorie fiscală
    */
-  private calculateCategoryTotals(lines: any[]): { base: number; vat: number } {
+  private calculateCategoryTotals(lines: InvoiceItemData[]): { base: number; vat: number } {
     let base = 0;
     let vat = 0;
     
@@ -1738,8 +1753,8 @@ export class SalesJournalService {
    */
   private buildJournalRow(
     rowNumber: number,
-    invoice: any,
-    clientDetails: any,
+    invoice: InvoiceData,
+    clientDetails: InvoiceDetail | undefined,
     category: VATCategory,
     totals: { base: number; vat: number },
     multiplier: number
@@ -1832,7 +1847,7 @@ export class SalesJournalService {
    * Acestea sunt "pseudo-documente" care arată TVA devenit exigibil
    */
   private async addCashVATPaymentRows(
-    db: any,
+    db: ReturnType<typeof getDrizzle>,
     periodStart: Date,
     periodEnd: Date,
     companyId: string,
@@ -1986,12 +2001,19 @@ export class SalesJournalService {
    * Verifică consistența dintre totalurile jurnalului și soldurile conturilor
    */
   private async validateJournalWithAccounts(
-    db: any,
+    db: ReturnType<typeof getDrizzle>,
     companyId: string,
     periodStart: Date,
     _periodEnd: Date,
     totals: SalesJournalTotals
-  ): Promise<any> {
+  ): Promise<{
+    account4427Balance: number;
+    account4428Balance: number;
+    account707Balance: number;
+    account4111Balance: number;
+    isBalanced: boolean;
+    discrepancies?: string[];
+  }> {
     try {
       // Calculează solduri conturi pentru perioadă din ledger entries
       const periodYear = periodStart.getFullYear();
@@ -2058,7 +2080,7 @@ export class SalesJournalService {
    * Obține soldul unui cont pentru o perioadă
    */
   private async getAccountBalance(
-    db: any,
+    db: ReturnType<typeof getDrizzle>,
     companyId: string,
     accountCode: string,
     year: number,
@@ -2192,12 +2214,14 @@ export class SalesJournalService {
         userId
       });
       
+      const jobId = job.id || 'unknown';
       return {
-        jobId: job.id!,
-        message: `Sales journal generation queued. Job ID: ${job.id}`
+        jobId,
+        message: `Sales journal generation queued. Job ID: ${jobId}`
       };
-    } catch (error: any) {
-      log(`Error queueing sales journal generation: ${error.message}`, 'sales-journal-error');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      log(`Error queueing sales journal generation: ${errorMessage}`, 'sales-journal-error');
       throw error;
     }
   }
@@ -2233,8 +2257,9 @@ export class SalesJournalService {
         await accountingCacheService.invalidateSalesJournal(companyId);
         log(`Invalidated all sales journal cache for ${companyId}`, 'sales-journal-cache');
       }
-    } catch (error: any) {
-      log(`Error invalidating sales journal cache: ${error.message}`, 'sales-journal-error');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      log(`Error invalidating sales journal cache: ${errorMessage}`, 'sales-journal-error');
       // Don't throw - cache invalidation failures shouldn't break the main operation
     }
   }
