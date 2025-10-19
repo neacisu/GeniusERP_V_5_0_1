@@ -10,6 +10,7 @@ import { setupCashRegisterRoutes } from "./cash-register.routes";
 import { setupLedgerRoutes } from "./ledger.routes";
 // Note Contabil routes moved to routes/index.ts (note-contabil.route.ts)
 import { AccountingController } from "../controllers/accounting.controller";
+import { MetricsController } from "../controllers/metrics.controller";
 import { AuthenticatedRequest } from "../../../common/middleware/auth-types";
 import { Response } from "express";
 import { accountingReadRateLimiter, accountingHeavyRateLimiter } from "../../../middlewares/rate-limit.middleware";
@@ -22,9 +23,19 @@ export function setupAccountingRoutes() {
   const router = Router();
   const accountingService = new AccountingService(storage);
   const accountingController = new AccountingController(accountingService);
+  const metricsController = new MetricsController();
   
   // Apply authentication middleware to all accounting routes
   router.use(AuthGuard.protect(JwtAuthMode.REQUIRED));
+  
+  // Dashboard Metrics Endpoints
+  router.get("/metrics", accountingReadRateLimiter, async (req, res) => {
+    await metricsController.getAccountingMetrics(req as AuthenticatedRequest, res as Response);
+  });
+  
+  router.get("/recent-transactions", accountingReadRateLimiter, async (req, res) => {
+    await metricsController.getRecentTransactions(req as AuthenticatedRequest, res as Response);
+  });
   
   // Chart of Accounts - Account Classes
   router.get("/account-classes", accountingReadRateLimiter, async (req, res) => {

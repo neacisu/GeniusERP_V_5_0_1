@@ -4,6 +4,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/hooks/use-auth";
 import TransactionDialog from "@/components/accounting/TransactionDialog";
 import CollabIntegration from "../../collab/components/CollabIntegration";
+import type { AccountingMetrics, RecentTransaction } from "@shared/types/accounting-metrics";
 import { 
   Card, 
   CardHeader, 
@@ -38,35 +39,14 @@ export default function AccountingPage() {
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
   const { user } = useAuth();
 
-  // Fetch financial metrics
-  const { data: metrics, isLoading: isLoadingMetrics } = useQuery({
+  // Fetch financial metrics from real API
+  const { data: metrics, isLoading: isLoadingMetrics } = useQuery<AccountingMetrics>({
     queryKey: ['/api/accounting/metrics'],
-    // This is just for structure - we'll use actual API data in production
-    // The fallback data is only for development purposes
-    placeholderData: {
-      totalAssets: 456789.25,
-      totalLiabilities: 324567.89,
-      totalEquity: 132221.36,
-      totalRevenue: 245678.90,
-      totalExpenses: 198765.43,
-      currentRatio: 1.8,
-      quickRatio: 1.2,
-      debtToEquityRatio: 2.1,
-      profitMargin: 0.15
-    }
   });
 
-  // Fetch recent transactions
-  const { data: recentTransactions, isLoading: isLoadingTransactions } = useQuery({
+  // Fetch recent transactions from real API
+  const { data: recentTransactions, isLoading: isLoadingTransactions } = useQuery<RecentTransaction[]>({
     queryKey: ['/api/accounting/recent-transactions'],
-    // This is just for structure - we'll use actual API data in production
-    placeholderData: [
-      { id: '1', date: '2025-04-08', description: 'Factura vânzare #INV20250408', amount: 5680.00, type: 'sale' },
-      { id: '2', date: '2025-04-07', description: 'Plată furnizor #PV20250407', amount: 3245.50, type: 'purchase' },
-      { id: '3', date: '2025-04-06', description: 'Salarizare Martie 2025', amount: 18750.00, type: 'expense' },
-      { id: '4', date: '2025-04-05', description: 'Încasare client #INC20250405', amount: 9870.75, type: 'income' },
-      { id: '5', date: '2025-04-04', description: 'Plată utilități #UTL20250404', amount: 1235.82, type: 'expense' },
-    ]
   });
 
   // Format currency values
@@ -325,9 +305,9 @@ export default function AccountingPage() {
           
           <Card>
             <CardContent className="p-0">
-              <div className="divide-y">
-                {isLoadingTransactions ? (
-                  Array(5).fill(null).map((_, index) => (
+              {isLoadingTransactions ? (
+                <div className="divide-y">
+                  {Array(5).fill(null).map((_, index) => (
                     <div key={index} className="flex items-center p-4 space-x-4">
                       <div className="flex-shrink-0">
                         <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse"></div>
@@ -338,9 +318,11 @@ export default function AccountingPage() {
                       </div>
                       <div className="h-6 w-20 bg-gray-200 animate-pulse rounded"></div>
                     </div>
-                  ))
-                ) : (
-                  recentTransactions?.map((transaction) => (
+                  ))}
+                </div>
+              ) : recentTransactions && recentTransactions.length > 0 ? (
+                <div className="divide-y">
+                  {recentTransactions.map((transaction) => (
                     <div key={transaction.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 mr-3">
@@ -360,9 +342,24 @@ export default function AccountingPage() {
                         {formatCurrency(transaction.amount)}
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 px-4">
+                  <FileText className="h-16 w-16 text-gray-300 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Nicio tranzacție</h3>
+                  <p className="text-sm text-gray-500 text-center mb-4">
+                    Nu există tranzacții înregistrate în sistem.
+                  </p>
+                  <Button 
+                    onClick={() => setIsTransactionDialogOpen(true)}
+                    className="flex items-center"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Înregistrează prima tranzacție
+                  </Button>
+                </div>
+              )}
             </CardContent>
             <CardFooter className="px-4 py-3 border-t bg-gray-50 text-center">
               <Link href="/accounting/journal-entries" className="text-sm text-primary hover:underline w-full">
