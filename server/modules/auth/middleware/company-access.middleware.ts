@@ -12,6 +12,13 @@ import { Logger } from '../../../common/logger';
 const logger = new Logger('CompanyAccessMiddleware');
 
 /**
+ * Extended authenticated request with company filter
+ */
+interface CompanyFilteredRequest extends AuthenticatedRequest {
+  companyId?: string;
+}
+
+/**
  * Middleware to validate company access
  * Ensures users can only access data from their own company
  */
@@ -59,7 +66,7 @@ export const validateCompanyAccess = (options: {
       // Check if user has admin privileges for cross-company access
       if (allowAdminCrossAccess) {
         const userRoles = user.roles || [user.role];
-        const isAdmin = userRoles.some((role: any) => 
+        const isAdmin = userRoles.some((role: string) => 
           ['admin', 'ADMIN', 'system_admin', 'SYSTEM_ADMIN'].includes(role)
         );
         
@@ -124,7 +131,7 @@ export const ensureCompanyId = (bodyField: string = 'companyId') => {
  * Middleware to filter query results by company ID
  * Adds company filter to database queries
  */
-export const addCompanyFilter = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const addCompanyFilter = (req: CompanyFilteredRequest, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
     
@@ -143,7 +150,7 @@ export const addCompanyFilter = (req: AuthenticatedRequest, res: Response, next:
     }
 
     // Store company ID in request for easy access by controllers
-    (req as any).companyId = userCompanyId;
+    req.companyId = userCompanyId;
 
     next();
   } catch (error) {
