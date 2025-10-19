@@ -1,12 +1,10 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { BaseController } from './base.controller';
 import { JournalService, LedgerEntryType } from '../services/journal.service';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
 import { getDrizzle } from '../../../common/drizzle';
 import { eq, desc } from 'drizzle-orm';
 import { ledgerEntries, ledgerLines } from '../../../../shared/schema';
-import { v4 as uuidv4 } from 'uuid';
-import { AuditService, AuditAction } from '../../audit/services/audit.service';
 
 /**
  * JournalController 
@@ -56,14 +54,14 @@ export class JournalController extends BaseController {
         })
       );
       
-      return entriesWithLines.map((e: any) => ({
+      return entriesWithLines.map((e) => ({
         id: e.id,
-        number: e.note_number || `NC-${e.id.substring(0, 8)}`, // Numărul NOTEI contabile
-        date: e.created_at,
+        number: e.journalNumber || `NC-${e.id.substring(0, 8)}`, // Numărul NOTEI contabile
+        date: e.createdAt,
         description: e.description,
         source: e.type,
-        referenceDocument: e.reference_number, // Numărul DOCUMENTULUI sursă (TEST-0001, etc.)
-        referenceNumber: e.reference_number, // Pentru afișare în coloană
+        referenceDocument: e.referenceNumber, // Numărul DOCUMENTULUI sursă (TEST-0001, etc.)
+        referenceNumber: e.referenceNumber, // Pentru afișare în coloană
         amount: Number(e.amount),
         lines: e.lines || []
       }));
@@ -99,7 +97,6 @@ export class JournalController extends BaseController {
       const userId = this.getUserId(req);
       
       // Record the transaction using direct SQL
-      console.log('[DEBUG] Using JournalService for transaction recording');
       const entryId = await this.journalService.recordTransaction({
         companyId,
         franchiseId,
@@ -128,10 +125,8 @@ export class JournalController extends BaseController {
    */
   async getTransaction(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const entryId = req.params.id;
+      const entryId = req.params['id'];
       const companyId = this.getCompanyId(req);
-      
-      console.log(`[DEBUG] Fetching transaction details for entry ID: ${entryId} using JournalService`);
       
       try {
         // Get transaction by ID
@@ -157,7 +152,7 @@ export class JournalController extends BaseController {
           data: transaction
         };
       } catch (error) {
-        const err = error as any;
+        const err = error as { message?: string; statusCode?: number };
         console.error(`[ERROR] Failed to fetch transaction details: ${err.message || error}`);
         throw {
           statusCode: err.statusCode || 500,
@@ -180,7 +175,6 @@ export class JournalController extends BaseController {
         documentNumber,
         amount, 
         description, 
-        transactionDate,
         lines 
       } = req.body;
       
@@ -189,7 +183,7 @@ export class JournalController extends BaseController {
       const franchiseId = this.getFranchiseId(req);
       
       // Map account numbers to account IDs if provided that way
-      const mappedLines = lines.map((line: any) => {
+      const mappedLines = lines.map((line: { accountId?: string; accountNumber?: string; [key: string]: unknown }) => {
         // If the line already has accountId, use it
         if (line.accountId) {
           return line;
@@ -203,10 +197,7 @@ export class JournalController extends BaseController {
         };
       });
       
-      console.log('[DEBUG] Creating ledger entry with mapped lines:', JSON.stringify(mappedLines, null, 2));
-      
       // Create the ledger entry using direct SQL
-      console.log('[DEBUG] Using JournalService for direct SQL operations');
       const entry = await this.journalService.createLedgerEntry({
         companyId,
         franchiseId: franchiseId || undefined,
@@ -235,7 +226,7 @@ export class JournalController extends BaseController {
    */
   async reverseLedgerEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const entryId = req.params.id;
+      const entryId = req.params['id'];
       const { reason } = req.body;
       const userId = this.getUserId(req);
       
@@ -246,7 +237,6 @@ export class JournalController extends BaseController {
         };
       }
       
-      console.log('[DEBUG] Reversing ledger entry:', entryId, 'Reason:', reason);
       const reversalId = await this.journalService.reverseLedgerEntry(entryId, reason, userId);
       
       return {
@@ -266,7 +256,7 @@ export class JournalController extends BaseController {
    */
   async postLedgerEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const entryId = req.params.id;
+      const entryId = req.params['id'];
       const userId = this.getUserId(req);
       
       if (!entryId) {
@@ -276,7 +266,6 @@ export class JournalController extends BaseController {
         };
       }
       
-      console.log('[DEBUG] Posting ledger entry:', entryId);
       const postedEntry = await this.journalService.postLedgerEntry(entryId, userId);
       
       return {
@@ -293,7 +282,7 @@ export class JournalController extends BaseController {
    */
   async unpostLedgerEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const entryId = req.params.id;
+      const entryId = req.params['id'];
       const userId = this.getUserId(req);
       
       if (!entryId) {
@@ -303,7 +292,6 @@ export class JournalController extends BaseController {
         };
       }
       
-      console.log('[DEBUG] Unposting ledger entry:', entryId);
       const unpostedEntry = await this.journalService.unpostLedgerEntry(entryId, userId);
       
       return {
@@ -320,7 +308,7 @@ export class JournalController extends BaseController {
    */
   async getLedgerEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const entryId = req.params.id;
+      const entryId = req.params['id'];
       const companyId = this.getCompanyId(req);
       
       if (!entryId) {
@@ -330,7 +318,6 @@ export class JournalController extends BaseController {
         };
       }
       
-      console.log('[DEBUG] Getting ledger entry:', entryId);
       const entry = await this.journalService.getLedgerEntry(entryId);
       
       // Verify company ownership
