@@ -12,8 +12,6 @@ import {
   CardContent, 
   CardFooter 
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Account, AccountClass } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { 
   ArrowUpCircle, 
@@ -69,11 +67,6 @@ export default function AccountingPage() {
       { id: '4', date: '2025-04-05', description: 'Încasare client #INC20250405', amount: 9870.75, type: 'income' },
       { id: '5', date: '2025-04-04', description: 'Plată utilități #UTL20250404', amount: 1235.82, type: 'expense' },
     ]
-  });
-
-  // Fetch account classes for account distribution
-  const { data: accountClasses, isLoading: isLoadingClasses } = useQuery<AccountClass[]>({
-    queryKey: ['/api/account-classes'],
   });
 
   // Format currency values
