@@ -15,7 +15,6 @@ import { InventoryValuationService } from '../services/inventory-valuation.servi
 import { log } from '../../../vite';
 import { validateRequest } from '../../../common/middleware/validate-request';
 import { pool } from '../../../db';
-import { generateDateBasedCode } from '../../../utils/code-generator';
 
 // Constants for role-based access
 const INVENTORY_MANAGER_ROLES = [UserRole.ADMIN, UserRole.INVENTORY_MANAGER];
@@ -111,15 +110,16 @@ export function createInventoryAssessmentController(
         // Update request body with the modified version
         req.body = requestBody;
         next();
-      } catch (error: any) {
-        log(`Validation error: ${error.message}`, 'inventory-assessment');
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown validation error';
+        log(`Validation error: ${message}`, 'inventory-assessment');
         return res.status(400).json({ 
           message: 'Validation error',
-          error: error.message
+          error: message
         });
       }
     },
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
       try {
         // Log headers for debugging
         log(`Request headers: ${JSON.stringify({
@@ -180,9 +180,10 @@ export function createInventoryAssessmentController(
         const result = await assessmentService.createAssessment(assessmentData, userId, companyId);
         
         res.status(201).json(result);
-      } catch (error: any) {
-        log(`Error creating inventory assessment: ${error.message}`, 'inventory-assessment');
-        res.status(500).json({ error: 'Eroare la crearea documentului de inventariere', details: error.message });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        log(`Error creating inventory assessment: ${message}`, 'inventory-assessment');
+        res.status(500).json({ error: 'Eroare la crearea documentului de inventariere', details: message });
       }
     }
   );
@@ -195,7 +196,7 @@ export function createInventoryAssessmentController(
    */
   router.get('/',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
@@ -221,9 +222,10 @@ export function createInventoryAssessmentController(
         res.json({ 
           assessments: result 
         });
-      } catch (error: any) {
-        log(`Error fetching inventory assessments: ${error.message}`, 'inventory-assessment');
-        res.status(500).json({ error: 'Eroare la obținerea documentelor de inventariere', details: error.message });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        log(`Error fetching inventory assessments: ${message}`, 'inventory-assessment');
+        res.status(500).json({ error: 'Eroare la obținerea documentelor de inventariere', details: message });
       }
     }
   );
@@ -236,7 +238,7 @@ export function createInventoryAssessmentController(
    */
   router.get('/:id',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
@@ -288,10 +290,11 @@ export function createInventoryAssessmentController(
             items
           } 
         });
-      } catch (error: any) {
-        log(`Error fetching inventory assessment: ${error.message}`, 'inventory-assessment');
-        res.status(error.message.includes('not found') ? 404 : 500)
-          .json({ error: 'Eroare la obținerea documentului de inventariere', details: error.message });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        log(`Error fetching inventory assessment: ${message}`, 'inventory-assessment');
+        res.status(message.includes('not found') ? 404 : 500)
+          .json({ error: 'Eroare la obținerea documentului de inventariere', details: message });
       }
     }
   );
@@ -306,7 +309,7 @@ export function createInventoryAssessmentController(
   router.post('/:id/initialize',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     AuthGuard.roleGuard(INVENTORY_MANAGER_ROLES),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
@@ -316,7 +319,7 @@ export function createInventoryAssessmentController(
         }
         
         const assessmentId = req.params.id;
-        console.log(`[inventory-assessment-controller] Initializing assessment items for ID: ${assessmentId}, User ID: ${userId}`);
+        log(`Initializing assessment items for ID: ${assessmentId}, User ID: ${userId}`, 'inventory-assessment');
         
         try {
           // First get the assessment details to extract warehouse_id
@@ -331,19 +334,20 @@ export function createInventoryAssessmentController(
           const assessment = assessmentResult[0];
           const warehouseId = assessment.warehouse_id;
           
-          console.log(`[inventory-assessment-controller] Found assessment with warehouseId: ${warehouseId}`);
+          log(`Found assessment with warehouseId: ${warehouseId}`, 'inventory-assessment');
           
           // Now initialize the items with all required parameters
           const result = await assessmentService.initializeAssessmentItems(assessmentId, warehouseId, companyId, userId);
-          console.log(`[inventory-assessment-controller] Successfully initialized assessment items:`, result ? 'Result returned' : 'No result');
+          log(`Successfully initialized assessment items - Result: ${result ? 'returned' : 'none'}`, 'inventory-assessment');
           res.json(result);
         } catch (initError) {
           console.error(`[inventory-assessment-controller] Error in initializeAssessmentItems:`, initError);
           throw initError; // Re-throw to be caught by outer catch block
         }
-      } catch (error: any) {
-        log(`Error initializing assessment items: ${error.message}`, 'inventory-assessment');
-        res.status(500).json({ error: 'Eroare la inițializarea articolelor de inventariere', details: error.message });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        log(`Error initializing assessment items: ${message}`, 'inventory-assessment');
+        res.status(500).json({ error: 'Eroare la inițializarea articolelor de inventariere', details: message });
       }
     }
   );
@@ -359,7 +363,7 @@ export function createInventoryAssessmentController(
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     AuthGuard.roleGuard(INVENTORY_MANAGER_ROLES),
     validateRequest({ body: updateStatusSchema }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
@@ -374,9 +378,10 @@ export function createInventoryAssessmentController(
         const result = await assessmentService.updateAssessmentStatus(assessmentId, status, userId);
         
         res.json(result);
-      } catch (error: any) {
-        log(`Error updating assessment status: ${error.message}`, 'inventory-assessment');
-        res.status(500).json({ error: 'Eroare la actualizarea stării documentului de inventariere', details: error.message });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        log(`Error updating assessment status: ${message}`, 'inventory-assessment');
+        res.status(500).json({ error: 'Eroare la actualizarea stării documentului de inventariere', details: message });
       }
     }
   );
@@ -392,7 +397,7 @@ export function createInventoryAssessmentController(
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     AuthGuard.roleGuard(INVENTORY_USER_ROLES),
     validateRequest({ body: recordCountSchema }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
@@ -413,9 +418,10 @@ export function createInventoryAssessmentController(
         );
         
         res.json(result);
-      } catch (error: any) {
-        log(`Error recording item count: ${error.message}`, 'inventory-assessment');
-        res.status(500).json({ error: 'Eroare la înregistrarea numărării articolului', details: error.message });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        log(`Error recording item count: ${message}`, 'inventory-assessment');
+        res.status(500).json({ error: 'Eroare la înregistrarea numărării articolului', details: message });
       }
     }
   );
@@ -430,7 +436,7 @@ export function createInventoryAssessmentController(
   router.post('/:id/process',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     AuthGuard.roleGuard(INVENTORY_MANAGER_ROLES),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
@@ -443,9 +449,10 @@ export function createInventoryAssessmentController(
         const result = await assessmentService.processInventoryDifferences(assessmentId, userId);
         
         res.json(result);
-      } catch (error: any) {
-        log(`Error processing inventory differences: ${error.message}`, 'inventory-assessment');
-        res.status(500).json({ error: 'Eroare la procesarea diferențelor de inventar', details: error.message });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        log(`Error processing inventory differences: ${message}`, 'inventory-assessment');
+        res.status(500).json({ error: 'Eroare la procesarea diferențelor de inventar', details: message });
       }
     }
   );
@@ -458,7 +465,7 @@ export function createInventoryAssessmentController(
    */
   router.get('/summary/status',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
@@ -507,9 +514,10 @@ export function createInventoryAssessmentController(
             }
           } 
         });
-      } catch (error: any) {
-        log(`Error fetching assessment summary: ${error.message}`, 'inventory-assessment');
-        res.status(500).json({ error: 'Eroare la obținerea rezumatului de inventariere', details: error.message });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        log(`Error fetching assessment summary: ${message}`, 'inventory-assessment');
+        res.status(500).json({ error: 'Eroare la obținerea rezumatului de inventariere', details: message });
       }
     }
   );
@@ -523,7 +531,7 @@ export function createInventoryAssessmentController(
   router.post('/valuation/calculate',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     validateRequest({ body: inventoryValuationSchema }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
@@ -543,9 +551,10 @@ export function createInventoryAssessmentController(
         );
         
         res.json(result);
-      } catch (error: any) {
-        log(`Error calculating stock valuation: ${error.message}`, 'inventory-assessment');
-        res.status(500).json({ error: 'Eroare la calcularea valorii stocului', details: error.message });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        log(`Error calculating stock valuation: ${message}`, 'inventory-assessment');
+        res.status(500).json({ error: 'Eroare la calcularea valorii stocului', details: message });
       }
     }
   );
@@ -558,7 +567,7 @@ export function createInventoryAssessmentController(
    */
   router.get('/valuation/history',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
@@ -585,9 +594,10 @@ export function createInventoryAssessmentController(
         );
         
         res.json(result);
-      } catch (error: any) {
-        log(`Error fetching valuation history: ${error.message}`, 'inventory-assessment');
-        res.status(500).json({ error: 'Eroare la obținerea istoricului de evaluare', details: error.message });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        log(`Error fetching valuation history: ${message}`, 'inventory-assessment');
+        res.status(500).json({ error: 'Eroare la obținerea istoricului de evaluare', details: message });
       }
     }
   );
