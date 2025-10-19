@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { BaseController } from './base.controller';
 import { CashRegisterService } from '../services/cash-register.service';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
@@ -31,7 +31,7 @@ export class CashRegisterController extends BaseController {
    */
   async getCashRegister(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const registerId = req.params.id;
+      const registerId = req.params['id'];
       const companyId = this.getCompanyId(req);
       
       const register = await this.cashRegisterService.getCashRegister(registerId, companyId);
@@ -85,7 +85,7 @@ export class CashRegisterController extends BaseController {
    */
   async updateCashRegister(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const registerId = req.params.id;
+      const registerId = req.params['id'];
       const companyId = this.getCompanyId(req);
       const registerData = req.body;
       
@@ -126,13 +126,13 @@ export class CashRegisterController extends BaseController {
   async getAllCashTransactions(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 20;
+      const page = parseInt(req.query['page'] as string) || 1;
+      const limit = parseInt(req.query['limit'] as string) || 20;
       
       // Optional filters
-      const registerId = req.query.registerId as string;
-      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
-      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+      const registerId = req.query['registerId'] as string;
+      const startDate = req.query['startDate'] ? new Date(req.query['startDate'] as string) : undefined;
+      const endDate = req.query['endDate'] ? new Date(req.query['endDate'] as string) : undefined;
       
       return await this.cashRegisterService.getCashTransactions(
         companyId,
@@ -152,13 +152,13 @@ export class CashRegisterController extends BaseController {
   async getCashTransactions(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const registerId = req.params.id; // From URL params
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 20;
+      const registerId = req.params['id']; // From URL params
+      const page = parseInt(req.query['page'] as string) || 1;
+      const limit = parseInt(req.query['limit'] as string) || 20;
       
       // Optional date filters
-      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
-      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+      const startDate = req.query['startDate'] ? new Date(req.query['startDate'] as string) : undefined;
+      const endDate = req.query['endDate'] ? new Date(req.query['endDate'] as string) : undefined;
       
       return await this.cashRegisterService.getCashTransactions(
         companyId,
@@ -177,7 +177,7 @@ export class CashRegisterController extends BaseController {
    */
   async getCashTransaction(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const transactionId = req.params.id;
+      const transactionId = req.params['id'];
       const companyId = this.getCompanyId(req);
       
       const transaction = await this.cashRegisterService.getCashTransaction(
@@ -205,7 +205,6 @@ export class CashRegisterController extends BaseController {
       const { 
         receiptData,
         payerInfo,
-        referenceDocuments,
         notes
       } = req.body;
       
@@ -253,7 +252,6 @@ export class CashRegisterController extends BaseController {
       const { 
         paymentData,
         payeeInfo,
-        referenceDocuments,
         notes
       } = req.body;
       
@@ -301,10 +299,8 @@ export class CashRegisterController extends BaseController {
       const { 
         sourceRegisterId,
         targetRegisterId,
-        date,
         amount,
-        description,
-        notes
+        description
       } = req.body;
       
       try {
@@ -349,12 +345,9 @@ export class CashRegisterController extends BaseController {
     await this.handleRequest(req, res, async () => {
       const { 
         registerId,
-        bankAccountId,
-        date,
         amount,
         description,
-        referenceNumber,
-        notes
+        referenceNumber
       } = req.body;
       
       try {
@@ -370,7 +363,7 @@ export class CashRegisterController extends BaseController {
           personName: referenceNumber || 'Bank Deposit'
         };
         
-        const { cashTransactionId, bankTransactionId } = await this.cashRegisterService.recordCashDepositToBank(data);
+        const { cashTransactionId } = await this.cashRegisterService.recordCashDepositToBank(data);
         
         const deposit = await this.cashRegisterService.getCashTransaction(
           cashTransactionId,
@@ -402,12 +395,9 @@ export class CashRegisterController extends BaseController {
     await this.handleRequest(req, res, async () => {
       const { 
         registerId,
-        bankAccountId,
-        date,
         amount,
         description,
-        referenceNumber,
-        notes
+        referenceNumber
       } = req.body;
       
       try {
@@ -423,7 +413,7 @@ export class CashRegisterController extends BaseController {
           personName: referenceNumber || 'Bank Withdrawal'
         };
         
-        const { cashTransactionId, bankTransactionId } = await this.cashRegisterService.recordCashWithdrawalFromBank(data);
+        const { cashTransactionId } = await this.cashRegisterService.recordCashWithdrawalFromBank(data);
         
         const withdrawal = await this.cashRegisterService.getCashTransaction(
           cashTransactionId,
@@ -453,14 +443,12 @@ export class CashRegisterController extends BaseController {
    */
   async createReconciliation(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const registerId = req.params.registerId;
+      const registerId = req.params['registerId'];
       const companyId = this.getCompanyId(req);
       const userId = this.getUserId(req);
       
       const { 
-        reconciliationDate,
         physicalCount,
-        transactionIds,
         notes
       } = req.body;
       
@@ -500,9 +488,9 @@ export class CashRegisterController extends BaseController {
    */
   async getCashRegisterBalance(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const registerId = req.params.id;
+      const registerId = req.params['id'];
       const companyId = this.getCompanyId(req);
-      const asOfDate = req.query.asOfDate ? new Date(req.query.asOfDate as string) : new Date();
+      const asOfDate = req.query['asOfDate'] ? new Date(req.query['asOfDate'] as string) : new Date();
       
       const balance = await this.cashRegisterService.getCashRegisterBalanceAsOf(
         registerId,
@@ -520,12 +508,12 @@ export class CashRegisterController extends BaseController {
    */
   async generateCashRegisterReport(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const registerId = req.params.id;
+      const registerId = req.params['id'];
       const companyId = this.getCompanyId(req);
       
       try {
-        const startDate = new Date(req.query.startDate as string);
-        const endDate = new Date(req.query.endDate as string);
+        const startDate = new Date(req.query['startDate'] as string);
+        const endDate = new Date(req.query['endDate'] as string);
         
         const report = await this.cashRegisterService.generateCashRegisterReport(
           registerId,
@@ -554,9 +542,9 @@ export class CashRegisterController extends BaseController {
    */
   async getDailyClosingReport(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const registerId = req.params.id;
+      const registerId = req.params['id'];
       const companyId = this.getCompanyId(req);
-      const date = req.query.date ? new Date(req.query.date as string) : new Date();
+      const date = req.query['date'] ? new Date(req.query['date'] as string) : new Date();
       
       const report = await this.cashRegisterService.getDailyClosingReport(
         registerId,
