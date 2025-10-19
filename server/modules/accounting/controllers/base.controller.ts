@@ -123,8 +123,8 @@ export class BaseController {
    * Get pagination parameters with defaults
    */
   protected getPaginationParams(req: AuthenticatedRequest): { page: number, limit: number } {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
+    const page = parseInt(req.query['page'] as string) || 1;
+    const limit = parseInt(req.query['limit'] as string) || 20;
     
     return {
       page: Math.max(1, page), // Ensure page is at least 1
