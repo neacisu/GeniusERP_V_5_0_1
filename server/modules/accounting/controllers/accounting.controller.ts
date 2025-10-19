@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AccountingService } from '../services/accounting.service';
 import { BaseController } from './base.controller';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
@@ -40,7 +40,7 @@ export class AccountingController extends BaseController {
    */
   async getAccountGroupsByClass(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const classId = req.params.classId;
+      const classId = req.params['classId'];
       
       // Verificăm dacă classId este un UUID valid sau un cod de clasă
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(classId);
@@ -76,7 +76,7 @@ export class AccountingController extends BaseController {
    */
   async getSyntheticAccountsByGroup(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const groupId = req.params.groupId;
+      const groupId = req.params['groupId'];
       
       // Verificăm dacă groupId este un UUID valid sau un cod de grupă
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(groupId);
@@ -103,7 +103,7 @@ export class AccountingController extends BaseController {
    */
   async getSyntheticAccountsByGrade(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const grade = parseInt(req.params.grade);
+      const grade = parseInt(req.params['grade']);
       return await this.accountingService.getSyntheticAccountsByGrade(grade);
     });
   }
@@ -122,7 +122,7 @@ export class AccountingController extends BaseController {
    */
   async getAnalyticAccountsBySynthetic(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const syntheticId = req.params.syntheticId;
+      const syntheticId = req.params['syntheticId'];
       
       // Verificăm dacă syntheticId este un UUID valid sau un cod de cont
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(syntheticId);
@@ -168,7 +168,7 @@ export class AccountingController extends BaseController {
    */
   async getJournalEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const id = req.params.id;
+      const id = req.params['id'];
       return await this.accountingService.getJournalEntry(id);
     });
   }
@@ -188,12 +188,7 @@ export class AccountingController extends BaseController {
    */
   async getAccountChart(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = this.getCompanyId(req);
-      
       // Get account chart with optional filtering
-      const includeInactive = req.query.includeInactive === 'true';
-      const type = req.query.type as string;
-      
       // TODO: getAllAccounts() nu suportă filtre - trebuie implementat getAccountChart sau filtrat manual
       return await this.accountingService.getAllAccounts();
     });
@@ -204,8 +199,7 @@ export class AccountingController extends BaseController {
    */
   async getAccount(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = this.getCompanyId(req);
-      const accountId = req.params.id;
+      const accountId = req.params['id'];
       
       // TODO: getAccount nu există - folosim getAnalyticAccount (pentru conturi analitice)
       const account = await this.accountingService.getAnalyticAccount(accountId);
@@ -247,8 +241,7 @@ export class AccountingController extends BaseController {
    */
   async updateAccount(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = this.getCompanyId(req);
-      const accountId = req.params.id;
+      const accountId = req.params['id'];
       
       // Verify that the account exists and belongs to the company
       const existingAccount = await this.accountingService.getAnalyticAccount(accountId);
@@ -266,9 +259,6 @@ export class AccountingController extends BaseController {
    */
   async deleteAccount(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = this.getCompanyId(req);
-      const accountId = req.params.id;
-      
       // TODO: getAccount, canDeleteAccount, deleteAccount nu există în AccountingService
       throw { statusCode: 501, message: 'Delete account functionality not implemented yet' };
     });
@@ -279,9 +269,6 @@ export class AccountingController extends BaseController {
    */
   async getGeneralLedger(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = this.getCompanyId(req);
-      const { page, limit } = this.getPaginationParams(req);
-      
       // TODO: getGeneralLedger nu există în AccountingService
       throw { statusCode: 501, message: 'General ledger functionality not implemented yet' };
     });
@@ -292,8 +279,7 @@ export class AccountingController extends BaseController {
    */
   async getLedgerEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = this.getCompanyId(req);
-      const entryId = req.params.id;
+      const entryId = req.params['id'];
       
       // TODO: getLedgerEntry nu există - folosim getJournalEntry cu filtrare companyId necesară
       const entry = await this.accountingService.getJournalEntry(entryId);
@@ -312,8 +298,6 @@ export class AccountingController extends BaseController {
    */
   async getTrialBalance(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = this.getCompanyId(req);
-      
       // TODO: generateTrialBalance nu există în AccountingService
       throw { statusCode: 501, message: 'Trial balance generation not implemented yet' };
     });
@@ -324,8 +308,6 @@ export class AccountingController extends BaseController {
    */
   async getBalanceSheet(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = this.getCompanyId(req);
-      
       // TODO: generateBalanceSheet nu există în AccountingService
       throw { statusCode: 501, message: 'Balance sheet generation not implemented yet' };
     });
@@ -336,8 +318,6 @@ export class AccountingController extends BaseController {
    */
   async getIncomeStatement(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = this.getCompanyId(req);
-      
       // TODO: generateIncomeStatement nu există în AccountingService
       throw { statusCode: 501, message: 'Income statement generation not implemented yet' };
     });
@@ -407,7 +387,7 @@ export class AccountingController extends BaseController {
   async getSupplier(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const supplierId = req.params.id;
+      const supplierId = req.params['id'];
 
       const supplier = await this.accountingService.getSupplier(supplierId, companyId);
 
