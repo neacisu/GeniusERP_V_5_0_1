@@ -14,8 +14,9 @@ import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.serv
 import { v4 as uuidv4 } from 'uuid';
 import { getDrizzle } from '../../../common/drizzle';
 import { and, desc, eq, gte, lte, isNotNull } from 'drizzle-orm';
-import { invoices, invoiceItems, invoiceDetails, invoicePayments, users, ledgerEntries, ledgerLines, companies, type LedgerEntry, type LedgerLine } from '../../../../shared/schema';
-import { VATCategory, determineVATCategory, VAT_CATEGORY_INFO } from '../types/vat-categories';
+import { invoices, invoiceItems, invoiceDetails, invoicePayments, users, companies } from '../../../../shared/schema';
+import { accountingLedgerEntries, accountingLedgerLines } from '../schema/accounting.schema';
+import { VATCategory, determineVATCategory } from '../types/vat-categories';
 import { 
   SalesJournalReport, 
   SalesJournalRow, 
@@ -316,8 +317,8 @@ export class SalesJournalService {
     invoiceData: any,
     customer: any,
     items: any[],
-    taxRates: any,
-    paymentTerms: any,
+    _taxRates: any,
+    _paymentTerms: any,
     notes?: string
   ): Promise<void> {
     try {
@@ -402,35 +403,35 @@ export class SalesJournalService {
       const db = getDrizzle();
       const result = await db
         .select()
-        .from(ledgerEntries)
+        .from(accountingLedgerEntries)
         .where(and(
-          eq(ledgerEntries.companyId, companyId),
-          eq(ledgerEntries.type, LedgerEntryType.SALES)
+          eq(accountingLedgerEntries.companyId, companyId),
+          eq(accountingLedgerEntries.type, LedgerEntryType.SALES)
         ))
-        .orderBy(desc(ledgerEntries.createdAt))
+        .orderBy(desc(accountingLedgerEntries.createdAt))
         .limit(limit)
         .offset(offset);
       
-      // Get lines for each entry
+      // Get lines for each entry with proper typing
       const entriesWithLines = await Promise.all(
-        result.map(async (entry: Record<string, any>) => {
+        result.map(async (entry) => {
           const lines = await db
             .select()
-            .from(ledgerLines)
-            .where(eq(ledgerLines.ledgerEntryId, entry.id));
+            .from(accountingLedgerLines)
+            .where(eq(accountingLedgerLines.ledgerEntryId, entry.id));
           return { ...entry, lines };
         })
       );
       
-      const entries = entriesWithLines.map((entry: Record<string, any>) => this.mapToSalesJournalEntry(entry));
+      const entries = entriesWithLines.map((entry) => this.mapToSalesJournalEntry(entry));
       
       // Get total count
       const totalCountResult = await db
-        .select({ id: ledgerEntries.id })
-        .from(ledgerEntries)
+        .select({ id: accountingLedgerEntries.id })
+        .from(accountingLedgerEntries)
         .where(and(
-          eq(ledgerEntries.companyId, companyId),
-          eq(ledgerEntries.type, LedgerEntryType.SALES)
+          eq(accountingLedgerEntries.companyId, companyId),
+          eq(accountingLedgerEntries.type, LedgerEntryType.SALES)
         ));
       
       return {
@@ -456,11 +457,11 @@ export class SalesJournalService {
       const db = getDrizzle();
       const entryResult = await db
         .select()
-        .from(ledgerEntries)
+        .from(accountingLedgerEntries)
         .where(and(
-          eq(ledgerEntries.id, id),
-          eq(ledgerEntries.companyId, companyId),
-          eq(ledgerEntries.type, LedgerEntryType.SALES)
+          eq(accountingLedgerEntries.id, id),
+          eq(accountingLedgerEntries.companyId, companyId),
+          eq(accountingLedgerEntries.type, LedgerEntryType.SALES)
         ))
         .limit(1);
       
@@ -473,8 +474,8 @@ export class SalesJournalService {
       // Get ledger lines
       const lines = await db
         .select()
-        .from(ledgerLines)
-        .where(eq(ledgerLines.ledgerEntryId, entry.id));
+        .from(accountingLedgerLines)
+        .where(eq(accountingLedgerLines.ledgerEntryId, entry.id));
       
       return this.mapToSalesJournalEntry({ ...entry, lines });
     } catch (error) {
@@ -623,7 +624,7 @@ export class SalesJournalService {
     items: any[],
     taxRates: any,
     reason: string,
-    notes: string
+    _notes: string
   ): Promise<string> {
     try {
       // Get the original invoice
@@ -639,12 +640,6 @@ export class SalesJournalService {
       }
       
       const invoice = invoiceResult[0];
-      
-      // Get invoice lines
-      const lines = await db
-        .select()
-        .from(invoiceItems)
-        .where(eq(invoiceItems.invoiceId, invoice.id));
       
       // Calculate totals
       const netAmount = items.reduce((sum, item) => sum + Number(item.netAmount), 0);
@@ -776,22 +771,22 @@ export class SalesJournalService {
       // Query entries
       const entriesResult = await db
         .select()
-        .from(ledgerEntries)
+        .from(accountingLedgerEntries)
         .where(and(
-          eq(ledgerEntries.companyId, companyId),
-          eq(ledgerEntries.type, LedgerEntryType.SALES),
-          gte(ledgerEntries.createdAt, startDate),
-          lte(ledgerEntries.createdAt, endDate)
+          eq(accountingLedgerEntries.companyId, companyId),
+          eq(accountingLedgerEntries.type, LedgerEntryType.SALES),
+          gte(accountingLedgerEntries.createdAt, startDate),
+          lte(accountingLedgerEntries.createdAt, endDate)
         ))
-        .orderBy(desc(ledgerEntries.createdAt));
+        .orderBy(desc(accountingLedgerEntries.createdAt));
       
       // Get lines for each entry
       const entries = await Promise.all(
         entriesResult.map(async (entry) => {
           const lines = await db
             .select()
-            .from(ledgerLines)
-            .where(eq(ledgerLines.ledgerEntryId, entry.id));
+            .from(accountingLedgerLines)
+            .where(eq(accountingLedgerLines.ledgerEntryId, entry.id));
           return { ...entry, lines };
         })
       );
@@ -801,19 +796,19 @@ export class SalesJournalService {
       let totalVat = 0;
       
       for (const entry of entries) {
-        totalAmount += Number(entry.amount);
+        totalAmount += Number(entry.totalAmount ?? 0);
         
-        // Get VAT amount from ledger lines
-        const vatLines = entry.lines.filter((line: Record<string, any>) => 
-          line.accountId === SALES_ACCOUNTS.VAT_COLLECTED
+        // Get VAT amount from ledger lines (using fullAccountNumber instead of accountId)
+        const vatLines = entry.lines.filter((line: any) => 
+          line.fullAccountNumber === SALES_ACCOUNTS.VAT_COLLECTED
         );
         
         for (const vatLine of vatLines) {
-          totalVat += Number(vatLine.creditAmount) - Number(vatLine.debitAmount);
+          totalVat += Number(vatLine.creditAmount ?? 0) - Number(vatLine.debitAmount ?? 0);
         }
       }
       
-      const mappedEntries = entries.map((entry: Record<string, any>) => this.mapToSalesJournalEntry(entry));
+      const mappedEntries = entries.map((entry: any) => this.mapToSalesJournalEntry(entry));
       
       // Create report
       const report: SalesReport = {
@@ -917,16 +912,6 @@ export class SalesJournalService {
    * @param customerId Customer ID
    * @returns Customer name or 'Unknown Customer' if not found
    */
-  private async getCustomerName(customerId: string): Promise<string> {
-    try {
-      // Metoda simplificată - returnează ID-ul pentru moment
-      // Într-un caz real ar trebui să query-eze tabela customers din CRM
-      return `Customer ${customerId}`;
-    } catch (error) {
-      console.error('Error getting customer name:', error);
-      return 'Unknown Customer';
-    }
-  }
   
   /**
    * Create a sales invoice entry
@@ -938,8 +923,8 @@ export class SalesJournalService {
       companyId,
       franchiseId,
       invoiceNumber,
-      invoiceId,
-      customerId,
+      invoiceId: _invoiceId,
+      customerId: _customerId,
       customerName,
       amount,
       netAmount,
@@ -947,8 +932,8 @@ export class SalesJournalService {
       vatRate,
       currency,
       exchangeRate,
-      issueDate,
-      dueDate,
+      issueDate: _issueDate,
+      dueDate: _dueDate,
       description,
       userId,
       isCashVAT = false // Default: nu este TVA la încasare
@@ -1015,17 +1000,17 @@ export class SalesJournalService {
   /**
    * Metode pentru receipts (bonuri de vânzare cash)
    */
-  public async createSalesReceipt(receiptData: any): Promise<string> {
+  public async createSalesReceipt(_receiptData: any): Promise<string> {
     // Placeholder - ar trebui implementat complet
     return uuidv4();
   }
   
-  public async getSalesReceipt(receiptId: string, companyId: string): Promise<any | null> {
+  public async getSalesReceipt(_receiptId: string, _companyId: string): Promise<any | null> {
     // Placeholder
     return null;
   }
   
-  public async getSalesReceipts(companyId: string, page: number, limit: number, startDate?: Date, endDate?: Date, customerId?: string): Promise<any> {
+  public async getSalesReceipts(_companyId: string, page: number, limit: number, _startDate?: Date, _endDate?: Date, _customerId?: string): Promise<any> {
     return { data: [], total: 0, page, limit };
   }
   
@@ -1051,7 +1036,7 @@ export class SalesJournalService {
     return await this.getSalesJournalEntry(entryId, companyId);
   }
   
-  public async getSalesLedgerEntries(companyId: string, page: number, limit: number, startDate?: Date, endDate?: Date): Promise<any> {
+  public async getSalesLedgerEntries(companyId: string, page: number, limit: number, _startDate?: Date, _endDate?: Date): Promise<any> {
     return await this.getSalesJournalEntries(companyId, page, limit);
   }
   
@@ -1083,7 +1068,7 @@ export class SalesJournalService {
   /**
    * Sales reports by period/product
    */
-  public async generateSalesByPeriodReport(companyId: string, startDate?: Date, endDate?: Date, groupBy?: string): Promise<any> {
+  public async generateSalesByPeriodReport(companyId: string, startDate?: Date, _endDate?: Date, _groupBy?: string): Promise<any> {
     return await this.generateSalesReport(companyId, startDate?.getFullYear() || new Date().getFullYear());
   }
   
@@ -1108,7 +1093,7 @@ export class SalesJournalService {
   public async transferDeferredVAT(
     invoiceId: string,
     paymentAmount: number,
-    paymentDate: Date,
+    _paymentDate: Date,
     userId?: string
   ): Promise<LedgerEntryData | null> {
     try {
@@ -1238,24 +1223,26 @@ export class SalesJournalService {
   
   /**
    * Map from ledger entry to sales journal entry
-   * @param entry Ledger entry
+   * @param entry Ledger entry with lines
    * @returns Sales journal entry
    */
-  private mapToSalesJournalEntry(entry: Record<string, any>): SalesJournalEntry {
+  private mapToSalesJournalEntry(entry: any): SalesJournalEntry {
     // Extract customer information from the entry
     const customerId = '';
     let customerName = '';
     
     // Look for customer info in the description
-    if (entry.description && entry.description.includes('to ')) {
-      customerName = entry.description.split('to ').pop().trim();
+    const description = entry.description ?? '';
+    if (description && description.includes('to ')) {
+      customerName = description.split('to ').pop()?.trim() ?? '';
     }
     
     // Look for customer info in the ledger lines
     if (entry.lines) {
       for (const line of entry.lines) {
-        if (line.accountId === SALES_ACCOUNTS.CUSTOMER && line.description) {
-          const match = line.description.match(/Customer: (.+)/);
+        const lineDesc = line.description ?? '';
+        if (line.fullAccountNumber === SALES_ACCOUNTS.CUSTOMER && lineDesc) {
+          const match = lineDesc.match(/Customer: (.+)/);
           if (match && match[1]) {
             customerName = match[1];
           }
@@ -1268,9 +1255,9 @@ export class SalesJournalService {
       companyId: entry.companyId,
       franchiseId: entry.franchiseId || undefined,
       entryType: entry.type,
-      referenceNumber: entry.referenceNumber,
-      amount: Number(entry.amount),
-      description: entry.description,
+      referenceNumber: entry.documentNumber ?? '',
+      amount: Number(entry.totalAmount ?? 0),
+      description: description,
       createdAt: new Date(entry.createdAt),
       updatedAt: new Date(entry.updatedAt || entry.createdAt),
       customerId,
@@ -1534,7 +1521,7 @@ export class SalesJournalService {
       periodStart,
       periodEnd,
       reportType = 'DETAILED',
-      includeZeroVAT = true,
+      includeZeroVAT: _includeZeroVAT = true,
       includeCanceled = false,
       customerFilter,
       categoryFilter
@@ -2002,7 +1989,7 @@ export class SalesJournalService {
     db: any,
     companyId: string,
     periodStart: Date,
-    periodEnd: Date,
+    _periodEnd: Date,
     totals: SalesJournalTotals
   ): Promise<any> {
     try {
@@ -2078,16 +2065,16 @@ export class SalesJournalService {
     month: number
   ): Promise<number> {
     try {
-      // Query suma creditelor - debitelor pentru cont în perioadă
+      // Query suma creditelor - debitelor pentru cont în perioadă (using fullAccountNumber)
       const result = await db
         .select()
-        .from(ledgerLines)
-        .innerJoin(ledgerEntries, eq(ledgerLines.ledgerEntryId, ledgerEntries.id))
+        .from(accountingLedgerLines)
+        .innerJoin(accountingLedgerEntries, eq(accountingLedgerLines.ledgerEntryId, accountingLedgerEntries.id))
         .where(and(
-          eq(ledgerEntries.companyId, companyId),
-          eq(ledgerLines.accountId, accountCode),
-          gte(ledgerEntries.createdAt, new Date(year, month - 1, 1)),
-          lte(ledgerEntries.createdAt, new Date(year, month, 0))
+          eq(accountingLedgerEntries.companyId, companyId),
+          eq(accountingLedgerLines.fullAccountNumber, accountCode),
+          gte(accountingLedgerEntries.createdAt, new Date(year, month - 1, 1)),
+          lte(accountingLedgerEntries.createdAt, new Date(year, month, 0))
         ));
       
       let balance = 0;
