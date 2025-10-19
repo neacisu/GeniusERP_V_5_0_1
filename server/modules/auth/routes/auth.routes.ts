@@ -3,14 +3,13 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import session from "express-session";
-import { storage } from "../../../storage";
 import { authService, JWT_SECRET } from "../services/auth.service";
 import { AuthGuard } from "../guards/auth.guard";
 import { JwtAuthMode, UserRole } from "../types";
 import { DrizzleService } from "../../../common/drizzle";
-import { users } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { users, User as SelectUser } from "@shared/schema";
 import { authRateLimiter } from "../../../middlewares/rate-limit.middleware";
+import { log } from "../../../vite";
 
 export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
   const router = Router();
@@ -19,7 +18,7 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
   // Set up session with security best practices
   // SESSION_SECRET is validated at startup by env-validation.ts
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET!,  // Non-null assertion safe after validation
+    secret: String(process.env.SESSION_SECRET),  // Validated at startup, safe to convert
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
@@ -58,7 +57,7 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         secretOrKey: String(JWT_SECRET)  // Convert to string for passport-jwt
       },
-      async (payload: any, done: any) => {
+      async (payload: { id: string }, done: (error: Error | null, user?: unknown | false) => void) => {
         try {
           const user = await authService.getUserById(payload.id);
           if (!user) {
@@ -68,7 +67,7 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
           const authUser = { ...user, roles: [user.role] };
           return done(null, authUser);
         } catch (error) {
-          return done(error);
+          return done(error instanceof Error ? error : new Error('Unknown error'));
         }
       }
     )
@@ -98,9 +97,10 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
 
       // Return the user with token without using req.login
       res.status(201).json({ ...user, token: user.token });
-    } catch (error: any) {
-      if (error.message === "Numele de utilizator există deja") {
-        return res.status(400).json({ message: error.message });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Registration error';
+      if (message === "Numele de utilizator există deja") {
+        return res.status(400).json({ message });
       }
       next(error);
     }
@@ -108,14 +108,15 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
 
   // Login route - with rate limiting
   router.post("/login", authRateLimiter, (req, res, next) => {
-    passport.authenticate("local", (err: any, user: any, info: any) => {
+    passport.authenticate("local", (err: Error | null, user: unknown, info?: { message?: string }) => {
       if (err) return next(err);
       if (!user) {
         return res.status(401).json({ message: info?.message || "Autentificare eșuată" });
       }
       
       // Generate token and return user without using req.login
-      const token = authService.generateToken(user);
+      // Passport LocalStrategy returns SelectUser from our getUserByUsername
+      const token = authService.generateToken(user as SelectUser);
       return res.status(200).json({ ...user, token });
     })(req, res, next);
   });
@@ -127,7 +128,7 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
   });
 
   // Refresh token route
-  router.post("/refresh", async (req, res, next) => {
+  router.post("/refresh", async (req, res, _next) => {
     try {
       const token = req.headers.authorization?.replace('Bearer ', '');
       if (!token) {
@@ -143,7 +144,7 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
       // Generate a new token
       const newToken = authService.generateToken(user);
       
-      console.log(`[AuthRoutes] Token refreshed successfully for user: ${user.id}`);
+      log(`Token refreshed successfully for user: ${user.id}`, 'auth-routes');
       res.json({ 
         token: newToken,
         user: {
@@ -153,8 +154,9 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
           companyId: user.companyId
         }
       });
-    } catch (error: any) {
-      console.error('[AuthRoutes] Token refresh error:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error('[AuthRoutes] Token refresh error:', message);
       res.status(401).json({ error: 'Token refresh failed' });
     }
   });
@@ -216,7 +218,7 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
       });
     });
     
-    console.log('⚠️  Test auth endpoints enabled (development only)');
+    log('⚠️  Test auth endpoints enabled (development only)', 'auth-routes');
   }
   
   // Authentication verification endpoint
