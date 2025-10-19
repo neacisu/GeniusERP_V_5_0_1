@@ -14,7 +14,7 @@ import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.serv
 import { v4 as uuidv4 } from 'uuid';
 import { getDrizzle } from '../../../common/drizzle';
 import { and, desc, eq, gte, lte, isNotNull } from 'drizzle-orm';
-import { invoices, invoiceItems, invoiceDetails, invoicePayments, users, companies, type InvoicePayment } from '../../../../shared/schema';
+import { invoices, invoiceItems, invoiceDetails, invoicePayments, users, companies, type InvoicePayment, type InvoiceDetail } from '../../../../shared/schema';
 import { accountingLedgerEntries, accountingLedgerLines } from '../schema/accounting.schema';
 import { VATCategory, determineVATCategory } from '../types/vat-categories';
 import { 
@@ -32,8 +32,7 @@ import {
   type LedgerEntryInputData,
   type WhereCondition,
   type PaginatedResponse,
-  type ReportData,
-  type InvoiceDetail
+  type ReportData
 } from '../types/sales-journal-data-types';
 import { accountingCacheService } from './accounting-cache.service';
 import { accountingQueueService } from './accounting-queue.service';
@@ -214,7 +213,7 @@ export class SalesJournalService {
             .select()
             .from(invoiceItems)
             .where(eq(invoiceItems.invoiceId, invoice.id));
-          return { ...invoice, lines };
+          return { ...invoice, lines } as InvoiceData;
         })
       );
       
@@ -226,7 +225,7 @@ export class SalesJournalService {
       
       // Enrich invoices with user names
       const enrichedData = await Promise.all(
-        invoicesWithLines.map(async (invoice: InvoiceData) => {
+        invoicesWithLines.map(async (invoice) => {
           let createdByName: string | null = null;
           if (invoice.createdBy) {
             const userResult = await db
@@ -334,6 +333,10 @@ export class SalesJournalService {
     notes?: string
   ): Promise<void> {
     try {
+      // Validate required fields
+      if (!invoiceData.id) throw new Error('Invoice ID is required for update');
+      if (!invoiceData.companyId) throw new Error('Company ID is required for update');
+      
       const db = getDrizzle();
       
       // Update invoice
@@ -359,12 +362,12 @@ export class SalesJournalService {
       for (const item of items) {
         await db.insert(invoiceItems).values({
           invoiceId: invoiceData.id,
-          productId: item.productId,
+          productId: item.productId || null,
           productName: item.productName,
           quantity: String(item.quantity),
           unitPrice: String(item.unitPrice),
           netAmount: String(item.netAmount),
-          vatRate: item.vatRate,
+          vatRate: String(item.vatRate),
           vatAmount: String(item.vatAmount),
           grossAmount: String(item.grossAmount)
         });
@@ -526,24 +529,32 @@ export class SalesJournalService {
       const vatAmount = items.reduce((sum, item) => sum + Number(item.vatAmount), 0);
       const grossAmount = netAmount + vatAmount;
       
+      // Validate required fields
+      if (!invoiceData.companyId) throw new Error('Company ID is required');
+      if (!invoiceData.invoiceNumber) throw new Error('Invoice number is required');
+      if (!customer.id) throw new Error('Customer ID is required');
+      if (!customer.name && !customer.customerName) throw new Error('Customer name is required');
+      if (!invoiceData.issueDate) throw new Error('Issue date is required');
+      if (!invoiceData.dueDate) throw new Error('Due date is required');
+      
       // Prepare data for journal entry
       const entryData: SalesInvoiceData = {
         companyId: invoiceData.companyId,
-        franchiseId: invoiceData.franchiseId,
+        franchiseId: invoiceData.franchiseId || undefined,
         invoiceNumber: invoiceData.invoiceNumber,
         invoiceId: invoiceData.id || uuidv4(),
         customerId: customer.id,
-        customerName: customer.name,
+        customerName: customer.name || customer.customerName || 'Unknown',
         amount: grossAmount,
         netAmount,
         vatAmount,
         vatRate: taxRates.standard || 19, // Default Romanian VAT rate
         currency: invoiceData.currency || 'RON',
-        exchangeRate: invoiceData.exchangeRate || 1,
+        exchangeRate: Number(invoiceData.exchangeRate) || 1,
         issueDate: new Date(invoiceData.issueDate),
         dueDate: new Date(invoiceData.dueDate),
-        description: notes || `Invoice ${invoiceData.invoiceNumber} to ${customer.name}`,
-        userId: invoiceData.userId
+        description: notes || `Invoice ${invoiceData.invoiceNumber} to ${customer.name || customer.customerName}`,
+        userId: invoiceData['userId'] as string | undefined
       };
       
       // Create the invoice entry
@@ -658,28 +669,36 @@ export class SalesJournalService {
       const vatAmount = items.reduce((sum, item) => sum + Number(item.vatAmount), 0);
       const grossAmount = netAmount + vatAmount;
       
+      // Validate required fields
+      if (!creditNoteData.companyId) throw new Error('Company ID is required');
+      const creditNoteNumber = creditNoteData['creditNoteNumber'] as string | undefined;
+      if (!creditNoteNumber) throw new Error('Credit note number is required');
+      if (!customer.id) throw new Error('Customer ID is required');
+      if (!customer.name && !customer.customerName) throw new Error('Customer name is required');
+      if (!creditNoteData.issueDate) throw new Error('Issue date is required');
+      
       // Prepare data for journal entry
       const entryData: SalesInvoiceData = {
         companyId: creditNoteData.companyId,
-        franchiseId: creditNoteData.franchiseId,
-        invoiceNumber: creditNoteData.creditNoteNumber,
+        franchiseId: creditNoteData.franchiseId || undefined,
+        invoiceNumber: creditNoteNumber,
         invoiceId: creditNoteData.id || uuidv4(),
         customerId: customer.id,
-        customerName: customer.name,
+        customerName: customer.name || customer.customerName || 'Unknown',
         amount: grossAmount,
         netAmount,
         vatAmount,
         vatRate: taxRates.standard || 19, // Default Romanian VAT rate
         currency: creditNoteData.currency || 'RON',
-        exchangeRate: creditNoteData.exchangeRate || 1,
+        exchangeRate: Number(creditNoteData.exchangeRate) || 1,
         issueDate: new Date(creditNoteData.issueDate),
         dueDate: new Date(creditNoteData.dueDate || creditNoteData.issueDate),
-        description: `Credit note ${creditNoteData.creditNoteNumber} for invoice ${invoice.invoiceNumber}: ${reason}`,
-        userId: creditNoteData.userId
+        description: `Credit note ${creditNoteNumber} for invoice ${invoice.invoiceNumber}: ${reason}`,
+        userId: creditNoteData['userId'] as string | undefined
       };
       
       // Create the credit note entry
-      const entry = await this.createSalesCreditNoteEntry(entryData, creditNoteData.creditNoteNumber, reason);
+      const entry = await this.createSalesCreditNoteEntry(entryData, creditNoteNumber, reason);
       
       // Save credit note in database and get generated ID
       const [insertedCreditNote] = await db.insert(invoices).values({
@@ -820,7 +839,7 @@ export class SalesJournalService {
         }
       }
       
-      const mappedEntries = entries.map((entry: { id: string; lines: unknown[] }) => this.mapToSalesJournalEntry(entry));
+      const mappedEntries = entries.map((entry) => this.mapToSalesJournalEntry(entry));
       
       // Create report
       const report: SalesReport = {
@@ -1055,7 +1074,7 @@ export class SalesJournalService {
   /**
    * Customer statements and balances
    */
-  public async generateCustomerAccountStatement(companyId: string, customerId: string, startDate?: Date, endDate?: Date): Promise<ReportData> {
+  public async generateCustomerAccountStatement(companyId: string, customerId: string, startDate?: Date, endDate?: Date): Promise<ReportData & { customerId: string }> {
     // Simplified implementation
     return {
       companyId,
@@ -1238,7 +1257,18 @@ export class SalesJournalService {
    * @param entry Ledger entry with lines
    * @returns Sales journal entry
    */
-  private mapToSalesJournalEntry(entry: { id: string; companyId: string; franchiseId?: string | null; type: string; documentNumber?: string | null; totalAmount?: string | null; description?: string | null; createdAt: Date | string; updatedAt?: Date | string | null; lines: unknown[] }): SalesJournalEntry {
+  private mapToSalesJournalEntry(entry: { 
+    id: string; 
+    companyId: string; 
+    franchiseId?: string | null; 
+    type: string; 
+    documentNumber?: string | null; 
+    totalAmount?: string | null; 
+    description?: string | null; 
+    createdAt: Date | string; 
+    updatedAt?: Date | string | null; 
+    lines: Array<Record<string, unknown>>
+  }): SalesJournalEntry {
     // Extract customer information from the entry
     const customerId = '';
     let customerName = '';
@@ -1252,8 +1282,9 @@ export class SalesJournalService {
     // Look for customer info in the ledger lines
     if (entry.lines) {
       for (const line of entry.lines) {
-        const lineDesc = line.description ?? '';
-        if (line.fullAccountNumber === SALES_ACCOUNTS.CUSTOMER && lineDesc) {
+        const lineDesc = (line['description'] as string | null | undefined) ?? '';
+        const lineAccount = line['fullAccountNumber'] as string | null | undefined;
+        if (lineAccount === SALES_ACCOUNTS.CUSTOMER && lineDesc) {
           const match = lineDesc.match(/Customer: (.+)/);
           if (match && match[1]) {
             customerName = match[1];
@@ -1274,7 +1305,7 @@ export class SalesJournalService {
       updatedAt: new Date(entry.updatedAt || entry.createdAt),
       customerId,
       customerName,
-      lines: entry.lines || []
+      lines: (entry.lines || []) as InvoiceItemData[]
     };
   }
   
@@ -1639,7 +1670,7 @@ export class SalesJournalService {
           // Construire rând jurnal
           const row = this.buildJournalRow(
             rowNumber++,
-            invoice,
+            invoice as unknown as InvoiceData,
             details,
             category,
             categoryTotals,
@@ -1713,7 +1744,7 @@ export class SalesJournalService {
       } else {
         // Determinare automată pe bază de date
         category = determineVATCategory(
-          line.vatRate,
+          Number(line.vatRate),
           clientDetails?.partnerCountry || 'Romania',
           clientDetails?.partnerFiscalCode,
           false // reverse charge - ar trebui determinat din alte surse
@@ -2101,8 +2132,8 @@ export class SalesJournalService {
       
       let balance = 0;
       for (const row of result) {
-        const credit = Number(row.ledger_lines.creditAmount || 0);
-        const debit = Number(row.ledger_lines.debitAmount || 0);
+        const credit = Number(row.accounting_ledger_lines.creditAmount || 0);
+        const debit = Number(row.accounting_ledger_lines.debitAmount || 0);
         balance += credit - debit;
       }
       

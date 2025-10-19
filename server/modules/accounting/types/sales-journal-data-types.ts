@@ -79,7 +79,7 @@ export interface LedgerEntryInputData {
  * Ledger line data for double-entry accounting
  */
 export interface LedgerLineInputData {
-  accountId?: string;
+  accountId: string;
   accountNumber?: string;
   debitAmount: number;
   creditAmount: number;
