@@ -5,18 +5,11 @@
  * It re-exports the main auth types from the auth module to maintain compatibility.
  */
 
-import { Request } from 'express';
 import { JwtAuthMode, UserRole, JwtUserData } from '../../auth/types';
 
-// Re-export the auth types
+// Re-export the auth types for convenience
 export { JwtAuthMode, UserRole, JwtUserData };
-
-/**
- * Extended Express Request with authenticated user data
- */
-export interface AuthenticatedRequest extends Request {
-  user?: JwtUserData;
-}
+export type { AuthenticatedRequest } from '../../../types/express';
 
 // Additional analytics-specific roles
 export const AnalyticsRoles = {

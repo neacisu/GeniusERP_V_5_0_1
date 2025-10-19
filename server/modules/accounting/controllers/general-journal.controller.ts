@@ -5,7 +5,8 @@
  * Implementează endpoint-urile pentru generarea rapoartelor conform OMFP 2634/2015
  */
 
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthenticatedRequest } from '../../../types/express';
 import { GeneralJournalPDFService } from '../services/general-journal-pdf.service';
 import { GeneralJournalExcelService } from '../services/general-journal-excel.service';
 import { AccountingPeriodsService } from '../services/accounting-periods.service';
@@ -45,7 +46,7 @@ export class GeneralJournalController extends BaseController {
    * @route GET /api/accounting/general-journal/pdf
    * @permission accountant, admin, manager
    */
-  async generatePDF(req: Request, res: Response): Promise<void> {
+  async generatePDF(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       // Validare și autentificare
       const companyId = this.getCompanyId(req);
@@ -131,7 +132,7 @@ export class GeneralJournalController extends BaseController {
    * @route GET /api/accounting/general-journal/excel
    * @permission accountant, admin, manager
    */
-  async generateExcel(req: Request, res: Response): Promise<void> {
+  async generateExcel(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       // Validare și autentificare
       const companyId = this.getCompanyId(req);
@@ -216,7 +217,7 @@ export class GeneralJournalController extends BaseController {
    * @route GET /api/accounting/general-journal/preview
    * @permission accountant, admin, manager
    */
-  async previewData(req: Request, res: Response): Promise<void> {
+  async previewData(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const companyId = this.getCompanyId(req);
       
@@ -284,7 +285,7 @@ export class GeneralJournalController extends BaseController {
    * @route GET /api/accounting/general-journal/periods
    * @permission accountant, admin, manager
    */
-  async getAvailablePeriods(req: Request, res: Response): Promise<void> {
+  async getAvailablePeriods(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const companyId = this.getCompanyId(req);
       

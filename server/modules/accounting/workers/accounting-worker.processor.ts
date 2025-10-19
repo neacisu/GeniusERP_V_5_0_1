@@ -543,7 +543,7 @@ async function handleBatchExport(job: Job): Promise<any> {
     for (const filePath of exportedFiles) {
       try {
         fs.unlinkSync(filePath);
-      } catch (err) {
+      } catch (_err) {
         log(`Warning: Could not delete temp file ${filePath}`, 'accounting-job-warning');
       }
     }

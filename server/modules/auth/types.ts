@@ -4,8 +4,6 @@
  * Common types and interfaces for the authentication module.
  */
 
-import { Request } from 'express';
-
 /**
  * Authentication modes for the JWT authentication
  */
@@ -30,19 +28,11 @@ export enum UserRole {
 }
 
 /**
- * JWT token payload structure
- * RE-EXPORT from shared/types.ts for consistency
+ * JWT token payload structure and AuthenticatedRequest
+ * RE-EXPORT from shared types and server types for consistency
  */
-import type { JwtUserData as JwtUserDataType, JwtPayload as JwtPayloadType } from '../../../shared/types';
-export type JwtUserData = JwtUserDataType;
-export type JwtPayload = JwtPayloadType;
-
-/**
- * Extended Express Request with authenticated user data
- */
-export interface AuthenticatedRequest extends Request {
-  user?: JwtUserData;
-}
+export type { JwtUserData, JwtPayload } from '../../../shared/types';
+export type { AuthenticatedRequest } from '../../types/express';
 
 /**
  * Login request data

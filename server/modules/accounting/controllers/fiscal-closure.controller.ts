@@ -7,7 +7,8 @@
  * - Async closure operations via BullMQ
  */
 
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthenticatedRequest } from '../../../types/express';
 import FiscalClosureService from '../services/fiscal-closure.service';
 import AccountingPeriodsService from '../services/accounting-periods.service';
 import VATClosureService from '../services/vat-closure.service';
@@ -28,7 +29,7 @@ export class FiscalClosureController {
    * POST /api/accounting/fiscal-closure/month
    * Închide luna fiscală
    */
-  async closeMonth(req: Request, res: Response): Promise<void> {
+  async closeMonth(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { year, month, skipDepreciation, skipFXRevaluation, skipVAT, dryRun } = req.body;
       const companyId = req.user?.companyId;
@@ -84,7 +85,7 @@ export class FiscalClosureController {
    * POST /api/accounting/fiscal-closure/year
    * Închide anul fiscal
    */
-  async closeYear(req: Request, res: Response): Promise<void> {
+  async closeYear(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { fiscalYear, taxAdjustments, profitDistribution, dryRun } = req.body;
       const companyId = req.user?.companyId;
@@ -138,7 +139,7 @@ export class FiscalClosureController {
    * POST /api/accounting/fiscal-closure/reopen/:periodId
    * Redeschide o perioadă închisă (doar admin)
    */
-  async reopenPeriod(req: Request, res: Response): Promise<void> {
+  async reopenPeriod(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { periodId } = req.params;
       const { reason } = req.body;
@@ -197,7 +198,7 @@ export class FiscalClosureController {
    * GET /api/accounting/fiscal-closure/periods
    * Obține toate perioadele fiscale pentru companie
    */
-  async getPeriods(req: Request, res: Response): Promise<void> {
+  async getPeriods(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const companyId = req.user?.companyId;
       const { year } = req.query;
@@ -230,7 +231,7 @@ export class FiscalClosureController {
    * POST /api/accounting/fiscal-closure/generate-periods
    * Generează perioade pentru un an întreg
    */
-  async generateYearlyPeriods(req: Request, res: Response): Promise<void> {
+  async generateYearlyPeriods(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { year } = req.body;
       const companyId = req.user?.companyId;
@@ -270,7 +271,7 @@ export class FiscalClosureController {
    * GET /api/accounting/fiscal-closure/period/:periodId
    * Obține detalii despre o perioadă specifică
    */
-  async getPeriod(req: Request, res: Response): Promise<void> {
+  async getPeriod(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { periodId } = req.params;
       const companyId = req.user?.companyId;
@@ -304,7 +305,7 @@ export class FiscalClosureController {
    * POST /api/accounting/fiscal-closure/validate-period
    * Validează consistența perioadelor
    */
-  async validatePeriodConsistency(req: Request, res: Response): Promise<void> {
+  async validatePeriodConsistency(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const companyId = req.user?.companyId;
 
@@ -339,7 +340,7 @@ export class FiscalClosureController {
    * POST /api/accounting/fiscal-closure/month/async
    * Închide luna fiscală ASYNC (via BullMQ)
    */
-  async closeMonthAsync(req: Request, res: Response): Promise<void> {
+  async closeMonthAsync(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { year, month, skipDepreciation, skipFXRevaluation, skipVAT, dryRun } = req.body;
       const companyId = req.user?.companyId;
@@ -387,7 +388,7 @@ export class FiscalClosureController {
    * POST /api/accounting/fiscal-closure/year/async
    * Închide anul fiscal ASYNC (via BullMQ)
    */
-  async closeYearAsync(req: Request, res: Response): Promise<void> {
+  async closeYearAsync(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { fiscalYear, taxAdjustments, profitDistribution, dryRun } = req.body;
       const companyId = req.user?.companyId;
@@ -433,7 +434,7 @@ export class FiscalClosureController {
    * POST /api/accounting/fiscal-closure/vat/async
    * Închide perioada TVA ASYNC (via BullMQ)
    */
-  async closeVATAsync(req: Request, res: Response): Promise<void> {
+  async closeVATAsync(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { year, month, dryRun } = req.body;
       const companyId = req.user?.companyId;
@@ -478,7 +479,7 @@ export class FiscalClosureController {
    * GET /api/accounting/fiscal-closure/vat/d300
    * Get D300 report (cu caching)
    */
-  async getD300Report(req: Request, res: Response): Promise<void> {
+  async getD300Report(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { year, month } = req.query;
       const companyId = req.user?.companyId;

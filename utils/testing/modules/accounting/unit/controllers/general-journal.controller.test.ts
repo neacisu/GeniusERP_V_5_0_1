@@ -21,7 +21,8 @@ describe('GeneralJournalController', () => {
         username: 'testuser',
         companyId: 'company-1',
         email: 'test@test.com',
-        role: 'admin'
+        role: 'admin',
+        roles: ['admin']
       },
       params: {},
       query: {},

@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthenticatedRequest } from '../../../types/express';
 import { captureException, addBreadcrumb } from '../../../common/sentry';
 import { createModuleLogger } from '../../../common/logger/loki-logger';
 
@@ -21,7 +22,7 @@ export class BaseController {
    * Handle API request with standardized error handling
    */
   protected async handleRequest<T>(
-    req: Request, 
+    req: AuthenticatedRequest, 
     res: Response, 
     handler: () => Promise<T>,
     context?: {
@@ -80,7 +81,7 @@ export class BaseController {
   /**
    * Extract company ID from request
    */
-  protected getCompanyId(req: Request): string {
+  protected getCompanyId(req: AuthenticatedRequest): string {
     if (!req.user || !req.user.companyId) {
       throw { 
         statusCode: 401, 
@@ -93,7 +94,7 @@ export class BaseController {
   /**
    * Extract user ID from request
    */
-  protected getUserId(req: Request): string {
+  protected getUserId(req: AuthenticatedRequest): string {
     if (!req.user || !req.user.id) {
       throw { 
         statusCode: 401, 
@@ -106,7 +107,7 @@ export class BaseController {
   /**
    * Extract franchise ID from request (if available)
    */
-  protected getFranchiseId(req: Request): string | null {
+  protected getFranchiseId(req: AuthenticatedRequest): string | null {
     if (!req.user) {
       throw { 
         statusCode: 401, 
@@ -121,7 +122,7 @@ export class BaseController {
   /**
    * Get pagination parameters with defaults
    */
-  protected getPaginationParams(req: Request): { page: number, limit: number } {
+  protected getPaginationParams(req: AuthenticatedRequest): { page: number, limit: number } {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     

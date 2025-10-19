@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { BankJournalService } from '../services/bank-journal.service';
 import { BaseController } from './base.controller';
-import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
+import { AuthenticatedRequest } from '../../../types/express';
 
 /**
  * BankJournalController

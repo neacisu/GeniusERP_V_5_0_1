@@ -1,10 +1,7 @@
-import { Request } from 'express';
-import { JwtUserData } from '../../modules/auth/types/jwt-data.type';
-
 /**
- * Authenticated Request type
- * Extends the Express Request type to include the authenticated user
+ * Authentication Types for Middleware
+ * 
+ * RE-EXPORT from server/types/express.ts for convenience
+ * DO NOT define AuthenticatedRequest here - use the canonical definition
  */
-export interface AuthenticatedRequest extends Request {
-  user?: JwtUserData;
-}
+export type { AuthenticatedRequest, JwtUserData } from '../../types/express';

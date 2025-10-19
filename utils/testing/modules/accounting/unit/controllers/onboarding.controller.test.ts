@@ -26,7 +26,8 @@ describe('OnboardingController', () => {
         username: 'testuser',
         companyId: 'company-1',
         email: 'test@test.com',
-        role: 'admin'
+        role: 'admin',
+        roles: ['admin']
       },
       body: {}
     };

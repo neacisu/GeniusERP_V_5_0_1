@@ -5,14 +5,11 @@
  * Prevents cross-company data access vulnerabilities
  */
 
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
+import { AuthenticatedRequest } from '../../../types/express';
 import { Logger } from '../../../common/logger';
 
 const logger = new Logger('CompanyAccessMiddleware');
-
-export interface AuthenticatedRequest extends Request {
-  user?: any;
-}
 
 /**
  * Middleware to validate company access
