@@ -27,7 +27,7 @@ export default [
       'public/',
       'client/public/',
       '.env*',
-      '*.d.ts',
+      '**/*.d.ts', // Ignore all TypeScript declaration files
       'logs/',
       '*.log',
       '*.sql',
@@ -48,9 +48,11 @@ export default [
       'utils/build/',
       'utils/cleanup/',
       'utils/batch/',
+      'utils/batch/',
       'utils/migration/',
       'utils/tokens/',
       'utils/verification/',
+      'utils/testing/**', // Explicitly ignore testing utilities
       'attached_assets/',
       '**/*.test.cjs',
       '**/test-*.js',
