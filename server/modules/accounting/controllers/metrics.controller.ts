@@ -2,15 +2,10 @@ import { Response } from 'express';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
 import { db } from '../../../db';
 import { Logger } from '../../../utils/logger';
+import { accountingLedgerEntries, accountingLedgerLines } from '../schema/accounting.schema';
+import { eq, and, desc } from 'drizzle-orm';
 
 const logger = new Logger('MetricsController');
-
-interface LedgerLine {
-  account_class: number;
-  debit_amount: string;
-  credit_amount: string;
-  full_account_number: string;
-}
 
 interface Transaction {
   id: string;
@@ -40,19 +35,32 @@ export class MetricsController {
         return;
       }
 
-      // Query ledger lines to calculate metrics
-      const ledgerLines: LedgerLine[] = await db
-        .selectFrom('accounting_ledger_lines as all')
-        .innerJoin('accounting_ledger_entries as ale', 'all.ledger_entry_id', 'ale.id')
-        .where('all.company_id', '=', companyId)
-        .where('ale.is_posted', '=', true)
-        .select([
-          'all.account_class',
-          'all.debit_amount',
-          'all.credit_amount',
-          'all.full_account_number'
-        ])
-        .execute();
+      // Query ledger lines to calculate metrics using Drizzle ORM
+      const result = await db
+        .select({
+          accountClass: accountingLedgerLines.accountClass,
+          debitAmount: accountingLedgerLines.debitAmount,
+          creditAmount: accountingLedgerLines.creditAmount,
+          fullAccountNumber: accountingLedgerLines.fullAccountNumber
+        })
+        .from(accountingLedgerLines)
+        .innerJoin(
+          accountingLedgerEntries,
+          eq(accountingLedgerLines.ledgerEntryId, accountingLedgerEntries.id)
+        )
+        .where(
+          and(
+            eq(accountingLedgerLines.companyId, companyId),
+            eq(accountingLedgerEntries.isPosted, true)
+          )
+        );
+
+      const ledgerLines = result.map(row => ({
+        account_class: row.accountClass,
+        debit_amount: String(row.debitAmount),
+        credit_amount: String(row.creditAmount),
+        full_account_number: row.fullAccountNumber
+      }));
 
       // Calculate totals by account class
       // Class 1: Capital (Equity)
@@ -180,21 +188,33 @@ export class MetricsController {
 
       const limit = parseInt(req.query['limit'] as string) || 10;
 
-      const transactions: Transaction[] = await db
-        .selectFrom('accounting_ledger_entries as ale')
-        .where('ale.company_id', '=', companyId)
-        .where('ale.is_posted', '=', true)
-        .select([
-          'ale.id',
-          'ale.transaction_date as date',
-          'ale.description',
-          'ale.total_amount as amount',
-          'ale.type',
-          'ale.document_number'
-        ])
-        .orderBy('ale.transaction_date', 'desc')
-        .limit(limit)
-        .execute();
+      const result = await db
+        .select({
+          id: accountingLedgerEntries.id,
+          date: accountingLedgerEntries.transactionDate,
+          description: accountingLedgerEntries.description,
+          amount: accountingLedgerEntries.totalAmount,
+          type: accountingLedgerEntries.type,
+          documentNumber: accountingLedgerEntries.documentNumber
+        })
+        .from(accountingLedgerEntries)
+        .where(
+          and(
+            eq(accountingLedgerEntries.companyId, companyId),
+            eq(accountingLedgerEntries.isPosted, true)
+          )
+        )
+        .orderBy(desc(accountingLedgerEntries.transactionDate))
+        .limit(limit);
+
+      const transactions: Transaction[] = result.map(row => ({
+        id: row.id,
+        date: row.date,
+        description: row.description,
+        amount: String(row.amount),
+        type: row.type,
+        document_number: row.documentNumber
+      }));
 
       const formattedTransactions = transactions.map((t: Transaction) => ({
         id: t.id,

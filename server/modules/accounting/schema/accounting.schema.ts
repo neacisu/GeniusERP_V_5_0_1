@@ -4,12 +4,129 @@
  * Database schema for the accounting module.
  */
 
-import { pgTable, uuid, text, timestamp, numeric, json, jsonb, boolean, unique } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, numeric, jsonb, boolean, unique, integer, varchar, date } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 
 /**
- * Ledger entries table
- * Main table for financial transactions
+ * Accounting Ledger Entries table
+ * Main table for financial transactions (RAS-compliant)
+ * Maps to: accounting_ledger_entries
+ */
+export const accountingLedgerEntries = pgTable('accounting_ledger_entries', {
+  id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
+  companyId: uuid('company_id').notNull(),
+  franchiseId: uuid('franchise_id'),
+  
+  // Dates
+  transactionDate: timestamp('transaction_date').notNull().default(sql`now()`),
+  postingDate: timestamp('posting_date').notNull().default(sql`now()`),
+  documentDate: date('document_date').notNull(),
+  
+  // Document info
+  type: varchar('type', { length: 50 }).notNull(),
+  documentNumber: varchar('document_number', { length: 100 }),
+  documentType: varchar('document_type', { length: 50 }),
+  referenceId: uuid('reference_id'),
+  referenceTable: varchar('reference_table', { length: 100 }),
+  
+  // Content
+  description: varchar('description', { length: 500 }),
+  notes: text('notes'),
+  
+  // Status flags
+  isPosted: boolean('is_posted').notNull().default(false),
+  isDraft: boolean('is_draft').notNull().default(true),
+  isSystemGenerated: boolean('is_system_generated').notNull().default(false),
+  
+  // Amounts
+  totalAmount: numeric('total_amount', { precision: 19, scale: 4 }).notNull(),
+  totalDebit: numeric('total_debit', { precision: 19, scale: 4 }).notNull(),
+  totalCredit: numeric('total_credit', { precision: 19, scale: 4 }).notNull(),
+  
+  // Currency
+  currency: varchar('currency', { length: 3 }).notNull().default('RON'),
+  exchangeRate: numeric('exchange_rate', { precision: 19, scale: 6 }).notNull().default('1'),
+  exchangeRateDate: date('exchange_rate_date'),
+  
+  // Fiscal period
+  fiscalYear: integer('fiscal_year').notNull(),
+  fiscalMonth: integer('fiscal_month').notNull(),
+  
+  // Audit trail
+  createdBy: uuid('created_by'),
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  updatedBy: uuid('updated_by'),
+  updatedAt: timestamp('updated_at'),
+  postedBy: uuid('posted_by'),
+  postedAt: timestamp('posted_at'),
+  reversedBy: uuid('reversed_by'),
+  reversedAt: timestamp('reversed_at'),
+  
+  // Reversal info
+  isReversal: boolean('is_reversal').notNull().default(false),
+  originalEntryId: uuid('original_entry_id'),
+  reversalReason: varchar('reversal_reason', { length: 500 }),
+  
+  // Metadata
+  metadata: jsonb('metadata')
+});
+
+/**
+ * Accounting Ledger Lines table
+ * Detail lines for each ledger entry (double-entry accounting)
+ * Maps to: accounting_ledger_lines
+ */
+export const accountingLedgerLines = pgTable('accounting_ledger_lines', {
+  id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
+  ledgerEntryId: uuid('ledger_entry_id').notNull().references(() => accountingLedgerEntries.id, { onDelete: 'cascade' }),
+  companyId: uuid('company_id').notNull(),
+  
+  // Line details
+  lineNumber: integer('line_number').notNull(),
+  description: varchar('description', { length: 500 }),
+  
+  // Account structure (RAS)
+  accountClass: integer('account_class').notNull(),
+  accountGroup: integer('account_group').notNull(),
+  accountNumber: varchar('account_number', { length: 20 }).notNull(),
+  accountSubNumber: varchar('account_sub_number', { length: 20 }),
+  fullAccountNumber: varchar('full_account_number', { length: 50 }).notNull(),
+  
+  // Amounts
+  amount: numeric('amount', { precision: 19, scale: 4 }).notNull(),
+  debitAmount: numeric('debit_amount', { precision: 19, scale: 4 }).notNull().default('0'),
+  creditAmount: numeric('credit_amount', { precision: 19, scale: 4 }).notNull().default('0'),
+  
+  // Currency
+  currency: varchar('currency', { length: 3 }).notNull().default('RON'),
+  originalAmount: numeric('original_amount', { precision: 19, scale: 4 }),
+  exchangeRate: numeric('exchange_rate', { precision: 19, scale: 6 }).notNull().default('1'),
+  
+  // Analytical dimensions
+  departmentId: uuid('department_id'),
+  projectId: uuid('project_id'),
+  costCenterId: uuid('cost_center_id'),
+  
+  // VAT
+  vatCode: varchar('vat_code', { length: 20 }),
+  vatPercentage: numeric('vat_percentage', { precision: 5, scale: 2 }),
+  vatAmount: numeric('vat_amount', { precision: 19, scale: 4 }),
+  
+  // Item linking
+  itemType: varchar('item_type', { length: 50 }),
+  itemId: uuid('item_id'),
+  itemQuantity: numeric('item_quantity', { precision: 19, scale: 4 }),
+  itemUnitPrice: numeric('item_unit_price', { precision: 19, scale: 4 }),
+  
+  // Metadata
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at')
+});
+
+/**
+ * @deprecated Use accountingLedgerEntries instead
+ * Legacy schema for backward compatibility
  */
 export const ledgerEntries = pgTable('ledger_entries', {
   id: uuid('id').primaryKey().notNull(),
@@ -17,22 +134,20 @@ export const ledgerEntries = pgTable('ledger_entries', {
   franchiseId: uuid('franchise_id'),
   type: text('type').notNull(),
   referenceNumber: text('reference_number'),
-  journalNumber: text('journal_number'), // JV/2025/00001 - numerotare secvențială
-  entryDate: timestamp('entry_date'), // Data înregistrării în jurnal
-  documentDate: timestamp('document_date'), // Data documentului justificativ
+  journalNumber: text('journal_number'),
+  entryDate: timestamp('entry_date'),
+  documentDate: timestamp('document_date'),
   amount: numeric('amount').notNull(),
   description: text('description').notNull(),
   metadata: jsonb('metadata'),
-  
-  // Metadata
   createdAt: timestamp('created_at').notNull(),
   updatedAt: timestamp('updated_at').notNull(),
   createdBy: uuid('created_by')
 });
 
 /**
- * Ledger lines table
- * Detail lines for each ledger entry (double-entry accounting)
+ * @deprecated Use accountingLedgerLines instead
+ * Legacy schema for backward compatibility
  */
 export const ledgerLines = pgTable('ledger_lines', {
   id: uuid('id').primaryKey().notNull(),
@@ -42,8 +157,6 @@ export const ledgerLines = pgTable('ledger_lines', {
   creditAmount: numeric('credit_amount').notNull().default('0'),
   description: text('description'),
   metadata: jsonb('metadata'),
-  
-  // Metadata
   createdAt: timestamp('created_at').notNull(),
   updatedAt: timestamp('updated_at').notNull()
 });
@@ -152,14 +265,31 @@ export const chartOfAccounts = pgTable('chart_of_accounts', {
 });
 
 /**
- * Relations for ledger entries
+ * Relations for accounting ledger entries
+ */
+export const accountingLedgerEntriesRelations = relations(accountingLedgerEntries, ({ many }) => ({
+  lines: many(accountingLedgerLines)
+}));
+
+/**
+ * Relations for accounting ledger lines
+ */
+export const accountingLedgerLinesRelations = relations(accountingLedgerLines, ({ one }) => ({
+  entry: one(accountingLedgerEntries, {
+    fields: [accountingLedgerLines.ledgerEntryId],
+    references: [accountingLedgerEntries.id]
+  })
+}));
+
+/**
+ * @deprecated Use accountingLedgerEntriesRelations instead
  */
 export const ledgerEntriesRelations = relations(ledgerEntries, ({ many }) => ({
   lines: many(ledgerLines)
 }));
 
 /**
- * Relations for ledger lines
+ * @deprecated Use accountingLedgerLinesRelations instead
  */
 export const ledgerLinesRelations = relations(ledgerLines, ({ one }) => ({
   entry: one(ledgerEntries, {
@@ -179,7 +309,14 @@ export const chartOfAccountsRelations = relations(chartOfAccounts, ({ one, many 
   children: many(chartOfAccounts)
 }));
 
-// Export types
+// Export types for accounting ledger entries
+export type AccountingLedgerEntry = typeof accountingLedgerEntries.$inferSelect;
+export type InsertAccountingLedgerEntry = typeof accountingLedgerEntries.$inferInsert;
+
+export type AccountingLedgerLine = typeof accountingLedgerLines.$inferSelect;
+export type InsertAccountingLedgerLine = typeof accountingLedgerLines.$inferInsert;
+
+// Export types for legacy tables (deprecated)
 export type LedgerEntry = typeof ledgerEntries.$inferSelect;
 export type InsertLedgerEntry = typeof ledgerEntries.$inferInsert;
 
@@ -202,14 +339,21 @@ export type ChartOfAccount = typeof chartOfAccounts.$inferSelect;
 export type InsertChartOfAccount = typeof chartOfAccounts.$inferInsert;
 
 export default {
+  // Current tables
+  accountingLedgerEntries,
+  accountingLedgerLines,
+  accountingLedgerEntriesRelations,
+  accountingLedgerLinesRelations,
+  // Legacy tables (deprecated)
   ledgerEntries,
   ledgerLines,
+  ledgerEntriesRelations,
+  ledgerLinesRelations,
+  // Other tables
   journalTypes,
   accountBalances,
   fiscalPeriods,
   documentCounters,
   chartOfAccounts,
-  ledgerEntriesRelations,
-  ledgerLinesRelations,
   chartOfAccountsRelations
 };
