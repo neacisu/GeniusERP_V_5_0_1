@@ -6,6 +6,7 @@ import { storage } from "../../../storage";
 import { DrizzleService, getDrizzle } from "../../../common/drizzle";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import { log } from "../../../vite";
 
 // JWT Settings
 // Pentru mediul de dezvoltare, folosim o valoare prestabilită dacă JWT_SECRET nu este setat
@@ -19,14 +20,14 @@ if (!JWT_SECRET) {
 
 export const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || "24h";
 
-// Log the JWT settings more explicitly for debugging
-console.log('[AuthService] JWT_SECRET exists and is being used');
-console.log('[AuthService] JWT_SECRET masked:', JWT_SECRET.substring(0, 3) + '...' + JWT_SECRET.substring(JWT_SECRET.length - 3));
-console.log('[AuthService] JWT_EXPIRES_IN:', JWT_EXPIRES_IN);
+// Log the JWT settings for debugging
+log('JWT_SECRET exists and is being used', 'auth-service');
+log(`JWT_SECRET masked: ${JWT_SECRET.substring(0, 3)}...${JWT_SECRET.substring(JWT_SECRET.length - 3)}`, 'auth-service');
+log(`JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}`, 'auth-service');
 
 export class AuthService {
   private drizzleService: DrizzleService;
-  private db: any; // Using any to bypass type checking for now
+  private db: ReturnType<typeof getDrizzle>;
 
   constructor() {
     this.drizzleService = new DrizzleService();
@@ -53,7 +54,7 @@ export class AuthService {
    * Generate a JWT token for a user
    */
   generateToken(user: SelectUser): string {
-    console.log('[AuthService] User object for token:', user);
+    log(`User object for token: ${JSON.stringify(user)}`, 'auth-service');
     
     // Handle both camelCase and snake_case for companyId - type safe access
     const userWithExtras = user as SelectUser & { 
@@ -78,7 +79,7 @@ export class AuthService {
       fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || undefined
     };
     
-    console.log('[AuthService] Generated token payload:', payload);
+    log(`Generated token payload: ${JSON.stringify(payload)}`, 'auth-service');
     
     // Note: Using type assertion for SignOptions because @types/jsonwebtoken has overly strict typing
     return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as SignOptions);
@@ -87,20 +88,20 @@ export class AuthService {
   /**
    * Get user by username using DrizzleService
    */
-  async getUserByUsername(username: string) {
+  async getUserByUsername(username: string): Promise<SelectUser | null> {
     try {
-      console.log('[AuthService] Getting user by username:', username);
+      log(`Getting user by username: ${username}`, 'auth-service');
       
       // Use the drizzle auth service if available
       if (this.drizzleService.auth) {
-        console.log('[AuthService] Using drizzleService.auth');
+        log('Using drizzleService.auth', 'auth-service');
         const user = await this.drizzleService.auth.getUserByUsername(username);
-        console.log('[AuthService] DrizzleService.auth result:', JSON.stringify(user, null, 2));
-        return user;
+        log(`DrizzleService.auth result: ${JSON.stringify(user, null, 2)}`, 'auth-service');
+        return user as unknown as SelectUser;
       }
       
       // Direct database query as fallback
-      console.log('[AuthService] Using direct database query');
+      log('Using direct database query', 'auth-service');
       const result = await this.db
         .select()
         .from(users)
@@ -108,26 +109,26 @@ export class AuthService {
         .limit(1);
       
       const user = result.length > 0 ? result[0] : null;
-      console.log('[AuthService] Direct query result:', JSON.stringify(user, null, 2));
+      log(`Direct query result: ${JSON.stringify(user, null, 2)}`, 'auth-service');
       return user;
     } catch (error) {
       console.error('Error in getUserByUsername:', error);
       // Fall back to storage for backward compatibility
-      console.log('[AuthService] Falling back to storage');
+      log('Falling back to storage', 'auth-service');
       const user = await storage.getUserByUsername(username);
-      console.log('[AuthService] Storage fallback result:', JSON.stringify(user, null, 2));
-      return user;
+      log(`Storage fallback result: ${JSON.stringify(user, null, 2)}`, 'auth-service');
+      return user ?? null;
     }
   }
 
   /**
    * Get user by ID using DrizzleService
    */
-  async getUserById(userId: string) {
+  async getUserById(userId: string): Promise<SelectUser | null> {
     try {
       // Use the drizzle auth service if available
       if (this.drizzleService.auth) {
-        return await this.drizzleService.auth.getUserById(userId);
+        return await this.drizzleService.auth.getUserById(userId) as unknown as SelectUser;
       }
       
       // Direct database query as fallback
@@ -141,14 +142,23 @@ export class AuthService {
     } catch (error) {
       console.error('Error in getUserById:', error);
       // Fall back to storage for backward compatibility
-      return storage.getUser(userId);
+      const storageUser = await storage.getUser(userId);
+      return storageUser ?? null;
     }
   }
 
   /**
    * Register a new user
    */
-  async registerUser(userData: any) {
+  async registerUser(userData: {
+    username: string;
+    password: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role?: string;
+    companyId?: string;
+  }) {
     const existingUser = await this.getUserByUsername(userData.username);
     if (existingUser) {
       throw new Error("Numele de utilizator există deja");
@@ -170,7 +180,7 @@ export class AuthService {
    */
   async authenticateUser(username: string, password: string) {
     const user = await this.getUserByUsername(username);
-    console.log('[AuthService] User retrieved for authentication:', JSON.stringify(user, null, 2));
+    log(`User retrieved for authentication: ${JSON.stringify(user, null, 2)}`, 'auth-service');
     
     if (!user || !(await this.comparePasswords(password, user.password))) {
       throw new Error("Nume de utilizator sau parolă incorecte");
