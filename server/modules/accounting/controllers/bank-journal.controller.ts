@@ -34,7 +34,7 @@ export class BankJournalController extends BaseController {
   async getBankAccount(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const accountId = req.params.id;
+      const accountId = req.params['id'];
       
       const account = await this.bankJournalService.getBankAccount(accountId, companyId);
       
@@ -76,7 +76,7 @@ export class BankJournalController extends BaseController {
   async updateBankAccount(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const accountId = req.params.id;
+      const accountId = req.params['id'];
       
       // Verify that the account exists and belongs to the company
       const existingAccount = await this.bankJournalService.getBankAccount(accountId, companyId);
@@ -105,10 +105,10 @@ export class BankJournalController extends BaseController {
       const { page, limit } = this.getPaginationParams(req);
       
       // Parse filter parameters
-      const accountId = req.query.accountId as string;
-      const startDate = this.parseDate(req.query.startDate as string);
-      const endDate = this.parseDate(req.query.endDate as string);
-      const type = req.query.type as string;
+      const accountId = req.query['accountId'] as string;
+      const startDate = this.parseDate(req.query['startDate'] as string);
+      const endDate = this.parseDate(req.query['endDate'] as string);
+      const type = req.query['type'] as string;
       
       return await this.bankJournalService.getBankTransactions(
         companyId,
@@ -128,7 +128,7 @@ export class BankJournalController extends BaseController {
   async getBankTransaction(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const transactionId = req.params.id;
+      const transactionId = req.params['id'];
       
       const transaction = await this.bankJournalService.getBankTransaction(transactionId, companyId);
       
@@ -147,7 +147,7 @@ export class BankJournalController extends BaseController {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
       const userId = this.getUserId(req);
-      const accountId = req.params.id;
+      const accountId = req.params['id'];
       
       // Verify that the account exists and belongs to the company
       const existingAccount = await this.bankJournalService.getBankAccount(accountId, companyId);
@@ -183,7 +183,7 @@ export class BankJournalController extends BaseController {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
       const userId = this.getUserId(req);
-      const accountId = req.params.id;
+      const accountId = req.params['id'];
       
       // Verify that the account exists and belongs to the company
       const existingAccount = await this.bankJournalService.getBankAccount(accountId, companyId);
@@ -219,7 +219,7 @@ export class BankJournalController extends BaseController {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
       const userId = this.getUserId(req);
-      const fromAccountId = req.params.id;
+      const fromAccountId = req.params['id'];
       const { toAccountId } = req.body;
       
       // Verify that both accounts exist and belong to the company
@@ -267,7 +267,7 @@ export class BankJournalController extends BaseController {
   async importBankStatement(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const accountId = req.params.id;
+      const accountId = req.params['id'];
       
       // Verify that the account exists and belongs to the company
       const existingAccount = await this.bankJournalService.getBankAccount(accountId, companyId);
@@ -302,7 +302,7 @@ export class BankJournalController extends BaseController {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
       const userId = this.getUserId(req);
-      const accountId = req.params.id;
+      const accountId = req.params['id'];
       
       // Verify that the account exists and belongs to the company
       const existingAccount = await this.bankJournalService.getBankAccount(accountId, companyId);
@@ -329,10 +329,10 @@ export class BankJournalController extends BaseController {
   async getBankAccountBalance(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const accountId = req.params.id;
+      const accountId = req.params['id'];
       
       // Parse the "as of" date parameter
-      const asOfDate = this.parseDate(req.query.asOfDate as string) || new Date();
+      const asOfDate = this.parseDate(req.query['asOfDate'] as string) || new Date();
       
       return await this.bankJournalService.getBankAccountBalanceAsOf(
         accountId,
@@ -348,7 +348,7 @@ export class BankJournalController extends BaseController {
   async generateBankStatement(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const accountId = req.params.id;
+      const accountId = req.params['id'];
       
       // Verify that the account exists and belongs to the company
       const existingAccount = await this.bankJournalService.getBankAccount(accountId, companyId);
@@ -357,8 +357,8 @@ export class BankJournalController extends BaseController {
       }
       
       // Parse date parameters
-      const startDate = this.parseDate(req.query.startDate as string) || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-      const endDate = this.parseDate(req.query.endDate as string) || new Date();
+      const startDate = this.parseDate(req.query['startDate'] as string) || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      const endDate = this.parseDate(req.query['endDate'] as string) || new Date();
       
       return await this.bankJournalService.generateBankStatement(
         accountId,
