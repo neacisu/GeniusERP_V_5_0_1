@@ -5,34 +5,75 @@ import themePlugin from '@replit/vite-plugin-shadcn-theme-json';
 import runtimeErrorModal from '@replit/vite-plugin-runtime-error-modal';
 
 export default defineConfig({
+  // NX Monorepo: root este directorul curent (apps/web)
   root: __dirname,
+  
+  // Setează envDir pentru a citi .env din directorul root al workspace-ului
+  envDir: path.resolve(__dirname, '../..'),
+  
   plugins: [
     react(),
     themePlugin(),
-    runtimeErrorModal()
+    runtimeErrorModal(),
+    // Replit Cartographer (doar în development)
+    ...(process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined
+      ? [
+          // Dynamic import pentru Cartographer
+          (async () => {
+            const cartographer = await import("@replit/vite-plugin-cartographer");
+            return cartographer.cartographer();
+          })()
+        ]
+      : []),
   ],
+  
   server: {
-    port: 5000,
-    host: '0.0.0.0',
+    // Toate valorile OBLIGATORIU din .env - FĂRĂ fallback!
+    port: parseInt(process.env.APP_PORT_FRONTEND!),
+    host: process.env.VITE_HMR_HOST!,
     strictPort: true,
+    
+    // allowedHosts DOAR din .env (VITE_ALLOWED_HOSTS)
+    allowedHosts: process.env.VITE_ALLOWED_HOSTS!.split(',').map(h => h.trim()).filter(Boolean),
+    
+    // Setări watch DOAR din .env
+    watch: {
+      usePolling: process.env.CHOKIDAR_USEPOLLING === 'true',
+      interval: parseInt(process.env.CHOKIDAR_INTERVAL!),
+    },
+    
+    // Setări HMR DOAR din .env
+    hmr: {
+      port: parseInt(process.env.VITE_HMR_PORT!),
+      host: process.env.VITE_HMR_HOST!,
+      protocol: process.env.VITE_HMR_PROTOCOL as 'ws' | 'wss',
+      clientPort: parseInt(process.env.VITE_HMR_CLIENT_PORT!),
+      overlay: true,
+    },
+    
+    // Proxy pentru API - port DOAR din .env
     proxy: {
       '/api': {
-        target: 'http://localhost:5001',
+        target: `http://localhost:${process.env.APP_PORT_BACKEND}`,
         changeOrigin: true
       }
     }
   },
+  
   build: {
     outDir: '../../dist/apps/web',
     emptyOutDir: true,
-    reportCompressedSize: true,
-    sourcemap: true
+    reportCompressedSize: process.env.NODE_ENV === 'production',
+    sourcemap: process.env.NODE_ENV !== 'production',
   },
+  
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
+      '@': path.resolve(__dirname, './src'),
+      '@shared': path.resolve(__dirname, '../../libs/shared/src'),
     }
   },
+  
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-hook-form', '@tanstack/react-query']
   }

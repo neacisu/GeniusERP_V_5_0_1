@@ -6,8 +6,9 @@ import { createServer as createViteServer, createLogger } from "vite";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 import { type Server } from "http";
-// NX: vite.config este la rădăcină workspace-ului
-import viteConfig from "../../../vite.config";
+
+// NX Monorepo: vite.config pentru apps/web
+import viteConfig from "../../web/vite.config";
 
 const viteLogger = createLogger();
 
@@ -23,29 +24,40 @@ export function log(message: string, source = "express") {
 }
 
 export async function setupVite(app: Express, server: Server) {
-  // Citim allowed hosts din .env sau folosim valori default
-  const allowedHostsEnv = process.env.VITE_ALLOWED_HOSTS || 'localhost,0.0.0.0';
-  const allowedHostsList = allowedHostsEnv.split(',').map(h => h.trim()).filter(Boolean);
+  // Citim allowed hosts DOAR din .env - FĂRĂ fallback!
+  const allowedHostsList = process.env['VITE_ALLOWED_HOSTS']!.split(',').map(h => h.trim()).filter(Boolean);
+  
+  console.log('[VITE DEBUG] allowedHostsList:', allowedHostsList);
   
   const serverOptions = {
     middlewareMode: true,
     hmr: { 
       server,
-      // HMR settings pentru Docker - CRITIC pentru a evita eroarea ws://localhost:5173
-      port: 5000,
-      host: '0.0.0.0',
-      protocol: 'ws' as const,
-      clientPort: 5000,
+      // HMR settings DOAR din .env
+      port: parseInt(process.env['VITE_HMR_PORT']!),
+      host: process.env['VITE_HMR_HOST']!,
+      protocol: process.env['VITE_HMR_PROTOCOL'] as 'ws' | 'wss',
+      clientPort: parseInt(process.env['VITE_HMR_CLIENT_PORT']!),
       overlay: true,
     },
-    // Permit accesul de la host-urile configurate în .env (VITE_ALLOWED_HOSTS)
+    // Permit accesul DOAR de la host-urile din .env
     allowedHosts: allowedHostsList,
-    // Setări watch pentru Docker (override dacă nu sunt în config)
+    // Setări watch DOAR din .env
     watch: {
-      usePolling: true,
-      interval: 100,
+      usePolling: process.env['CHOKIDAR_USEPOLLING'] === 'true',
+      interval: parseInt(process.env['CHOKIDAR_INTERVAL']!),
     },
   };
+  
+  console.log('[VITE DEBUG] serverOptions.allowedHosts:', serverOptions.allowedHosts);
+  
+  // MERGE server config din vite.config.ts cu serverOptions pentru a păstra toate setările
+  const mergedServerConfig = {
+    ...viteConfig.server,  // Începem cu config din vite.config.ts
+    ...serverOptions,      // Override cu serverOptions (care include allowedHosts din .env)
+  };
+  
+  console.log('[VITE DEBUG] mergedServerConfig.allowedHosts:', mergedServerConfig.allowedHosts);
 
   const vite = await createViteServer({
     ...viteConfig,
@@ -57,7 +69,7 @@ export async function setupVite(app: Express, server: Server) {
         process.exit(1);
       },
     },
-    server: serverOptions,
+    server: mergedServerConfig,  // Folosim merged config
     appType: "custom",
   });
 
@@ -84,10 +96,12 @@ export async function setupVite(app: Express, server: Server) {
     }
 
     try {
+      // NX Monorepo: index.html este în apps/web/
       const clientTemplate = path.resolve(
         __dirname,
         "..",
-        "client",
+        "..",
+        "web",
         "index.html",
       );
 
@@ -106,7 +120,7 @@ export async function setupVite(app: Express, server: Server) {
   });
 }
 
-export function serveStatic(app: Express) {
+export function serveStatic(app: Express): void {
   const distPath = path.resolve(__dirname, "public");
 
   if (!fs.existsSync(distPath)) {

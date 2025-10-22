@@ -65,10 +65,12 @@ export function getDrizzleInstance() {
   try {
     const client = getPostgresClient();
     
-    // Create Drizzle instance with schema
-    drizzleInstance = drizzle(client, { schema });
+    // TEMPORARY FIX: Create Drizzle instance WITHOUT schema to avoid null relation error
+    // TODO: Fix null relations in schema and re-enable: drizzle(client, { schema })
+    drizzleInstance = drizzle(client);
     
-    logger.info('Database ORM instance initialized with schema');
+    logger.warn('Database ORM instance initialized WITHOUT schema (temporary fix for null relations)');
+    logger.warn('Relations will not work until schema is fixed');
     
     return drizzleInstance;
   } catch (error) {

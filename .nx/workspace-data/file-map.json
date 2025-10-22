@@ -86,148 +86,102 @@
   },
   "fileMap": {
     "projectFileMap": {
-      "audit": [
+      "comms": [
         {
-          "file": "libs/audit/jest.config.ts",
-          "hash": "6528715711463964507"
+          "file": "libs/comms/project.json",
+          "hash": "4432756227087619786"
         },
         {
-          "file": "libs/audit/project.json",
-          "hash": "10960095892197067051"
+          "file": "libs/comms/src/comms.module.ts",
+          "hash": "6396925335544809238"
         },
         {
-          "file": "libs/audit/src/audit.module.ts",
-          "hash": "14456384473137385790"
+          "file": "libs/comms/src/controllers/channel-configs.controller.ts",
+          "hash": "11512236949254626607"
         },
         {
-          "file": "libs/audit/src/controllers/audit.controller.ts",
-          "hash": "12433519157014550096"
+          "file": "libs/comms/src/controllers/contacts.controller.ts",
+          "hash": "7836774734946579659"
         },
         {
-          "file": "libs/audit/src/index.ts",
-          "hash": "7042426821001945702"
+          "file": "libs/comms/src/controllers/index.ts",
+          "hash": "5475094495570515053"
         },
         {
-          "file": "libs/audit/src/routes/audit.routes.ts",
-          "hash": "17377609938330647635"
+          "file": "libs/comms/src/controllers/message-access.controller.ts",
+          "hash": "5434787090124428908"
         },
         {
-          "file": "libs/audit/src/schema/audit.schema.ts",
-          "hash": "18184405836012431288"
+          "file": "libs/comms/src/controllers/messages.controller.ts",
+          "hash": "9940936756432512439"
         },
         {
-          "file": "libs/audit/src/services/audit.service.instance.ts",
-          "hash": "1257594388658793116"
+          "file": "libs/comms/src/controllers/thread-access.controller.ts",
+          "hash": "4725669658962053417"
         },
         {
-          "file": "libs/audit/src/services/audit.service.ts",
-          "hash": "11643599996589184896"
+          "file": "libs/comms/src/controllers/threads.controller.ts",
+          "hash": "2636036214112768462"
         },
         {
-          "file": "libs/audit/tsconfig.json",
-          "hash": "81270902788828981"
+          "file": "libs/comms/src/index.ts",
+          "hash": "11237742738750956267"
         },
         {
-          "file": "libs/audit/tsconfig.spec.json",
-          "hash": "6898991939206723030"
-        }
-      ],
-      "documents": [
-        {
-          "file": "libs/documents/jest.config.ts",
-          "hash": "54938129089352983"
+          "file": "libs/comms/src/init.ts",
+          "hash": "8183847943053001362"
         },
         {
-          "file": "libs/documents/project.json",
-          "hash": "13405290382450190505"
+          "file": "libs/comms/src/routes/channel-configs.routes.ts",
+          "hash": "6328959195089916870"
         },
         {
-          "file": "libs/documents/src/controllers/document-editor.controller.ts",
-          "hash": "15572387085762096272"
+          "file": "libs/comms/src/routes/contacts.routes.ts",
+          "hash": "6192673002545409155"
         },
         {
-          "file": "libs/documents/src/controllers/document-registry.controller.ts",
-          "hash": "8034766712715913888"
+          "file": "libs/comms/src/routes/message-access.routes.ts",
+          "hash": "15716756664286841037"
         },
         {
-          "file": "libs/documents/src/controllers/document-search.controller.ts",
-          "hash": "13313931611080581580"
+          "file": "libs/comms/src/routes/messages.routes.ts",
+          "hash": "15455952249222546336"
         },
         {
-          "file": "libs/documents/src/controllers/document.controller.ts",
-          "hash": "11994939458548150169"
+          "file": "libs/comms/src/routes/thread-access.routes.ts",
+          "hash": "16571675497465425942"
         },
         {
-          "file": "libs/documents/src/controllers/email-attachment.controller.ts",
-          "hash": "6863491104870090683"
+          "file": "libs/comms/src/routes/threads.routes.ts",
+          "hash": "12303677013502659681"
         },
         {
-          "file": "libs/documents/src/controllers/ocr.controller.ts",
-          "hash": "1141785641381023326"
+          "file": "libs/comms/src/services/channel-configs.service.ts",
+          "hash": "10877150557733965553"
         },
         {
-          "file": "libs/documents/src/controllers/sign-document.controller.ts",
-          "hash": "8533037651263751197"
+          "file": "libs/comms/src/services/contacts.service.ts",
+          "hash": "13893173972200222520"
         },
         {
-          "file": "libs/documents/src/controllers/template.controller.ts",
-          "hash": "10737658448992474416"
+          "file": "libs/comms/src/services/message-access.service.ts",
+          "hash": "5493956704347906817"
         },
         {
-          "file": "libs/documents/src/documents.module.ts",
-          "hash": "16603247770311067595"
+          "file": "libs/comms/src/services/messages.service.ts",
+          "hash": "13739498677409399768"
         },
         {
-          "file": "libs/documents/src/index.ts",
-          "hash": "16289727733836964199"
+          "file": "libs/comms/src/services/thread-access.service.ts",
+          "hash": "5817433474708991068"
         },
         {
-          "file": "libs/documents/src/routes/document.routes.ts",
-          "hash": "16847852753612986434"
+          "file": "libs/comms/src/services/threads.service.ts",
+          "hash": "2537930826228585429"
         },
         {
-          "file": "libs/documents/src/services/document-editor.service.ts",
-          "hash": "16424711936827339200"
-        },
-        {
-          "file": "libs/documents/src/services/document-registry.service.ts",
-          "hash": "11161601558996239504"
-        },
-        {
-          "file": "libs/documents/src/services/document-search.service.ts",
-          "hash": "2199542547861041390"
-        },
-        {
-          "file": "libs/documents/src/services/document.service.ts",
-          "hash": "8385646928595334742"
-        },
-        {
-          "file": "libs/documents/src/services/email-attachment.service.ts",
-          "hash": "11939710796831242700"
-        },
-        {
-          "file": "libs/documents/src/services/ocr.service.ts",
-          "hash": "1485607176555775735"
-        },
-        {
-          "file": "libs/documents/src/services/pandadoc.service.ts",
-          "hash": "8522815298756769665"
-        },
-        {
-          "file": "libs/documents/src/services/sign-document.service.ts",
-          "hash": "3917499614232847917"
-        },
-        {
-          "file": "libs/documents/src/services/template.service.ts",
-          "hash": "842121700764658269"
-        },
-        {
-          "file": "libs/documents/tsconfig.json",
-          "hash": "6098514976634017372"
-        },
-        {
-          "file": "libs/documents/tsconfig.spec.json",
-          "hash": "6898991939206723030"
+          "file": "libs/comms/tsconfig.json",
+          "hash": "10411342923211222188"
         }
       ],
       "inventory": [
@@ -392,355 +346,121 @@
           "hash": "6898991939206723030"
         }
       ],
-      "settings": [
+      "invoicing": [
         {
-          "file": "libs/settings/project.json",
-          "hash": "12147949376286509376"
+          "file": "libs/invoicing/jest.config.ts",
+          "hash": "9258331520733305933"
         },
         {
-          "file": "libs/settings/src/controllers/feature-toggle.controller.ts",
-          "hash": "17986708393482228906"
+          "file": "libs/invoicing/project.json",
+          "hash": "8634814548045201695"
         },
         {
-          "file": "libs/settings/src/controllers/global-settings.controller.ts",
-          "hash": "15173719422939503813"
+          "file": "libs/invoicing/src/controllers/create-invoice.controller.ts",
+          "hash": "9723803892834613869"
         },
         {
-          "file": "libs/settings/src/controllers/index.ts",
-          "hash": "17766492336467896716"
+          "file": "libs/invoicing/src/controllers/customer.controller.ts",
+          "hash": "18094619666592317460"
         },
         {
-          "file": "libs/settings/src/controllers/module-settings.controller.ts",
-          "hash": "1367718022332001974"
+          "file": "libs/invoicing/src/controllers/devalidate-invoice.controller.ts",
+          "hash": "8681265445285399372"
         },
         {
-          "file": "libs/settings/src/controllers/setup.controller.ts",
-          "hash": "13071773645055219505"
+          "file": "libs/invoicing/src/controllers/invoice-numbering.controller.ts",
+          "hash": "4776689081872375185"
         },
         {
-          "file": "libs/settings/src/controllers/ui-theme.controller.ts",
-          "hash": "14495274417667540118"
+          "file": "libs/invoicing/src/controllers/invoice.controller.ts",
+          "hash": "5437215393324588598"
         },
         {
-          "file": "libs/settings/src/controllers/user-preferences.controller.ts",
-          "hash": "11432190298539188682"
+          "file": "libs/invoicing/src/controllers/validate-invoice.controller.ts",
+          "hash": "1592159910458206328"
         },
         {
-          "file": "libs/settings/src/index.ts",
-          "hash": "7395191685606361068"
+          "file": "libs/invoicing/src/index.ts",
+          "hash": "2097179851866885488"
         },
         {
-          "file": "libs/settings/src/init.ts",
-          "hash": "4904188369477354874"
+          "file": "libs/invoicing/src/init.ts",
+          "hash": "3617418119608340541"
         },
         {
-          "file": "libs/settings/src/routes/index.ts",
-          "hash": "2450805941476328172"
+          "file": "libs/invoicing/src/invoices.module.ts",
+          "hash": "3385965825723714210"
         },
         {
-          "file": "libs/settings/src/routes/settings.routes.ts",
-          "hash": "981940527372440494"
+          "file": "libs/invoicing/src/invoicing.module.ts",
+          "hash": "4936894169096891527"
         },
         {
-          "file": "libs/settings/src/routes/setup.routes.ts",
-          "hash": "11506918598320305788"
+          "file": "libs/invoicing/src/routes/create-invoice.route.ts",
+          "hash": "15158028482880989241"
         },
         {
-          "file": "libs/settings/src/schema/settings.schema.ts",
-          "hash": "17468995629648889701"
+          "file": "libs/invoicing/src/routes/customer.routes.ts",
+          "hash": "10430366377474360280"
         },
         {
-          "file": "libs/settings/src/services/feature-toggle.service.ts",
-          "hash": "5507141112105404934"
+          "file": "libs/invoicing/src/routes/devalidate-invoice.route.ts",
+          "hash": "12851424663561855037"
         },
         {
-          "file": "libs/settings/src/services/global-settings.service.ts",
-          "hash": "8439985099060645119"
+          "file": "libs/invoicing/src/routes/invoice-numbering.routes.ts",
+          "hash": "5628243646051334792"
         },
         {
-          "file": "libs/settings/src/services/index.ts",
-          "hash": "4106997164876949238"
+          "file": "libs/invoicing/src/routes/invoice.routes.ts",
+          "hash": "11005108269352962337"
         },
         {
-          "file": "libs/settings/src/services/module-settings.service.ts",
-          "hash": "12114133990370748761"
+          "file": "libs/invoicing/src/routes/validate-invoice.route.ts",
+          "hash": "9106385276339609537"
         },
         {
-          "file": "libs/settings/src/services/setup.service.ts",
-          "hash": "10386812150195046979"
+          "file": "libs/invoicing/src/schema/invoice.schema.ts",
+          "hash": "17699118153222899533"
         },
         {
-          "file": "libs/settings/src/services/ui-theme.service.ts",
-          "hash": "7554258749513600736"
+          "file": "libs/invoicing/src/services/create-invoice.service.ts",
+          "hash": "14028510915831174555"
         },
         {
-          "file": "libs/settings/src/services/user-preferences.service.ts",
-          "hash": "6915589955680575714"
+          "file": "libs/invoicing/src/services/devalidate-invoice.service.ts",
+          "hash": "12149066209804704224"
         },
         {
-          "file": "libs/settings/src/settings.module.ts",
-          "hash": "8448282082679799783"
+          "file": "libs/invoicing/src/services/invoice-numbering.service.ts",
+          "hash": "9535769020404034716"
         },
         {
-          "file": "libs/settings/tsconfig.json",
-          "hash": "7438335313054192284"
-        }
-      ],
-      "company": [
-        {
-          "file": "libs/company/project.json",
-          "hash": "17680394486721567982"
-        },
-        {
-          "file": "libs/company/src/company.module.ts",
-          "hash": "11082332569060673695"
-        },
-        {
-          "file": "libs/company/src/controllers/company.controller.ts",
-          "hash": "13684045707173300139"
-        },
-        {
-          "file": "libs/company/src/controllers/index.ts",
-          "hash": "8314782551468150847"
-        },
-        {
-          "file": "libs/company/src/index.ts",
-          "hash": "8517983657130687882"
-        },
-        {
-          "file": "libs/company/src/routes/company.routes.ts",
-          "hash": "7578409702327375132"
-        },
-        {
-          "file": "libs/company/src/routes/index.ts",
-          "hash": "8312309999789004709"
-        },
-        {
-          "file": "libs/company/src/schema/company.schema.ts",
-          "hash": "12157425013150510105"
-        },
-        {
-          "file": "libs/company/src/services/company.service.ts",
-          "hash": "5955981903544321900"
-        },
-        {
-          "file": "libs/company/tsconfig.json",
-          "hash": "4232534900134328320"
-        }
-      ],
-      "collab": [
-        {
-          "file": "libs/collab/project.json",
-          "hash": "2817057900092028430"
-        },
-        {
-          "file": "libs/collab/src/collab.module.ts",
-          "hash": "7570846063300857072"
-        },
-        {
-          "file": "libs/collab/src/controllers/activity.controller.ts",
-          "hash": "15742615740932013700"
-        },
-        {
-          "file": "libs/collab/src/controllers/community.controller.ts",
-          "hash": "15664902828712103038"
-        },
-        {
-          "file": "libs/collab/src/controllers/index.ts",
-          "hash": "6221683353979251913"
-        },
-        {
-          "file": "libs/collab/src/controllers/init.ts",
-          "hash": "16382354627578109119"
-        },
-        {
-          "file": "libs/collab/src/controllers/message.controller.ts",
-          "hash": "3563091334551525194"
-        },
-        {
-          "file": "libs/collab/src/controllers/note.controller.ts",
-          "hash": "15619207249378773781"
-        },
-        {
-          "file": "libs/collab/src/controllers/notification.controller.ts",
-          "hash": "1313692712857062156"
-        },
-        {
-          "file": "libs/collab/src/controllers/task.controller.ts",
-          "hash": "4127831498923233600"
-        },
-        {
-          "file": "libs/collab/src/controllers/thread.controller.ts",
-          "hash": "18361780537498110264"
-        },
-        {
-          "file": "libs/collab/src/controllers/watcher.controller.ts",
-          "hash": "3127774378419822911"
-        },
-        {
-          "file": "libs/collab/src/index.ts",
-          "hash": "9366384350326700819"
-        },
-        {
-          "file": "libs/collab/src/init.ts",
-          "hash": "14633177695165995321"
-        },
-        {
-          "file": "libs/collab/src/routes/community.routes.ts",
-          "hash": "12543695262102119025"
-        },
-        {
-          "file": "libs/collab/src/routes/index.ts",
-          "hash": "10375551722875139499"
-        },
-        {
-          "file": "libs/collab/src/routes/message.routes.ts",
-          "hash": "14866641160175131547"
-        },
-        {
-          "file": "libs/collab/src/routes/note.routes.ts",
-          "hash": "3902480415275401326"
-        },
-        {
-          "file": "libs/collab/src/routes/task.routes.ts",
-          "hash": "2543086242622186034"
-        },
-        {
-          "file": "libs/collab/src/routes/thread.routes.ts",
-          "hash": "15316433553591537941"
-        },
-        {
-          "file": "libs/collab/src/routes/watcher.routes.ts",
-          "hash": "5717695056903602791"
-        },
-        {
-          "file": "libs/collab/src/services/activity.service.ts",
-          "hash": "13083101042460605335"
-        },
-        {
-          "file": "libs/collab/src/services/community.service.ts",
-          "hash": "13331049691653364563"
-        },
-        {
-          "file": "libs/collab/src/services/message.service.ts",
-          "hash": "5405578254067442675"
-        },
-        {
-          "file": "libs/collab/src/services/note.service.ts",
-          "hash": "12697085055166607148"
-        },
-        {
-          "file": "libs/collab/src/services/notification.service.ts",
-          "hash": "11838505541803239785"
-        },
-        {
-          "file": "libs/collab/src/services/task.service.ts",
-          "hash": "16623856313642781799"
-        },
-        {
-          "file": "libs/collab/src/services/thread.service.ts",
-          "hash": "8470618183191714274"
-        },
-        {
-          "file": "libs/collab/src/services/watcher.service.ts",
-          "hash": "4365041094708782836"
-        },
-        {
-          "file": "libs/collab/tsconfig.json",
-          "hash": "11635087492652601489"
-        }
-      ],
-      "admin": [
-        {
-          "file": "libs/admin/jest.config.ts",
-          "hash": "17127313853808865324"
-        },
-        {
-          "file": "libs/admin/project.json",
-          "hash": "13034911941012318229"
-        },
-        {
-          "file": "libs/admin/src/admin.module.ts",
-          "hash": "620783040921924058"
-        },
-        {
-          "file": "libs/admin/src/controllers/admin.controller.ts",
-          "hash": "11940059340465476252"
-        },
-        {
-          "file": "libs/admin/src/controllers/api-key.controller.ts",
-          "hash": "548252593938622486"
-        },
-        {
-          "file": "libs/admin/src/controllers/config.controller.ts",
-          "hash": "11334576597022129446"
-        },
-        {
-          "file": "libs/admin/src/controllers/health-check.controller.ts",
-          "hash": "1371194858583364951"
-        },
-        {
-          "file": "libs/admin/src/controllers/license.controller.ts",
-          "hash": "8581082753460367080"
-        },
-        {
-          "file": "libs/admin/src/controllers/role.controller.ts",
-          "hash": "12418411620743088970"
-        },
-        {
-          "file": "libs/admin/src/controllers/setup.controller.ts",
-          "hash": "3514433942011080339"
-        },
-        {
-          "file": "libs/admin/src/controllers/user.controller.ts",
-          "hash": "14428531736466454667"
-        },
-        {
-          "file": "libs/admin/src/index.ts",
-          "hash": "2572173917670184462"
-        },
-        {
-          "file": "libs/admin/src/init.ts",
-          "hash": "6218522750284589566"
-        },
-        {
-          "file": "libs/admin/src/schema/admin.schema.ts",
-          "hash": "2113121755062901610"
-        },
-        {
-          "file": "libs/admin/src/services/api-key.service.ts",
-          "hash": "11152859730068314145"
-        },
-        {
-          "file": "libs/admin/src/services/config.service.ts",
-          "hash": "11194876981498990764"
-        },
-        {
-          "file": "libs/admin/src/services/health-check.service.ts",
-          "hash": "7213447168584835035"
+          "file": "libs/invoicing/src/services/invoice.service.ts",
+          "hash": "2182577489006091159"
         },
         {
-          "file": "libs/admin/src/services/license.service.ts",
-          "hash": "1464973823458668097"
+          "file": "libs/invoicing/src/services/validate-invoice.service.ts",
+          "hash": "11402736467992646354"
         },
         {
-          "file": "libs/admin/src/services/role.service.ts",
-          "hash": "11593080225212374447"
+          "file": "libs/invoicing/src/types/invoice-status.enum.ts",
+          "hash": "11049670378628230918"
         },
         {
-          "file": "libs/admin/src/services/setup.service.ts",
-          "hash": "18257999293365736735"
+          "file": "libs/invoicing/src/types/invoice.input.ts",
+          "hash": "1468379192784145384"
         },
         {
-          "file": "libs/admin/src/services/user.service.ts",
-          "hash": "15327671129123664097"
+          "file": "libs/invoicing/src/validators/create-invoice.validator.ts",
+          "hash": "7897600305533769437"
         },
         {
-          "file": "libs/admin/tsconfig.json",
-          "hash": "9580353291314414115"
+          "file": "libs/invoicing/tsconfig.json",
+          "hash": "1240933204722859110"
         },
         {
-          "file": "libs/admin/tsconfig.spec.json",
+          "file": "libs/invoicing/tsconfig.spec.json",
           "hash": "6898991939206723030"
         }
       ],
@@ -890,6 +610,620 @@
           "hash": "6898991939206723030"
         }
       ],
+      "company": [
+        {
+          "file": "libs/company/project.json",
+          "hash": "17680394486721567982"
+        },
+        {
+          "file": "libs/company/src/company.module.ts",
+          "hash": "11082332569060673695"
+        },
+        {
+          "file": "libs/company/src/controllers/company.controller.ts",
+          "hash": "13684045707173300139"
+        },
+        {
+          "file": "libs/company/src/controllers/index.ts",
+          "hash": "8314782551468150847"
+        },
+        {
+          "file": "libs/company/src/index.ts",
+          "hash": "8517983657130687882"
+        },
+        {
+          "file": "libs/company/src/routes/company.routes.ts",
+          "hash": "7578409702327375132"
+        },
+        {
+          "file": "libs/company/src/routes/index.ts",
+          "hash": "8312309999789004709"
+        },
+        {
+          "file": "libs/company/src/schema/company.schema.ts",
+          "hash": "12157425013150510105"
+        },
+        {
+          "file": "libs/company/src/services/company.service.ts",
+          "hash": "5955981903544321900"
+        },
+        {
+          "file": "libs/company/tsconfig.json",
+          "hash": "4232534900134328320"
+        }
+      ],
+      "sales": [
+        {
+          "file": "libs/sales/jest.config.ts",
+          "hash": "17409047602590852480"
+        },
+        {
+          "file": "libs/sales/project.json",
+          "hash": "13956543327174705260"
+        },
+        {
+          "file": "libs/sales/src/customer.service.ts",
+          "hash": "9815062446819902996"
+        },
+        {
+          "file": "libs/sales/src/index.ts",
+          "hash": "28488014545650301"
+        },
+        {
+          "file": "libs/sales/src/sales.controller.ts",
+          "hash": "7944248977409041284"
+        },
+        {
+          "file": "libs/sales/src/sales.module.ts",
+          "hash": "5934674228276050788"
+        },
+        {
+          "file": "libs/sales/tsconfig.json",
+          "hash": "16607912162647196823"
+        },
+        {
+          "file": "libs/sales/tsconfig.spec.json",
+          "hash": "6898991939206723030"
+        }
+      ],
+      "marketing": [
+        {
+          "file": "libs/marketing/project.json",
+          "hash": "4398465526836024726"
+        },
+        {
+          "file": "libs/marketing/src/controllers/README.md",
+          "hash": "4820677334967322488"
+        },
+        {
+          "file": "libs/marketing/src/controllers/campaign.controller.ts",
+          "hash": "13198033559913641795"
+        },
+        {
+          "file": "libs/marketing/src/controllers/index.ts",
+          "hash": "7920644911029140904"
+        },
+        {
+          "file": "libs/marketing/src/controllers/segment.controller.ts",
+          "hash": "14016747454444735199"
+        },
+        {
+          "file": "libs/marketing/src/controllers/template.controller.ts",
+          "hash": "2419112980887591896"
+        },
+        {
+          "file": "libs/marketing/src/index.ts",
+          "hash": "6802449927593500302"
+        },
+        {
+          "file": "libs/marketing/src/init.ts",
+          "hash": "13872529220967521408"
+        },
+        {
+          "file": "libs/marketing/src/marketing.module.ts",
+          "hash": "10640335439298466488"
+        },
+        {
+          "file": "libs/marketing/src/routes/campaign.routes.ts",
+          "hash": "9134671199016060883"
+        },
+        {
+          "file": "libs/marketing/src/routes/segment.routes.ts",
+          "hash": "7099103080975965447"
+        },
+        {
+          "file": "libs/marketing/src/routes/template.routes.ts",
+          "hash": "17769961656388537396"
+        },
+        {
+          "file": "libs/marketing/src/services/campaign.service.ts",
+          "hash": "602455481705465480"
+        },
+        {
+          "file": "libs/marketing/src/services/segment.service.ts",
+          "hash": "14016990002265505468"
+        },
+        {
+          "file": "libs/marketing/src/services/template.service.ts",
+          "hash": "1861711555665037438"
+        },
+        {
+          "file": "libs/marketing/tsconfig.json",
+          "hash": "10723324305718165263"
+        }
+      ],
+      "integrations": [
+        {
+          "file": "libs/integrations/project.json",
+          "hash": "3220699857930649258"
+        },
+        {
+          "file": "libs/integrations/src/clients/anaf-efactura.client.ts",
+          "hash": "6905475484387339508"
+        },
+        {
+          "file": "libs/integrations/src/clients/base-integration.client.ts",
+          "hash": "7169434725637010684"
+        },
+        {
+          "file": "libs/integrations/src/clients/elevenlabs.client.ts",
+          "hash": "13769053733143351931"
+        },
+        {
+          "file": "libs/integrations/src/clients/index.ts",
+          "hash": "4317779514724224844"
+        },
+        {
+          "file": "libs/integrations/src/clients/microsoft-graph.client.ts",
+          "hash": "4183915426795624338"
+        },
+        {
+          "file": "libs/integrations/src/clients/openai.client.ts",
+          "hash": "1941240176588762989"
+        },
+        {
+          "file": "libs/integrations/src/clients/pandadoc.client.ts",
+          "hash": "9306893845625707561"
+        },
+        {
+          "file": "libs/integrations/src/clients/revolut-business.client.ts",
+          "hash": "12078238442565723668"
+        },
+        {
+          "file": "libs/integrations/src/clients/sameday.client.ts",
+          "hash": "5800460268421795124"
+        },
+        {
+          "file": "libs/integrations/src/clients/shopify.client.ts",
+          "hash": "7486176855241425392"
+        },
+        {
+          "file": "libs/integrations/src/clients/stripe.client.ts",
+          "hash": "10529990255659275963"
+        },
+        {
+          "file": "libs/integrations/src/clients/termene-ro.client.ts",
+          "hash": "6404532622711880984"
+        },
+        {
+          "file": "libs/integrations/src/controllers/README.md",
+          "hash": "8595745666139746525"
+        },
+        {
+          "file": "libs/integrations/src/controllers/anaf.controller.ts",
+          "hash": "1805096574688093791"
+        },
+        {
+          "file": "libs/integrations/src/controllers/e-factura.controller.ts",
+          "hash": "9147729778565880096"
+        },
+        {
+          "file": "libs/integrations/src/controllers/exchange-rate.controller.ts",
+          "hash": "6781536501083650629"
+        },
+        {
+          "file": "libs/integrations/src/controllers/index.ts",
+          "hash": "17278547095651034084"
+        },
+        {
+          "file": "libs/integrations/src/controllers/integrations.controller.ts",
+          "hash": "6086448668769703282"
+        },
+        {
+          "file": "libs/integrations/src/controllers/pandadoc.controller.ts",
+          "hash": "5029186154806440897"
+        },
+        {
+          "file": "libs/integrations/src/controllers/stripe.controller.ts",
+          "hash": "2500929309269491860"
+        },
+        {
+          "file": "libs/integrations/src/index.ts",
+          "hash": "2951871156504451204"
+        },
+        {
+          "file": "libs/integrations/src/init.ts",
+          "hash": "8925948705636248581"
+        },
+        {
+          "file": "libs/integrations/src/integrations.module.ts",
+          "hash": "8058585567278825906"
+        },
+        {
+          "file": "libs/integrations/src/routes/index.ts",
+          "hash": "14053543606911192951"
+        },
+        {
+          "file": "libs/integrations/src/routes/integrations.route.ts",
+          "hash": "8659979883068053952"
+        },
+        {
+          "file": "libs/integrations/src/routes/integrations.routes.ts",
+          "hash": "7323400664864949157"
+        },
+        {
+          "file": "libs/integrations/src/routes/pandadoc.route.example.ts",
+          "hash": "16392641244618176193"
+        },
+        {
+          "file": "libs/integrations/src/routes/pandadoc.route.ts",
+          "hash": "1993122908461028484"
+        },
+        {
+          "file": "libs/integrations/src/routes/public.routes.ts",
+          "hash": "4008644360707964453"
+        },
+        {
+          "file": "libs/integrations/src/schema/integrations.schema.ts",
+          "hash": "5582454641786493526"
+        },
+        {
+          "file": "libs/integrations/src/services/anaf.service.ts",
+          "hash": "5952087128595685027"
+        },
+        {
+          "file": "libs/integrations/src/services/bnr-exchange-rate.service.ts",
+          "hash": "5572569992329394386"
+        },
+        {
+          "file": "libs/integrations/src/services/currency.service.ts",
+          "hash": "15524150118522417430"
+        },
+        {
+          "file": "libs/integrations/src/services/e-factura.service.ts",
+          "hash": "6122259224669333862"
+        },
+        {
+          "file": "libs/integrations/src/services/exchange-rate.service.ts",
+          "hash": "9709075111945341036"
+        },
+        {
+          "file": "libs/integrations/src/services/integrations.service.ts",
+          "hash": "15253964022801222201"
+        },
+        {
+          "file": "libs/integrations/tsconfig.json",
+          "hash": "7775489067302590418"
+        }
+      ],
+      "auth": [
+        {
+          "file": "libs/auth/jest.config.ts",
+          "hash": "13332452543563334079"
+        },
+        {
+          "file": "libs/auth/project.json",
+          "hash": "13993493722433329827"
+        },
+        {
+          "file": "libs/auth/src/CANONICAL-AUTH-GUIDE.md",
+          "hash": "15113473508560223572"
+        },
+        {
+          "file": "libs/auth/src/constants/auth-mode.enum.ts",
+          "hash": "8444719195067895140"
+        },
+        {
+          "file": "libs/auth/src/examples/authguard-usage.md",
+          "hash": "15844861486902707660"
+        },
+        {
+          "file": "libs/auth/src/examples/create-token.ts",
+          "hash": "544897851666930912"
+        },
+        {
+          "file": "libs/auth/src/examples/protected-routes.ts",
+          "hash": "7148617747857397376"
+        },
+        {
+          "file": "libs/auth/src/guards/auth.guard.ts",
+          "hash": "4846553085724902486"
+        },
+        {
+          "file": "libs/auth/src/index.ts",
+          "hash": "16714309876386566995"
+        },
+        {
+          "file": "libs/auth/src/middleware/auth.middleware.ts",
+          "hash": "7978424217496136482"
+        },
+        {
+          "file": "libs/auth/src/middleware/company-access.middleware.ts",
+          "hash": "16044338144651283610"
+        },
+        {
+          "file": "libs/auth/src/middleware/rate-limit.middleware.ts",
+          "hash": "5538986923641263103"
+        },
+        {
+          "file": "libs/auth/src/models/auth.enum.ts",
+          "hash": "2593571895924798363"
+        },
+        {
+          "file": "libs/auth/src/routes/auth.routes.ts",
+          "hash": "5267799304262251458"
+        },
+        {
+          "file": "libs/auth/src/routes/mfa.routes.ts",
+          "hash": "12451278770432958945"
+        },
+        {
+          "file": "libs/auth/src/services/auth.service.ts",
+          "hash": "3510336030163989751"
+        },
+        {
+          "file": "libs/auth/src/services/jwt.service.ts",
+          "hash": "8457168482158744124"
+        },
+        {
+          "file": "libs/auth/src/services/mfa.service.ts",
+          "hash": "5903718982774863049"
+        },
+        {
+          "file": "libs/auth/src/tests/auth-guard.test.cjs",
+          "hash": "11826617597565150173"
+        },
+        {
+          "file": "libs/auth/src/types.ts",
+          "hash": "7772862907439726028"
+        },
+        {
+          "file": "libs/auth/src/types/auth.d.ts",
+          "hash": "8669916078996148706"
+        },
+        {
+          "file": "libs/auth/src/types/express.d.ts",
+          "hash": "14875247703826163706"
+        },
+        {
+          "file": "libs/auth/src/types/jwt-data.type.ts",
+          "hash": "12664253777698670777"
+        },
+        {
+          "file": "libs/auth/tsconfig.json",
+          "hash": "4932800277590643377"
+        },
+        {
+          "file": "libs/auth/tsconfig.spec.json",
+          "hash": "6898991939206723030"
+        }
+      ],
+      "bpm": [
+        {
+          "file": "libs/bpm/project.json",
+          "hash": "8249012864051264061"
+        },
+        {
+          "file": "libs/bpm/src/bpm.module.ts",
+          "hash": "15781952064522841642"
+        },
+        {
+          "file": "libs/bpm/src/controllers/api-connection.controller.ts",
+          "hash": "2602660691889202598"
+        },
+        {
+          "file": "libs/bpm/src/controllers/bpm.controller.ts",
+          "hash": "5321139392453242"
+        },
+        {
+          "file": "libs/bpm/src/controllers/process-instance.controller.ts",
+          "hash": "10355465293922178060"
+        },
+        {
+          "file": "libs/bpm/src/controllers/process.controller.ts",
+          "hash": "8236207375443140949"
+        },
+        {
+          "file": "libs/bpm/src/controllers/scheduled-job.controller.ts",
+          "hash": "3268840436415010810"
+        },
+        {
+          "file": "libs/bpm/src/controllers/step-execution.controller.ts",
+          "hash": "9591297291494065267"
+        },
+        {
+          "file": "libs/bpm/src/controllers/step-template.controller.ts",
+          "hash": "5446749741758528628"
+        },
+        {
+          "file": "libs/bpm/src/controllers/trigger.controller.ts",
+          "hash": "4615306162038094724"
+        },
+        {
+          "file": "libs/bpm/src/index.ts",
+          "hash": "13063825076064338697"
+        },
+        {
+          "file": "libs/bpm/src/init.ts",
+          "hash": "15401131838162132696"
+        },
+        {
+          "file": "libs/bpm/src/routes/api-connection.routes.ts",
+          "hash": "1265748302724641790"
+        },
+        {
+          "file": "libs/bpm/src/routes/bpm.routes.ts",
+          "hash": "15188013656087541610"
+        },
+        {
+          "file": "libs/bpm/src/routes/process-instance.routes.ts",
+          "hash": "16436885097792002679"
+        },
+        {
+          "file": "libs/bpm/src/routes/process.routes.ts",
+          "hash": "6813542231507278333"
+        },
+        {
+          "file": "libs/bpm/src/routes/process.routes.ts.new",
+          "hash": "11227170035097710454"
+        },
+        {
+          "file": "libs/bpm/src/routes/scheduled-job.routes.ts",
+          "hash": "9770329774420970738"
+        },
+        {
+          "file": "libs/bpm/src/routes/step-execution.routes.ts",
+          "hash": "8174061278066609376"
+        },
+        {
+          "file": "libs/bpm/src/routes/step-template.routes.ts",
+          "hash": "1467516974826401974"
+        },
+        {
+          "file": "libs/bpm/src/routes/trigger.routes.ts",
+          "hash": "13561067551561193313"
+        },
+        {
+          "file": "libs/bpm/src/schema/bpm.schema.ts",
+          "hash": "15151964384705585093"
+        },
+        {
+          "file": "libs/bpm/src/services/api-connection.service.ts",
+          "hash": "17640835210944398209"
+        },
+        {
+          "file": "libs/bpm/src/services/process-instance.service.ts",
+          "hash": "1371939908467098627"
+        },
+        {
+          "file": "libs/bpm/src/services/process.service.ts",
+          "hash": "16666898437232950849"
+        },
+        {
+          "file": "libs/bpm/src/services/scheduled-job.service.ts",
+          "hash": "8319591304539237674"
+        },
+        {
+          "file": "libs/bpm/src/services/step-execution.service.ts",
+          "hash": "16378499569870678376"
+        },
+        {
+          "file": "libs/bpm/src/services/step-template.service.ts",
+          "hash": "18384219521729417665"
+        },
+        {
+          "file": "libs/bpm/src/services/trigger.service.ts",
+          "hash": "15423798820906511659"
+        },
+        {
+          "file": "libs/bpm/tsconfig.json",
+          "hash": "6056684619225222468"
+        }
+      ],
+      "analytics": [
+        {
+          "file": "libs/analytics/jest.config.ts",
+          "hash": "11950742733998983673"
+        },
+        {
+          "file": "libs/analytics/project.json",
+          "hash": "4706544955007753352"
+        },
+        {
+          "file": "libs/analytics/src/analytics.module.ts",
+          "hash": "11755480577712483238"
+        },
+        {
+          "file": "libs/analytics/src/analytics.roles.ts",
+          "hash": "13754799922797187163"
+        },
+        {
+          "file": "libs/analytics/src/auth/auth.guard.ts",
+          "hash": "6765963013571298610"
+        },
+        {
+          "file": "libs/analytics/src/auth/auth.types.ts",
+          "hash": "1596923960977094364"
+        },
+        {
+          "file": "libs/analytics/src/controllers/analytics.controller.ts",
+          "hash": "18030948119270129395"
+        },
+        {
+          "file": "libs/analytics/src/controllers/business-intelligence.controller.ts",
+          "hash": "18131063428988586719"
+        },
+        {
+          "file": "libs/analytics/src/controllers/predictive.controller.ts",
+          "hash": "16186050248809568771"
+        },
+        {
+          "file": "libs/analytics/src/index.ts",
+          "hash": "5744923245355839474"
+        },
+        {
+          "file": "libs/analytics/src/init.ts",
+          "hash": "5860055707027890246"
+        },
+        {
+          "file": "libs/analytics/src/migrations/push-analytics-schema.ts",
+          "hash": "7595069352486813499"
+        },
+        {
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "hash": "13969457030122914799"
+        },
+        {
+          "file": "libs/analytics/src/routes/business-intelligence.routes.ts",
+          "hash": "5782225881876992824"
+        },
+        {
+          "file": "libs/analytics/src/routes/predictive.routes.fixed.ts",
+          "hash": "5476471044907143468"
+        },
+        {
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "hash": "5860506547081576466"
+        },
+        {
+          "file": "libs/analytics/src/schema/analytics.schema.ts",
+          "hash": "16945957318992742956"
+        },
+        {
+          "file": "libs/analytics/src/schema/predictive.schema.ts",
+          "hash": "18074186572659453758"
+        },
+        {
+          "file": "libs/analytics/src/services/analytics.service.ts",
+          "hash": "4456423344547384808"
+        },
+        {
+          "file": "libs/analytics/src/services/business-intelligence.service.ts",
+          "hash": "3495582820714092077"
+        },
+        {
+          "file": "libs/analytics/src/services/predictive.service.ts",
+          "hash": "17979063026109271403"
+        },
+        {
+          "file": "libs/analytics/tsconfig.json",
+          "hash": "16915804952180248856"
+        },
+        {
+          "file": "libs/analytics/tsconfig.spec.json",
+          "hash": "6898991939206723030"
+        }
+      ],
       "ai": [
         {
           "file": "libs/ai/jest.config.ts",
@@ -990,6 +1324,994 @@
         {
           "file": "libs/ai/tsconfig.spec.json",
           "hash": "6898991939206723030"
+        }
+      ],
+      "settings": [
+        {
+          "file": "libs/settings/project.json",
+          "hash": "12147949376286509376"
+        },
+        {
+          "file": "libs/settings/src/controllers/feature-toggle.controller.ts",
+          "hash": "17986708393482228906"
+        },
+        {
+          "file": "libs/settings/src/controllers/global-settings.controller.ts",
+          "hash": "15173719422939503813"
+        },
+        {
+          "file": "libs/settings/src/controllers/index.ts",
+          "hash": "17766492336467896716"
+        },
+        {
+          "file": "libs/settings/src/controllers/module-settings.controller.ts",
+          "hash": "1367718022332001974"
+        },
+        {
+          "file": "libs/settings/src/controllers/setup.controller.ts",
+          "hash": "13071773645055219505"
+        },
+        {
+          "file": "libs/settings/src/controllers/ui-theme.controller.ts",
+          "hash": "14495274417667540118"
+        },
+        {
+          "file": "libs/settings/src/controllers/user-preferences.controller.ts",
+          "hash": "11432190298539188682"
+        },
+        {
+          "file": "libs/settings/src/index.ts",
+          "hash": "7395191685606361068"
+        },
+        {
+          "file": "libs/settings/src/init.ts",
+          "hash": "4904188369477354874"
+        },
+        {
+          "file": "libs/settings/src/routes/index.ts",
+          "hash": "2450805941476328172"
+        },
+        {
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "hash": "981940527372440494"
+        },
+        {
+          "file": "libs/settings/src/routes/setup.routes.ts",
+          "hash": "11506918598320305788"
+        },
+        {
+          "file": "libs/settings/src/schema/settings.schema.ts",
+          "hash": "17468995629648889701"
+        },
+        {
+          "file": "libs/settings/src/services/feature-toggle.service.ts",
+          "hash": "5507141112105404934"
+        },
+        {
+          "file": "libs/settings/src/services/global-settings.service.ts",
+          "hash": "8439985099060645119"
+        },
+        {
+          "file": "libs/settings/src/services/index.ts",
+          "hash": "4106997164876949238"
+        },
+        {
+          "file": "libs/settings/src/services/module-settings.service.ts",
+          "hash": "12114133990370748761"
+        },
+        {
+          "file": "libs/settings/src/services/setup.service.ts",
+          "hash": "10386812150195046979"
+        },
+        {
+          "file": "libs/settings/src/services/ui-theme.service.ts",
+          "hash": "7554258749513600736"
+        },
+        {
+          "file": "libs/settings/src/services/user-preferences.service.ts",
+          "hash": "6915589955680575714"
+        },
+        {
+          "file": "libs/settings/src/settings.module.ts",
+          "hash": "8448282082679799783"
+        },
+        {
+          "file": "libs/settings/tsconfig.json",
+          "hash": "7438335313054192284"
+        }
+      ],
+      "accounting": [
+        {
+          "file": "libs/accounting/jest.config.ts",
+          "hash": "13340066158025947302"
+        },
+        {
+          "file": "libs/accounting/project.json",
+          "hash": "11565884712742550390"
+        },
+        {
+          "file": "libs/accounting/src/controllers/accounting-settings.controller.ts",
+          "hash": "11517954169846851684"
+        },
+        {
+          "file": "libs/accounting/src/controllers/accounting.controller.ts",
+          "hash": "12841960278674893759"
+        },
+        {
+          "file": "libs/accounting/src/controllers/bank-journal.controller.ts",
+          "hash": "6012041677398612527"
+        },
+        {
+          "file": "libs/accounting/src/controllers/base.controller.ts",
+          "hash": "7040091234521924230"
+        },
+        {
+          "file": "libs/accounting/src/controllers/cash-register.controller.ts",
+          "hash": "13511769506454917176"
+        },
+        {
+          "file": "libs/accounting/src/controllers/fiscal-closure.controller.ts",
+          "hash": "3183466574522981245"
+        },
+        {
+          "file": "libs/accounting/src/controllers/general-journal.controller.ts",
+          "hash": "2592992107998111308"
+        },
+        {
+          "file": "libs/accounting/src/controllers/journal.controller.ts",
+          "hash": "4560810090928849529"
+        },
+        {
+          "file": "libs/accounting/src/controllers/manual-entries.controller.ts",
+          "hash": "9282058099401134216"
+        },
+        {
+          "file": "libs/accounting/src/controllers/metrics.controller.ts",
+          "hash": "12577292080988991540"
+        },
+        {
+          "file": "libs/accounting/src/controllers/note-contabil.controller.ts",
+          "hash": "1645313442833724235"
+        },
+        {
+          "file": "libs/accounting/src/controllers/onboarding.controller.ts",
+          "hash": "2963268719787983111"
+        },
+        {
+          "file": "libs/accounting/src/controllers/purchase-journal.controller.ts",
+          "hash": "3425785017905225944"
+        },
+        {
+          "file": "libs/accounting/src/controllers/sales-journal.controller.ts",
+          "hash": "16056759895248285962"
+        },
+        {
+          "file": "libs/accounting/src/index.ts",
+          "hash": "3167532635576357311"
+        },
+        {
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "hash": "9407323378161601970"
+        },
+        {
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "hash": "11840514537994070772"
+        },
+        {
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "hash": "3743462332241857300"
+        },
+        {
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "hash": "440557625168723079"
+        },
+        {
+          "file": "libs/accounting/src/routes/financial-reports.routes.ts",
+          "hash": "5459101460037579128"
+        },
+        {
+          "file": "libs/accounting/src/routes/fiscal-closure.routes.ts",
+          "hash": "17052565709940492257"
+        },
+        {
+          "file": "libs/accounting/src/routes/general-journal.routes.ts",
+          "hash": "2881084413694909679"
+        },
+        {
+          "file": "libs/accounting/src/routes/index.ts",
+          "hash": "16832885526863794921"
+        },
+        {
+          "file": "libs/accounting/src/routes/ledger.routes.ts",
+          "hash": "1991961122186446325"
+        },
+        {
+          "file": "libs/accounting/src/routes/manual-entries.routes.ts",
+          "hash": "3114268847006004634"
+        },
+        {
+          "file": "libs/accounting/src/routes/note-contabil.route.ts",
+          "hash": "3888367148466278341"
+        },
+        {
+          "file": "libs/accounting/src/routes/onboarding.routes.ts",
+          "hash": "13812879596300773410"
+        },
+        {
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "hash": "14740059330497294306"
+        },
+        {
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "hash": "11859551433704869785"
+        },
+        {
+          "file": "libs/accounting/src/schema/accounting.schema.ts",
+          "hash": "14024325447669331164"
+        },
+        {
+          "file": "libs/accounting/src/schema/index.ts",
+          "hash": "17875965378590397966"
+        },
+        {
+          "file": "libs/accounting/src/services/account-mapping.service.ts",
+          "hash": "11446543286295985171"
+        },
+        {
+          "file": "libs/accounting/src/services/accounting-attachments.service.ts",
+          "hash": "64631056001420247"
+        },
+        {
+          "file": "libs/accounting/src/services/accounting-cache.service.ts",
+          "hash": "8417391402583487949"
+        },
+        {
+          "file": "libs/accounting/src/services/accounting-periods.service.ts",
+          "hash": "1077347292399156032"
+        },
+        {
+          "file": "libs/accounting/src/services/accounting-queue.service.ts",
+          "hash": "16097670913936534460"
+        },
+        {
+          "file": "libs/accounting/src/services/accounting-settings.service.ts",
+          "hash": "4119920970957909775"
+        },
+        {
+          "file": "libs/accounting/src/services/accounting-templates.service.ts",
+          "hash": "16152570665819256355"
+        },
+        {
+          "file": "libs/accounting/src/services/accounting.service.ts",
+          "hash": "10518089327111766365"
+        },
+        {
+          "file": "libs/accounting/src/services/audit-log.service.ts",
+          "hash": "1050503465228846412"
+        },
+        {
+          "file": "libs/accounting/src/services/bank-journal-pdf.service.ts",
+          "hash": "15236588897063154993"
+        },
+        {
+          "file": "libs/accounting/src/services/bank-journal.service.ts",
+          "hash": "12023239403162474507"
+        },
+        {
+          "file": "libs/accounting/src/services/bulk-operations.service.ts",
+          "hash": "16698262305643765623"
+        },
+        {
+          "file": "libs/accounting/src/services/cash-register-pdf.service.ts",
+          "hash": "5479180690966282564"
+        },
+        {
+          "file": "libs/accounting/src/services/cash-register.service.ts",
+          "hash": "6607141524637780962"
+        },
+        {
+          "file": "libs/accounting/src/services/depreciation-calculation.service.ts",
+          "hash": "15073540937712761971"
+        },
+        {
+          "file": "libs/accounting/src/services/financial-reports.service.ts",
+          "hash": "8332538234992203342"
+        },
+        {
+          "file": "libs/accounting/src/services/fiscal-closure.service.ts",
+          "hash": "2055470532294619050"
+        },
+        {
+          "file": "libs/accounting/src/services/fx-revaluation.service.ts",
+          "hash": "2707227394638774064"
+        },
+        {
+          "file": "libs/accounting/src/services/general-journal-excel.service.ts",
+          "hash": "3710441791720488300"
+        },
+        {
+          "file": "libs/accounting/src/services/general-journal-pdf.service.ts",
+          "hash": "13726257723830647135"
+        },
+        {
+          "file": "libs/accounting/src/services/index.ts",
+          "hash": "6496814652531672654"
+        },
+        {
+          "file": "libs/accounting/src/services/journal-export.service.ts",
+          "hash": "8728633559410675325"
+        },
+        {
+          "file": "libs/accounting/src/services/journal-numbering.service.ts",
+          "hash": "4231090997153526788"
+        },
+        {
+          "file": "libs/accounting/src/services/journal.service.ts",
+          "hash": "236226656537176343"
+        },
+        {
+          "file": "libs/accounting/src/services/note-contabil.service.ts",
+          "hash": "5996402659426774281"
+        },
+        {
+          "file": "libs/accounting/src/services/onboarding.service.ts",
+          "hash": "12037155237694852137"
+        },
+        {
+          "file": "libs/accounting/src/services/period-lock.service.ts",
+          "hash": "14799505766716690428"
+        },
+        {
+          "file": "libs/accounting/src/services/purchase-journal-export.service.ts",
+          "hash": "1313892158675994964"
+        },
+        {
+          "file": "libs/accounting/src/services/purchase-journal.service.ts",
+          "hash": "4249485648499597241"
+        },
+        {
+          "file": "libs/accounting/src/services/saft-export.service.ts",
+          "hash": "17025944400015333718"
+        },
+        {
+          "file": "libs/accounting/src/services/sales-journal-export.service.ts",
+          "hash": "6237868555802968846"
+        },
+        {
+          "file": "libs/accounting/src/services/sales-journal.service.ts",
+          "hash": "11502938200818980924"
+        },
+        {
+          "file": "libs/accounting/src/services/validate-document.ts",
+          "hash": "7167196814112781760"
+        },
+        {
+          "file": "libs/accounting/src/services/vat-closure.service.ts",
+          "hash": "4528829513602257750"
+        },
+        {
+          "file": "libs/accounting/src/services/year-end-closure.service.ts",
+          "hash": "4483988483666393411"
+        },
+        {
+          "file": "libs/accounting/src/types/cash-register-types.ts",
+          "hash": "16458743724102855884"
+        },
+        {
+          "file": "libs/accounting/src/types/general-journal-excel-types.ts",
+          "hash": "15379857476235496545"
+        },
+        {
+          "file": "libs/accounting/src/types/general-journal-pdf-types.ts",
+          "hash": "16030090523298583462"
+        },
+        {
+          "file": "libs/accounting/src/types/note-contabil-types.ts",
+          "hash": "3925541802591832036"
+        },
+        {
+          "file": "libs/accounting/src/types/purchase-journal-types.ts",
+          "hash": "15458762931128851973"
+        },
+        {
+          "file": "libs/accounting/src/types/sales-journal-data-types.ts",
+          "hash": "17120449570584428006"
+        },
+        {
+          "file": "libs/accounting/src/types/sales-journal-types.ts",
+          "hash": "6701897609045068995"
+        },
+        {
+          "file": "libs/accounting/src/types/vat-categories.ts",
+          "hash": "17481350519681106309"
+        },
+        {
+          "file": "libs/accounting/src/workers/accounting-worker.processor.ts",
+          "hash": "11319709872456589997"
+        },
+        {
+          "file": "libs/accounting/src/workers/types.ts",
+          "hash": "2254162506901310019"
+        },
+        {
+          "file": "libs/accounting/tsconfig.json",
+          "hash": "6814671631717892986"
+        },
+        {
+          "file": "libs/accounting/tsconfig.spec.json",
+          "hash": "6898991939206723030"
+        }
+      ],
+      "audit": [
+        {
+          "file": "libs/audit/jest.config.ts",
+          "hash": "6528715711463964507"
+        },
+        {
+          "file": "libs/audit/project.json",
+          "hash": "10960095892197067051"
+        },
+        {
+          "file": "libs/audit/src/audit.module.ts",
+          "hash": "14456384473137385790"
+        },
+        {
+          "file": "libs/audit/src/controllers/audit.controller.ts",
+          "hash": "12433519157014550096"
+        },
+        {
+          "file": "libs/audit/src/index.ts",
+          "hash": "7042426821001945702"
+        },
+        {
+          "file": "libs/audit/src/routes/audit.routes.ts",
+          "hash": "17377609938330647635"
+        },
+        {
+          "file": "libs/audit/src/schema/audit.schema.ts",
+          "hash": "18184405836012431288"
+        },
+        {
+          "file": "libs/audit/src/services/audit.service.instance.ts",
+          "hash": "1257594388658793116"
+        },
+        {
+          "file": "libs/audit/src/services/audit.service.ts",
+          "hash": "11643599996589184896"
+        },
+        {
+          "file": "libs/audit/tsconfig.json",
+          "hash": "81270902788828981"
+        },
+        {
+          "file": "libs/audit/tsconfig.spec.json",
+          "hash": "6898991939206723030"
+        }
+      ],
+      "users": [
+        {
+          "file": "libs/users/project.json",
+          "hash": "6814882094025081"
+        },
+        {
+          "file": "libs/users/src/controllers/user.controller.ts",
+          "hash": "5366047527498130646"
+        },
+        {
+          "file": "libs/users/src/index.ts",
+          "hash": "17034589107904708844"
+        },
+        {
+          "file": "libs/users/src/routes/user.routes.ts",
+          "hash": "2055375009210436620"
+        },
+        {
+          "file": "libs/users/src/services/user.service.ts",
+          "hash": "12422737862540126910"
+        },
+        {
+          "file": "libs/users/src/users.module.ts",
+          "hash": "14827864873492928281"
+        },
+        {
+          "file": "libs/users/tsconfig.json",
+          "hash": "1799122335600021427"
+        }
+      ],
+      "crm": [
+        {
+          "file": "libs/crm/jest.config.ts",
+          "hash": "14927046704821749364"
+        },
+        {
+          "file": "libs/crm/project.json",
+          "hash": "11609473320247331095"
+        },
+        {
+          "file": "libs/crm/src/controllers/activity.controller.ts",
+          "hash": "15972784613764777311"
+        },
+        {
+          "file": "libs/crm/src/controllers/anaf.controller.ts",
+          "hash": "1520826515372513019"
+        },
+        {
+          "file": "libs/crm/src/controllers/company.controller.ts",
+          "hash": "221787193198747896"
+        },
+        {
+          "file": "libs/crm/src/controllers/contact.controller.ts",
+          "hash": "7004415361976246938"
+        },
+        {
+          "file": "libs/crm/src/controllers/customer.controller.ts",
+          "hash": "8405279767735357131"
+        },
+        {
+          "file": "libs/crm/src/controllers/deal.controller.ts",
+          "hash": "3259993546079423390"
+        },
+        {
+          "file": "libs/crm/src/controllers/financial-data.controller.ts",
+          "hash": "17982043614952049791"
+        },
+        {
+          "file": "libs/crm/src/controllers/pipeline.controller.ts",
+          "hash": "6210302227355323357"
+        },
+        {
+          "file": "libs/crm/src/controllers/sales.controller.ts",
+          "hash": "1494723273854795792"
+        },
+        {
+          "file": "libs/crm/src/crm.module.ts",
+          "hash": "531407640450460030"
+        },
+        {
+          "file": "libs/crm/src/hooks/company-financial-data.hook.ts",
+          "hash": "10233262832595609428"
+        },
+        {
+          "file": "libs/crm/src/index.ts",
+          "hash": "15976297262143322753"
+        },
+        {
+          "file": "libs/crm/src/init.ts",
+          "hash": "12171789287590249815"
+        },
+        {
+          "file": "libs/crm/src/migrations/create-financial-data-tables.ts",
+          "hash": "1951337486749093390"
+        },
+        {
+          "file": "libs/crm/src/routes/crm.routes.ts",
+          "hash": "15603701316652825635"
+        },
+        {
+          "file": "libs/crm/src/schema/crm.schema.ts",
+          "hash": "370307176849887386"
+        },
+        {
+          "file": "libs/crm/src/schema/financial-data.schema.ts",
+          "hash": "11653499462516489069"
+        },
+        {
+          "file": "libs/crm/src/schema/index.ts",
+          "hash": "703106884354310207"
+        },
+        {
+          "file": "libs/crm/src/services/activity.service.ts",
+          "hash": "11227518248525454886"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue.service.ts.bak",
+          "hash": "13994722061269941520"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue_services/anaf-queue.service.ts",
+          "hash": "16227725884481645426"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue_services/batch.service.ts",
+          "hash": "5640562406613714610"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue_services/cache.service.ts",
+          "hash": "17019876262076025524"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue_services/database.service.ts",
+          "hash": "13185910848338582539"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue_services/index.ts",
+          "hash": "10961505151013176182"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue_services/transformers/adresa-fiscal.ts",
+          "hash": "2848682087103724282"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue_services/transformers/adresa-sediu.ts",
+          "hash": "18165640935619514804"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue_services/transformers/date-generale.ts",
+          "hash": "4746969575406019022"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue_services/transformers/inactiv.ts",
+          "hash": "10156236856117763731"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue_services/transformers/index.ts",
+          "hash": "7167828754368366531"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue_services/transformers/split-tva.ts",
+          "hash": "16978502345595538535"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue_services/transformers/tva-incasare.ts",
+          "hash": "9957455824345793425"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue_services/transformers/tva.ts",
+          "hash": "9117621163792922649"
+        },
+        {
+          "file": "libs/crm/src/services/anaf-queue_services/types.ts",
+          "hash": "6412342196645642906"
+        },
+        {
+          "file": "libs/crm/src/services/anaf.service.ts",
+          "hash": "1826269617631583777"
+        },
+        {
+          "file": "libs/crm/src/services/contact.service.ts",
+          "hash": "16812815896504800896"
+        },
+        {
+          "file": "libs/crm/src/services/customer.service.ts",
+          "hash": "1353726550290542833"
+        },
+        {
+          "file": "libs/crm/src/services/deal.service.ts",
+          "hash": "9763608930000655682"
+        },
+        {
+          "file": "libs/crm/src/services/financial-data.service.ts",
+          "hash": "18275770652572636841"
+        },
+        {
+          "file": "libs/crm/src/services/financial-queue.service.ts",
+          "hash": "12410472486847072966"
+        },
+        {
+          "file": "libs/crm/src/services/pipeline.service.ts",
+          "hash": "13725662458927316156"
+        },
+        {
+          "file": "libs/crm/tsconfig.json",
+          "hash": "1764238862692036100"
+        },
+        {
+          "file": "libs/crm/tsconfig.spec.json",
+          "hash": "6898991939206723030"
+        }
+      ],
+      "documents": [
+        {
+          "file": "libs/documents/jest.config.ts",
+          "hash": "54938129089352983"
+        },
+        {
+          "file": "libs/documents/project.json",
+          "hash": "13405290382450190505"
+        },
+        {
+          "file": "libs/documents/src/controllers/document-editor.controller.ts",
+          "hash": "15572387085762096272"
+        },
+        {
+          "file": "libs/documents/src/controllers/document-registry.controller.ts",
+          "hash": "8034766712715913888"
+        },
+        {
+          "file": "libs/documents/src/controllers/document-search.controller.ts",
+          "hash": "13313931611080581580"
+        },
+        {
+          "file": "libs/documents/src/controllers/document.controller.ts",
+          "hash": "11994939458548150169"
+        },
+        {
+          "file": "libs/documents/src/controllers/email-attachment.controller.ts",
+          "hash": "6863491104870090683"
+        },
+        {
+          "file": "libs/documents/src/controllers/ocr.controller.ts",
+          "hash": "1141785641381023326"
+        },
+        {
+          "file": "libs/documents/src/controllers/sign-document.controller.ts",
+          "hash": "8533037651263751197"
+        },
+        {
+          "file": "libs/documents/src/controllers/template.controller.ts",
+          "hash": "10737658448992474416"
+        },
+        {
+          "file": "libs/documents/src/documents.module.ts",
+          "hash": "16603247770311067595"
+        },
+        {
+          "file": "libs/documents/src/index.ts",
+          "hash": "16289727733836964199"
+        },
+        {
+          "file": "libs/documents/src/routes/document.routes.ts",
+          "hash": "16847852753612986434"
+        },
+        {
+          "file": "libs/documents/src/services/document-editor.service.ts",
+          "hash": "16424711936827339200"
+        },
+        {
+          "file": "libs/documents/src/services/document-registry.service.ts",
+          "hash": "11161601558996239504"
+        },
+        {
+          "file": "libs/documents/src/services/document-search.service.ts",
+          "hash": "2199542547861041390"
+        },
+        {
+          "file": "libs/documents/src/services/document.service.ts",
+          "hash": "8385646928595334742"
+        },
+        {
+          "file": "libs/documents/src/services/email-attachment.service.ts",
+          "hash": "11939710796831242700"
+        },
+        {
+          "file": "libs/documents/src/services/ocr.service.ts",
+          "hash": "1485607176555775735"
+        },
+        {
+          "file": "libs/documents/src/services/pandadoc.service.ts",
+          "hash": "8522815298756769665"
+        },
+        {
+          "file": "libs/documents/src/services/sign-document.service.ts",
+          "hash": "3917499614232847917"
+        },
+        {
+          "file": "libs/documents/src/services/template.service.ts",
+          "hash": "842121700764658269"
+        },
+        {
+          "file": "libs/documents/tsconfig.json",
+          "hash": "6098514976634017372"
+        },
+        {
+          "file": "libs/documents/tsconfig.spec.json",
+          "hash": "6898991939206723030"
+        }
+      ],
+      "admin": [
+        {
+          "file": "libs/admin/jest.config.ts",
+          "hash": "17127313853808865324"
+        },
+        {
+          "file": "libs/admin/project.json",
+          "hash": "13034911941012318229"
+        },
+        {
+          "file": "libs/admin/src/admin.module.ts",
+          "hash": "620783040921924058"
+        },
+        {
+          "file": "libs/admin/src/controllers/admin.controller.ts",
+          "hash": "11940059340465476252"
+        },
+        {
+          "file": "libs/admin/src/controllers/api-key.controller.ts",
+          "hash": "548252593938622486"
+        },
+        {
+          "file": "libs/admin/src/controllers/config.controller.ts",
+          "hash": "11334576597022129446"
+        },
+        {
+          "file": "libs/admin/src/controllers/health-check.controller.ts",
+          "hash": "1371194858583364951"
+        },
+        {
+          "file": "libs/admin/src/controllers/license.controller.ts",
+          "hash": "8581082753460367080"
+        },
+        {
+          "file": "libs/admin/src/controllers/role.controller.ts",
+          "hash": "12418411620743088970"
+        },
+        {
+          "file": "libs/admin/src/controllers/setup.controller.ts",
+          "hash": "3514433942011080339"
+        },
+        {
+          "file": "libs/admin/src/controllers/user.controller.ts",
+          "hash": "14428531736466454667"
+        },
+        {
+          "file": "libs/admin/src/index.ts",
+          "hash": "2572173917670184462"
+        },
+        {
+          "file": "libs/admin/src/init.ts",
+          "hash": "6218522750284589566"
+        },
+        {
+          "file": "libs/admin/src/schema/admin.schema.ts",
+          "hash": "2113121755062901610"
+        },
+        {
+          "file": "libs/admin/src/services/api-key.service.ts",
+          "hash": "11152859730068314145"
+        },
+        {
+          "file": "libs/admin/src/services/config.service.ts",
+          "hash": "11194876981498990764"
+        },
+        {
+          "file": "libs/admin/src/services/health-check.service.ts",
+          "hash": "7213447168584835035"
+        },
+        {
+          "file": "libs/admin/src/services/license.service.ts",
+          "hash": "1464973823458668097"
+        },
+        {
+          "file": "libs/admin/src/services/role.service.ts",
+          "hash": "11593080225212374447"
+        },
+        {
+          "file": "libs/admin/src/services/setup.service.ts",
+          "hash": "18257999293365736735"
+        },
+        {
+          "file": "libs/admin/src/services/user.service.ts",
+          "hash": "15327671129123664097"
+        },
+        {
+          "file": "libs/admin/tsconfig.json",
+          "hash": "9580353291314414115"
+        },
+        {
+          "file": "libs/admin/tsconfig.spec.json",
+          "hash": "6898991939206723030"
+        }
+      ],
+      "collab": [
+        {
+          "file": "libs/collab/project.json",
+          "hash": "2817057900092028430"
+        },
+        {
+          "file": "libs/collab/src/collab.module.ts",
+          "hash": "7570846063300857072"
+        },
+        {
+          "file": "libs/collab/src/controllers/activity.controller.ts",
+          "hash": "15742615740932013700"
+        },
+        {
+          "file": "libs/collab/src/controllers/community.controller.ts",
+          "hash": "15664902828712103038"
+        },
+        {
+          "file": "libs/collab/src/controllers/index.ts",
+          "hash": "6221683353979251913"
+        },
+        {
+          "file": "libs/collab/src/controllers/init.ts",
+          "hash": "16382354627578109119"
+        },
+        {
+          "file": "libs/collab/src/controllers/message.controller.ts",
+          "hash": "3563091334551525194"
+        },
+        {
+          "file": "libs/collab/src/controllers/note.controller.ts",
+          "hash": "15619207249378773781"
+        },
+        {
+          "file": "libs/collab/src/controllers/notification.controller.ts",
+          "hash": "1313692712857062156"
+        },
+        {
+          "file": "libs/collab/src/controllers/task.controller.ts",
+          "hash": "4127831498923233600"
+        },
+        {
+          "file": "libs/collab/src/controllers/thread.controller.ts",
+          "hash": "18361780537498110264"
+        },
+        {
+          "file": "libs/collab/src/controllers/watcher.controller.ts",
+          "hash": "3127774378419822911"
+        },
+        {
+          "file": "libs/collab/src/index.ts",
+          "hash": "9366384350326700819"
+        },
+        {
+          "file": "libs/collab/src/init.ts",
+          "hash": "14633177695165995321"
+        },
+        {
+          "file": "libs/collab/src/routes/community.routes.ts",
+          "hash": "12543695262102119025"
+        },
+        {
+          "file": "libs/collab/src/routes/index.ts",
+          "hash": "10375551722875139499"
+        },
+        {
+          "file": "libs/collab/src/routes/message.routes.ts",
+          "hash": "14866641160175131547"
+        },
+        {
+          "file": "libs/collab/src/routes/note.routes.ts",
+          "hash": "3902480415275401326"
+        },
+        {
+          "file": "libs/collab/src/routes/task.routes.ts",
+          "hash": "2543086242622186034"
+        },
+        {
+          "file": "libs/collab/src/routes/thread.routes.ts",
+          "hash": "15316433553591537941"
+        },
+        {
+          "file": "libs/collab/src/routes/watcher.routes.ts",
+          "hash": "5717695056903602791"
+        },
+        {
+          "file": "libs/collab/src/services/activity.service.ts",
+          "hash": "13083101042460605335"
+        },
+        {
+          "file": "libs/collab/src/services/community.service.ts",
+          "hash": "13331049691653364563"
+        },
+        {
+          "file": "libs/collab/src/services/message.service.ts",
+          "hash": "5405578254067442675"
+        },
+        {
+          "file": "libs/collab/src/services/note.service.ts",
+          "hash": "12697085055166607148"
+        },
+        {
+          "file": "libs/collab/src/services/notification.service.ts",
+          "hash": "11838505541803239785"
+        },
+        {
+          "file": "libs/collab/src/services/task.service.ts",
+          "hash": "16623856313642781799"
+        },
+        {
+          "file": "libs/collab/src/services/thread.service.ts",
+          "hash": "8470618183191714274"
+        },
+        {
+          "file": "libs/collab/src/services/watcher.service.ts",
+          "hash": "4365041094708782836"
+        },
+        {
+          "file": "libs/collab/tsconfig.json",
+          "hash": "11635087492652601489"
         }
       ],
       "web": [
@@ -2767,797 +4089,11 @@
         },
         {
           "file": "apps/web/vite.config.ts",
-          "hash": "17082149437660811826"
+          "hash": "13869238536084910362"
         },
         {
           "file": "apps/web/vitest.config.ts",
           "hash": "18335774432927248670"
-        }
-      ],
-      "crm": [
-        {
-          "file": "libs/crm/jest.config.ts",
-          "hash": "14927046704821749364"
-        },
-        {
-          "file": "libs/crm/project.json",
-          "hash": "11609473320247331095"
-        },
-        {
-          "file": "libs/crm/src/controllers/activity.controller.ts",
-          "hash": "15972784613764777311"
-        },
-        {
-          "file": "libs/crm/src/controllers/anaf.controller.ts",
-          "hash": "1520826515372513019"
-        },
-        {
-          "file": "libs/crm/src/controllers/company.controller.ts",
-          "hash": "221787193198747896"
-        },
-        {
-          "file": "libs/crm/src/controllers/contact.controller.ts",
-          "hash": "7004415361976246938"
-        },
-        {
-          "file": "libs/crm/src/controllers/customer.controller.ts",
-          "hash": "8405279767735357131"
-        },
-        {
-          "file": "libs/crm/src/controllers/deal.controller.ts",
-          "hash": "3259993546079423390"
-        },
-        {
-          "file": "libs/crm/src/controllers/financial-data.controller.ts",
-          "hash": "17982043614952049791"
-        },
-        {
-          "file": "libs/crm/src/controllers/pipeline.controller.ts",
-          "hash": "6210302227355323357"
-        },
-        {
-          "file": "libs/crm/src/controllers/sales.controller.ts",
-          "hash": "1494723273854795792"
-        },
-        {
-          "file": "libs/crm/src/crm.module.ts",
-          "hash": "531407640450460030"
-        },
-        {
-          "file": "libs/crm/src/hooks/company-financial-data.hook.ts",
-          "hash": "10233262832595609428"
-        },
-        {
-          "file": "libs/crm/src/index.ts",
-          "hash": "15976297262143322753"
-        },
-        {
-          "file": "libs/crm/src/init.ts",
-          "hash": "12171789287590249815"
-        },
-        {
-          "file": "libs/crm/src/migrations/create-financial-data-tables.ts",
-          "hash": "1951337486749093390"
-        },
-        {
-          "file": "libs/crm/src/routes/crm.routes.ts",
-          "hash": "15603701316652825635"
-        },
-        {
-          "file": "libs/crm/src/schema/crm.schema.ts",
-          "hash": "370307176849887386"
-        },
-        {
-          "file": "libs/crm/src/schema/financial-data.schema.ts",
-          "hash": "11653499462516489069"
-        },
-        {
-          "file": "libs/crm/src/schema/index.ts",
-          "hash": "703106884354310207"
-        },
-        {
-          "file": "libs/crm/src/services/activity.service.ts",
-          "hash": "11227518248525454886"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue.service.ts.bak",
-          "hash": "13994722061269941520"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue_services/anaf-queue.service.ts",
-          "hash": "16227725884481645426"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue_services/batch.service.ts",
-          "hash": "5640562406613714610"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue_services/cache.service.ts",
-          "hash": "17019876262076025524"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue_services/database.service.ts",
-          "hash": "13185910848338582539"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue_services/index.ts",
-          "hash": "10961505151013176182"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue_services/transformers/adresa-fiscal.ts",
-          "hash": "2848682087103724282"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue_services/transformers/adresa-sediu.ts",
-          "hash": "18165640935619514804"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue_services/transformers/date-generale.ts",
-          "hash": "4746969575406019022"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue_services/transformers/inactiv.ts",
-          "hash": "10156236856117763731"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue_services/transformers/index.ts",
-          "hash": "7167828754368366531"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue_services/transformers/split-tva.ts",
-          "hash": "16978502345595538535"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue_services/transformers/tva-incasare.ts",
-          "hash": "9957455824345793425"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue_services/transformers/tva.ts",
-          "hash": "9117621163792922649"
-        },
-        {
-          "file": "libs/crm/src/services/anaf-queue_services/types.ts",
-          "hash": "6412342196645642906"
-        },
-        {
-          "file": "libs/crm/src/services/anaf.service.ts",
-          "hash": "1826269617631583777"
-        },
-        {
-          "file": "libs/crm/src/services/contact.service.ts",
-          "hash": "16812815896504800896"
-        },
-        {
-          "file": "libs/crm/src/services/customer.service.ts",
-          "hash": "1353726550290542833"
-        },
-        {
-          "file": "libs/crm/src/services/deal.service.ts",
-          "hash": "9763608930000655682"
-        },
-        {
-          "file": "libs/crm/src/services/financial-data.service.ts",
-          "hash": "18275770652572636841"
-        },
-        {
-          "file": "libs/crm/src/services/financial-queue.service.ts",
-          "hash": "12410472486847072966"
-        },
-        {
-          "file": "libs/crm/src/services/pipeline.service.ts",
-          "hash": "13725662458927316156"
-        },
-        {
-          "file": "libs/crm/tsconfig.json",
-          "hash": "1764238862692036100"
-        },
-        {
-          "file": "libs/crm/tsconfig.spec.json",
-          "hash": "6898991939206723030"
-        }
-      ],
-      "bpm": [
-        {
-          "file": "libs/bpm/project.json",
-          "hash": "8249012864051264061"
-        },
-        {
-          "file": "libs/bpm/src/bpm.module.ts",
-          "hash": "15781952064522841642"
-        },
-        {
-          "file": "libs/bpm/src/controllers/api-connection.controller.ts",
-          "hash": "2602660691889202598"
-        },
-        {
-          "file": "libs/bpm/src/controllers/bpm.controller.ts",
-          "hash": "5321139392453242"
-        },
-        {
-          "file": "libs/bpm/src/controllers/process-instance.controller.ts",
-          "hash": "10355465293922178060"
-        },
-        {
-          "file": "libs/bpm/src/controllers/process.controller.ts",
-          "hash": "8236207375443140949"
-        },
-        {
-          "file": "libs/bpm/src/controllers/scheduled-job.controller.ts",
-          "hash": "3268840436415010810"
-        },
-        {
-          "file": "libs/bpm/src/controllers/step-execution.controller.ts",
-          "hash": "9591297291494065267"
-        },
-        {
-          "file": "libs/bpm/src/controllers/step-template.controller.ts",
-          "hash": "5446749741758528628"
-        },
-        {
-          "file": "libs/bpm/src/controllers/trigger.controller.ts",
-          "hash": "4615306162038094724"
-        },
-        {
-          "file": "libs/bpm/src/index.ts",
-          "hash": "13063825076064338697"
-        },
-        {
-          "file": "libs/bpm/src/init.ts",
-          "hash": "15401131838162132696"
-        },
-        {
-          "file": "libs/bpm/src/routes/api-connection.routes.ts",
-          "hash": "1265748302724641790"
-        },
-        {
-          "file": "libs/bpm/src/routes/bpm.routes.ts",
-          "hash": "15188013656087541610"
-        },
-        {
-          "file": "libs/bpm/src/routes/process-instance.routes.ts",
-          "hash": "16436885097792002679"
-        },
-        {
-          "file": "libs/bpm/src/routes/process.routes.ts",
-          "hash": "6813542231507278333"
-        },
-        {
-          "file": "libs/bpm/src/routes/process.routes.ts.new",
-          "hash": "11227170035097710454"
-        },
-        {
-          "file": "libs/bpm/src/routes/scheduled-job.routes.ts",
-          "hash": "9770329774420970738"
-        },
-        {
-          "file": "libs/bpm/src/routes/step-execution.routes.ts",
-          "hash": "8174061278066609376"
-        },
-        {
-          "file": "libs/bpm/src/routes/step-template.routes.ts",
-          "hash": "1467516974826401974"
-        },
-        {
-          "file": "libs/bpm/src/routes/trigger.routes.ts",
-          "hash": "13561067551561193313"
-        },
-        {
-          "file": "libs/bpm/src/schema/bpm.schema.ts",
-          "hash": "15151964384705585093"
-        },
-        {
-          "file": "libs/bpm/src/services/api-connection.service.ts",
-          "hash": "17640835210944398209"
-        },
-        {
-          "file": "libs/bpm/src/services/process-instance.service.ts",
-          "hash": "1371939908467098627"
-        },
-        {
-          "file": "libs/bpm/src/services/process.service.ts",
-          "hash": "16666898437232950849"
-        },
-        {
-          "file": "libs/bpm/src/services/scheduled-job.service.ts",
-          "hash": "8319591304539237674"
-        },
-        {
-          "file": "libs/bpm/src/services/step-execution.service.ts",
-          "hash": "16378499569870678376"
-        },
-        {
-          "file": "libs/bpm/src/services/step-template.service.ts",
-          "hash": "18384219521729417665"
-        },
-        {
-          "file": "libs/bpm/src/services/trigger.service.ts",
-          "hash": "15423798820906511659"
-        },
-        {
-          "file": "libs/bpm/tsconfig.json",
-          "hash": "6056684619225222468"
-        }
-      ],
-      "accounting": [
-        {
-          "file": "libs/accounting/jest.config.ts",
-          "hash": "13340066158025947302"
-        },
-        {
-          "file": "libs/accounting/project.json",
-          "hash": "11565884712742550390"
-        },
-        {
-          "file": "libs/accounting/src/controllers/accounting-settings.controller.ts",
-          "hash": "11517954169846851684"
-        },
-        {
-          "file": "libs/accounting/src/controllers/accounting.controller.ts",
-          "hash": "12841960278674893759"
-        },
-        {
-          "file": "libs/accounting/src/controllers/bank-journal.controller.ts",
-          "hash": "6012041677398612527"
-        },
-        {
-          "file": "libs/accounting/src/controllers/base.controller.ts",
-          "hash": "7040091234521924230"
-        },
-        {
-          "file": "libs/accounting/src/controllers/cash-register.controller.ts",
-          "hash": "13511769506454917176"
-        },
-        {
-          "file": "libs/accounting/src/controllers/fiscal-closure.controller.ts",
-          "hash": "3183466574522981245"
-        },
-        {
-          "file": "libs/accounting/src/controllers/general-journal.controller.ts",
-          "hash": "2592992107998111308"
-        },
-        {
-          "file": "libs/accounting/src/controllers/journal.controller.ts",
-          "hash": "4560810090928849529"
-        },
-        {
-          "file": "libs/accounting/src/controllers/manual-entries.controller.ts",
-          "hash": "9282058099401134216"
-        },
-        {
-          "file": "libs/accounting/src/controllers/metrics.controller.ts",
-          "hash": "12577292080988991540"
-        },
-        {
-          "file": "libs/accounting/src/controllers/note-contabil.controller.ts",
-          "hash": "1645313442833724235"
-        },
-        {
-          "file": "libs/accounting/src/controllers/onboarding.controller.ts",
-          "hash": "2963268719787983111"
-        },
-        {
-          "file": "libs/accounting/src/controllers/purchase-journal.controller.ts",
-          "hash": "3425785017905225944"
-        },
-        {
-          "file": "libs/accounting/src/controllers/sales-journal.controller.ts",
-          "hash": "16056759895248285962"
-        },
-        {
-          "file": "libs/accounting/src/index.ts",
-          "hash": "3167532635576357311"
-        },
-        {
-          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
-          "hash": "9407323378161601970"
-        },
-        {
-          "file": "libs/accounting/src/routes/accounting.routes.ts",
-          "hash": "11840514537994070772"
-        },
-        {
-          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
-          "hash": "3743462332241857300"
-        },
-        {
-          "file": "libs/accounting/src/routes/cash-register.routes.ts",
-          "hash": "440557625168723079"
-        },
-        {
-          "file": "libs/accounting/src/routes/financial-reports.routes.ts",
-          "hash": "5459101460037579128"
-        },
-        {
-          "file": "libs/accounting/src/routes/fiscal-closure.routes.ts",
-          "hash": "17052565709940492257"
-        },
-        {
-          "file": "libs/accounting/src/routes/general-journal.routes.ts",
-          "hash": "2881084413694909679"
-        },
-        {
-          "file": "libs/accounting/src/routes/index.ts",
-          "hash": "16832885526863794921"
-        },
-        {
-          "file": "libs/accounting/src/routes/ledger.routes.ts",
-          "hash": "1991961122186446325"
-        },
-        {
-          "file": "libs/accounting/src/routes/manual-entries.routes.ts",
-          "hash": "3114268847006004634"
-        },
-        {
-          "file": "libs/accounting/src/routes/note-contabil.route.ts",
-          "hash": "3888367148466278341"
-        },
-        {
-          "file": "libs/accounting/src/routes/onboarding.routes.ts",
-          "hash": "13812879596300773410"
-        },
-        {
-          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
-          "hash": "14740059330497294306"
-        },
-        {
-          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
-          "hash": "11859551433704869785"
-        },
-        {
-          "file": "libs/accounting/src/schema/accounting.schema.ts",
-          "hash": "14024325447669331164"
-        },
-        {
-          "file": "libs/accounting/src/schema/index.ts",
-          "hash": "17875965378590397966"
-        },
-        {
-          "file": "libs/accounting/src/services/account-mapping.service.ts",
-          "hash": "11446543286295985171"
-        },
-        {
-          "file": "libs/accounting/src/services/accounting-attachments.service.ts",
-          "hash": "64631056001420247"
-        },
-        {
-          "file": "libs/accounting/src/services/accounting-cache.service.ts",
-          "hash": "8417391402583487949"
-        },
-        {
-          "file": "libs/accounting/src/services/accounting-periods.service.ts",
-          "hash": "1077347292399156032"
-        },
-        {
-          "file": "libs/accounting/src/services/accounting-queue.service.ts",
-          "hash": "16097670913936534460"
-        },
-        {
-          "file": "libs/accounting/src/services/accounting-settings.service.ts",
-          "hash": "4119920970957909775"
-        },
-        {
-          "file": "libs/accounting/src/services/accounting-templates.service.ts",
-          "hash": "16152570665819256355"
-        },
-        {
-          "file": "libs/accounting/src/services/accounting.service.ts",
-          "hash": "10518089327111766365"
-        },
-        {
-          "file": "libs/accounting/src/services/audit-log.service.ts",
-          "hash": "1050503465228846412"
-        },
-        {
-          "file": "libs/accounting/src/services/bank-journal-pdf.service.ts",
-          "hash": "15236588897063154993"
-        },
-        {
-          "file": "libs/accounting/src/services/bank-journal.service.ts",
-          "hash": "12023239403162474507"
-        },
-        {
-          "file": "libs/accounting/src/services/bulk-operations.service.ts",
-          "hash": "16698262305643765623"
-        },
-        {
-          "file": "libs/accounting/src/services/cash-register-pdf.service.ts",
-          "hash": "5479180690966282564"
-        },
-        {
-          "file": "libs/accounting/src/services/cash-register.service.ts",
-          "hash": "6607141524637780962"
-        },
-        {
-          "file": "libs/accounting/src/services/depreciation-calculation.service.ts",
-          "hash": "15073540937712761971"
-        },
-        {
-          "file": "libs/accounting/src/services/financial-reports.service.ts",
-          "hash": "8332538234992203342"
-        },
-        {
-          "file": "libs/accounting/src/services/fiscal-closure.service.ts",
-          "hash": "2055470532294619050"
-        },
-        {
-          "file": "libs/accounting/src/services/fx-revaluation.service.ts",
-          "hash": "2707227394638774064"
-        },
-        {
-          "file": "libs/accounting/src/services/general-journal-excel.service.ts",
-          "hash": "3710441791720488300"
-        },
-        {
-          "file": "libs/accounting/src/services/general-journal-pdf.service.ts",
-          "hash": "13726257723830647135"
-        },
-        {
-          "file": "libs/accounting/src/services/index.ts",
-          "hash": "6496814652531672654"
-        },
-        {
-          "file": "libs/accounting/src/services/journal-export.service.ts",
-          "hash": "8728633559410675325"
-        },
-        {
-          "file": "libs/accounting/src/services/journal-numbering.service.ts",
-          "hash": "4231090997153526788"
-        },
-        {
-          "file": "libs/accounting/src/services/journal.service.ts",
-          "hash": "236226656537176343"
-        },
-        {
-          "file": "libs/accounting/src/services/note-contabil.service.ts",
-          "hash": "5996402659426774281"
-        },
-        {
-          "file": "libs/accounting/src/services/onboarding.service.ts",
-          "hash": "12037155237694852137"
-        },
-        {
-          "file": "libs/accounting/src/services/period-lock.service.ts",
-          "hash": "14799505766716690428"
-        },
-        {
-          "file": "libs/accounting/src/services/purchase-journal-export.service.ts",
-          "hash": "1313892158675994964"
-        },
-        {
-          "file": "libs/accounting/src/services/purchase-journal.service.ts",
-          "hash": "4249485648499597241"
-        },
-        {
-          "file": "libs/accounting/src/services/saft-export.service.ts",
-          "hash": "17025944400015333718"
-        },
-        {
-          "file": "libs/accounting/src/services/sales-journal-export.service.ts",
-          "hash": "6237868555802968846"
-        },
-        {
-          "file": "libs/accounting/src/services/sales-journal.service.ts",
-          "hash": "11502938200818980924"
-        },
-        {
-          "file": "libs/accounting/src/services/validate-document.ts",
-          "hash": "7167196814112781760"
-        },
-        {
-          "file": "libs/accounting/src/services/vat-closure.service.ts",
-          "hash": "4528829513602257750"
-        },
-        {
-          "file": "libs/accounting/src/services/year-end-closure.service.ts",
-          "hash": "4483988483666393411"
-        },
-        {
-          "file": "libs/accounting/src/types/cash-register-types.ts",
-          "hash": "16458743724102855884"
-        },
-        {
-          "file": "libs/accounting/src/types/general-journal-excel-types.ts",
-          "hash": "15379857476235496545"
-        },
-        {
-          "file": "libs/accounting/src/types/general-journal-pdf-types.ts",
-          "hash": "16030090523298583462"
-        },
-        {
-          "file": "libs/accounting/src/types/note-contabil-types.ts",
-          "hash": "3925541802591832036"
-        },
-        {
-          "file": "libs/accounting/src/types/purchase-journal-types.ts",
-          "hash": "15458762931128851973"
-        },
-        {
-          "file": "libs/accounting/src/types/sales-journal-data-types.ts",
-          "hash": "17120449570584428006"
-        },
-        {
-          "file": "libs/accounting/src/types/sales-journal-types.ts",
-          "hash": "6701897609045068995"
-        },
-        {
-          "file": "libs/accounting/src/types/vat-categories.ts",
-          "hash": "17481350519681106309"
-        },
-        {
-          "file": "libs/accounting/src/workers/accounting-worker.processor.ts",
-          "hash": "11319709872456589997"
-        },
-        {
-          "file": "libs/accounting/src/workers/types.ts",
-          "hash": "2254162506901310019"
-        },
-        {
-          "file": "libs/accounting/tsconfig.json",
-          "hash": "6814671631717892986"
-        },
-        {
-          "file": "libs/accounting/tsconfig.spec.json",
-          "hash": "6898991939206723030"
-        }
-      ],
-      "analytics": [
-        {
-          "file": "libs/analytics/jest.config.ts",
-          "hash": "11950742733998983673"
-        },
-        {
-          "file": "libs/analytics/project.json",
-          "hash": "4706544955007753352"
-        },
-        {
-          "file": "libs/analytics/src/analytics.module.ts",
-          "hash": "11755480577712483238"
-        },
-        {
-          "file": "libs/analytics/src/analytics.roles.ts",
-          "hash": "13754799922797187163"
-        },
-        {
-          "file": "libs/analytics/src/auth/auth.guard.ts",
-          "hash": "6765963013571298610"
-        },
-        {
-          "file": "libs/analytics/src/auth/auth.types.ts",
-          "hash": "1596923960977094364"
-        },
-        {
-          "file": "libs/analytics/src/controllers/analytics.controller.ts",
-          "hash": "18030948119270129395"
-        },
-        {
-          "file": "libs/analytics/src/controllers/business-intelligence.controller.ts",
-          "hash": "18131063428988586719"
-        },
-        {
-          "file": "libs/analytics/src/controllers/predictive.controller.ts",
-          "hash": "16186050248809568771"
-        },
-        {
-          "file": "libs/analytics/src/index.ts",
-          "hash": "5744923245355839474"
-        },
-        {
-          "file": "libs/analytics/src/init.ts",
-          "hash": "5860055707027890246"
-        },
-        {
-          "file": "libs/analytics/src/migrations/push-analytics-schema.ts",
-          "hash": "7595069352486813499"
-        },
-        {
-          "file": "libs/analytics/src/routes/analytics.routes.ts",
-          "hash": "13969457030122914799"
-        },
-        {
-          "file": "libs/analytics/src/routes/business-intelligence.routes.ts",
-          "hash": "5782225881876992824"
-        },
-        {
-          "file": "libs/analytics/src/routes/predictive.routes.fixed.ts",
-          "hash": "5476471044907143468"
-        },
-        {
-          "file": "libs/analytics/src/routes/predictive.routes.ts",
-          "hash": "5860506547081576466"
-        },
-        {
-          "file": "libs/analytics/src/schema/analytics.schema.ts",
-          "hash": "16945957318992742956"
-        },
-        {
-          "file": "libs/analytics/src/schema/predictive.schema.ts",
-          "hash": "18074186572659453758"
-        },
-        {
-          "file": "libs/analytics/src/services/analytics.service.ts",
-          "hash": "4456423344547384808"
-        },
-        {
-          "file": "libs/analytics/src/services/business-intelligence.service.ts",
-          "hash": "3495582820714092077"
-        },
-        {
-          "file": "libs/analytics/src/services/predictive.service.ts",
-          "hash": "17979063026109271403"
-        },
-        {
-          "file": "libs/analytics/tsconfig.json",
-          "hash": "16915804952180248856"
-        },
-        {
-          "file": "libs/analytics/tsconfig.spec.json",
-          "hash": "6898991939206723030"
-        }
-      ],
-      "marketing": [
-        {
-          "file": "libs/marketing/project.json",
-          "hash": "4398465526836024726"
-        },
-        {
-          "file": "libs/marketing/src/controllers/README.md",
-          "hash": "4820677334967322488"
-        },
-        {
-          "file": "libs/marketing/src/controllers/campaign.controller.ts",
-          "hash": "13198033559913641795"
-        },
-        {
-          "file": "libs/marketing/src/controllers/index.ts",
-          "hash": "7920644911029140904"
-        },
-        {
-          "file": "libs/marketing/src/controllers/segment.controller.ts",
-          "hash": "14016747454444735199"
-        },
-        {
-          "file": "libs/marketing/src/controllers/template.controller.ts",
-          "hash": "2419112980887591896"
-        },
-        {
-          "file": "libs/marketing/src/index.ts",
-          "hash": "6802449927593500302"
-        },
-        {
-          "file": "libs/marketing/src/init.ts",
-          "hash": "13872529220967521408"
-        },
-        {
-          "file": "libs/marketing/src/marketing.module.ts",
-          "hash": "10640335439298466488"
-        },
-        {
-          "file": "libs/marketing/src/routes/campaign.routes.ts",
-          "hash": "9134671199016060883"
-        },
-        {
-          "file": "libs/marketing/src/routes/segment.routes.ts",
-          "hash": "7099103080975965447"
-        },
-        {
-          "file": "libs/marketing/src/routes/template.routes.ts",
-          "hash": "17769961656388537396"
-        },
-        {
-          "file": "libs/marketing/src/services/campaign.service.ts",
-          "hash": "602455481705465480"
-        },
-        {
-          "file": "libs/marketing/src/services/segment.service.ts",
-          "hash": "14016990002265505468"
-        },
-        {
-          "file": "libs/marketing/src/services/template.service.ts",
-          "hash": "1861711555665037438"
-        },
-        {
-          "file": "libs/marketing/tsconfig.json",
-          "hash": "10723324305718165263"
         }
       ],
       "ecommerce": [
@@ -3648,194 +4184,6 @@
         {
           "file": "libs/ecommerce/tsconfig.json",
           "hash": "408145973580408083"
-        }
-      ],
-      "sales": [
-        {
-          "file": "libs/sales/jest.config.ts",
-          "hash": "17409047602590852480"
-        },
-        {
-          "file": "libs/sales/project.json",
-          "hash": "13956543327174705260"
-        },
-        {
-          "file": "libs/sales/src/customer.service.ts",
-          "hash": "9815062446819902996"
-        },
-        {
-          "file": "libs/sales/src/index.ts",
-          "hash": "28488014545650301"
-        },
-        {
-          "file": "libs/sales/src/sales.controller.ts",
-          "hash": "7944248977409041284"
-        },
-        {
-          "file": "libs/sales/src/sales.module.ts",
-          "hash": "5934674228276050788"
-        },
-        {
-          "file": "libs/sales/tsconfig.json",
-          "hash": "16607912162647196823"
-        },
-        {
-          "file": "libs/sales/tsconfig.spec.json",
-          "hash": "6898991939206723030"
-        }
-      ],
-      "integrations": [
-        {
-          "file": "libs/integrations/project.json",
-          "hash": "3220699857930649258"
-        },
-        {
-          "file": "libs/integrations/src/clients/anaf-efactura.client.ts",
-          "hash": "6905475484387339508"
-        },
-        {
-          "file": "libs/integrations/src/clients/base-integration.client.ts",
-          "hash": "7169434725637010684"
-        },
-        {
-          "file": "libs/integrations/src/clients/elevenlabs.client.ts",
-          "hash": "13769053733143351931"
-        },
-        {
-          "file": "libs/integrations/src/clients/index.ts",
-          "hash": "4317779514724224844"
-        },
-        {
-          "file": "libs/integrations/src/clients/microsoft-graph.client.ts",
-          "hash": "4183915426795624338"
-        },
-        {
-          "file": "libs/integrations/src/clients/openai.client.ts",
-          "hash": "1941240176588762989"
-        },
-        {
-          "file": "libs/integrations/src/clients/pandadoc.client.ts",
-          "hash": "9306893845625707561"
-        },
-        {
-          "file": "libs/integrations/src/clients/revolut-business.client.ts",
-          "hash": "12078238442565723668"
-        },
-        {
-          "file": "libs/integrations/src/clients/sameday.client.ts",
-          "hash": "5800460268421795124"
-        },
-        {
-          "file": "libs/integrations/src/clients/shopify.client.ts",
-          "hash": "7486176855241425392"
-        },
-        {
-          "file": "libs/integrations/src/clients/stripe.client.ts",
-          "hash": "10529990255659275963"
-        },
-        {
-          "file": "libs/integrations/src/clients/termene-ro.client.ts",
-          "hash": "6404532622711880984"
-        },
-        {
-          "file": "libs/integrations/src/controllers/README.md",
-          "hash": "8595745666139746525"
-        },
-        {
-          "file": "libs/integrations/src/controllers/anaf.controller.ts",
-          "hash": "1805096574688093791"
-        },
-        {
-          "file": "libs/integrations/src/controllers/e-factura.controller.ts",
-          "hash": "9147729778565880096"
-        },
-        {
-          "file": "libs/integrations/src/controllers/exchange-rate.controller.ts",
-          "hash": "6781536501083650629"
-        },
-        {
-          "file": "libs/integrations/src/controllers/index.ts",
-          "hash": "17278547095651034084"
-        },
-        {
-          "file": "libs/integrations/src/controllers/integrations.controller.ts",
-          "hash": "6086448668769703282"
-        },
-        {
-          "file": "libs/integrations/src/controllers/pandadoc.controller.ts",
-          "hash": "5029186154806440897"
-        },
-        {
-          "file": "libs/integrations/src/controllers/stripe.controller.ts",
-          "hash": "2500929309269491860"
-        },
-        {
-          "file": "libs/integrations/src/index.ts",
-          "hash": "2951871156504451204"
-        },
-        {
-          "file": "libs/integrations/src/init.ts",
-          "hash": "8925948705636248581"
-        },
-        {
-          "file": "libs/integrations/src/integrations.module.ts",
-          "hash": "8058585567278825906"
-        },
-        {
-          "file": "libs/integrations/src/routes/index.ts",
-          "hash": "14053543606911192951"
-        },
-        {
-          "file": "libs/integrations/src/routes/integrations.route.ts",
-          "hash": "8659979883068053952"
-        },
-        {
-          "file": "libs/integrations/src/routes/integrations.routes.ts",
-          "hash": "7323400664864949157"
-        },
-        {
-          "file": "libs/integrations/src/routes/pandadoc.route.example.ts",
-          "hash": "16392641244618176193"
-        },
-        {
-          "file": "libs/integrations/src/routes/pandadoc.route.ts",
-          "hash": "1993122908461028484"
-        },
-        {
-          "file": "libs/integrations/src/routes/public.routes.ts",
-          "hash": "4008644360707964453"
-        },
-        {
-          "file": "libs/integrations/src/schema/integrations.schema.ts",
-          "hash": "5582454641786493526"
-        },
-        {
-          "file": "libs/integrations/src/services/anaf.service.ts",
-          "hash": "5952087128595685027"
-        },
-        {
-          "file": "libs/integrations/src/services/bnr-exchange-rate.service.ts",
-          "hash": "5572569992329394386"
-        },
-        {
-          "file": "libs/integrations/src/services/currency.service.ts",
-          "hash": "15524150118522417430"
-        },
-        {
-          "file": "libs/integrations/src/services/e-factura.service.ts",
-          "hash": "6122259224669333862"
-        },
-        {
-          "file": "libs/integrations/src/services/exchange-rate.service.ts",
-          "hash": "9709075111945341036"
-        },
-        {
-          "file": "libs/integrations/src/services/integrations.service.ts",
-          "hash": "15253964022801222201"
-        },
-        {
-          "file": "libs/integrations/tsconfig.json",
-          "hash": "7775489067302590418"
         }
       ],
       "api": [
@@ -4169,7 +4517,7 @@
         },
         {
           "file": "apps/api/src/vite.ts",
-          "hash": "14694912128180910786"
+          "hash": "14246980694523082476"
         },
         {
           "file": "apps/api/tsconfig.json",
@@ -4178,354 +4526,6 @@
         {
           "file": "apps/api/tsconfig.spec.json",
           "hash": "140950872408147449"
-        }
-      ],
-      "comms": [
-        {
-          "file": "libs/comms/project.json",
-          "hash": "4432756227087619786"
-        },
-        {
-          "file": "libs/comms/src/comms.module.ts",
-          "hash": "6396925335544809238"
-        },
-        {
-          "file": "libs/comms/src/controllers/channel-configs.controller.ts",
-          "hash": "11512236949254626607"
-        },
-        {
-          "file": "libs/comms/src/controllers/contacts.controller.ts",
-          "hash": "7836774734946579659"
-        },
-        {
-          "file": "libs/comms/src/controllers/index.ts",
-          "hash": "5475094495570515053"
-        },
-        {
-          "file": "libs/comms/src/controllers/message-access.controller.ts",
-          "hash": "5434787090124428908"
-        },
-        {
-          "file": "libs/comms/src/controllers/messages.controller.ts",
-          "hash": "9940936756432512439"
-        },
-        {
-          "file": "libs/comms/src/controllers/thread-access.controller.ts",
-          "hash": "4725669658962053417"
-        },
-        {
-          "file": "libs/comms/src/controllers/threads.controller.ts",
-          "hash": "2636036214112768462"
-        },
-        {
-          "file": "libs/comms/src/index.ts",
-          "hash": "11237742738750956267"
-        },
-        {
-          "file": "libs/comms/src/init.ts",
-          "hash": "8183847943053001362"
-        },
-        {
-          "file": "libs/comms/src/routes/channel-configs.routes.ts",
-          "hash": "6328959195089916870"
-        },
-        {
-          "file": "libs/comms/src/routes/contacts.routes.ts",
-          "hash": "6192673002545409155"
-        },
-        {
-          "file": "libs/comms/src/routes/message-access.routes.ts",
-          "hash": "15716756664286841037"
-        },
-        {
-          "file": "libs/comms/src/routes/messages.routes.ts",
-          "hash": "15455952249222546336"
-        },
-        {
-          "file": "libs/comms/src/routes/thread-access.routes.ts",
-          "hash": "16571675497465425942"
-        },
-        {
-          "file": "libs/comms/src/routes/threads.routes.ts",
-          "hash": "12303677013502659681"
-        },
-        {
-          "file": "libs/comms/src/services/channel-configs.service.ts",
-          "hash": "10877150557733965553"
-        },
-        {
-          "file": "libs/comms/src/services/contacts.service.ts",
-          "hash": "13893173972200222520"
-        },
-        {
-          "file": "libs/comms/src/services/message-access.service.ts",
-          "hash": "5493956704347906817"
-        },
-        {
-          "file": "libs/comms/src/services/messages.service.ts",
-          "hash": "13739498677409399768"
-        },
-        {
-          "file": "libs/comms/src/services/thread-access.service.ts",
-          "hash": "5817433474708991068"
-        },
-        {
-          "file": "libs/comms/src/services/threads.service.ts",
-          "hash": "2537930826228585429"
-        },
-        {
-          "file": "libs/comms/tsconfig.json",
-          "hash": "10411342923211222188"
-        }
-      ],
-      "users": [
-        {
-          "file": "libs/users/project.json",
-          "hash": "6814882094025081"
-        },
-        {
-          "file": "libs/users/src/controllers/user.controller.ts",
-          "hash": "5366047527498130646"
-        },
-        {
-          "file": "libs/users/src/index.ts",
-          "hash": "17034589107904708844"
-        },
-        {
-          "file": "libs/users/src/routes/user.routes.ts",
-          "hash": "2055375009210436620"
-        },
-        {
-          "file": "libs/users/src/services/user.service.ts",
-          "hash": "12422737862540126910"
-        },
-        {
-          "file": "libs/users/src/users.module.ts",
-          "hash": "14827864873492928281"
-        },
-        {
-          "file": "libs/users/tsconfig.json",
-          "hash": "1799122335600021427"
-        }
-      ],
-      "auth": [
-        {
-          "file": "libs/auth/jest.config.ts",
-          "hash": "13332452543563334079"
-        },
-        {
-          "file": "libs/auth/project.json",
-          "hash": "13993493722433329827"
-        },
-        {
-          "file": "libs/auth/src/CANONICAL-AUTH-GUIDE.md",
-          "hash": "15113473508560223572"
-        },
-        {
-          "file": "libs/auth/src/constants/auth-mode.enum.ts",
-          "hash": "8444719195067895140"
-        },
-        {
-          "file": "libs/auth/src/examples/authguard-usage.md",
-          "hash": "15844861486902707660"
-        },
-        {
-          "file": "libs/auth/src/examples/create-token.ts",
-          "hash": "544897851666930912"
-        },
-        {
-          "file": "libs/auth/src/examples/protected-routes.ts",
-          "hash": "7148617747857397376"
-        },
-        {
-          "file": "libs/auth/src/guards/auth.guard.ts",
-          "hash": "4846553085724902486"
-        },
-        {
-          "file": "libs/auth/src/index.ts",
-          "hash": "16714309876386566995"
-        },
-        {
-          "file": "libs/auth/src/middleware/auth.middleware.ts",
-          "hash": "7978424217496136482"
-        },
-        {
-          "file": "libs/auth/src/middleware/company-access.middleware.ts",
-          "hash": "16044338144651283610"
-        },
-        {
-          "file": "libs/auth/src/middleware/rate-limit.middleware.ts",
-          "hash": "5538986923641263103"
-        },
-        {
-          "file": "libs/auth/src/models/auth.enum.ts",
-          "hash": "2593571895924798363"
-        },
-        {
-          "file": "libs/auth/src/routes/auth.routes.ts",
-          "hash": "5267799304262251458"
-        },
-        {
-          "file": "libs/auth/src/routes/mfa.routes.ts",
-          "hash": "12451278770432958945"
-        },
-        {
-          "file": "libs/auth/src/services/auth.service.ts",
-          "hash": "3510336030163989751"
-        },
-        {
-          "file": "libs/auth/src/services/jwt.service.ts",
-          "hash": "8457168482158744124"
-        },
-        {
-          "file": "libs/auth/src/services/mfa.service.ts",
-          "hash": "5903718982774863049"
-        },
-        {
-          "file": "libs/auth/src/tests/auth-guard.test.cjs",
-          "hash": "11826617597565150173"
-        },
-        {
-          "file": "libs/auth/src/types.ts",
-          "hash": "7772862907439726028"
-        },
-        {
-          "file": "libs/auth/src/types/auth.d.ts",
-          "hash": "8669916078996148706"
-        },
-        {
-          "file": "libs/auth/src/types/express.d.ts",
-          "hash": "14875247703826163706"
-        },
-        {
-          "file": "libs/auth/src/types/jwt-data.type.ts",
-          "hash": "12664253777698670777"
-        },
-        {
-          "file": "libs/auth/tsconfig.json",
-          "hash": "4932800277590643377"
-        },
-        {
-          "file": "libs/auth/tsconfig.spec.json",
-          "hash": "6898991939206723030"
-        }
-      ],
-      "invoicing": [
-        {
-          "file": "libs/invoicing/jest.config.ts",
-          "hash": "9258331520733305933"
-        },
-        {
-          "file": "libs/invoicing/project.json",
-          "hash": "8634814548045201695"
-        },
-        {
-          "file": "libs/invoicing/src/controllers/create-invoice.controller.ts",
-          "hash": "9723803892834613869"
-        },
-        {
-          "file": "libs/invoicing/src/controllers/customer.controller.ts",
-          "hash": "18094619666592317460"
-        },
-        {
-          "file": "libs/invoicing/src/controllers/devalidate-invoice.controller.ts",
-          "hash": "8681265445285399372"
-        },
-        {
-          "file": "libs/invoicing/src/controllers/invoice-numbering.controller.ts",
-          "hash": "4776689081872375185"
-        },
-        {
-          "file": "libs/invoicing/src/controllers/invoice.controller.ts",
-          "hash": "5437215393324588598"
-        },
-        {
-          "file": "libs/invoicing/src/controllers/validate-invoice.controller.ts",
-          "hash": "1592159910458206328"
-        },
-        {
-          "file": "libs/invoicing/src/index.ts",
-          "hash": "2097179851866885488"
-        },
-        {
-          "file": "libs/invoicing/src/init.ts",
-          "hash": "3617418119608340541"
-        },
-        {
-          "file": "libs/invoicing/src/invoices.module.ts",
-          "hash": "3385965825723714210"
-        },
-        {
-          "file": "libs/invoicing/src/invoicing.module.ts",
-          "hash": "4936894169096891527"
-        },
-        {
-          "file": "libs/invoicing/src/routes/create-invoice.route.ts",
-          "hash": "15158028482880989241"
-        },
-        {
-          "file": "libs/invoicing/src/routes/customer.routes.ts",
-          "hash": "10430366377474360280"
-        },
-        {
-          "file": "libs/invoicing/src/routes/devalidate-invoice.route.ts",
-          "hash": "12851424663561855037"
-        },
-        {
-          "file": "libs/invoicing/src/routes/invoice-numbering.routes.ts",
-          "hash": "5628243646051334792"
-        },
-        {
-          "file": "libs/invoicing/src/routes/invoice.routes.ts",
-          "hash": "11005108269352962337"
-        },
-        {
-          "file": "libs/invoicing/src/routes/validate-invoice.route.ts",
-          "hash": "9106385276339609537"
-        },
-        {
-          "file": "libs/invoicing/src/schema/invoice.schema.ts",
-          "hash": "17699118153222899533"
-        },
-        {
-          "file": "libs/invoicing/src/services/create-invoice.service.ts",
-          "hash": "14028510915831174555"
-        },
-        {
-          "file": "libs/invoicing/src/services/devalidate-invoice.service.ts",
-          "hash": "12149066209804704224"
-        },
-        {
-          "file": "libs/invoicing/src/services/invoice-numbering.service.ts",
-          "hash": "9535769020404034716"
-        },
-        {
-          "file": "libs/invoicing/src/services/invoice.service.ts",
-          "hash": "2182577489006091159"
-        },
-        {
-          "file": "libs/invoicing/src/services/validate-invoice.service.ts",
-          "hash": "11402736467992646354"
-        },
-        {
-          "file": "libs/invoicing/src/types/invoice-status.enum.ts",
-          "hash": "11049670378628230918"
-        },
-        {
-          "file": "libs/invoicing/src/types/invoice.input.ts",
-          "hash": "1468379192784145384"
-        },
-        {
-          "file": "libs/invoicing/src/validators/create-invoice.validator.ts",
-          "hash": "7897600305533769437"
-        },
-        {
-          "file": "libs/invoicing/tsconfig.json",
-          "hash": "1240933204722859110"
-        },
-        {
-          "file": "libs/invoicing/tsconfig.spec.json",
-          "hash": "6898991939206723030"
         }
       ]
     },
@@ -4596,7 +4596,7 @@
       },
       {
         "file": "docker-compose.prod.yml",
-        "hash": "17312180959511933040"
+        "hash": "18125411027576485741"
       },
       {
         "file": "docker-compose.yml",
@@ -4621,10 +4621,6 @@
       {
         "file": "env.example.txt",
         "hash": "10297499776199025027"
-      },
-      {
-        "file": "env_copy.txt",
-        "hash": "4860722190616119708"
       },
       {
         "file": "eslint.config.js",
@@ -5169,10 +5165,6 @@
       {
         "file": "update-all-deps.sh",
         "hash": "7041601446253741962"
-      },
-      {
-        "file": "vite.config.ts",
-        "hash": "13632703509662178061"
       },
       {
         "file": "workspace.json",
