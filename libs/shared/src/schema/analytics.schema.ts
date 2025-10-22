@@ -18,7 +18,7 @@ import {
   integer,
   serial
 } from 'drizzle-orm/pg-core';
-import { createId } from '../../../utils/id';
+import { createId } from '../utils/id';
 
 // Reference to shared schema - to be replaced with actual imports in final implementation
 // Temporary solution for this module's isolated development
