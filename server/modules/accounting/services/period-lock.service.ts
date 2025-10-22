@@ -9,6 +9,10 @@
 import { getDrizzle } from '../../../common/drizzle';
 import { eq, and, gte, lte } from 'drizzle-orm';
 import { RedisService } from '../../../services/redis.service';
+import { fiscalPeriods } from '../schema/accounting.schema';
+import { createModuleLogger } from '../../../common/logger/loki-logger';
+
+const logger = createModuleLogger('period-lock');
 
 export class PeriodLockService {
   private redisService: RedisService;
@@ -42,18 +46,25 @@ export class PeriodLockService {
     const db = getDrizzle();
     
     try {
-      // Verifică în tabelul fiscal_periods dacă există
-      const result = await db.$client.unsafe(`
-        SELECT status, is_closed FROM fiscal_periods 
-        WHERE company_id = $1 
-        AND start_date <= $2 
-        AND end_date >= $2
-        LIMIT 1
-      `, [companyId, date]);
+      // Verifică în tabelul fiscal_periods cu Drizzle ORM
+      const result = await db
+        .select({
+          status: fiscalPeriods.status,
+          isClosed: fiscalPeriods.isClosed
+        })
+        .from(fiscalPeriods)
+        .where(
+          and(
+            eq(fiscalPeriods.companyId, companyId),
+            lte(fiscalPeriods.startDate, date),
+            gte(fiscalPeriods.endDate, date)
+          )
+        )
+        .limit(1);
       
       let isClosed = false;
       if (result && result.length > 0) {
-        isClosed = result[0].is_closed === true || result[0].status === 'closed';
+        isClosed = result[0].isClosed === true || result[0].status === 'closed';
       }
       
       // Cache result for 1 hour (periods don't change often, but need fresh data)
@@ -96,17 +107,22 @@ export class PeriodLockService {
     const db = getDrizzle();
     
     try {
-      await db.$client.unsafe(`
-        UPDATE fiscal_periods 
-        SET is_closed = true, 
-            status = 'closed',
-            closed_by = $1,
-            closed_at = NOW(),
-            updated_at = NOW()
-        WHERE company_id = $2 
-        AND start_date = $3 
-        AND end_date = $4
-      `, [userId, companyId, startDate, endDate]);
+      await db
+        .update(fiscalPeriods)
+        .set({
+          isClosed: true,
+          status: 'closed',
+          closedBy: userId,
+          closedAt: new Date(),
+          updatedAt: new Date()
+        })
+        .where(
+          and(
+            eq(fiscalPeriods.companyId, companyId),
+            eq(fiscalPeriods.startDate, startDate),
+            eq(fiscalPeriods.endDate, endDate)
+          )
+        );
       
       // Invalidate cache for this period (all dates in range)
       await this.ensureRedisConnection();
@@ -114,9 +130,11 @@ export class PeriodLockService {
         await this.redisService.invalidatePattern(`acc:period-lock:${companyId}:*`);
       }
       
-      console.log(`✅ Perioadă închisă: ${startDate.toLocaleDateString('ro-RO')} - ${endDate.toLocaleDateString('ro-RO')}`);
+      logger.info('Perioadă închisă cu succes', {
+        context: { companyId, startDate, endDate, userId }
+      });
     } catch (error) {
-      console.error('❌ Error closing period:', error);
+      logger.error('Error closing period', { error, context: { companyId, startDate, endDate } });
       throw error;
     }
   }
@@ -134,18 +152,23 @@ export class PeriodLockService {
     const db = getDrizzle();
     
     try {
-      await db.$client.unsafe(`
-        UPDATE fiscal_periods 
-        SET is_closed = false, 
-            status = 'open',
-            reopened_by = $1,
-            reopened_at = NOW(),
-            reopening_reason = $2,
-            updated_at = NOW()
-        WHERE company_id = $3 
-        AND start_date = $4 
-        AND end_date = $5
-      `, [userId, reason, companyId, startDate, endDate]);
+      await db
+        .update(fiscalPeriods)
+        .set({
+          isClosed: false,
+          status: 'open',
+          reopenedBy: userId,
+          reopenedAt: new Date(),
+          reopeningReason: reason,
+          updatedAt: new Date()
+        })
+        .where(
+          and(
+            eq(fiscalPeriods.companyId, companyId),
+            eq(fiscalPeriods.startDate, startDate),
+            eq(fiscalPeriods.endDate, endDate)
+          )
+        );
       
       // Invalidate cache for this period (all dates in range)
       await this.ensureRedisConnection();
@@ -153,9 +176,11 @@ export class PeriodLockService {
         await this.redisService.invalidatePattern(`acc:period-lock:${companyId}:*`);
       }
       
-      console.log(`✅ Perioadă redeschisă: ${startDate.toLocaleDateString('ro-RO')} - ${endDate.toLocaleDateString('ro-RO')}`);
+      logger.info('Perioadă redeschisă cu succes', {
+        context: { companyId, startDate, endDate, userId, reason }
+      });
     } catch (error) {
-      console.error('❌ Error reopening period:', error);
+      logger.error('Error reopening period', { error, context: { companyId, startDate, endDate } });
       throw error;
     }
   }
