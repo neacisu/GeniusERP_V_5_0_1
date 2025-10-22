@@ -10,7 +10,6 @@ import postgres from 'postgres';
 import { Logger } from '../logger';
 // NX Monorepo: Import schema from shared lib
 import * as schema from '@geniuserp/shared';
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 // Create a logger for database operations
 const logger = new Logger('DrizzleDB');
@@ -29,7 +28,7 @@ export function getPostgresClient(): postgres.Sql<{}> {
   }
 
   try {
-    const connectionString = process.env.DATABASE_URL;
+    const connectionString = process.env['DATABASE_URL'];
     
     if (!connectionString) {
       throw new Error('DATABASE_URL is not defined in environment variables');
@@ -65,12 +64,10 @@ export function getDrizzleInstance() {
   try {
     const client = getPostgresClient();
     
-    // TEMPORARY FIX: Create Drizzle instance WITHOUT schema to avoid null relation error
-    // TODO: Fix null relations in schema and re-enable: drizzle(client, { schema })
-    drizzleInstance = drizzle(client);
+    // Re-enable schema with fixed relations
+    drizzleInstance = drizzle(client, { schema });
     
-    logger.warn('Database ORM instance initialized WITHOUT schema (temporary fix for null relations)');
-    logger.warn('Relations will not work until schema is fixed');
+    logger.info('Database ORM instance initialized WITH schema (relations enabled)');
     
     return drizzleInstance;
   } catch (error) {
