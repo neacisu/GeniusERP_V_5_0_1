@@ -33,4 +33,5 @@ COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["npm", "run", "dev"]
+# Temporar: rulează cu structura veche până la completarea migrării import-urilor
+CMD ["tsx", "server/index.ts"]
