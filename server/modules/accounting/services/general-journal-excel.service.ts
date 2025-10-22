@@ -294,19 +294,19 @@ export class GeneralJournalExcelService {
 
     // Setează lățimi coloane (aproximativ)
     worksheet['!cols'] = [
-      { width: 8 },   // Nr. crt
-      { width: 15 },  // Nr. jurnal
-      { width: 18 },  // Data înregistrării
-      { width: 16 },  // Data document
-      { width: 12 },  // Tip document
-      { width: 15 },  // Nr. document
-      { width: 40 },  // Explicații
-      { width: 12 },  // Cod cont
-      { width: 30 },  // Nume cont
-      { width: 15 },  // Debit
-      { width: 15 },  // Credit
-      { width: 12 },  // Tip jurnal
-      { width: 36 }   // ID
+      { wch: 8 },   // Nr. crt
+      { wch: 15 },  // Nr. jurnal
+      { wch: 18 },  // Data înregistrării
+      { wch: 16 },  // Data document
+      { wch: 12 },  // Tip document
+      { wch: 15 },  // Nr. document
+      { wch: 40 },  // Explicații
+      { wch: 12 },  // Cod cont
+      { wch: 30 },  // Nume cont
+      { wch: 15 },  // Debit
+      { wch: 15 },  // Credit
+      { wch: 12 },  // Tip jurnal
+      { wch: 36 }   // ID
     ];
 
     // Adaugă la workbook
@@ -351,11 +351,11 @@ export class GeneralJournalExcelService {
     
     // Setează lățimi coloane
     worksheet['!cols'] = [
-      { width: 15 },
-      { width: 25 },
-      { width: 15 },
-      { width: 15 },
-      { width: 15 }
+      { wch: 15 },
+      { wch: 25 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 }
     ];
 
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sumar pe Jurnale');
@@ -403,11 +403,11 @@ export class GeneralJournalExcelService {
     
     // Setează lățimi coloane
     worksheet['!cols'] = [
-      { width: 12 },
-      { width: 35 },
-      { width: 15 },
-      { width: 15 },
-      { width: 15 }
+      { wch: 12 },
+      { wch: 35 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 }
     ];
 
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Plan de Conturi');
