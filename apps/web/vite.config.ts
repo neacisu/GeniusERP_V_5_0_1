@@ -1,8 +1,13 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import themePlugin from '@replit/vite-plugin-shadcn-theme-json';
 import runtimeErrorModal from '@replit/vite-plugin-runtime-error-modal';
+
+// ES Module: definim __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   // NX Monorepo: root este directorul curent (apps/web)
@@ -16,7 +21,7 @@ export default defineConfig({
     themePlugin(),
     runtimeErrorModal(),
     // Replit Cartographer (doar în development)
-    ...(process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined
+    ...(process.env['NODE_ENV'] !== "production" && process.env['REPL_ID'] !== undefined
       ? [
           // Dynamic import pentru Cartographer
           (async () => {
@@ -29,32 +34,32 @@ export default defineConfig({
   
   server: {
     // Toate valorile OBLIGATORIU din .env - FĂRĂ fallback!
-    port: parseInt(process.env.APP_PORT_FRONTEND!),
-    host: process.env.VITE_HMR_HOST!,
+    port: parseInt(process.env['APP_PORT_FRONTEND']!),
+    host: '0.0.0.0',  // TREBUIE să fie 0.0.0.0 pentru Docker (nu VITE_HMR_HOST care e domeniu public!)
     strictPort: true,
     
     // allowedHosts DOAR din .env (VITE_ALLOWED_HOSTS)
-    allowedHosts: process.env.VITE_ALLOWED_HOSTS!.split(',').map(h => h.trim()).filter(Boolean),
+    allowedHosts: process.env['VITE_ALLOWED_HOSTS']!.split(',').map(h => h.trim()).filter(Boolean),
     
     // Setări watch DOAR din .env
     watch: {
-      usePolling: process.env.CHOKIDAR_USEPOLLING === 'true',
-      interval: parseInt(process.env.CHOKIDAR_INTERVAL!),
+      usePolling: process.env['CHOKIDAR_USEPOLLING'] === 'true',
+      interval: parseInt(process.env['CHOKIDAR_INTERVAL']!),
     },
     
     // Setări HMR DOAR din .env
     hmr: {
-      port: parseInt(process.env.VITE_HMR_PORT!),
-      host: process.env.VITE_HMR_HOST!,
-      protocol: process.env.VITE_HMR_PROTOCOL as 'ws' | 'wss',
-      clientPort: parseInt(process.env.VITE_HMR_CLIENT_PORT!),
+      port: parseInt(process.env['VITE_HMR_PORT']!),
+      host: '0.0.0.0',  // Server bind la 0.0.0.0
+      protocol: process.env['VITE_HMR_PROTOCOL'] as 'ws' | 'wss',
+      clientPort: parseInt(process.env['VITE_HMR_CLIENT_PORT']!),
       overlay: true,
     },
     
     // Proxy pentru API - port DOAR din .env
     proxy: {
       '/api': {
-        target: `http://localhost:${process.env.APP_PORT_BACKEND}`,
+        target: `http://localhost:${process.env['APP_PORT_BACKEND']}`,
         changeOrigin: true
       }
     }
@@ -63,8 +68,8 @@ export default defineConfig({
   build: {
     outDir: '../../dist/apps/web',
     emptyOutDir: true,
-    reportCompressedSize: process.env.NODE_ENV === 'production',
-    sourcemap: process.env.NODE_ENV !== 'production',
+    reportCompressedSize: process.env['NODE_ENV'] === 'production',
+    sourcemap: process.env['NODE_ENV'] !== 'production',
   },
   
   resolve: {
