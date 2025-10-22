@@ -1,9 +1,9 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { SalesJournalService } from '../services/sales-journal.service';
 import { SalesJournalExportService } from '../services/sales-journal-export.service';
 import { BaseController } from './base.controller';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
-import { trackJournalEntry, accountingMetrics } from '../../../middlewares/business-metrics.middleware';
+import { trackJournalEntry } from '../../../middlewares/business-metrics.middleware';
 import { bulkOperationsService } from '../services/bulk-operations.service';
 import { accountingQueueService } from '../services/accounting-queue.service';
 
@@ -33,10 +33,10 @@ export class SalesJournalController extends BaseController {
       const { page, limit } = this.getPaginationParams(req);
       
       // Parse filter parameters
-      const startDate = this.parseDate(req.query.startDate as string);
-      const endDate = this.parseDate(req.query.endDate as string);
-      const customerId = req.query.customerId as string;
-      const status = req.query.status as string;
+      const startDate = this.parseDate(req.query['startDate'] as string);
+      const endDate = this.parseDate(req.query['endDate'] as string);
+      const customerId = req.query['customerId'] as string;
+      const status = req.query['status'] as string;
       
       return await this.salesJournalService.getCustomerInvoices(
         companyId,
@@ -56,7 +56,7 @@ export class SalesJournalController extends BaseController {
   async getCustomerInvoice(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const invoiceId = req.params.id;
+      const invoiceId = req.params['id'];
       
       const invoice = await this.salesJournalService.getCustomerInvoice(invoiceId, companyId);
       
@@ -111,7 +111,7 @@ export class SalesJournalController extends BaseController {
   async updateCustomerInvoice(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const invoiceId = req.params.id;
+      const invoiceId = req.params['id'];
       
       // Verify that the invoice exists and belongs to the company
       const existingInvoice = await this.salesJournalService.getCustomerInvoice(invoiceId, companyId);
@@ -152,7 +152,7 @@ export class SalesJournalController extends BaseController {
   async deleteCustomerInvoice(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const invoiceId = req.params.id;
+      const invoiceId = req.params['id'];
       
       // Verify that the invoice exists and belongs to the company
       const existingInvoice = await this.salesJournalService.getCustomerInvoice(invoiceId, companyId);
@@ -174,7 +174,7 @@ export class SalesJournalController extends BaseController {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
       const userId = this.getUserId(req);
-      const invoiceId = req.params.id;
+      const invoiceId = req.params['id'];
       
       // Verify that the invoice exists and belongs to the company
       const existingInvoice = await this.salesJournalService.getCustomerInvoice(invoiceId, companyId);
@@ -209,7 +209,7 @@ export class SalesJournalController extends BaseController {
   async getInvoicePayments(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const invoiceId = req.params.id;
+      const invoiceId = req.params['id'];
       
       // Verify that the invoice exists and belongs to the company
       const existingInvoice = await this.salesJournalService.getCustomerInvoice(invoiceId, companyId);
@@ -227,7 +227,7 @@ export class SalesJournalController extends BaseController {
   async deleteInvoicePayment(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const paymentId = req.params.id;
+      const paymentId = req.params['id'];
       
       // Verify that the payment exists and belongs to the company
       const existingPayment = await this.salesJournalService.getInvoicePayment(paymentId, companyId);
@@ -275,9 +275,9 @@ export class SalesJournalController extends BaseController {
       const { page, limit } = this.getPaginationParams(req);
       
       // Parse filter parameters
-      const startDate = this.parseDate(req.query.startDate as string);
-      const endDate = this.parseDate(req.query.endDate as string);
-      const customerId = req.query.customerId as string;
+      const startDate = this.parseDate(req.query['startDate'] as string);
+      const endDate = this.parseDate(req.query['endDate'] as string);
+      const customerId = req.query['customerId'] as string;
       
       return await this.salesJournalService.getSalesReceipts(
         companyId,
@@ -296,7 +296,7 @@ export class SalesJournalController extends BaseController {
   async getSalesReceipt(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const receiptId = req.params.id;
+      const receiptId = req.params['id'];
       
       const receipt = await this.salesJournalService.getSalesReceipt(receiptId, companyId);
       
@@ -341,8 +341,8 @@ export class SalesJournalController extends BaseController {
       const { page, limit } = this.getPaginationParams(req);
       
       // Parse filter parameters
-      const startDate = this.parseDate(req.query.startDate as string);
-      const endDate = this.parseDate(req.query.endDate as string);
+      const startDate = this.parseDate(req.query['startDate'] as string);
+      const endDate = this.parseDate(req.query['endDate'] as string);
       
       return await this.salesJournalService.getSalesLedgerEntries(
         companyId,
@@ -360,7 +360,7 @@ export class SalesJournalController extends BaseController {
   async getSalesLedgerEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const entryId = req.params.id;
+      const entryId = req.params['id'];
       
       const entry = await this.salesJournalService.getSalesLedgerEntry(entryId, companyId);
       
@@ -378,11 +378,11 @@ export class SalesJournalController extends BaseController {
   async getCustomerAccountStatement(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const customerId = req.params.id;
+      const customerId = req.params['id'];
       
       // Parse date parameters
-      const startDate = this.parseDate(req.query.startDate as string);
-      const endDate = this.parseDate(req.query.endDate as string) || new Date();
+      const startDate = this.parseDate(req.query['startDate'] as string);
+      const endDate = this.parseDate(req.query['endDate'] as string) || new Date();
       
       return await this.salesJournalService.generateCustomerAccountStatement(
         companyId,
@@ -399,10 +399,10 @@ export class SalesJournalController extends BaseController {
   async getCustomerBalance(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const customerId = req.params.id;
+      const customerId = req.params['id'];
       
       // Parse date parameter
-      const asOfDate = this.parseDate(req.query.asOfDate as string) || new Date();
+      const asOfDate = this.parseDate(req.query['asOfDate'] as string) || new Date();
       
       return await this.salesJournalService.getCustomerBalanceAsOf(
         companyId,
@@ -420,9 +420,9 @@ export class SalesJournalController extends BaseController {
       const companyId = this.getCompanyId(req);
       
       // Parse date parameters
-      const startDate = this.parseDate(req.query.startDate as string);
-      const endDate = this.parseDate(req.query.endDate as string) || new Date();
-      const groupBy = req.query.groupBy as string || 'month'; // day, week, month, quarter, year
+      const startDate = this.parseDate(req.query['startDate'] as string);
+      const endDate = this.parseDate(req.query['endDate'] as string) || new Date();
+      const groupBy = req.query['groupBy'] as string || 'month'; // day, week, month, quarter, year
       
       return await this.salesJournalService.generateSalesByPeriodReport(
         companyId,
@@ -441,8 +441,8 @@ export class SalesJournalController extends BaseController {
       const companyId = this.getCompanyId(req);
       
       // Parse date parameters
-      const startDate = this.parseDate(req.query.startDate as string);
-      const endDate = this.parseDate(req.query.endDate as string) || new Date();
+      const startDate = this.parseDate(req.query['startDate'] as string);
+      const endDate = this.parseDate(req.query['endDate'] as string) || new Date();
       
       return await this.salesJournalService.generateSalesByProductReport(
         companyId,
@@ -460,12 +460,12 @@ export class SalesJournalController extends BaseController {
       const companyId = this.getCompanyId(req);
       
       // Parse date parameters
-      const startDate = this.parseDate(req.query.startDate as string);
-      const endDate = this.parseDate(req.query.endDate as string) || new Date();
+      const startDate = this.parseDate(req.query['startDate'] as string);
+      // endDate is parsed but not used by generateCustomerSalesReport (only year is used)
       
       return await this.salesJournalService.generateCustomerSalesReport(
         companyId,
-        req.params.id, // customerId
+        req.params['id'], // customerId
         startDate?.getFullYear() || new Date().getFullYear()
       );
     });
@@ -486,8 +486,8 @@ export class SalesJournalController extends BaseController {
       const companyId = this.getCompanyId(req);
       
       // Parse parametri
-      const periodStart = this.parseDate(req.query.periodStart as string);
-      const periodEnd = this.parseDate(req.query.periodEnd as string);
+      const periodStart = this.parseDate(req.query['periodStart'] as string);
+      const periodEnd = this.parseDate(req.query['periodEnd'] as string);
       
       if (!periodStart || !periodEnd) {
         throw { 
@@ -496,11 +496,11 @@ export class SalesJournalController extends BaseController {
         };
       }
       
-      const reportType = (req.query.reportType as string) === 'SUMMARY' ? 'SUMMARY' : 'DETAILED';
-      const includeZeroVAT = req.query.includeZeroVAT !== 'false';
-      const includeCanceled = req.query.includeCanceled === 'true';
-      const customerFilter = req.query.customerId as string | undefined;
-      const categoryFilter = req.query.category as any;
+      const reportType = (req.query['reportType'] as string) === 'SUMMARY' ? 'SUMMARY' : 'DETAILED';
+      const includeZeroVAT = req.query['includeZeroVAT'] !== 'false';
+      const includeCanceled = req.query['includeCanceled'] === 'true';
+      const customerFilter = req.query['customerId'] as string | undefined;
+      const categoryFilter = req.query['category'] as any;
       
       return await this.salesJournalService.generateSalesJournal({
         companyId,
@@ -524,8 +524,8 @@ export class SalesJournalController extends BaseController {
       const companyId = this.getCompanyId(req);
       
       // Parse parametri (same as generateSalesJournal)
-      const periodStart = this.parseDate(req.query.periodStart as string);
-      const periodEnd = this.parseDate(req.query.periodEnd as string);
+      const periodStart = this.parseDate(req.query['periodStart'] as string);
+      const periodEnd = this.parseDate(req.query['periodEnd'] as string);
       
       if (!periodStart || !periodEnd) {
         res.status(400).json({ error: 'periodStart and periodEnd are required' });
@@ -563,8 +563,8 @@ export class SalesJournalController extends BaseController {
       const companyId = this.getCompanyId(req);
       
       // Parse parametri
-      const periodStart = this.parseDate(req.query.periodStart as string);
-      const periodEnd = this.parseDate(req.query.periodEnd as string);
+      const periodStart = this.parseDate(req.query['periodStart'] as string);
+      const periodEnd = this.parseDate(req.query['periodEnd'] as string);
       
       if (!periodStart || !periodEnd) {
         res.status(400).json({ error: 'periodStart and periodEnd are required' });
