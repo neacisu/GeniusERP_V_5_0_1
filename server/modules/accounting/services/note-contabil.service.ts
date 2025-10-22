@@ -8,51 +8,31 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { DrizzleService, getDrizzle } from '../../../common/drizzle';
-import { eq, desc, sum } from 'drizzle-orm';
-import { ledgerEntries, ledgerLines } from '../../../../shared/schema';
+import { getDrizzle } from '../../../common/drizzle';
+import { eq, desc } from 'drizzle-orm';
+import { ledgerEntries } from '../../../../shared/schema';
 import { AuditService } from '../../audit/services/audit.service';
 import { Service } from '../../../../shared/types';
 import { RedisService } from '../../../services/redis.service';
+import { warehouses, companies } from '@shared/schema';
+import { createModuleLogger } from '../../../common/logger/loki-logger';
+import type {
+  NoteContabilData,
+  CreatedNote,
+  ValidationResult,
+  NoteDetails,
+  NoteListItem,
+  ApprovedNote,
+  BulkValidationResponse,
+  InvoiceForNote
+} from '../types/note-contabil-types';
 
-interface AccountEntry {
-  accountCode: string;
-  debit: number;
-  credit: number;
-  description: string;
-  costCenter?: string;
-  projectCode?: string;
-}
-
-interface NoteContabilData {
-  id?: string;
-  number?: string;
-  date: Date;
-  description: string;
-  entries: AccountEntry[];
-  documentId?: string;
-  documentType?: string;
-  companyId: string;
-  userId: string;
-  currencyCode?: string;
-  exchangeRate?: number;
-  validated?: boolean;
-}
-
-interface ValidationResult {
-  valid: boolean;
-  message: string;
-  errors: string[];
-}
+const logger = createModuleLogger('note-contabil');
 
 @Service()
 export default class NoteContabilService {
-  private drizzleService?: DrizzleService;
-  private auditService?: AuditService;
-  
-  constructor(drizzleService?: DrizzleService, auditService?: AuditService) {
-    this.drizzleService = drizzleService;
-    this.auditService = auditService;
+  constructor() {
+    // Reserved for future service injections
   }
 
   /**
@@ -61,7 +41,7 @@ export default class NoteContabilService {
    * @param noteData Data for the accounting note
    * @returns The created note
    */
-  async createNote(noteData: NoteContabilData): Promise<any> {
+  async createNote(noteData: NoteContabilData): Promise<CreatedNote> {
     try {
       // Validate the note before saving
       const validation = this.validateNote(noteData);
@@ -186,10 +166,10 @@ export default class NoteContabilService {
   /**
    * Generate a sequential note number
    * 
-   * @param companyId Company ID
+   * @param _companyId Company ID (reserved for future use)
    * @returns Generated note number
    */
-  async generateNoteNumber(companyId: string): Promise<string> {
+  async generateNoteNumber(_companyId: string): Promise<string> {
     // In a real implementation, we would get the last note number for the company
     // and increment it. For now, we just generate a dummy number.
     const currentDate = new Date();
@@ -212,7 +192,7 @@ export default class NoteContabilService {
    * @param userId User ID requesting the note
    * @returns The accounting note
    */
-  async getNoteById(noteId: string, companyId: string, userId: string): Promise<any> {
+  async getNoteById(noteId: string, companyId: string, userId: string): Promise<NoteDetails> {
     try {
       // Check cache first
       const redisService = new RedisService();
@@ -221,7 +201,7 @@ export default class NoteContabilService {
       const cacheKey = `acc:note-contabil:${noteId}`;
       
       if (redisService.isConnected()) {
-        const cached = await redisService.getCached<any>(cacheKey);
+        const cached = await redisService.getCached<NoteDetails>(cacheKey);
         if (cached) {
           return cached;
         }
@@ -293,7 +273,7 @@ export default class NoteContabilService {
    * @param companyId Company ID
    * @returns Array of accounting notes (journal entries)
    */
-  async getNotesByCompany(companyId: string): Promise<any[]> {
+  async getNotesByCompany(companyId: string): Promise<NoteListItem[]> {
     try {
       // Check cache first
       const redisService = new RedisService();
@@ -302,7 +282,7 @@ export default class NoteContabilService {
       const cacheKey = `acc:note-contabil:company:${companyId}`;
       
       if (redisService.isConnected()) {
-        const cached = await redisService.getCached<any[]>(cacheKey);
+        const cached = await redisService.getCached<NoteListItem[]>(cacheKey);
         if (cached) {
           return cached;
         }
@@ -319,23 +299,16 @@ export default class NoteContabilService {
         .orderBy(desc(ledgerEntries.createdAt));
       
       // Transform to Note Contabilă format
-      const notes = entries.map((entry: any) => ({
+      const notes: NoteListItem[] = entries.map((entry) => ({
         id: entry.id,
-        number: entry.reference_number || 'N/A',
-        date: entry.created_at,
-        description: entry.description,
-        totalAmount: Number(entry.amount) || Number(entry.total_debit) || 0,
-        status: 'approved', // Ledger entries sunt automat aprobate
-        createdBy: entry.created_by,
-        createdAt: entry.created_at,
-        approvedBy: entry.created_by,
-        approvedAt: entry.created_at,
-        source: entry.type,
+        number: entry.referenceNumber || entry.journalNumber || 'N/A',
+        date: entry.entryDate || entry.createdAt,
+        description: entry.description || '',
         documentType: entry.type,
-        documentId: entry.id,
+        totalDebit: Number(entry.amount) || 0,
+        totalCredit: Number(entry.amount) || 0,
         validated: true,
-        currencyCode: 'RON',
-        exchangeRate: 1.0,
+        createdAt: entry.createdAt,
       }));
       
       // Cache for 5 minutes
@@ -358,7 +331,7 @@ export default class NoteContabilService {
    * @param userId User ID performing the validation
    * @returns The validated note
    */
-  async validateAndMarkNote(noteId: string, companyId: string, userId: string): Promise<any> {
+  async validateAndMarkNote(noteId: string, companyId: string, userId: string): Promise<NoteDetails> {
     try {
       // In a real implementation, we would update the note in the database
       // For now, we just return a dummy validated note
@@ -389,8 +362,6 @@ export default class NoteContabilService {
         currencyCode: 'RON',
         exchangeRate: 1,
         validated: true,
-        validatedAt: new Date(),
-        validatedBy: userId,
         createdAt: new Date(),
         createdBy: userId,
         entries: [
@@ -429,11 +400,8 @@ export default class NoteContabilService {
     documentType: string, 
     companyId: string, 
     userId: string
-  ): Promise<any> {
+  ): Promise<CreatedNote> {
     try {
-      // Use DrizzleService to access invoicing queries (same pattern as ValidateInvoiceService)
-      const drizzleService = new DrizzleService();
-      
       // Import services and helpers dynamically to avoid circular dependencies
       const { SalesJournalService } = await import('./sales-journal.service');
       const { InvoiceService } = await import('../../invoicing/services/invoice.service');
@@ -446,23 +414,26 @@ export default class NoteContabilService {
         case 'invoice':
         case 'factura_vanzare':
           // Fetch invoice data from DB using InvoiceService (REAL production code)
-          // InvoiceService.getInvoiceById returns any type with dynamic properties
-          const invoice: any = await InvoiceService.getInvoiceById(documentId, companyId);
+          // InvoiceService.getInvoiceById returns InvoiceWithRelations with dynamic properties
+          const invoiceData = await InvoiceService.getInvoiceById(documentId, companyId);
           
-          if (!invoice) {
+          if (!invoiceData) {
             throw new Error(`Invoice ${documentId} not found in database`);
           }
+          
+          // Type assertion for compatibility with dynamic invoice properties
+          const invoice = invoiceData as unknown as InvoiceForNote & Record<string, unknown>;
           
           if (!invoice.lines || invoice.lines.length === 0) {
             throw new Error(`Invoice ${documentId} has no line items`);
           }
           
           // Calculate totals from REAL invoice lines (InvoiceService adds invoice.lines dynamically)
-          const totalNet = invoice.lines.reduce((sum: number, line: any) => {
-            return sum + Number(line.netAmount || line.net_amount || 0);
+          const totalNet = (invoice.lines as unknown as Array<Record<string, unknown>>).reduce((sum: number, line: Record<string, unknown>) => {
+            return sum + Number(line['netAmount'] || line['net_amount'] || 0);
           }, 0);
-          const totalVat = invoice.lines.reduce((sum: number, line: any) => {
-            return sum + Number(line.vatAmount || line.vat_amount || 0);
+          const totalVat = (invoice.lines as unknown as Array<Record<string, unknown>>).reduce((sum: number, line: Record<string, unknown>) => {
+            return sum + Number(line['vatAmount'] || line['vat_amount'] || 0);
           }, 0);
           const totalGross = totalNet + totalVat;
           
@@ -470,19 +441,19 @@ export default class NoteContabilService {
           const salesJournal = new SalesJournalService();
           ledgerEntry = await salesJournal.createSalesInvoiceEntry({
             companyId: companyId,
-            invoiceNumber: invoice.invoiceNumber || invoice.invoice_number,
-            invoiceId: documentId,
-            customerId: invoice.customerId || invoice.customer_id,
-            customerName: invoice.customer_name || (invoice.details?.partner_name as string) || 'Unknown Customer',
+            invoiceNumber: String(invoice['invoiceNumber'] || invoice['invoice_number'] || ''),
+            invoiceId: invoice.id,
+            customerId: String(invoice['customerId'] || invoice['customer_id'] || ''),
+            customerName: String(invoice['customer_name'] || (invoice['details'] as Record<string, unknown>)?.['partner_name'] || 'Unknown Customer'),
             amount: totalGross,
             netAmount: totalNet,
             vatAmount: totalVat,
-            vatRate: Number(invoice.vat_rate || 19),
-            currency: invoice.currency || 'RON',
-            exchangeRate: Number(invoice.exchangeRate || 1),
-            issueDate: invoice.issueDate ? new Date(invoice.issueDate) : new Date(),
-            dueDate: invoice.dueDate ? new Date(invoice.dueDate) : new Date(),
-            description: `Sales invoice ${invoice.invoiceNumber || invoice.invoice_number} to ${invoice.customer_name || 'customer'}`,
+            vatRate: Number(invoice['vat_rate'] || 19),
+            currency: String(invoice['currency'] || 'RON'),
+            exchangeRate: Number(invoice['exchangeRate'] || 1),
+            issueDate: invoice['issueDate'] ? new Date(String(invoice['issueDate'])) : new Date(),
+            dueDate: invoice['dueDate'] ? new Date(String(invoice['dueDate'])) : new Date(),
+            description: `Sales invoice ${invoice['invoiceNumber'] || invoice['invoice_number'] || ''} to ${invoice['customer_name'] || 'customer'}`,
             userId: userId
           });
           break;
@@ -518,7 +489,24 @@ export default class NoteContabilService {
         }
       });
       
-      return ledgerEntry;
+      // Transform LedgerEntryData to CreatedNote format
+      const createdNote: CreatedNote = {
+        id: ledgerEntry.id as string,
+        number: ledgerEntry.journalNumber || 'N/A',
+        date: new Date(),
+        description: ledgerEntry.description,
+        companyId,
+        documentId,
+        documentType,
+        currencyCode: 'RON',
+        exchangeRate: 1,
+        validated: false,
+        createdAt: new Date(),
+        createdBy: userId,
+        entries: []
+      };
+      
+      return createdNote;
       
     } catch (error) {
       console.error('❌ Error generating REAL accounting note from document:', error);
@@ -530,8 +518,13 @@ export default class NoteContabilService {
    * Approve an accounting note
    * Alias for validateAndMarkNote for better API semantics
    */
-  async approveNote(noteId: string, companyId: string, userId: string): Promise<any> {
-    return this.validateAndMarkNote(noteId, companyId, userId);
+  async approveNote(noteId: string, companyId: string, userId: string): Promise<ApprovedNote> {
+    const note = await this.validateAndMarkNote(noteId, companyId, userId);
+    return {
+      success: true,
+      message: 'Note approved successfully',
+      noteId: note.id
+    };
   }
 
   /**
@@ -543,15 +536,18 @@ export default class NoteContabilService {
     documentId: string,
     companyId: string,
     userId: string
-  ): Promise<{ success: boolean; data?: any; errors?: string[] }> {
+  ): Promise<BulkValidationResponse> {
     try {
       const result = await this.generateNoteFromDocument(documentId, documentType, companyId, userId);
       return {
         success: true,
-        data: result
+        data: {
+          validatedCount: 1,
+          notes: [result.id]
+        }
       };
     } catch (error) {
-      console.error('❌ Error generating Note Contabil:', error);
+      logger.error('Error generating Note Contabil', { error, context: { documentType, documentId, companyId } });
       return {
         success: false,
         errors: [error instanceof Error ? error.message : String(error)]
@@ -563,7 +559,7 @@ export default class NoteContabilService {
    * Get Note Contabil by ID
    * Alias for getNoteById for API consistency
    */
-  async getNoteContabilById(noteId: string, companyId: string): Promise<any> {
+  async getNoteContabilById(noteId: string, companyId: string): Promise<NoteDetails> {
     return this.getNoteById(noteId, companyId, 'system');
   }
 
@@ -627,11 +623,11 @@ export default class NoteContabilService {
         doc.moveDown();
         doc.fontSize(10);
         
-        note.entries.forEach((entry: any, index: number) => {
-          doc.text(`${index + 1}. Cont: ${entry.accountCode || entry.accountId || 'N/A'}`);
-          doc.text(`   Debit: ${Number(entry.debitAmount || 0).toFixed(2)} RON`);
-          doc.text(`   Credit: ${Number(entry.creditAmount || 0).toFixed(2)} RON`);
-          doc.text(`   Descriere: ${entry.description || 'N/A'}`);
+        (note.entries as unknown as Array<Record<string, unknown>>).forEach((entry: Record<string, unknown>, index: number) => {
+          doc.text(`${index + 1}. Cont: ${entry['accountCode'] || entry['accountId'] || 'N/A'}`);
+          doc.text(`   Debit: ${Number(entry['debit'] || entry['debitAmount'] || 0).toFixed(2)} RON`);
+          doc.text(`   Credit: ${Number(entry['credit'] || entry['creditAmount'] || 0).toFixed(2)} RON`);
+          doc.text(`   Descriere: ${entry['description'] || 'N/A'}`);
           doc.moveDown(0.5);
         });
       }
@@ -681,11 +677,15 @@ export default class NoteContabilService {
     exchangeRate: number = 1
   ): Promise<string> {
     try {
-      const { getClient } = await import('../../../common/drizzle');
-      const sql = getClient();
+      const db = getDrizzle();
       
-      // Get warehouse account suffix
-      const warehouseResult = await sql`SELECT code FROM warehouses WHERE id = ${warehouseId}`;
+      // Get warehouse account suffix using Drizzle ORM
+      const warehouseResult = await db
+        .select({ code: warehouses.code })
+        .from(warehouses)
+        .where(eq(warehouses.id, warehouseId))
+        .limit(1);
+      
       if (!warehouseResult || warehouseResult.length === 0) {
         throw new Error(`Warehouse with ID ${warehouseId} not found`);
       }
@@ -697,8 +697,13 @@ export default class NoteContabilService {
       }
       const warehouseSuffix = warehouseParts[1];
       
-      // Get supplier name
-      const supplierResult = await sql`SELECT name FROM companies WHERE id = ${supplierId}`;
+      // Get supplier name using Drizzle ORM
+      const supplierResult = await db
+        .select({ name: companies.name })
+        .from(companies)
+        .where(eq(companies.id, supplierId))
+        .limit(1);
+      
       const supplierName = supplierResult && supplierResult.length > 0 
         ? supplierResult[0].name 
         : 'Unknown Supplier';
@@ -736,9 +741,24 @@ export default class NoteContabilService {
       };
       
       const result = await this.createNote(noteData);
+      
+      logger.info('NIR warehouse accounting note created', {
+        context: { 
+          nirId, 
+          nirNumber, 
+          warehouseId, 
+          supplierId, 
+          supplierName,
+          totalValue 
+        }
+      });
+      
       return result.id;
     } catch (error) {
-      console.error('❌ Error creating NIR warehouse accounting note:', error);
+      logger.error('Error creating NIR warehouse accounting note', { 
+        error, 
+        context: { nirId, nirNumber, warehouseId, supplierId } 
+      });
       throw error;
     }
   }
