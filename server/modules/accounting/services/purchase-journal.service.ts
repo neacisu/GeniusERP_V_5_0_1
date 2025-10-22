@@ -37,9 +37,7 @@ import type {
   InvoiceValidationResult,
   PurchaseJournalReport,
   GeneratePurchaseJournalParams,
-  SupplierStatementParams,
   SupplierStatementResponse,
-  QueryCondition,
   PurchaseJournalRow
 } from '../types/purchase-journal-types';
 
@@ -173,7 +171,7 @@ export class PurchaseJournalService {
         // NOTE: For PURCHASE invoices, customerId field stores the supplier ID
         // This is a design choice to reuse the same table for both sales and purchase invoices
         const supplierIdForQuery = supplierId; // Alias for clarity: supplierId maps to customerId in DB
-        conditions.push(eq(invoices.customerId, supplierIdForQuery));
+        conditions.push(eq(invoices.customerId, supplierIdForQuery)); // customerId = supplierId
       }
       if (status) {
         // Status must be one of the enum values
@@ -294,47 +292,52 @@ export class PurchaseJournalService {
     paymentTerms: PaymentTerms,
     notes?: string
   ): Promise<string> {
-    console.log('=== START recordSupplierInvoice ===');
-    console.log('Input parameters received');
+    logger.info('Starting supplier invoice recording', { context: { invoiceNumber: invoiceData.invoiceNumber } });
 
     try {
       // Check if invoiceData exists and has the expected structure
-      console.log('invoiceData exists:', !!invoiceData);
-      console.log('invoiceData keys:', invoiceData ? Object.keys(invoiceData) : 'null');
+      logger.info('Invoice data validation', {
+        context: {
+          hasInvoiceData: !!invoiceData,
+          keys: invoiceData ? Object.keys(invoiceData) : []
+        }
+      });
 
       // Check specific problematic fields
       if (invoiceData) {
-        console.log('companyId:', invoiceData.companyId, 'type:', typeof invoiceData.companyId);
-        console.log('issueDate:', invoiceData.issueDate, 'type:', typeof invoiceData.issueDate);
-        console.log('dueDate:', invoiceData.dueDate, 'type:', typeof invoiceData.dueDate);
+        logger.info('Invoice data fields check', {
+          context: {
+            companyId: invoiceData.companyId,
+            companyIdType: typeof invoiceData.companyId,
+            issueDate: invoiceData.issueDate,
+            issueDateType: typeof invoiceData.issueDate,
+            dueDate: invoiceData.dueDate,
+            dueDateType: typeof invoiceData.dueDate
+          }
+        });
       }
 
       const _drizzleDb = getDrizzle();
-      console.log('Drizzle instance obtained');
+      logger.info('Drizzle instance obtained');
 
       const invoiceId = invoiceData.id || uuidv4();
-      console.log('Invoice ID generated:', invoiceId);
+      logger.info('Invoice ID generated', { context: { invoiceId } });
 
-      console.log('About to calculate totals');
-      console.log('Items:', items);
+      logger.info('Starting totals calculation', { context: { itemCount: items.length } });
 
       // Calculate totals
-      console.log('Calculating netAmount...');
       const netAmount = items.reduce((sum, item) => {
-        console.log('Item netAmount:', item.netAmount, 'type:', typeof item.netAmount);
         return sum + Number(item.netAmount);
       }, 0);
-      console.log('netAmount calculated:', netAmount);
+      logger.info('Net amount calculated', { context: { netAmount } });
 
-      console.log('Calculating vatAmount...');
       const vatAmount = items.reduce((sum, item) => {
-        console.log('Item vatAmount:', item.vatAmount, 'type:', typeof item.vatAmount);
         return sum + Number(item.vatAmount);
       }, 0);
-      console.log('vatAmount calculated:', vatAmount);
+      logger.info('VAT amount calculated', { context: { vatAmount } });
 
       const grossAmount = netAmount + vatAmount;
-      console.log('grossAmount calculated:', grossAmount);
+      logger.info('Gross amount calculated', { context: { grossAmount } });
 
       const db = getDrizzle();
       const actualInvoiceId = uuidv4();
@@ -657,7 +660,7 @@ export class PurchaseJournalService {
       }
       
       // Check totals
-      const totalNet = invoiceData.items.reduce((sum: number, item: any) => {
+      const totalNet = invoiceData.items.reduce((sum: number, item: InvoiceItemData) => {
         return sum + Number(item.netAmount);
       }, 0);
       
@@ -665,7 +668,7 @@ export class PurchaseJournalService {
         errors.push("Invoice net total does not match sum of line net amounts");
       }
       
-      const totalVat = invoiceData.items.reduce((sum: number, item: any) => {
+      const totalVat = invoiceData.items.reduce((sum: number, item: InvoiceItemData) => {
         return sum + Number(item.vatAmount);
       }, 0);
       
@@ -673,7 +676,7 @@ export class PurchaseJournalService {
         errors.push("Invoice VAT total does not match sum of line VAT amounts");
       }
       
-      const totalGross = invoiceData.items.reduce((sum: number, item: any) => {
+      const totalGross = invoiceData.items.reduce((sum: number, item: InvoiceItemData) => {
         return sum + Number(item.grossAmount);
       }, 0);
       
@@ -793,13 +796,13 @@ export class PurchaseJournalService {
         });
 
         completedCount++;
-        console.log(`Completed supplier details for invoice ${invoice.invoiceNumber}`);
+        logger.info('Completed supplier details for invoice', { context: { invoiceNumber: invoice.invoiceNumber } });
       }
 
-      console.log(`Completed supplier details for ${completedCount} purchase invoices`);
+      logger.info('Completed supplier details batch processing', { context: { completedCount } });
       return completedCount;
     } catch (error) {
-      console.error('Error completing missing supplier details:', error);
+      logger.error('Error completing missing supplier details', { error });
       throw new Error('Failed to complete missing supplier details');
     }
   }
@@ -1211,15 +1214,15 @@ export class PurchaseJournalService {
             .where(eq(invoiceDetails.invoiceId, invoiceId));
         });
 
-        console.log('Successfully updated purchase invoice with supplier details');
+        logger.info('Successfully updated purchase invoice with supplier details', { context: { invoiceId } });
         return invoiceId;
 
       } catch (error) {
-        console.error('Database error:', error);
+        logger.error('Database error', { error });
         throw error;
       }
     } catch (error) {
-      console.error('Error updating supplier invoice:', error);
+      logger.error('Error updating supplier invoice', { error });
       throw new Error(`Failed to update supplier invoice: ${(error as Error).message}`);
     }
   }
@@ -1240,10 +1243,10 @@ export class PurchaseJournalService {
       await db.delete(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
       await db.delete(invoices).where(eq(invoices.id, invoiceId));
 
-      console.log('Successfully deleted purchase invoice');
+      logger.info('Successfully deleted purchase invoice', { context: { invoiceId } });
       return true;
     } catch (error) {
-      console.error('Error deleting supplier invoice:', error);
+      logger.error('Error deleting supplier invoice', { error });
       throw new Error(`Failed to delete supplier invoice: ${(error as Error).message}`);
     }
   }
@@ -1268,10 +1271,10 @@ export class PurchaseJournalService {
         notes: paymentData.notes
       }).returning({ id: invoicePayments.id });
 
-      console.log('Successfully recorded invoice payment');
+      logger.info('Successfully recorded invoice payment', { context: { paymentId: insertedPayment.id } });
       return insertedPayment.id;
     } catch (error) {
-      console.error('Error recording invoice payment:', error);
+      logger.error('Error recording invoice payment', { error });
       throw new Error(`Failed to record invoice payment: ${(error as Error).message}`);
     }
   }
@@ -1346,10 +1349,10 @@ export class PurchaseJournalService {
           eq(invoicePayments.companyId, companyId)
         ));
 
-      console.log('Successfully deleted invoice payment');
+      logger.info('Successfully deleted invoice payment', { context: { paymentId } });
       return true;
     } catch (error) {
-      console.error('Error deleting invoice payment:', error);
+      logger.error('Error deleting invoice payment', { error });
       throw new Error(`Failed to delete invoice payment: ${(error as Error).message}`);
     }
   }
@@ -1382,10 +1385,10 @@ export class PurchaseJournalService {
 
       // This would need to be implemented based on the actual ledger entry table
       // For now, return a placeholder
-      console.log('getPurchaseLedgerEntry not fully implemented');
+      logger.info('getPurchaseLedgerEntry not fully implemented');
       return null;
     } catch (error) {
-      console.error('Error getting purchase ledger entry:', error);
+      logger.error('Error getting purchase ledger entry', { error });
       throw new Error(`Failed to get purchase ledger entry: ${(error as Error).message}`);
     }
   }
@@ -1410,10 +1413,10 @@ export class PurchaseJournalService {
     try {
       // This would need to be implemented based on the actual ledger entry table
       // For now, return empty array
-      console.log('getPurchaseLedgerEntries not fully implemented');
+      logger.info('getPurchaseLedgerEntries not fully implemented');
       return [];
     } catch (error) {
-      console.error('Error getting purchase ledger entries:', error);
+      logger.error('Error getting purchase ledger entries', { error });
       throw new Error(`Failed to get purchase ledger entries: ${(error as Error).message}`);
     }
   }
@@ -1499,8 +1502,8 @@ export class PurchaseJournalService {
         .orderBy(invoices.date);
 
       // Get payments for these invoices
-      const invoiceIds = invoiceList.map((inv: any) => inv.id);
-      let payments: any[] = [];
+      const invoiceIds = invoiceList.map((inv) => inv.id);
+      let payments: PaymentRecord[] = [];
       if (invoiceIds.length > 0) {
         payments = await db
           .select()
