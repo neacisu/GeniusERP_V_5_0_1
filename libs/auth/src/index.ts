@@ -1,11 +1,7 @@
 // Auth library exports
 export * from './services/auth.service';
-export * from './services/password.service';
-export * from './services/session.service';
-export * from './middleware/auth.middleware';
-export * from './middleware/roles.middleware';
 export * from './guards/auth.guard';
-export * from './types';
-export * from './types/auth.types';
-export * from './types/role.types';
-export * from './types/session.types';
+export * from './routes/auth.routes';
+export * from './middleware/auth.middleware';
+// Export only types that don't conflict
+export type { JwtUserData, UserRole, JwtAuthMode } from './types';
