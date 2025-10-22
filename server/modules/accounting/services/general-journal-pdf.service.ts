@@ -13,6 +13,10 @@ import { getDrizzle } from '../../../common/drizzle';
 import { eq, and, gte, lte, inArray, ne, sql as drizzleSql } from 'drizzle-orm';
 import { ledgerEntries, ledgerLines, chartOfAccounts } from '../schema/accounting.schema';
 import { RedisService } from '../../../services/redis.service';
+import { createModuleLogger } from '../../../common/logger/loki-logger';
+import type { ColumnWidths, TableRowData, TableHeader, TableValue } from '../types/general-journal-pdf-types';
+
+const logger = createModuleLogger('general-journal-pdf');
 
 /**
  * Interface pentru înregistrările din Registrul Jurnal
@@ -134,7 +138,15 @@ export class GeneralJournalPDFService {
         doc.end();
 
         stream.on('finish', () => {
-          console.log(`✅ Registru Jurnal PDF generat: ${filePath}`);
+          logger.info('Registru Jurnal PDF generat cu succes', {
+            context: {
+              filePath,
+              companyId: options.companyId,
+              companyName: options.companyName,
+              entriesCount: entries.length,
+              dateRange: `${options.startDate.toISOString().split('T')[0]} - ${options.endDate.toISOString().split('T')[0]}`
+            }
+          });
           resolve(filePath);
         });
 
@@ -383,11 +395,11 @@ export class GeneralJournalPDFService {
   /**
    * Desenează header-ul tabelului
    */
-  private drawTableHeader(doc: PDFKit.PDFDocument, y: number, colWidths: any): void {
+  private drawTableHeader(doc: PDFKit.PDFDocument, y: number, colWidths: ColumnWidths): void {
     doc.font('Helvetica-Bold').fontSize(8);
     
     let x = 30;
-    const headers = [
+    const headers: TableHeader[] = [
       { text: 'Nr.\ncrt.', width: colWidths.nr },
       { text: 'Data\nînregistrării', width: colWidths.data },
       { text: 'Felul\ndocumentului', width: colWidths.docType },
@@ -413,11 +425,11 @@ export class GeneralJournalPDFService {
   /**
    * Desenează o linie în tabel
    */
-  private drawTableRow(doc: PDFKit.PDFDocument, y: number, colWidths: any, data: any): void {
+  private drawTableRow(doc: PDFKit.PDFDocument, y: number, colWidths: ColumnWidths, data: TableRowData): void {
     doc.font('Helvetica').fontSize(7);
     
     let x = 30;
-    const values = [
+    const values: TableValue[] = [
       { text: data.nr, width: colWidths.nr, align: 'center' },
       { text: data.data, width: colWidths.data, align: 'center' },
       { text: data.docType, width: colWidths.docType, align: 'center' },
@@ -433,7 +445,7 @@ export class GeneralJournalPDFService {
       doc.rect(x, y, value.width, 15).stroke();
       doc.text(value.text || '', x + 2, y + 4, { 
         width: value.width - 4, 
-        align: value.align as any,
+        align: value.align,
         ellipsis: true
       });
       x += value.width;
