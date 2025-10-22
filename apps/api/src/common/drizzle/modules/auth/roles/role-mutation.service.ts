@@ -8,7 +8,7 @@
 import { Logger } from '../../../../../common/logger';
 import { BaseDrizzleService } from '../../core/base-drizzle.service';
 import { eq, and } from 'drizzle-orm';
-import { roles, userRoles } from '@shared/schema/admin.schema';
+import { roles, userRoles } from '../../../../../../../../libs/shared/src/schema/admin.schema';
 import { RoleQueryService } from './role-query.service';
 
 // Create a logger for role mutation operations

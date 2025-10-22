@@ -8,7 +8,7 @@
 import { Logger } from '../../../../../common/logger';
 import { BaseDrizzleService } from '../../core/base-drizzle.service';
 import { eq, and } from 'drizzle-orm';
-import { userRoles } from '@shared/schema/admin.schema';
+import { userRoles } from '../../../../../../../../libs/shared/src/schema/admin.schema';
 import { UserQueryService } from '../users/user-query.service';
 import { RoleQueryService } from './role-query.service';
 

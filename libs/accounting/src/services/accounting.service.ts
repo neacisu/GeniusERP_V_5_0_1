@@ -5,7 +5,7 @@ import {
   AccountClass, AccountGroup, SyntheticAccount, AnalyticAccount,
   JournalEntry, JournalLine,
   InsertJournalEntry, InsertJournalLine
-} from "@shared/schema";
+} from "../../../shared/src/schema";
 import { RedisService } from "../../../services/redis.service";
 
 /**

@@ -14,7 +14,7 @@ import {
   integer,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { companies } from "@shared/schema";
+import { companies } from "../schema";
 
 /**
  * HR Settings table - Module configuration

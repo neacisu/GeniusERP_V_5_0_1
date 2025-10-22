@@ -2,7 +2,7 @@ import { companies, users, accounts, accountClasses, accountGroups, syntheticAcc
   inventoryProducts, inventoryCategories, inventoryUnits, 
   roles, permissions, userRoles, rolePermissions, auditLogs,
   invoices, invoiceDetails, invoiceStatus,
-  journalEntries, journalLines } from "@shared/schema";
+  journalEntries, journalLines } from "../../libs/shared/src/schema";
 import { invoiceItems, type InvoiceItem, type InsertInvoiceItem } from "./modules/invoicing/schema/invoice.schema";
 import type { User, InsertUser, Company, InsertCompany, 
   Account, InsertAccount, AccountClass, InsertAccountClass, 
@@ -14,10 +14,10 @@ import type { User, InsertUser, Company, InsertCompany,
   Role, Permission, UserRole, RolePermission,
   AuditLog, InsertAuditLog, InsertRole, InsertPermission,
   Invoice, InvoiceDetail, 
-  InsertInvoice, InsertInvoiceDetail } from "@shared/schema";
+  InsertInvoice, InsertInvoiceDetail } from "../../libs/shared/src/schema";
   
 // Import insert schemas directly
-import { insertRoleSchema, insertPermissionSchema, insertUserRoleSchema, insertRolePermissionSchema } from "@shared/schema";
+import { insertRoleSchema, insertPermissionSchema, insertUserRoleSchema, insertRolePermissionSchema } from "../../libs/shared/src/schema";
 import { eq, and, desc, sql, gte, lte, count, countDistinct, sum, max } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";

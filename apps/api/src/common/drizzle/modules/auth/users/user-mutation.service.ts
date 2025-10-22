@@ -8,7 +8,7 @@
 import { Logger } from '../../../../../common/logger';
 import { BaseDrizzleService } from '../../core/base-drizzle.service';
 import { eq } from 'drizzle-orm';
-import { users, User } from '@shared/schema/admin.schema';
+import { users, User } from '../../../../../../../../libs/shared/src/schema/admin.schema';
 import { UserQueryService } from './user-query.service';
 
 // Create a logger for user mutation operations

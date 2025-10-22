@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../services/auth.service';
-import { JwtPayload } from '@shared/types';
+import { JwtPayload } from '../../../shared/src/types';
 
 /**
  * Middleware to verify JWT token and attach user payload to request

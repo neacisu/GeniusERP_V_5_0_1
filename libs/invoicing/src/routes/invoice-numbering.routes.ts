@@ -8,7 +8,7 @@ import { Router } from 'express';
 import { InvoiceNumberingController } from '../controllers/invoice-numbering.controller';
 import { AuthMiddleware, requireAuth } from '../../../middlewares/auth.middleware';
 import { Roles } from '../../../decorators/roles.decorator';
-import { UserRole } from '@shared/types';
+import { UserRole } from '../../../shared/src/types';
 
 export class InvoiceNumberingRoutes {
   private router: Router;

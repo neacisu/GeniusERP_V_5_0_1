@@ -24,7 +24,7 @@ import { sql } from "drizzle-orm";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { companies, users } from "../../../../shared/schema";
+import { companies, users } from "../schema";
 
 /**
  * ANAF Company Data - Stocare completă a datelor preluate de la ANAF

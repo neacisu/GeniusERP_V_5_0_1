@@ -8,7 +8,7 @@
 import { Logger } from '../../../../../common/logger';
 import { BaseDrizzleService } from '../../core/base-drizzle.service';
 import { SQL, eq, and, or, sql } from 'drizzle-orm';
-import { users, User } from '@shared/schema/admin.schema';
+import { users, User } from '../../../../../../../../libs/shared/src/schema/admin.schema';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 // Create a logger for user query operations

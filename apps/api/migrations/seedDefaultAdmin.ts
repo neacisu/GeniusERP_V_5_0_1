@@ -1,5 +1,5 @@
 import { DrizzleService } from '../common/drizzle';
-import { users, roles, userRoles } from '@shared/schema';
+import { users, roles, userRoles } from "../../libs/shared/src/schema";
 import { v4 as uuidv4 } from 'uuid';
 import { eq, and } from 'drizzle-orm';
 import { seedDefaultCompany } from './seedDefaultCompany';

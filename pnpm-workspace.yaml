@@ -1,4 +1,14 @@
 packages:
-  - 'apps/*'
-  - 'libs/*'
+  - apps/*
+  - libs/*
 
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - bcrypt
+  - bufferutil
+  - cypress
+  - esbuild
+  - msgpackr-extract
+  - nx
+  - protobufjs
+  - unrs-resolver

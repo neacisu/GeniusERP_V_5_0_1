@@ -7,7 +7,7 @@
 
 import { Logger } from '../../../../common/logger';
 import { BaseDrizzleService } from '../core/base-drizzle.service';
-import { User as UserType } from '@shared/schema/admin.schema';
+import { User as UserType } from '../../../../../../../libs/shared/src/schema/admin.schema';
 import { UserQueryService } from './users/user-query.service';
 import { UserMutationService } from './users/user-mutation.service';
 

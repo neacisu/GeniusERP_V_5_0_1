@@ -10,7 +10,7 @@ import {
   accountClasses, 
   accountGroups, 
   syntheticAccounts,
-} from '@shared/schema';
+} from "../../libs/shared/src/schema";
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';

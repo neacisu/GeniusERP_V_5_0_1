@@ -1,10 +1,10 @@
 import jwt, { SignOptions, Secret } from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { User as SelectUser } from "@shared/schema";
-import { JwtPayload } from "@shared/types";
+import { User as SelectUser } from "../../../shared/src/schema";
+import { JwtPayload } from "../../../shared/src/types";
 import { storage } from "../../../storage";
 import { DrizzleService, getDrizzle } from "@common/drizzle";
-import { users } from "@shared/schema";
+import { users } from "../../../shared/src/schema";
 import { eq } from "drizzle-orm";
 import { log } from "../../../vite";
 

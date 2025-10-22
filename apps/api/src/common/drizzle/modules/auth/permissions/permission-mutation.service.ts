@@ -8,7 +8,7 @@
 import { Logger } from '../../../../../common/logger';
 import { BaseDrizzleService } from '../../core/base-drizzle.service';
 import { eq, and } from 'drizzle-orm';
-import { permissions } from '@shared/schema/admin.schema';
+import { permissions } from '../../../../../../../../libs/shared/src/schema/admin.schema';
 import { PermissionQueryService } from './permission-query.service';
 
 // Create a logger for permission mutation operations
