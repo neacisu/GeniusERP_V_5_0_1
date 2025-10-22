@@ -8,7 +8,9 @@
 
 import fs from 'fs';
 import path from 'path';
-import { getClient } from '../../../common/drizzle';
+import { getDrizzle } from '../../../common/drizzle';
+import { eq, and, gte, lte, inArray, ne, sql as drizzleSql } from 'drizzle-orm';
+import { ledgerEntries, ledgerLines, chartOfAccounts } from '../schema/accounting.schema';
 import { RedisService } from '../../../services/redis.service';
 
 // Dynamic import pentru XLSX (pattern existent în proiect)
@@ -51,6 +53,26 @@ interface ExcelJournalEntry {
   amount: number;
   journalType: string;
   entryId: string;
+}
+
+/**
+ * Interface pentru rezultatul query-ului Drizzle
+ */
+interface JournalQueryResult {
+  entry_id: string;
+  journal_number: string | null;
+  entry_date: Date | null;
+  document_date: Date | null;
+  document_number: string | null;
+  journal_type: string;
+  entry_description: string;
+  entry_amount: string;
+  account_id: string;
+  account_name: string | null;
+  debit_amount: string;
+  credit_amount: string;
+  line_description: string | null;
+  row_number: number;
 }
 
 /**
@@ -127,65 +149,65 @@ export class GeneralJournalExcelService {
       }
     }
     
-    const sql = getClient();
+    const db = getDrizzle();
 
-    let whereClause = `
-      WHERE e.company_id = $1 
-      AND e.entry_date >= $2 
-      AND e.entry_date <= $3
-    `;
-    
-    const params: any[] = [options.companyId, options.startDate, options.endDate];
+    // Build WHERE conditions
+    const conditions = [
+      eq(ledgerEntries.companyId, options.companyId),
+      gte(ledgerEntries.entryDate, options.startDate),
+      lte(ledgerEntries.entryDate, options.endDate)
+    ];
 
     if (options.journalTypes && options.journalTypes.length > 0) {
-      whereClause += ` AND e.type = ANY($${params.length + 1})`;
-      params.push(options.journalTypes);
+      conditions.push(inArray(ledgerEntries.type, options.journalTypes));
     }
 
     if (!options.includeReversals) {
-      whereClause += ` AND e.type != 'REVERSAL'`;
+      conditions.push(ne(ledgerEntries.type, 'REVERSAL'));
     }
 
-    const query = `
-      SELECT 
-        e.id as entry_id,
-        e.journal_number,
-        e.entry_date,
-        e.document_date,
-        e.reference_number as document_number,
-        e.type as journal_type,
-        e.description as entry_description,
-        e.amount as entry_amount,
-        l.account_id,
-        COALESCE(coa.name, l.account_id) as account_name,
-        l.debit_amount::numeric as debit_amount,
-        l.credit_amount::numeric as credit_amount,
-        l.description as line_description,
-        ROW_NUMBER() OVER (ORDER BY e.entry_date, e.journal_number, l.created_at) as row_number
-      FROM ledger_entries e
-      INNER JOIN ledger_lines l ON l.ledger_entry_id = e.id
-      LEFT JOIN chart_of_accounts coa ON coa.code = l.account_id AND coa.company_id = e.company_id
-      ${whereClause}
-      ORDER BY e.entry_date, e.journal_number, l.created_at
-    `;
+    // Execute Drizzle query with proper joins
+    const result = await db
+      .select({
+        entry_id: ledgerEntries.id,
+        journal_number: ledgerEntries.journalNumber,
+        entry_date: ledgerEntries.entryDate,
+        document_date: ledgerEntries.documentDate,
+        document_number: ledgerEntries.referenceNumber,
+        journal_type: ledgerEntries.type,
+        entry_description: ledgerEntries.description,
+        entry_amount: ledgerEntries.amount,
+        account_id: ledgerLines.accountId,
+        account_name: drizzleSql<string>`COALESCE(${chartOfAccounts.name}, ${ledgerLines.accountId})`,
+        debit_amount: drizzleSql<string>`${ledgerLines.debitAmount}::numeric`,
+        credit_amount: drizzleSql<string>`${ledgerLines.creditAmount}::numeric`,
+        line_description: ledgerLines.description,
+        row_number: drizzleSql<number>`ROW_NUMBER() OVER (ORDER BY ${ledgerEntries.entryDate}, ${ledgerEntries.journalNumber}, ${ledgerLines.createdAt})`
+      })
+      .from(ledgerEntries)
+      .innerJoin(ledgerLines, eq(ledgerLines.ledgerEntryId, ledgerEntries.id))
+      .leftJoin(chartOfAccounts, and(
+        eq(chartOfAccounts.code, ledgerLines.accountId),
+        eq(chartOfAccounts.companyId, ledgerEntries.companyId)
+      ))
+      .where(and(...conditions))
+      .orderBy(ledgerEntries.entryDate, ledgerEntries.journalNumber, ledgerLines.createdAt);
 
-    const result = await sql.unsafe(query, params);
-
-    const entries = result.map(row => ({
-      rowNumber: row.row_number,
-      journalNumber: row.journal_number || 'N/A',
-      entryDate: new Date(row.entry_date).toLocaleDateString('ro-RO'),
-      documentDate: new Date(row.document_date || row.entry_date).toLocaleDateString('ro-RO'),
-      documentType: this.getDocumentTypeLabel(row.journal_type),
-      documentNumber: row.document_number || '',
-      description: row.line_description || row.entry_description,
-      accountCode: row.account_id,
-      accountName: row.account_name,
-      debitAmount: parseFloat(row.debit_amount) || 0,
-      creditAmount: parseFloat(row.credit_amount) || 0,
-      amount: Math.max(parseFloat(row.debit_amount) || 0, parseFloat(row.credit_amount) || 0),
-      journalType: row.journal_type,
-      entryId: row.entry_id
+    const entries: ExcelJournalEntry[] = result.map((row: JournalQueryResult) => ({
+      rowNumber: row['row_number'],
+      journalNumber: row['journal_number'] || 'N/A',
+      entryDate: row['entry_date'] ? new Date(row['entry_date']).toLocaleDateString('ro-RO') : 'N/A',
+      documentDate: (row['document_date'] || row['entry_date']) ? new Date(row['document_date'] || row['entry_date'] || new Date()).toLocaleDateString('ro-RO') : 'N/A',
+      documentType: this.getDocumentTypeLabel(row['journal_type']),
+      documentNumber: row['document_number'] || '',
+      description: row['line_description'] || row['entry_description'],
+      accountCode: row['account_id'],
+      accountName: row['account_name'] || row['account_id'],
+      debitAmount: parseFloat(row['debit_amount']) || 0,
+      creditAmount: parseFloat(row['credit_amount']) || 0,
+      amount: Math.max(parseFloat(row['debit_amount']) || 0, parseFloat(row['credit_amount']) || 0),
+      journalType: row['journal_type'],
+      entryId: row['entry_id']
     }));
     
     // Cache for 10 minutes
