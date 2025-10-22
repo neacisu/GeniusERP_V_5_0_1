@@ -38,6 +38,14 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    // Permit accesul de la geniuserp.app și alte domenii
+    host: '0.0.0.0',
+    allowedHosts: [
+      'geniuserp.app',
+      'www.geniuserp.app',
+      'localhost',
+      '.repl.co',
+    ],
     // Setări pentru watch (important pentru Docker)
     watch: {
       usePolling: true, // Necesar pentru Docker volumes

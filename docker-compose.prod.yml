@@ -4,15 +4,15 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     container_name: geniuserp-app
-    restart: unless-stopped
+    restart: ${CONTAINER_RESTART_POLICY}
     labels:
       - logging=promtail
       - logging_jobname=geniuserp-app
     environment:
       # Variabile de bază
-      - NODE_ENV=production
-      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/geniuserp
-      - RUN_MIGRATIONS=true
+      - NODE_ENV=${PROD_NODE_ENV}
+      - DATABASE_URL=${DATABASE_URL}
+      - RUN_MIGRATIONS=${PROD_RUN_MIGRATIONS}
       
       # Redis Cloud - securizat cu credentialele din Replit Secrets
       - REDIS_URL=${REDIS_URL}
@@ -29,8 +29,8 @@ services:
       - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET must be set - use: openssl rand -base64 32}
       
       # ANAF API
-      - ANAF_API_URL=https://webservicesp.anaf.ro/PlatitorTvaRest/api/v7/ws/tva
-      - ANAF_API_VERSION=v7
+      - ANAF_API_URL=${ANAF_API_URL}
+      - ANAF_API_VERSION=${ANAF_API_VERSION}
       
       # Date pentru email
       - SMTP_HOST=${SMTP_HOST:-smtp.example.com}
@@ -40,15 +40,15 @@ services:
       - EMAIL_FROM=${EMAIL_FROM:-noreply@example.com}
       
       # Setări pentru logging
-      - LOG_LEVEL=${LOG_LEVEL:-info}
-      - ENABLE_SQL_LOGGING=${ENABLE_SQL_LOGGING:-false}
+      - LOG_LEVEL=${PROD_LOG_LEVEL}
+      - ENABLE_SQL_LOGGING=${PROD_ENABLE_SQL_LOGGING}
       
       # Sentry Error Tracking
       - SENTRY_DSN=${SENTRY_DSN}
       - VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
     volumes:
-      - app_logs:/app/logs
-      - db_backups:/app/db-backups
+      - app_logs:${APP_LOGS_PATH}
+      - db_backups:${DB_BACKUPS_PATH}
     depends_on:
       - postgres
     networks:
@@ -57,14 +57,14 @@ services:
   nginx:
     image: nginx:1.25-alpine
     container_name: geniuserp-nginx
-    restart: unless-stopped
+    restart: ${CONTAINER_RESTART_POLICY}
     ports:
-      - "${HTTP_PORT:-80}:80"
-      - "${HTTPS_PORT:-443}:443"
+      - "${HTTP_PORT}:${HTTP_PORT}"
+      - "${HTTPS_PORT}:${HTTPS_PORT}"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - ./client/dist:/usr/share/nginx/html
+      - ./nginx/nginx.conf:${NGINX_CONF_PATH}
+      - ./nginx/ssl:${NGINX_SSL_PATH}:ro
+      - ./client/dist:${NGINX_HTML_PATH}
     labels:
       - logging=promtail
       - logging_jobname=nginx
@@ -74,51 +74,51 @@ services:
       - geniuserp-network
 
   postgres:
-    image: postgres:15-alpine
+    image: ${POSTGRES_IMAGE_PROD}
     container_name: geniuserp-postgres
-    restart: unless-stopped
+    restart: ${CONTAINER_RESTART_POLICY}
     environment:
       # ATENȚIE SECURITATE: Setați parole puternice în producție!
       - POSTGRES_USER=${DB_USER:?DB_USER must be set in production}
       - POSTGRES_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set - use strong password}
-      - POSTGRES_DB=${DB_NAME:-geniuserp}
+      - POSTGRES_DB=${DB_NAME}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - db_backups:/backups
+      - postgres_data:${POSTGRES_DATA_PATH}
+      - db_backups:${DB_BACKUPS_PATH}
     labels:
       - logging=promtail
       - logging_jobname=postgres
-    command: postgres -c 'max_connections=200' -c 'shared_buffers=512MB'
+    command: postgres -c 'max_connections=${POSTGRES_MAX_CONNECTIONS}' -c 'shared_buffers=${POSTGRES_SHARED_BUFFERS}'
     networks:
       - geniuserp-network
 
   db-backup:
-    image: postgres:15-alpine
+    image: ${POSTGRES_IMAGE_PROD}
     container_name: geniuserp-db-backup
-    restart: unless-stopped
+    restart: ${CONTAINER_RESTART_POLICY}
     volumes:
-      - db_backups:/backups
+      - db_backups:${DB_BACKUPS_PATH}
     environment:
       - PGHOST=postgres
-      - PGUSER=${DB_USER:-postgres}
-      - PGPASSWORD=${DB_PASSWORD:-postgres}
-      - PGDATABASE=${DB_NAME:-geniuserp}
-      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-7}
+      - PGUSER=${DB_USER}
+      - PGPASSWORD=${DB_PASSWORD}
+      - PGDATABASE=${DB_NAME}
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS}
     labels:
       - logging=promtail
       - logging_jobname=db-backup
     entrypoint: |
       sh -c '
-        mkdir -p /backups;
+        mkdir -p ${DB_BACKUPS_PATH};
         while true; do
           TIMESTAMP=$(date +%Y%m%d_%H%M%S);
           echo "Crearea backup-ului $TIMESTAMP";
-          pg_dump -h postgres -U $$PGUSER $$PGDATABASE | gzip > /backups/$$PGDATABASE-$$TIMESTAMP.sql.gz;
-          echo "Backup creat cu succes: /backups/$$PGDATABASE-$$TIMESTAMP.sql.gz";
+          pg_dump -h postgres -U $$PGUSER $$PGDATABASE | gzip > ${DB_BACKUPS_PATH}/$$PGDATABASE-$$TIMESTAMP.sql.gz;
+          echo "Backup creat cu succes: ${DB_BACKUPS_PATH}/$$PGDATABASE-$$TIMESTAMP.sql.gz";
           echo "Ștergerea backup-urilor mai vechi de $$BACKUP_RETENTION_DAYS zile";
-          find /backups -name "$$PGDATABASE-*.sql.gz" -type f -mtime +$$BACKUP_RETENTION_DAYS -delete;
+          find ${DB_BACKUPS_PATH} -name "$$PGDATABASE-*.sql.gz" -type f -mtime +$$BACKUP_RETENTION_DAYS -delete;
           echo "Așteptare până la următorul backup (24 ore)";
-          sleep 86400;
+          sleep ${BACKUP_SLEEP_SECONDS};
         done
       '
     depends_on:
@@ -127,22 +127,22 @@ services:
       - geniuserp-network
 
   db-seed:
-    image: postgres:15-alpine
+    image: ${POSTGRES_IMAGE_PROD}
     container_name: geniuserp-db-seed
     restart: "no"
     volumes:
-      - db_backups:/backups
+      - db_backups:${DB_BACKUPS_PATH}
     environment:
       - PGHOST=postgres
-      - PGUSER=${DB_USER:-postgres}
-      - PGPASSWORD=${DB_PASSWORD:-postgres}
-      - PGDATABASE=${DB_NAME:-geniuserp}
-      - INITIAL_BACKUP=${INITIAL_BACKUP:-}
+      - PGUSER=${DB_USER}
+      - PGPASSWORD=${DB_PASSWORD}
+      - PGDATABASE=${DB_NAME}
+      - INITIAL_BACKUP=${INITIAL_BACKUP}
     entrypoint: |
       sh -c '
         echo "Verificare dacă există un backup inițial specificat...";
-        if [ -n "$$INITIAL_BACKUP" ] && [ -f "/backups/$$INITIAL_BACKUP" ]; then
-          echo "S-a găsit backup-ul inițial: /backups/$$INITIAL_BACKUP";
+        if [ -n "$$INITIAL_BACKUP" ] && [ -f "${DB_BACKUPS_PATH}/$$INITIAL_BACKUP" ]; then
+          echo "S-a găsit backup-ul inițial: ${DB_BACKUPS_PATH}/$$INITIAL_BACKUP";
           
           # Așteptăm până când serviciul PostgreSQL este disponibil
           until pg_isready -h postgres -U $$PGUSER; do
@@ -152,9 +152,9 @@ services:
           
           echo "Restaurare din backup-ul inițial...";
           if [[ "$$INITIAL_BACKUP" == *.gz ]]; then
-            gunzip -c /backups/$$INITIAL_BACKUP | psql -h postgres -U $$PGUSER -d $$PGDATABASE;
+            gunzip -c ${DB_BACKUPS_PATH}/$$INITIAL_BACKUP | psql -h postgres -U $$PGUSER -d $$PGDATABASE;
           else
-            psql -h postgres -U $$PGUSER -d $$PGDATABASE < /backups/$$INITIAL_BACKUP;
+            psql -h postgres -U $$PGUSER -d $$PGDATABASE < ${DB_BACKUPS_PATH}/$$INITIAL_BACKUP;
           fi
           
           if [ $? -eq 0 ]; then
@@ -182,18 +182,18 @@ services:
     image: prom/prometheus:latest
     container_name: geniuserp-prometheus
     volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
+      - ./monitoring/prometheus/prometheus.yml:${PROMETHEUS_CONFIG_FILE}
+      - prometheus_data:${PROMETHEUS_STORAGE_PATH}
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=30d'
+      - '--config.file=${PROMETHEUS_CONFIG_FILE}'
+      - '--storage.tsdb.path=${PROMETHEUS_STORAGE_PATH}'
+      - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION_TIME}'
     labels:
       - logging=promtail
       - logging_jobname=prometheus
     networks:
       - geniuserp-network
-    restart: unless-stopped
+    restart: ${CONTAINER_RESTART_POLICY}
 
   # Grafana - Dashboards și Alerte
   grafana:
@@ -201,14 +201,14 @@ services:
     container_name: geniuserp-grafana
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
-      - grafana_data:/var/lib/grafana
+      - grafana_data:${GRAFANA_DATA_PATH}
     environment:
       # SECURITATE: Schimbați parola admin în producție!
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set - DO NOT use 'admin123'}
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=${GRAFANA_URL:-http://localhost:4000}
-      - GF_SERVER_DOMAIN=${GRAFANA_DOMAIN:-localhost}
-      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+      - GF_USERS_ALLOW_SIGN_UP=${GF_USERS_ALLOW_SIGN_UP}
+      - GF_SERVER_ROOT_URL=${GRAFANA_URL}
+      - GF_SERVER_DOMAIN=${GRAFANA_DOMAIN}
+      - GF_INSTALL_PLUGINS=${GF_INSTALL_PLUGINS}
     labels:
       - logging=promtail
       - logging_jobname=grafana
@@ -225,25 +225,25 @@ services:
     container_name: geniuserp-loki
     user: "0:0"
     volumes:
-      - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml
-      - loki_data:/loki
-    command: -config.file=/etc/loki/local-config.yaml
+      - ./monitoring/loki/loki-config.yml:${LOKI_CONFIG_FILE}
+      - loki_data:${LOKI_DATA_PATH}
+    command: -config.file=${LOKI_CONFIG_FILE}
     labels:
       - logging=promtail
       - logging_jobname=loki
     networks:
       - geniuserp-network
-    restart: unless-stopped
+    restart: ${CONTAINER_RESTART_POLICY}
 
   # Promtail - Log collector
   promtail:
     image: grafana/promtail:latest
     container_name: geniuserp-promtail
     volumes:
-      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-    command: -config.file=/etc/promtail/config.yml
+      - ./monitoring/promtail/promtail-config.yml:${PROMTAIL_CONFIG_FILE}
+      - ${DOCKER_SOCK_PATH}:${DOCKER_SOCK_PATH}:ro
+      - ${DOCKER_CONTAINERS_PATH}:${DOCKER_CONTAINERS_PATH}:ro
+    command: -config.file=${PROMTAIL_CONFIG_FILE}
     networks:
       - geniuserp-network
     depends_on:
@@ -259,18 +259,18 @@ services:
     privileged: true
     pid: host
     volumes:
-      - /var/run/docker.sock:/host/var/run/docker.sock:ro
-      - /proc:/host/proc:ro
-      - /etc:/host/etc:ro
+      - ${DOCKER_SOCK_PATH}:/host${DOCKER_SOCK_PATH}:ro
+      - ${HOST_PROC_PATH}:/host${HOST_PROC_PATH}:ro
+      - ${HOST_ETC_PATH}:/host${HOST_ETC_PATH}:ro
       - ./monitoring/falco:/etc/falco
     environment:
-      - FALCO_BPF_PROBE=""
+      - FALCO_BPF_PROBE=${FALCO_BPF_PROBE}
     labels:
       - logging=promtail
       - logging_jobname=falco
     networks:
       - geniuserp-network
-    restart: unless-stopped
+    restart: ${CONTAINER_RESTART_POLICY}
 
   # Wazuh Indexer (OpenSearch)
   wazuh-indexer:
@@ -278,27 +278,27 @@ services:
     container_name: geniuserp-wazuh-indexer
     hostname: wazuh-indexer
     environment:
-      - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
-      - "bootstrap.memory_lock=true"
-      - "discovery.type=single-node"
-      - "network.host=0.0.0.0"
-      - "plugins.security.ssl.http.enabled=false"
-      - "plugins.security.disabled=true"
+      - "OPENSEARCH_JAVA_OPTS=${WAZUH_OPENSEARCH_JAVA_OPTS_PROD}"
+      - "bootstrap.memory_lock=${OPENSEARCH_BOOTSTRAP_MEMORY_LOCK}"
+      - "discovery.type=${OPENSEARCH_DISCOVERY_TYPE}"
+      - "network.host=${OPENSEARCH_NETWORK_HOST}"
+      - "plugins.security.ssl.http.enabled=${WAZUH_PLUGINS_SECURITY_SSL_HTTP_ENABLED_PROD}"
+      - "plugins.security.disabled=${WAZUH_PLUGINS_SECURITY_DISABLED_PROD}"
     ulimits:
       memlock:
-        soft: -1
-        hard: -1
+        soft: ${ULIMIT_MEMLOCK_SOFT}
+        hard: ${ULIMIT_MEMLOCK_HARD}
       nofile:
-        soft: 65536
-        hard: 65536
+        soft: ${ULIMIT_NOFILE_SOFT}
+        hard: ${ULIMIT_NOFILE_HARD}
     volumes:
-      - wazuh_indexer_data:/var/lib/wazuh-indexer
+      - wazuh_indexer_data:${WAZUH_INDEXER_DATA_PATH}
     labels:
       - logging=promtail
       - logging_jobname=wazuh-indexer
     networks:
       - geniuserp-network
-    restart: unless-stopped
+    restart: ${CONTAINER_RESTART_POLICY}
 
   # Wazuh Manager
   wazuh-manager:
@@ -306,20 +306,20 @@ services:
     container_name: geniuserp-wazuh-manager
     hostname: wazuh-manager
     environment:
-      - INDEXER_URL=http://wazuh-indexer:9200
-      - INDEXER_USERNAME=admin
+      - INDEXER_URL=${WAZUH_INDEXER_URL_HTTP}
+      - INDEXER_USERNAME=${WAZUH_INDEXER_USERNAME_DEFAULT}
       # SECURITATE CRITICĂ: Setați parole puternice pentru Wazuh!
       - INDEXER_PASSWORD=${WAZUH_INDEXER_PASSWORD:?WAZUH_INDEXER_PASSWORD must be set}
-      - FILEBEAT_SSL_VERIFICATION_MODE=none
-      - SSL_CERTIFICATE_AUTHORITIES=""
-      - SSL_CERTIFICATE=""
-      - SSL_KEY=""
-      - API_USERNAME=wazuh-wui
+      - FILEBEAT_SSL_VERIFICATION_MODE=${FILEBEAT_SSL_VERIFICATION_MODE}
+      - SSL_CERTIFICATE_AUTHORITIES=${WAZUH_SSL_CERTIFICATE_AUTHORITIES_EMPTY}
+      - SSL_CERTIFICATE=${WAZUH_SSL_CERTIFICATE_EMPTY}
+      - SSL_KEY=${WAZUH_SSL_KEY_EMPTY}
+      - API_USERNAME=${WAZUH_MANAGER_API_USERNAME}
       - API_PASSWORD=${WAZUH_API_PASSWORD:?WAZUH_API_PASSWORD must be set}
     volumes:
-      - wazuh_manager_data:/var/ossec/data
-      - wazuh_manager_etc:/var/ossec/etc
-      - wazuh_manager_logs:/var/ossec/logs
+      - wazuh_manager_data:${WAZUH_MANAGER_DATA_PATH}
+      - wazuh_manager_etc:${WAZUH_MANAGER_ETC_PATH}
+      - wazuh_manager_logs:${WAZUH_MANAGER_LOGS_PATH}
     labels:
       - logging=promtail
       - logging_jobname=wazuh-manager
@@ -335,14 +335,14 @@ services:
     container_name: geniuserp-wazuh-dashboard
     hostname: wazuh-dashboard
     environment:
-      - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=${WAZUH_INDEXER_PASSWORD:-SecretPassword}
+      - INDEXER_USERNAME=${WAZUH_INDEXER_USERNAME_DEFAULT}
+      - INDEXER_PASSWORD=${WAZUH_INDEXER_PASSWORD}
       - WAZUH_API_URL=https://wazuh-manager
-      - DASHBOARD_USERNAME=kibanaserver
-      - DASHBOARD_PASSWORD=kibanaserver
-      - API_USERNAME=wazuh-wui
-      - API_PASSWORD=${WAZUH_API_PASSWORD:-MyS3cr37P450r.*-}
-      - OPENSEARCH_HOSTS=http://wazuh-indexer:9200
+      - DASHBOARD_USERNAME=${WAZUH_DASHBOARD_USERNAME_DEFAULT}
+      - DASHBOARD_PASSWORD=${WAZUH_DASHBOARD_PASSWORD_DEFAULT}
+      - API_USERNAME=${WAZUH_MANAGER_API_USERNAME}
+      - API_PASSWORD=${WAZUH_API_PASSWORD}
+      - OPENSEARCH_HOSTS=${WAZUH_INDEXER_URL_HTTP}
     labels:
       - logging=promtail
       - logging_jobname=wazuh-dashboard
@@ -354,7 +354,7 @@ services:
 
 networks:
   geniuserp-network:
-    driver: bridge
+    driver: ${DOCKER_NETWORK_DRIVER}
 
 volumes:
   postgres_data:

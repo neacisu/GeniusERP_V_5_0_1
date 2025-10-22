@@ -10,15 +10,15 @@ services:
       - ./libs:/app/libs
       - node_modules_volume:/app/node_modules
     ports:
-      - "5000:5000" # Frontend Vite
-      - "5001:5001" # API Backend
+      - "${APP_PORT_FRONTEND}:${APP_PORT_FRONTEND}" # Frontend Vite
+      - "${APP_PORT_BACKEND}:${APP_PORT_BACKEND}" # API Backend
     labels:
       - logging=promtail
       - logging_jobname=geniuserp-app
     environment:
       # Variabile de bază
       - NODE_ENV=${NODE_ENV:-development}
-      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/geniuserp
+      - DATABASE_URL=${DATABASE_URL}
       
       # Redis Cloud (citite din .env)
       - REDIS_URL=${REDIS_URL}
@@ -59,20 +59,23 @@ services:
       - VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
       
       # Setări pentru debugare și HMR
-      - VITE_DEV_SERVER_URL=http://localhost:5000
+      - VITE_DEV_SERVER_URL=${VITE_DEV_SERVER_URL}
       
       # Setări Vite HMR pentru Hot Reload în Docker
-      - VITE_HMR_PROTOCOL=ws
-      - VITE_HMR_HOST=localhost
-      - VITE_HMR_PORT=5000
-      - VITE_HMR_CLIENT_PORT=5000
+      - VITE_HMR_PROTOCOL=${VITE_HMR_PROTOCOL}
+      - VITE_HMR_HOST=${VITE_HMR_HOST}
+      - VITE_HMR_PORT=${VITE_HMR_PORT}
+      - VITE_HMR_CLIENT_PORT=${VITE_HMR_CLIENT_PORT}
+      
+      # Vite Allowed Hosts (citit din .env)
+      - VITE_ALLOWED_HOSTS=${VITE_ALLOWED_HOSTS}
       
       # Enable watch polling pentru Docker volumes (important pentru HMR)
-      - CHOKIDAR_USEPOLLING=true
-      - CHOKIDAR_INTERVAL=100
+      - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING}
+      - CHOKIDAR_INTERVAL=${CHOKIDAR_INTERVAL}
     depends_on:
       - postgres
-    restart: unless-stopped
+    restart: ${CONTAINER_RESTART_POLICY}
     networks:
       - geniuserp-network
 
@@ -80,28 +83,28 @@ services:
     image: postgres:17-alpine
     container_name: geniuserp-postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:${POSTGRES_DATA_PATH}
     ports:
-      - "5433:5432"
+      - "${POSTGRES_PORT_EXTERNAL}:${POSTGRES_PORT_INTERNAL}"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=geniuserp
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     labels:
       - logging=promtail
       - logging_jobname=postgres
-    restart: unless-stopped
+    restart: ${CONTAINER_RESTART_POLICY}
     networks:
       - geniuserp-network
-    command: postgres -c 'max_connections=200' -c 'shared_buffers=512MB'
+    command: postgres -c 'max_connections=${POSTGRES_MAX_CONNECTIONS}' -c 'shared_buffers=${POSTGRES_SHARED_BUFFERS}'
 
   # Adminer pentru administrarea bazei de date (opțional)
   adminer:
     image: adminer
     container_name: geniuserp-adminer
-    restart: unless-stopped
+    restart: ${CONTAINER_RESTART_POLICY}
     ports:
-      - "8080:8080"
+      - "${ADMINER_PORT}:${ADMINER_PORT}"
     labels:
       - logging=promtail
       - logging_jobname=adminer
@@ -117,15 +120,15 @@ services:
     image: prom/prometheus:latest
     container_name: geniuserp-prometheus
     ports:
-      - "9090:9090"
+      - "${PROMETHEUS_PORT}:${PROMETHEUS_PORT}"
     volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
+      - ./monitoring/prometheus/prometheus.yml:${PROMETHEUS_CONFIG_FILE}
+      - prometheus_data:${PROMETHEUS_STORAGE_PATH}
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--config.file=${PROMETHEUS_CONFIG_FILE}'
+      - '--storage.tsdb.path=${PROMETHEUS_STORAGE_PATH}'
+      - '--web.console.libraries=${PROMETHEUS_CONSOLE_LIBRARIES}'
+      - '--web.console.templates=${PROMETHEUS_CONSOLE_TEMPLATES}'
     labels:
       - logging=promtail
       - logging_jobname=prometheus
@@ -138,15 +141,15 @@ services:
     image: grafana/grafana:latest
     container_name: geniuserp-grafana
     ports:
-      - "4000:3000"
+      - "${GRAFANA_PORT_EXTERNAL}:${GRAFANA_PORT_INTERNAL}"
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
-      - grafana_data:/var/lib/grafana
+      - grafana_data:${GRAFANA_DATA_PATH}
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin123
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=http://localhost:4000
-      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-sentry-datasource
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=${GF_USERS_ALLOW_SIGN_UP}
+      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL}
+      - GF_INSTALL_PLUGINS=${GF_INSTALL_PLUGINS}
       # Sentry Integration
       - SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
     labels:
@@ -165,11 +168,11 @@ services:
     container_name: geniuserp-loki
     user: "0:0"
     ports:
-      - "3100:3100"
+      - "${LOKI_PORT}:${LOKI_PORT}"
     volumes:
-      - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml
-      - loki_data:/loki
-    command: -config.file=/etc/loki/local-config.yaml
+      - ./monitoring/loki/loki-config.yml:${LOKI_CONFIG_FILE}
+      - loki_data:${LOKI_DATA_PATH}
+    command: -config.file=${LOKI_CONFIG_FILE}
     labels:
       - logging=promtail
       - logging_jobname=loki
@@ -182,10 +185,10 @@ services:
     image: grafana/promtail:latest
     container_name: geniuserp-promtail
     volumes:
-      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-    command: -config.file=/etc/promtail/config.yml
+      - ./monitoring/promtail/promtail-config.yml:${PROMTAIL_CONFIG_FILE}
+      - ${DOCKER_SOCK_PATH}:${DOCKER_SOCK_PATH}:ro
+      - ${DOCKER_CONTAINERS_PATH}:${DOCKER_CONTAINERS_PATH}:ro
+    command: -config.file=${PROMTAIL_CONFIG_FILE}
     networks:
       - geniuserp-network
     depends_on:
@@ -201,12 +204,12 @@ services:
     privileged: true
     pid: host
     volumes:
-      - /var/run/docker.sock:/host/var/run/docker.sock:ro
-      - /proc:/host/proc:ro
-      - /etc:/host/etc:ro
+      - ${DOCKER_SOCK_PATH}:/host${DOCKER_SOCK_PATH}:ro
+      - ${HOST_PROC_PATH}:/host${HOST_PROC_PATH}:ro
+      - ${HOST_ETC_PATH}:/host${HOST_ETC_PATH}:ro
       - ./monitoring/falco:/etc/falco
     environment:
-      - FALCO_BPF_PROBE=""
+      - FALCO_BPF_PROBE=${FALCO_BPF_PROBE}
     labels:
       - logging=promtail
       - logging_jobname=falco
@@ -224,26 +227,26 @@ services:
     profiles:
       - wazuh  # Pornește doar cu: docker-compose --profile wazuh up -d
     ports:
-      - "9200:9200"
+      - "${WAZUH_INDEXER_PORT}:${WAZUH_INDEXER_PORT}"
     environment:
-      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "bootstrap.memory_lock=true"
-      - "discovery.type=single-node"
-      - "network.host=0.0.0.0"
+      - "OPENSEARCH_JAVA_OPTS=${OPENSEARCH_JAVA_OPTS}"
+      - "bootstrap.memory_lock=${OPENSEARCH_BOOTSTRAP_MEMORY_LOCK}"
+      - "discovery.type=${OPENSEARCH_DISCOVERY_TYPE}"
+      - "network.host=${OPENSEARCH_NETWORK_HOST}"
       # SSL ACTIVAT - certificate demo pentru development (schimbă în producție)
-      - "plugins.security.ssl.http.enabled=true"
-      - "plugins.security.ssl.transport.enabled=true"
-      - "plugins.security.disabled=false"
-      - "DISABLE_INSTALL_DEMO_CONFIG=false"
+      - "plugins.security.ssl.http.enabled=${OPENSEARCH_SSL_HTTP_ENABLED}"
+      - "plugins.security.ssl.transport.enabled=${OPENSEARCH_SSL_TRANSPORT_ENABLED}"
+      - "plugins.security.disabled=${OPENSEARCH_SECURITY_DISABLED}"
+      - "DISABLE_INSTALL_DEMO_CONFIG=${DISABLE_INSTALL_DEMO_CONFIG}"
     ulimits:
       memlock:
-        soft: -1
-        hard: -1
+        soft: ${ULIMIT_MEMLOCK_SOFT}
+        hard: ${ULIMIT_MEMLOCK_HARD}
       nofile:
-        soft: 65536
-        hard: 65536
+        soft: ${ULIMIT_NOFILE_SOFT}
+        hard: ${ULIMIT_NOFILE_HARD}
     volumes:
-      - wazuh_indexer_data:/var/lib/wazuh-indexer
+      - wazuh_indexer_data:${WAZUH_INDEXER_DATA_PATH}
       - ./monitoring/wazuh/certs/wazuh-certificates:/usr/share/wazuh-indexer/certs/
     networks:
       - geniuserp-network
@@ -258,23 +261,23 @@ services:
     profiles:
       - wazuh  # Pornește doar cu: docker-compose --profile wazuh up -d
     ports:
-      - "1514:1514"
-      - "1515:1515"
-      - "55000:55000"
+      - "${WAZUH_MANAGER_PORT_1514}:${WAZUH_MANAGER_PORT_1514}"
+      - "${WAZUH_MANAGER_PORT_1515}:${WAZUH_MANAGER_PORT_1515}"
+      - "${WAZUH_MANAGER_API_PORT}:${WAZUH_MANAGER_API_PORT}"
     environment:
       # SSL ACTIVAT - folosește HTTPS
-      - INDEXER_URL=https://wazuh-indexer:9200
-      - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=admin
-      - FILEBEAT_SSL_VERIFICATION_MODE=none
+      - INDEXER_URL=${WAZUH_INDEXER_URL}
+      - INDEXER_USERNAME=${WAZUH_INDEXER_USERNAME}
+      - INDEXER_PASSWORD=${WAZUH_INDEXER_PASSWORD}
+      - FILEBEAT_SSL_VERIFICATION_MODE=${FILEBEAT_SSL_VERIFICATION_MODE}
       # Certificate SSL pentru conexiune securizată
-      - SSL_CERTIFICATE_AUTHORITIES=/etc/ssl/root-ca.pem
-      - API_USERNAME=wazuh-wui
-      - API_PASSWORD=MyS3cr37P450r.*-
+      - SSL_CERTIFICATE_AUTHORITIES=${WAZUH_SSL_CERTIFICATE_AUTHORITIES}
+      - API_USERNAME=${WAZUH_API_USERNAME}
+      - API_PASSWORD=${WAZUH_API_PASSWORD}
     volumes:
-      - wazuh_manager_data:/var/ossec/data
-      - wazuh_manager_etc:/var/ossec/etc
-      - wazuh_manager_logs:/var/ossec/logs
+      - wazuh_manager_data:${WAZUH_MANAGER_DATA_PATH}
+      - wazuh_manager_etc:${WAZUH_MANAGER_ETC_PATH}
+      - wazuh_manager_logs:${WAZUH_MANAGER_LOGS_PATH}
       - ./monitoring/wazuh/certs/wazuh-certificates:/etc/ssl:ro
     labels:
       - logging=promtail
@@ -294,20 +297,20 @@ services:
     profiles:
       - wazuh  # Pornește doar cu: docker-compose --profile wazuh up -d
     ports:
-      - "9443:5601"
+      - "${WAZUH_DASHBOARD_PORT_EXTERNAL}:${WAZUH_DASHBOARD_PORT_INTERNAL}"
     environment:
       # Credențiale default Wazuh (schimbă în producție)
-      - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=admin
+      - INDEXER_USERNAME=${WAZUH_INDEXER_USERNAME}
+      - INDEXER_PASSWORD=${WAZUH_INDEXER_PASSWORD}
       # HTTPS activat pentru toate conexiunile
-      - WAZUH_API_URL=https://wazuh-manager:55000
-      - DASHBOARD_USERNAME=kibanaserver
-      - DASHBOARD_PASSWORD=kibanaserver
-      - API_USERNAME=wazuh-wui
-      - API_PASSWORD=MyS3cr37P450r.*-
+      - WAZUH_API_URL=${WAZUH_API_URL}
+      - DASHBOARD_USERNAME=${WAZUH_DASHBOARD_USERNAME}
+      - DASHBOARD_PASSWORD=${WAZUH_DASHBOARD_PASSWORD}
+      - API_USERNAME=${WAZUH_API_USERNAME}
+      - API_PASSWORD=${WAZUH_API_PASSWORD}
       # SSL/HTTPS pentru indexer
-      - OPENSEARCH_HOSTS=https://wazuh-indexer:9200
-      - OPENSEARCH_SSL_VERIFICATIONMODE=none
+      - OPENSEARCH_HOSTS=${OPENSEARCH_HOSTS}
+      - OPENSEARCH_SSL_VERIFICATIONMODE=${OPENSEARCH_SSL_VERIFICATIONMODE}
     volumes:
       - ./monitoring/wazuh/certs/wazuh-certificates:/usr/share/wazuh-dashboard/certs:ro
     networks:
@@ -321,9 +324,9 @@ services:
     image: aquasec/trivy:latest
     container_name: geniuserp-trivy
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${DOCKER_SOCK_PATH}:${DOCKER_SOCK_PATH}:ro
       - .:/app:ro
-      - trivy_cache:/root/.cache
+      - trivy_cache:${TRIVY_CACHE_PATH}
     command: ["--help"]
     networks:
       - geniuserp-network
@@ -333,10 +336,12 @@ services:
 
 networks:
   geniuserp-network:
-    driver: bridge
+    driver: ${DOCKER_NETWORK_DRIVER}
 
 volumes:
   postgres_data:
+    external: true
+    name: geniuserp_postgres_data
   node_modules_volume:
   prometheus_data:
   grafana_data:

@@ -23,6 +23,10 @@ export function log(message: string, source = "express") {
 }
 
 export async function setupVite(app: Express, server: Server) {
+  // Citim allowed hosts din .env sau folosim valori default
+  const allowedHostsEnv = process.env.VITE_ALLOWED_HOSTS || 'localhost,0.0.0.0';
+  const allowedHostsList = allowedHostsEnv.split(',').map(h => h.trim()).filter(Boolean);
+  
   const serverOptions = {
     middlewareMode: true,
     hmr: { 
@@ -34,7 +38,8 @@ export async function setupVite(app: Express, server: Server) {
       clientPort: 5000,
       overlay: true,
     },
-    allowedHosts: true as true,
+    // Permit accesul de la host-urile configurate în .env (VITE_ALLOWED_HOSTS)
+    allowedHosts: allowedHostsList,
     // Setări watch pentru Docker (override dacă nu sunt în config)
     watch: {
       usePolling: true,
