@@ -4,7 +4,7 @@
  * API controller for onboarding companies with accounting history
  */
 
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { BaseController } from './base.controller';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
 import { OnboardingService } from '../services/onboarding.service';
@@ -190,8 +190,8 @@ export class OnboardingController extends BaseController {
    */
   async getOnboardingStatus(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
-      const companyId = req.params.companyId;
-      const fiscalYear = parseInt(req.query.fiscalYear as string, 10);
+      const companyId = req.params['companyId'];
+      const fiscalYear = parseInt(req.query['fiscalYear'] as string, 10);
       
       if (!fiscalYear) {
         throw { statusCode: 400, message: 'fiscalYear query parameter is required' };
@@ -260,11 +260,11 @@ export class OnboardingController extends BaseController {
       // Parse Excel with mapping
       const balances = this.onboardingService.parseExcelWithMapping(buffer, columnMapping);
       
-      // Import balances
+      // Import balances - using bracket notation for optional property
       const imported = await this.onboardingService.importOpeningBalances(
         companyId,
         balances,
-        fiscalYear,
+        req.body['fiscalYear'],
         'EXCEL',
         userId
       );
@@ -281,7 +281,7 @@ export class OnboardingController extends BaseController {
    * GET /api/accounting/onboarding/download-template
    * Download Excel template for opening balances
    */
-  async downloadTemplate(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async downloadTemplate(_req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const template = this.onboardingService.generateExcelTemplate();
       
@@ -304,8 +304,8 @@ export class OnboardingController extends BaseController {
    * Helper: Verify user has access to company
    */
   private verifyCompanyAccess(req: AuthenticatedRequest, companyId: string): void {
-    // Check if user has access to this company
-    if (req.user?.companyId && req.user.companyId !== companyId) {
+    // Check if user has access to this company - using bracket notation for optional property
+    if (req.user?.['companyId'] && req.user['companyId'] !== companyId) {
       throw { statusCode: 403, message: 'Access denied to this company' };
     }
     
