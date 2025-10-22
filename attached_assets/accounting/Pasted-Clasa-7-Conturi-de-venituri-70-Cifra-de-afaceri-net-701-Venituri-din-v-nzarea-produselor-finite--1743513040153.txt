@@ -1,31 +1,0 @@
-Clasa 7 -Conturi de venituri
-70. Cifra de afaceri netă701. Venituri din vânzarea produselor finite, produselor agricole şi a activelor biologice de natura stocurilor
-7015. Venituri din vânzarea produselor finite
-7017. Venituri din vânzarea produselor agricole
-7018. Venituri din vânzarea activelor biologice de natura stocurilor702. Venituri din vânzarea semifabricatelor703. Venituri din vânzarea produselor reziduale704. Venituri din servicii prestate705. Venituri din studii şi cercetări706. Venituri din redevenţe, locaţii de gestiune şi chirii707. Venituri din vânzarea mărfurilor708. Venituri din activităţi diverse709. Reduceri comerciale acordate71. Venituri aferente costului producţiei în curs de execuţie711. Venituri aferente costurilor stocurilor de produse712. Venituri aferente costurilor serviciilor în curs de execuţie72. Venituri din producţia de imobilizări721. Venituri din producţia de imobilizări necorporale722. Venituri din producţia de imobilizări corporale725. Venituri din producţia de investiţii imobiliare74. Venituri din subvenţii de exploatare741. Venituri din subvenţii de exploatare
-7411. Venituri din subvenţii de exploatare aferente cifrei de afaceri
-7412. Venituri din subvenţii de exploatare pentru materii prime şi materiale
-7413. Venituri din subvenţii de exploatare pentru alte cheltuieli externe
-7414. Venituri din subvenţii de exploatare pentru plata personalului
-7415. Venituri din subvenţii de exploatare pentru asigurări şi protecţie socială
-7416. Venituri din subvenţii de exploatare pentru alte cheltuieli de exploatare
-7417. Venituri din subvenţii de exploatare în caz de calamităţi şi alte evenimente similare
-7418. Venituri din subvenţii de exploatare pentru dobânda datorată
-7419. Venituri din subvenţii de exploatare aferente altor venituri
-75. Alte venituri din exploatare751. Venituri din operaţiuni de fiducie7511. Venituri ocazionate de constituirea fiduciei7512. Venituri din derularea operaţiunilor de fiducie7513. Venituri din lichidarea operaţiunilor de fiducie.754. Venituri din creanţe reactivate şi debitori diverşi755. Venituri din reevaluarea imobilizărilor corporale758. Alte venituri din exploatare7581. Venituri din despăgubiri, amenzi şi penalităţi
-7582. Venituri din donaţii primite
-7583. Venituri din vânzarea activelor şi alte operaţiuni de capital
-7584. Venituri din subvenţii pentru investiţii7586. Venituri reprezentând transferuri cuvenite în baza unor acte normative speciale7588. Alte venituri din exploatare76. Venituri financiare761. Venituri din imobilizări financiare
-7611. Venituri din acţiuni deţinute la entităţile afiliate
-7612. Venituri din acţiuni deţinute la entităţi asociate
-7613. Venituri din acţiuni deţinute la entităţi controlate în comun
-7615. Venituri din alte imobilizări financiare762. Venituri din investiţii financiare pe termen scurt764. Venituri din investiţii financiare cedate
-7641. Venituri din imobilizări financiare cedate
-7642. Câştiguri din investiţii pe termen scurt cedate765. Venituri din diferenţe de curs valutar
-7651. Diferenţe favorabile de curs valutar legate de elementele monetare exprimate în valută7652. Diferenţe favorabile de curs valutar din evaluarea elementelor monetare care fac parte din investiţia netă într-o entitate străină766. Venituri din dobânzi767. Venituri din sconturi obţinute768. Alte venituri financiare78. Venituri din provizioane, amortizări şi ajustări pentru depreciere sau pierdere de valoare781. Venituri din provizioane şi ajustări pentru depreciere privind activitatea de exploatare
-7812. Venituri din provizioane
-7813. Venituri din ajustări pentru deprecierea imobilizărilor
-7814. Venituri din ajustări pentru deprecierea activelor circulante7815. Venituri din fondul comercial negativ
-7818. Venituri din ajustări pentru deprecierea creanţelor reprezentând avansuri acordate furnizorilor786. Venituri financiare din amortizări şi ajustări pentru pierdere de valoare7863. Venituri financiare din ajustări pentru pierderea de valoare a imobilizărilor financiare
-7864. Venituri financiare din ajustări pentru pierderea de valoare a activelor circulante
-7865. Venituri financiare din amortizarea diferenţelor aferente titlurilor de stat79. Venituri din impozitul pe profit794. Venituri din impozitul peprofit rezultat dindecontările în cadrul grupului fiscal în domeniul impozitului pe profit

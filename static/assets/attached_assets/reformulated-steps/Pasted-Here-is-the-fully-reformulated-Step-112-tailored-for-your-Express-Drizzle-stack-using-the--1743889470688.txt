@@ -1,0 +1,67 @@
+Here is the fully **reformulated Step 112** tailored for your **Express + Drizzle** stack using the `/api/` base path and standardized authentication enforcement (`AuthGuard.protect(JwtAuthMode.REQUIRED)`, `AuthGuard.roleGuard()`, and `AuthGuard.companyGuard()`):
+
+---
+
+```markdown
+### ✅ Step 112: Test `/api/settings/setup` Endpoint (Express + Drizzle)
+
+📌 **Description**:  
+Validate that the `POST /api/settings/setup` endpoint correctly updates the `SetupStep` table in the database via Drizzle ORM. This confirms that the onboarding wizard step tracking is functional and secured according to GeniusERP v.2 architecture.
+
+---
+
+### 🧠 Agent Instructions
+
+#### 1. 🔍 Check for Existing Endpoint
+- Verify the `/api/settings/setup` route exists and is handled by `SettingsController`
+- Confirm that it:
+  - Uses `SetupService` internally
+  - Enforces middleware guards:
+    - `AuthGuard.protect("REQUIRED")`
+    - `AuthGuard.roleGuard(["hq_admin"])`
+    - `AuthGuard.companyGuard()`
+
+➡️ If all exist: ✅ proceed to test  
+➡️ If missing guards or logic: ❌ upgrade controller first (see Step 111)
+
+---
+
+### 🧪 2. Test via cURL
+
+After ensuring the server is running (`npm start`), execute:
+
+```bash
+curl -X POST http://localhost:3000/api/settings/setup \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "companyId": "test-co",
+    "franchiseId": "test-franchise",
+    "step": "configure_db",
+    "status": "completed"
+  }'
+```
+
+✅ Replace `YOUR_TOKEN_HERE` with the JWT token from Step 78
+
+---
+
+### 📦 3. Post-Test Validation
+
+- Open `npx drizzle studio` or `npx drizzle-kit studio` (depending on your tooling setup)
+- Go to `SetupStep` table
+- ✅ Confirm that a record exists with:
+  - `company_id = test-co`
+  - `franchise_id = test-franchise`
+  - `step = configure_db`
+  - `status = completed`
+
+---
+
+### ✅ Outcome
+The `/api/settings/setup` endpoint is confirmed functional, secured, and writing correctly to the database using Drizzle ORM. The settings module is now ready to support onboarding workflows and system initialization logic.
+
+Let me know if you’d like to scaffold:
+- A `GET /api/settings/setup` route to retrieve current progress
+- Frontend onboarding wizard with real-time step tracking
+```

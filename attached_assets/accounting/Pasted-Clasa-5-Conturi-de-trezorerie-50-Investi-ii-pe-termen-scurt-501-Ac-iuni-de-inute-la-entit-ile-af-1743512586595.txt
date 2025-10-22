@@ -1,21 +1,0 @@
-Clasa 5 -Conturi de trezorerie50. Investiţii pe termen scurt501. Acţiuni deţinute la entităţile afiliate (A)505. Obligaţiuni emise şi răscumpărate (A)506. Obligaţiuni (A)507. Certificate verzi primite (A)508. Alte investiţii pe termen scurt şi creanţe asimilate5081. Alte titluri de plasament (A)5088. Dobânzi la obligaţiuni şi titluri de plasament (A)509. Vărsăminte de efectuat pentru investiţiile pe termen scurt
-5091. Vărsăminte de efectuat pentru acţiunile deţinute la entităţile afiliate (P)
-5092. Vărsăminte de efectuat pentru alte investiţii pe termen scurt (P)51. Conturi la bănci511. Valori de încasat
-5112. Cecuri de încasat (A)
-5113. Efecte de încasat (A)
-5114. Efecte remise spre scontare (A)512. Conturi curente la bănci
-5121. Conturi la bănci în lei (A)
-5124. Conturi la bănci în valută (A)5125. Sume în curs de decontare (A)518. Dobânzi5186. Dobânzi de plătit (P)5187. Dobânzi de încasat (A)519. Credite bancare pe termen scurt
-5191. Credite bancare pe termen scurt (P)
-5192. Credite bancare pe termen scurt nerambursate la scadenţă (P)
-5193. Credite externe guvernamentale (P)
-5194. Credite externe garantate de stat (P)
-5195. Credite externe garantate de bănci (P)
-5196. Credite de la Trezoreria Statului (P)
-5197. Credite interne garantate de stat (P)
-5198. Dobânzi aferente creditelor bancare pe termen scurt (P)
-53. Casa531. Casa
-5311. Casa în lei (A)5314. Casa în valută (A)532. Alte valori5321. Timbre fiscale şi poştale (A)
-5322. Bilete de tratament şi odihnă (A)
-5323. Tichete şi bilete de călătorie (A)5328. Alte valori (A)54. Acreditive541. Acreditive
-5411. Acreditive în lei (A)5414. Acreditive în valută (A)542. Avansuri de trezorerie (A)58. Viramente interne581. Viramente interne (A/P)59. Ajustări pentru pierderea de valoare a conturilor de trezorerie591. Ajustări pentru pierderea de valoare a acţiunilor deţinute la entităţile afiliate (P)595. Ajustări pentru pierderea de valoare a obligaţiunilor emise şi răscumpărate (P)596. Ajustări pentru pierderea de valoare a obligaţiunilor (P)598. Ajustări pentru pierderea de valoare a altor investiţii pe termen scurt şi creanţe asimilate (P)

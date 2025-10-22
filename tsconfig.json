@@ -10,7 +10,7 @@
     "build",
     "dist",
     "node_modules",
-    "archived-old-structure"
+    "static"
   ],
   "compilerOptions": {
     "incremental": true,

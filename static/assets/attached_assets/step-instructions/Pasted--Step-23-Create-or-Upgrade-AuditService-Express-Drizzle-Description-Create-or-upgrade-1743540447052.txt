@@ -1,0 +1,76 @@
+```
+Step 23: Create or Upgrade AuditService (Express + Drizzle)
+
+🎯 Description:  
+Create or upgrade the `AuditService` to log structured actions across all GeniusERP modules (see Section 4.1.1.2.1).  
+This service will write to the `audit_logs` table using **Drizzle ORM** and ensure traceability for compliance and debugging.
+
+📦 Technologies:
+- Backend: Express (TypeScript)
+- ORM: Drizzle
+- Database: PostgreSQL (Neon)
+- Architecture: Modular NX
+- File policy: ≤150 LOC, fully logged
+
+🧱 Dependencies:
+- Step 22: `audit_logs` table migrated and available
+
+⚙️ Instructions:
+
+1. ✅ Check if file exists:
+```
+apps/api/src/modules/audit/services/audit.service.ts
+```
+
+- If it exists → upgrade to use `drizzle.db.insert(...)`
+- If not → create the file
+
+2. ✅ Add or replace content with Drizzle-based service:
+
+```ts
+import { drizzleClient } from '@/common/drizzle/drizzle.client';
+import { audit_logs } from '@/modules/audit/schema/audit-log.schema';
+import { InsertAuditLog } from '@/types/audit';
+import { sql } from 'drizzle-orm';
+
+export class AuditService {
+  static async log(data: InsertAuditLog) {
+    try {
+      await drizzleClient.insert(audit_logs).values({
+        ...data,
+        created_at: new Date(),
+      });
+      console.log('[AuditService] Logged action:', data.action, data.entity);
+    } catch (error) {
+      console.error('[AuditService] Failed to log audit entry:', error);
+    }
+  }
+}
+```
+
+3. ✅ Define `InsertAuditLog` type for strong typing:
+```
+libs/shared/types/audit/index.ts
+```
+```ts
+export interface InsertAuditLog {
+  company_id: string;
+  franchise_id?: string | null;
+  user_id?: string | null;
+  action: string;
+  entity: string;
+  entity_id: string;
+  details: Record<string, any>;
+}
+```
+
+🧪 Validation:
+- Call `AuditService.log(...)` from any controller or service
+- Check DB entry in `audit_logs`
+- Log appears in console
+
+📎 Notes:
+- Keep file under 100 LOC
+- Use as a **centralized logging utility** for all mutation flows
+- Add structured metadata in `details` (e.g. before/after, payload diff, source IP)
+```

@@ -1,0 +1,105 @@
+```markdown
+### 📦 Step 85: Create `TransferStockService` for Warehouse Transfers (Express + Drizzle)
+
+**📝 Description:**  
+Implement the `TransferStockService` inside the Inventory Module to handle movement of goods between warehouse locations. This aligns with stock transfer workflows such as `gestiune → gestiune`, with validations for availability and audit-compliant logging (Section 2.2.2.3).
+
+**🔗 Dependencies:**  
+- ✅ Step 40: `InventoryModule` already created  
+- ✅ Drizzle ORM and schema with `stock` and `warehouses` tables  
+- ✅ PostgreSQL connection via Drizzle properly configured
+
+---
+
+**📌 Prompt for Replit Agent:**
+
+> Build `TransferStockService` using Express and Drizzle ORM. This should:
+> - Decrease stock quantity in the source warehouse
+> - Create a new stock row in the target warehouse
+> - Validate stock availability
+> - Record both actions in the database
+
+---
+
+### 🗂️ File:
+Create:
+```
+server/modules/inventory/transfer-stock.service.ts
+```
+
+---
+
+### 🧠 Service Implementation (Drizzle ORM):
+
+```ts
+// server/modules/inventory/transfer-stock.service.ts
+import { db } from "../../core/db";
+import { stock } from "../../schema";
+import { eq } from "drizzle-orm";
+
+export class TransferStockService {
+  async transferStock(stockId: string, toWarehouseId: string, quantity: number) {
+    const [existingStock] = await db
+      .select()
+      .from(stock)
+      .where(eq(stock.id, stockId))
+      .limit(1);
+
+    if (!existingStock) throw new Error("Stock not found");
+    if (existingStock.quantity < quantity) throw new Error("Insufficient stock");
+
+    // Reduce quantity from source stock
+    await db.update(stock)
+      .set({ quantity: existingStock.quantity - quantity })
+      .where(eq(stock.id, stockId));
+
+    // Add quantity to target warehouse as new stock row
+    const [newStock] = await db.insert(stock)
+      .values({
+        company_id: existingStock.company_id,
+        franchise_id: existingStock.franchise_id,
+        sku: existingStock.sku,
+        quantity,
+        warehouse_id: toWarehouseId,
+        batch_no: existingStock.batch_no,
+        expiry_date: existingStock.expiry_date,
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .returning();
+
+    return newStock;
+  }
+}
+```
+
+---
+
+### 🛠️ Register in Inventory Module
+
+Update `server/modules/inventory/inventory.module.ts`:
+
+```ts
+import { TransferStockService } from "./transfer-stock.service";
+
+export const InventoryModule = {
+  providers: [
+    TransferStockService,
+    // ...other inventory services
+  ],
+};
+```
+
+---
+
+### ✅ Sample Usage:
+
+```ts
+const transfer = new TransferStockService();
+await transfer.transferStock("stock-uuid", "warehouse-target-id", 15);
+```
+
+---
+
+This implementation ensures granular, auditable tracking of stock transfers, enabling enhanced warehouse workflows and preparation for `Aviz de însoțire` logic.
+```

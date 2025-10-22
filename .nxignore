@@ -1,7 +1,5 @@
-# Exclude old structure directories during NX migration
-client/
-server/
-shared/
+# Exclude static assets and documentation
+static/
 
 # Exclude other directories
 node_modules/
@@ -9,16 +7,10 @@ dist/
 .nx/
 coverage/
 utils/
-migrations/
-scripts/
-attached_assets/
 data/
 db-backups/
-documentation/
 drizzle/
 hr/
-imports/
 monitoring/
 nginx/
-reports/
 

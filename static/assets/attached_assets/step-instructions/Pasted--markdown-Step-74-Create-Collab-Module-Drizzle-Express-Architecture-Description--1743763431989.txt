@@ -1,0 +1,69 @@
+```markdown
+### Step 74: Create Collab Module (Drizzle + Express Architecture)
+
+**🧠 Description:**  
+Define the `CollabModule` as a fully modular and extensible feature package dedicated to internal team collaboration in GeniusERP v.2. This module will power all features related to:
+
+- Task creation and assignment between users
+- Internal communication (comments, messages per task)
+- Notes, attachments, and document links
+- Supervisor review flow and approval chain
+- Task status, due dates, priority levels
+- Full audit logging of task changes
+- Real-time notifications (future feature)
+- User-specific dashboards for work tracking
+
+The module must strictly adhere to **NX monorepo structure**, using short, highly maintainable files (max ~150 LOC) and granular folder organization. Data access is powered by **Drizzle ORM**, using the previously migrated `collaboration_tasks` table.
+
+**📎 Dependencies:**  
+Step 73 (collaboration model migrated with Drizzle)
+
+---
+
+**⚙️ Prompt for Agent:**
+
+"Create the `CollabModule` for GeniusERP v.2 in Replit using Drizzle ORM:
+
+1. Create a new module directory:
+```bash
+mkdir -p server/modules/collab
+```
+
+2. Create the module definition file:
+`server/modules/collab/collab.module.ts`
+```ts
+import { Module } from '@nestjs/common';
+import { CollabService } from './services/collab.service';
+import { CollabController } from './controllers/collab.controller';
+import { DrizzleModule } from '../../common/drizzle/drizzle.module';
+
+@Module({
+  imports: [DrizzleModule],
+  providers: [CollabService],
+  controllers: [CollabController],
+  exports: [CollabService]
+})
+export class CollabModule {}
+```
+
+3. Update `server/app.module.ts`:
+```ts
+import { CollabModule } from './modules/collab/collab.module';
+
+@Module({
+  imports: [
+    // ...other modules
+    CollabModule
+  ]
+})
+export class AppModule {}
+```
+
+4. Verify structure:
+```bash
+npm run build
+```
+
+✅ Once created, the module can be extended with `CollabService`, `CollabController`, DTOs, validators, and guards to power GeniusERP’s internal productivity engine.
+```
+```

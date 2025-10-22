@@ -1,0 +1,88 @@
+Here's the fully **reformulated Step 109** adapted for **Express + Drizzle**, with proper enforcement of `/api/` base path and secure access via:
+
+- `AuthGuard.protect(JwtAuthMode.REQUIRED)`
+- `AuthGuard.roleGuard()`
+- `AuthGuard.companyGuard()`
+
+It also includes a pre-check to avoid duplication and encourages enhancement of existing logic.
+
+---
+
+```markdown
+### ✅ Step 109: Test Inventory Queue Worker (Express + Drizzle + BullMQ)
+
+**📌 Description:**  
+Validate that the inventory worker correctly processes low stock alerts enqueued by the `CheckStockLevelsService`. This ensures that BullMQ integration is functioning even within the limitations of Replit’s Redis mock.
+
+---
+
+### 🧠 Agent Instructions
+
+#### 1. 🔍 Audit for Existing Worker Execution
+- Confirm that the `inventory.worker.ts` is already registered and running.
+- Check if it's correctly subscribed to the `"inventory"` queue and handling the `"alert"` job.
+- Validate that `NotificationService` is injected and used inside the worker handler.
+
+➡️ If found: ✅ Skip worker creation and go to **test execution**  
+🚫 If not registered: ✅ Refer to Step 108 and **ensure the worker is active**
+
+---
+
+### 2. 🔐 Verify Route and Guard Enforcement
+
+Ensure the following in the `check-stock-levels.controller.ts` (or wherever the alert is triggered):
+
+- All endpoints are mounted on `/api/inventory`
+- `AuthGuard.protect(JwtAuthMode.REQUIRED)` is applied
+- `AuthGuard.roleGuard()` enforces appropriate roles (e.g., `"inventory_team"`)
+- `AuthGuard.companyGuard()` ensures multi-tenancy isolation
+
+---
+
+### 3. 🧪 Run Test Curl to Trigger Queue Logic
+
+Ensure stock exists with low quantity (<10), then execute:
+
+```bash
+curl -X POST http://localhost:3000/api/inventory/check-levels \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "franchiseId": "test-franchise"
+  }'
+```
+
+✅ Replace `YOUR_TOKEN_HERE` with the JWT token from Step 78  
+✅ Ensure the stock entity has `quantity < 10` in the database (e.g. via Prisma Studio or Drizzle query)
+
+---
+
+### 4. 🔍 Observe Logs in Replit Console
+
+Expected output:
+
+```bash
+🔔 Notification to inventory_team@example.com: Low stock alert for SKU XYZ123 in warehouse WH001
+✅ Inventory job #45 completed
+📦 Processed alert: Low stock for SKU XYZ123 in warehouse WH001
+```
+
+---
+
+### 🧠 Optional Enhancements
+
+- Add queue job retry strategies (backoff, delay)
+- Add persistent notification logic (e.g., DB or email)
+- Add logging middleware to audit queue performance
+
+---
+
+### ✅ Outcome
+
+You now have a working **async queue + notification flow** for inventory, confirmed via Express route `/api/inventory/check-levels`, authenticated and secured by full `AuthGuard` stack.
+
+Let me know if you want to scaffold:
+- Queue monitoring dashboard
+- Redis Cloud failover handling
+- Slack/email integration for alerts
+```

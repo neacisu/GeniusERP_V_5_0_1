@@ -1,0 +1,14 @@
+Clasa 9 -Conturi de gestiune
+90. Decontări interne
+901. Decontări interne privind cheltuielile (B)
+902. Decontări interne privind producţia obţinută (B)
+903. Decontări interne privind diferenţele de preţ (B)
+92. Conturi de calculaţie
+921. Cheltuielile activităţii de bază (B)
+922. Cheltuielile activităţilor auxiliare (B)
+923. Cheltuieli indirecte de producţie (B)
+924. Cheltuieli generale de administraţie (B)
+925. Cheltuieli de desfacere (B)
+93. Costul producţiei
+931. Costul producţiei obţinute (B)
+933. Costul producţiei în curs de execuţie (B)

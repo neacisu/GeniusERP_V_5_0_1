@@ -1,0 +1,7 @@
+{
+  "name": "test-query",
+  "version": "1.0.0",
+  "description": "Testing database queries",
+  "type": "module",
+  "main": "test-query.js"
+}

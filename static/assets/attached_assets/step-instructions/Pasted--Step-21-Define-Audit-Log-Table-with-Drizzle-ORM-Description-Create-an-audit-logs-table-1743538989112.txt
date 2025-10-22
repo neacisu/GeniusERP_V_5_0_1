@@ -1,0 +1,67 @@
+```
+Step 21: Define Audit Log Table with Drizzle ORM
+
+🎯 Description:  
+Create an `audit_logs` table using **Drizzle ORM (TypeScript)** to enable immutable, structured logging of all key actions across GeniusERP v.2.  
+This model supports compliance, debugging, and system traceability as required in Section 2.3.5.1.
+
+📦 Technologies:
+- Backend: Express (TypeScript)
+- Database: PostgreSQL (Neon)
+- ORM: Drizzle
+- Monorepo: NX
+- Structure: Granular, modular, ≤150 LOC per file
+
+🧱 Dependencies:
+- Step 14: Auth models (`users`, `roles`, etc.) are already defined
+
+⚙️ Instructions:
+
+1. ✅ Create a new schema module:
+```
+apps/api/src/modules/audit/schema/audit-log.schema.ts
+```
+
+2. ✅ Add the following Drizzle definition:
+```ts
+import { pgTable, uuid, text, timestamp, jsonb, index } from 'drizzle-orm/pg-core';
+
+export const audit_logs = pgTable('audit_logs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  company_id: uuid('company_id').notNull(),
+  franchise_id: uuid('franchise_id'),
+  user_id: uuid('user_id'),
+  action: text('action').notNull(),        // e.g. 'CREATE_INVOICE'
+  entity: text('entity').notNull(),        // e.g. 'invoice'
+  entity_id: uuid('entity_id').notNull(),
+  details: jsonb('details').notNull(),     // Any structured metadata
+  created_at: timestamp('created_at').defaultNow(),
+}, (table) => ({
+  scopeIdx: index('audit_idx').on(table.company_id, table.franchise_id, table.created_at),
+}));
+```
+
+3. ✅ Export in central schema index:
+```
+apps/api/src/db/schema/index.ts
+```
+```ts
+export * from '../../modules/audit/schema/audit-log.schema';
+```
+
+4. ✅ Generate and apply migration:
+```bash
+npx drizzle-kit generate:pg --out drizzle/migrations
+npx drizzle-kit push:pg
+```
+
+🧪 Validation:
+- Table `audit_logs` visible in Neon DB
+- Index exists on `(company_id, franchise_id, created_at)`
+- `details` column accepts structured JSON (e.g. changed fields, metadata)
+
+📎 Notes:
+- This table must be written to using a central `AuditService`
+- Every critical mutation (create/update/delete) should log here
+- Immutable logs = accountability and forensic audit trail
+```

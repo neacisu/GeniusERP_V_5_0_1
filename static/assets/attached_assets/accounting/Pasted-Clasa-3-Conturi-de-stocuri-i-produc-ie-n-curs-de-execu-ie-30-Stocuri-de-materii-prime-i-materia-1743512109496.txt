@@ -1,0 +1,21 @@
+Clasa 3 -Conturi de stocuri şi producţie în curs de execuţie30. Stocuri de materii prime şi material301. Materii prime (A)302. Materiale consumabile
+3021. Materiale auxiliare (A)
+3022. Combustibili (A)
+3023. Materiale pentru ambalat (A)
+3024. Piese de schimb (A)3025. Seminţe şi materiale de plantat (A)3026. Furaje (A)
+3028. Alte materiale consumabile (A)303. Materiale de natura obiectelor de inventar (A)308. Diferenţe de preţ la materii prime şi materiale (A/P)32. Stocuri în curs de aprovizionare321. Materii prime în curs de aprovizionare (A)322. Materiale consumabile în curs de aprovizionare (A)323. Materiale de natura obiectelor de inventar în curs de aprovizionare (A)326. Active biologice de natura stocurilor în curs de aprovizionare (A)327. Mărfuri în curs de aprovizionare (A)328. Ambalaje în curs de aprovizionare (A)33. Producţie în curs de execuţie331. Produse în curs de execuţie (A)332. Servicii în curs de execuţie (A)34. PRODUSE341. Semifabricate (A)345. Produse finite (A)346. Produse reziduale (A)347. Produse agricole (A)348. Diferenţe de preţ la produse (A/P)35. STOCURI AFLATE LA TERŢI351. Materii şi materiale aflate la terţi (A)354. Produse aflate la terţi (A)356. Active biologice de natura stocurilor aflate la terţi (A)357. Mărfuri aflate la terţi (A)358. Ambalaje aflate la terţi (A)
+36. Active biologice de natura stocurilor361. Active biologice de natura stocurilor (A)368. Diferenţe de preţ la active biologice de natura stocurilor (A/P)37. MĂRFURI371. Mărfuri (A)378. Diferenţe de preţ la mărfuri (A/P)38. Ambalaje381. Ambalaje (A)388. Diferenţe de preţ la ambalaje (A/P)39. Ajustări pentru deprecierea stocurilor şi producţiei în curs de execuţie391. Ajustări pentru deprecierea materiilor prime (P)392. Ajustări pentru deprecierea materialelor
+3921. Ajustări pentru deprecierea materialelor consumabile (P)
+3922. Ajustări pentru deprecierea materialelor de natura obiectelor de inventar (P)393. Ajustări pentru deprecierea producţiei în curs de execuţie (P)394. Ajustări pentru deprecierea produselor
+3941. Ajustări pentru deprecierea semifabricatelor (P)
+3945. Ajustări pentru deprecierea produselor finite (P)
+3946. Ajustări pentru deprecierea produselor reziduale (P)
+3947. Ajustări pentru deprecierea produselor agricole (P)395. Ajustări pentru deprecierea stocurilor aflate la terţi
+3951. Ajustări pentru deprecierea materiilor şi materialelor aflate la terţi (P)
+3952. Ajustări pentru deprecierea semifabricatelor aflate la terţi (P)
+3953. Ajustări pentru deprecierea produselor finite aflate la terţi (P)
+3954. Ajustări pentru deprecierea produselor reziduale aflate la terţi (P)
+3955. Ajustări pentru deprecierea produselor agricole aflate la terţi (P)
+3956. Ajustări pentru deprecierea activelor biologice de natura stocurilor aflate la terţi (P)
+3957. Ajustări pentru deprecierea mărfurilor aflate la terţi (P)
+3958. Ajustări pentru deprecierea ambalajelor aflate la terţi (P)396. Ajustări pentru deprecierea activelor biologice de natura stocurilor (P)397. Ajustări pentru deprecierea mărfurilor (P)398. Ajustări pentru deprecierea ambalajelor (P)

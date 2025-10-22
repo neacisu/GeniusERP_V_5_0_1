@@ -1,0 +1,50 @@
+Clasa 1 -Conturi de capitaluri, provizioane, împrumuturi şi datorii asimilate10. Capital şi reserve101. Capital1011. Capital subscris nevărsat (P) 
+1012. Capital subscris vărsat (P)1015. Patrimoniul regiei (P)
+1016. Patrimoniul public (P)
+1017. Patrimoniul privat (P)
+1018. Patrimoniul institutelor naţionale de cercetare-dezvoltare (P)103. Alte elemente de capitaluri proprii1031. Beneficii acordate angajaţilor sub forma instrumentelor de capitaluri proprii (P)
+1033. Diferenţe de curs valutar în relaţie cu investiţia netă într-o entitate străină4 (A/P)
+1038. Diferenţe din modificarea valorii juste a activelor financiare disponibile în vederea vânzării şi alte elemente de capitaluri proprii (A/P)104. Prime de capital 
+1041. Prime de emisiune (P)
+1042. Prime de fuziune/divizare (P)
+1043. Prime de aport (P)1044. Prime de conversie a obligaţiunilor în acţiuni (P)105. Rezerve din reevaluare (P)106. Rezerve
+1061. Rezerve legale (P)
+1063. Rezerve statutare sau contractuale (P)
+1068. Alte rezerve (P)107.Diferenţe de curs valutar din conversie (A/P)108. Interese care nu controlează
+1081. Interese care nu controlează -rezultatul exerciţiului financiar (A/P)
+1082. Interese care nu controlează -alte capitaluri proprii (A/P)109. Acţiuni proprii
+1091. Acţiuni proprii deţinute pe termen scurt (A)
+1092. Acţiuni proprii deţinute pe termen lung (A)
+1095. Acţiuni proprii reprezentând titluri deţinute de societatea absorbită la societatea absorbantă (A)11. Rezultatul reportat117. Rezultatul reportat
+1171. Rezultatul reportat reprezentând profitul nerepartizat sau pierderea neacoperită (A/P)
+1172. Rezultatul reportat provenit din adoptarea pentru prima dată a IAS, mai puţin IAS 298 (A/P)
+1173. Rezultatul reportat provenit din modificările politicilor contabile (A/P)
+1174. Rezultatul reportat provenit din corectarea erorilor contabile (A/P)
+1175. Rezultatul reportat reprezentând surplusul realizat din rezerve din reevaluare (P)
+1176. Rezultatul reportat provenit din trecerea la aplicarea reglementărilor contabile conforme cu directivele europene (A/P)12. Rezultatul exerciţiului financiar121. Profit sau pierdere (A/P)129. Repartizarea profitului (A)14. Câştiguri sau pierderi legate de emiterea, răscumpărarea, vânzarea, cedarea cu titlu gratuit sau anularea instrumentelor de capitaluri proprii141. Câştiguri legate de vânzarea sau anularea instrumentelor de capitaluri proprii
+1411. Câştiguri legate de vânzarea instrumentelor de capitaluri proprii (P)
+1412. Câştiguri legate de anularea instrumentelor de capitaluri proprii (P)149. Pierderi legate de emiterea, răscumpărarea, vânzarea, cedarea cu titlu gratuit sau anularea instrumentelor de capitaluri proprii
+1491. Pierderi rezultate din vânzarea instrumentelor de capitaluri proprii (A)1495. Pierderi rezultate din reorganizări, care sunt determinate de anularea titlurilor deţinute (A)1496 Pierderi rezultate din reorganizări de societăţi, corespunzătoare activului net negativ al societăţii absorbite (A)1498. Alte pierderi legate de instrumentele de capitaluri proprii (A)
+15. Provizioane151. Provizioane
+1511. Provizioane pentru litigii (P)1512. Provizioane pentru garanţii acordate clienţilor (P)
+1513. Provizioane pentru dezafectare imobilizări corporale şi alte acţiuni similare legate de acestea (P)1514. Provizioane pentru restructurare (P)1515. Provizioane pentru pensii şi obligaţii similare (P)1516. Provizioane pentru impozite (P)
+1517. Provizioane pentru terminarea contractului de muncă (P)
+1518. Alte provizioane (P)16. Împrumuturi şi datorii assimilate161. Împrumuturi din emisiuni de obligaţiuni
+1614. Împrumuturi externe din emisiuni de obligaţiuni garantate de stat (P)
+1615. Împrumuturi externe din emisiuni de obligaţiuni garantate debănci (P)
+1617. Împrumuturi interne din emisiuni de obligaţiuni garantate de stat (P)
+1618. Alte împrumuturi din emisiuni de obligaţiuni (P)162. Credite bancare pe termen lung
+1621. Credite bancare pe termen lung (P)
+1622. Credite bancare pe termen lung nerambursate la scadenţă (P)
+1623. Credite externe guvernamentale (P)
+1624. Credite bancare externe garantate de stat (P)
+1625. Credite bancare externe garantate de bănci (P)
+1626. Credite de la trezoreria statului (P)
+1627. Credite bancare interne garantate de stat (P)166. Datorii care privesc imobilizările financiare
+1661. Datorii faţă de entităţile afiliate (P)
+1663. Datorii faţă de entităţile asociate şi entităţile controlate în comun (P)167. Alte împrumuturi şi datorii asimilate (P)168. Dobânzi aferente împrumuturilor şi datoriilor asimilate
+1681. Dobânzi aferente împrumuturilor din emisiuni de obligaţiuni (P)
+1682. Dobânzi aferente creditelor bancare pe termen lung (P)1685. Dobânzi aferente datoriilor faţă de entităţile afiliate (P)
+1686. Dobânzi aferente datoriilor faţă de entităţile asociate şi entităţile controlate în comun (P)
+1687. Dobânzi aferente altor împrumuturi şi datorii asimilate (P)169. Prime privind rambursarea obligaţiunilor şi a altor datorii
+1691. Prime privind rambursarea obligaţiunilor (A)1692. Prime privind rambursarea altor datorii (A)

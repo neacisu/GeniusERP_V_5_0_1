@@ -1,0 +1,70 @@
+```
+Step 20: Implement AuthGuard for Protected Routes (JWT)
+
+🧱 Description:  
+Create an `AuthGuard` to secure API routes by validating JWT tokens extracted from the `Authorization` header.  
+This ensures that only authenticated users can access protected endpoints, as required in Section 4.1.5.3.  
+The guard will decode the JWT, attach the payload to `request.user`, and reject unauthorized access.
+
+🔗 Dependencies:  
+- Step 19: `AuthModule` configured with `JwtModule` and `AuthService`
+
+📦 Technologies:  
+- Backend: NestJS (in NX monorepo structure)  
+- Auth: JWT  
+- Language: TypeScript
+
+⚙️ Instructions:
+
+1. ✅ Create the file:
+```
+apps/api/src/common/guards/auth.guard.ts
+```
+
+2. ✅ Add the following content:
+```ts
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+
+@Injectable()
+export class AuthGuard implements CanActivate {
+  constructor(private readonly jwt: JwtService) {}
+
+  canActivate(context: ExecutionContext): boolean {
+    const request = context.switchToHttp().getRequest();
+    const authHeader = request.headers.authorization;
+    const token = authHeader?.split(' ')[1];
+
+    if (!token) {
+      console.warn('[AuthGuard] Missing token');
+      throw new UnauthorizedException('Missing authorization token');
+    }
+
+    try {
+      const payload = this.jwt.verify(token);
+      request.user = payload;
+      console.log('[AuthGuard] Token validated:', payload);
+      return true;
+    } catch (error) {
+      console.error('[AuthGuard] Invalid token:', error);
+      throw new UnauthorizedException('Invalid or expired token');
+    }
+  }
+}
+```
+
+3. ✅ Verify:
+```bash
+npm run build
+```
+
+🧪 Result:
+- Authenticated requests will have `request.user` populated
+- Unauthorized requests return `401 Unauthorized`
+- Use in controllers with: `@UseGuards(AuthGuard)`
+
+🧠 Best practice:
+- Keep the file under **100 LOC**
+- Log all token validation events for debugging
+- Use NX-compliant path structure in monorepo
+```

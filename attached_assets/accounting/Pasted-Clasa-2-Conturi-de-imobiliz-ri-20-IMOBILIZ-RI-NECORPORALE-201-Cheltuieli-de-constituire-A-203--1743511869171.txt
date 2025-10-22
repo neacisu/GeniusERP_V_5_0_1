@@ -1,43 +1,0 @@
-Clasa 2 -Conturi de imobilizări20. IMOBILIZĂRI NECORPORALE201. Cheltuieli de constituire (A)203. Cheltuieli de dezvoltare (A)205. Concesiuni, brevete, licenţe, mărci comerciale, drepturi şi active similare (A)206. Active necorporale de explorare şi evaluare a resurselor minerale (A)207. Fond comercial 
-2071. Fond comercial pozitiv (A)
-2075. Fond comercial negativ (P)208. Alte imobilizări necorporale (A)21. Imobilizări corporale211. Terenuri şi amenajări de terenuri (A)2111. Terenuri2112. Amenajări de terenuri212. Construcţii (A)213. Instalaţii tehnice şi mijloace de transport
-2131. Echipamente tehnologice (maşini, utilaje şi instalaţii de lucru) (A)
-2132. Aparate şi instalaţii de măsurare, control şi reglare (A)2133. Mijloace de transport (A)214. Mobilier, aparatură birotică, echipamente de protecţie a valorilor umane şi materiale şi alte active corporale (A)215. Investiţii imobiliare (A)216. Active corporale de explorare şi evaluare a resurselor minerale (A)217. Active biologice productive (A)22. Imobilizări corporale în curs de aprovizionare223. Instalaţii tehnice şi mijloace de transport în curs de aprovizionare (A)224. Mobilier, aparatură birotică, echipamente de protecţie a valorilor umane şi materiale şi alte active corporale în curs de aprovizionare (A)227. Active biologice productive în curs de aprovizionare (A)23. Imobilizări în curs231. Imobilizări corporale în curs de execuţie (A)235. Investiţii imobiliare în curs de execuţie (A)
-26. Imobilizări financiare261. Acţiuni deţinute la entităţile afiliate (A)262. Acţiuni deţinute la entităţi asociate (A)263. Acţiuni deţinute la entităţi controlate în comun (A)264. Titluri puse în echivalenţă (A)265. Alte titluri imobilizate (A)266. Certificate verzi amânate (A)267. Creanţe imobilizate
-2671. Sume de încasat de la entităţile afiliate (A)
-2672. Dobânda aferentă sumelor de încasat de la entităţile afiliate (A)
-2673. Creanţe faţă de entităţile asociate şi entităţile controlate în comun (A)
-2674. Dobânda aferentă creanţelor faţă de entităţile asociate şi entităţile controlate în comun (A)
-2675. Împrumuturi acordate pe termen lung (A)2676. Dobânda aferentă împrumuturilor acordate pe termen lung (A)
-2677. Obligaţiuni achiziţionate cu ocazia emisiunilor efectuate de terţi (A)
-2678. Alte creanţe imobilizate (A)
-2679. Dobânzi aferente altor creanţe imobilizate (A)269. Vărsăminte de efectuat pentru imobilizări financiare
-2691. Vărsăminte de efectuat privind acţiunile deţinute la entităţile afiliate (P)
-2692. Vărsăminte de efectuat privind acţiunile deţinute la entităţi asociate (P)
-2693. Vărsăminte de efectuat privind acţiunile deţinute la entităţi controlate în comun (P)2695. Vărsăminte de efectuat pentru alte imobilizări financiare (P)28. Amortizări privind imobilizările280. Amortizări privind imobilizările necorporale
-2801. Amortizarea cheltuielilor de constituire (P)
-2803. Amortizarea cheltuielilor de dezvoltare (P)
-2805. Amortizarea concesiunilor, brevetelor, licenţelor, mărcilorcomerciale, drepturilor şi activelor similare (P)
-2806. Amortizarea activelor necorporale de explorare şi evaluare a resurselor minerale (P)
-2807. Amortizarea fondului comercial (P)2808. Amortizarea altor imobilizări necorporale (P)281. Amortizări privind imobilizările corporale
-2811. Amortizarea amenajărilor de terenuri (P)
-2812. Amortizarea construcţiilor (P)
-2813. Amortizarea instalaţiilor şi mijloacelor de transport (P)
-2814. Amortizarea altor imobilizări corporale (P)
-2815. Amortizarea investiţiilor imobiliare (P)
-2816. Amortizarea activelor corporale de explorare şi evaluare a resurselor minerale (P)
-2817. Amortizarea activelor biologice productive (P)
-29. Ajustări pentru deprecierea sau pierderea de valoare a imobilizărilor290. Ajustări pentru deprecierea imobilizărilor necorporale
-2903. Ajustări pentru deprecierea cheltuielilor de dezvoltare (P)
-2905. Ajustări pentru deprecierea concesiunilor, brevetelor, licenţelor, mărcilor comerciale, drepturilor şi activelor similare (P)2906. Ajustări pentru deprecierea activelor necorporale de explorare şi evaluare a resurselor minerale (P)
-2908. Ajustări pentru deprecierea altor imobilizări necorporale (P)291. Ajustări pentru deprecierea imobilizărilor corporale
-2911. Ajustări pentru deprecierea terenurilor şi amenajărilor de terenuri (P)2912. Ajustări pentru deprecierea construcţiilor (P)
-2913. Ajustări pentru deprecierea instalaţiilor şi mijloacelor de transport (P)2914. Ajustări pentru deprecierea altor imobilizări corporale (P)
-2915. Ajustări pentru deprecierea investiţiilor imobiliare (P)
-2916. Ajustări pentru deprecierea activelor corporale de explorare şi evaluare a resurselor minerale (P)2917. Ajustări pentru deprecierea activelor biologice productive (P)293. Ajustări pentru deprecierea imobilizărilor în curs de execuţie
-2931. Ajustări pentru deprecierea imobilizărilor corporale în curs de execuţie (P)2935. Ajustări pentru deprecierea investiţiilor imobiliare în curs de execuţie (P)296. Ajustări pentru pierderea de valoare a imobilizărilor financiare
-2961. Ajustări pentru pierderea de valoare a acţiunilor deţinute la entităţile afiliate (P)
-2962. Ajustări pentru pierderea de valoare a acţiunilor deţinute la entităţi asociate şi entităţi controlate în comun (P)
-2963. Ajustări pentru pierderea de valoare a altor titluri imobilizate (P)2964. Ajustări pentru pierderea de valoare a sumelor de încasat de la entităţile afiliate (P)
-2965. Ajustări pentru pierderea de valoare a creanţelorfaţă de entităţile asociate şi entităţile controlate în comun (P)
-2966. Ajustări pentru pierderea de valoare a împrumuturilor acordate pe termen lung (P)2968. Ajustări pentru pierderea de valoare a altor creanţe imobilizate (P)

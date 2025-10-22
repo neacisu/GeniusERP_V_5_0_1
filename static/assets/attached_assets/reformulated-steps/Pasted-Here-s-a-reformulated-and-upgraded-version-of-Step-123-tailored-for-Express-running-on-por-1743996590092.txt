@@ -1,0 +1,72 @@
+Here’s a **reformulated and upgraded version** of **Step 123** tailored for **Express running on port 5000 with Drizzle**, using the `/api/` base path and enforcing secure access with:
+
+- `AuthGuard.protect(JwtAuthMode.REQUIRED)`
+- `AuthGuard.roleGuard()`
+- `AuthGuard.companyGuard()`
+
+---
+
+### ✅ Step 123: Test Employee Creation Endpoint
+
+**🎯 Objective:**  
+Verify that the `/api/hr/employee` endpoint correctly inserts an employee into the `employee` table, validating the HR module functionality (📘 Section 4.1.4.7).
+
+---
+
+### 🧠 Agent Instructions
+
+#### 🔍 First: Check Before Testing
+- Ensure `/api/hr/employee` route is registered (see: `src/modules/hr/hr.controller.ts`)
+- Confirm that `EmployeeService.createEmployee()` exists and is injected correctly
+- Confirm middleware:
+  - `AuthGuard.protect(JwtAuthMode.REQUIRED)`
+  - `AuthGuard.roleGuard(["hr_team"])`
+  - `AuthGuard.companyGuard()`
+- App should be running on **port `5000`**
+
+---
+
+### 🧪 Test Command (via cURL)
+
+```bash
+curl -X POST http://localhost:5000/api/hr/employee \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -d '{
+    "companyId": "test-co",
+    "franchiseId": "test-franchise",
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "position": "Manager",
+    "salary": 50000,
+    "hireDate": "2025-03-09"
+}'
+```
+
+---
+
+### ✅ Expected Results:
+- Returns a `200 OK` response with the inserted employee object.
+- Employee record is visible in Drizzle/Postgres (via Drizzle Studio or query).
+- AuthGuard prevents access without a valid JWT token.
+- Only users with role `"hr_team"` can access this route.
+
+---
+
+### 🛠 Troubleshooting Checklist:
+| Checkpoint                            | What to Verify                                  |
+|--------------------------------------|--------------------------------------------------|
+| Controller registered                | `/api/hr/employee` is mounted in `server.ts`    |
+| Auth middleware applied              | `AuthGuard.protect()`, `roleGuard()`, `companyGuard()` used |
+| Correct token used                   | Token from Step 78 has `hr_team` in roles       |
+| App is running                       | App is listening on port `5000`                 |
+| Drizzle migration applied            | `employee` table exists in DB                   |
+
+---
+
+Let me know if you want to:
+- Extend the endpoint to support employee updates
+- Add Zod validation for the request body
+- Connect this with contract or attendance management logic
+
+Ready when you are 🧠💼

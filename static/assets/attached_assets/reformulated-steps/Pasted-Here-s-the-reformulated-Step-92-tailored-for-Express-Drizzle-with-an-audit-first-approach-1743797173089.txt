@@ -1,0 +1,89 @@
+Here's the **reformulated Step 92** tailored for **Express + Drizzle**, with an audit-first approach to avoid duplicates and ensure clean integration:
+
+---
+
+```markdown
+### 🔄 Step 92: Audit & Create Ecommerce Controller (Express + Drizzle)
+
+**📌 Description:**  
+Establish or upgrade the `EcommerceController` in GeniusERP v.2 to support e-commerce and POS operations. This controller will initially expose a placeholder endpoint (e.g., order creation stub), secured via authentication middleware, and will serve as the foundation for future expansion — including order processing, Shopify integrations, payment gateways, and POS flows.
+
+---
+
+### 🧠 Agent Instructions:
+
+1. **Audit First:**
+   - Search the codebase for any existing Express route handlers under:
+     - `src/modules/ecommerce/`
+     - `src/routes/ecommerce.ts`
+     - Look for `/ecommerce` route paths in the main app router or registered modules.
+   - If an `ecommerce.controller.ts` or similar logic is found, **enhance it** with a `POST /order-placeholder` endpoint secured by auth middleware.
+   - Avoid duplicate declarations or route conflicts.
+
+2. **If Not Present, Create:**
+   - Create a new controller file: `src/modules/ecommerce/ecommerce.controller.ts`
+   - Implement a secured route using `requireAuth` middleware
+   - Register the route under `/v1/ecommerce` in the main Express app router
+
+---
+
+### ✅ Example (Express Controller):
+
+```ts
+import { Router } from "express";
+import { requireAuth } from "../../common/middleware/auth.middleware";
+
+const router = Router();
+
+router.post("/order-placeholder", requireAuth, async (req, res) => {
+  return res.json({
+    message: "E-commerce order creation placeholder",
+    data: req.body,
+  });
+});
+
+export default router;
+```
+
+---
+
+### 🔗 Integration:
+
+- **In your Express app entry:**
+
+```ts
+import ecommerceRoutes from "./modules/ecommerce/ecommerce.controller";
+app.use("/v1/ecommerce", ecommerceRoutes);
+```
+
+- **Ensure export from module index:**
+
+```ts
+export { default as ecommerceRoutes } from "./ecommerce.controller";
+```
+
+---
+
+### 🔒 Security:
+
+Ensure all routes use `requireAuth` middleware to enforce JWT-based access control as implemented in the Auth module.
+
+---
+
+### 🧪 Test Command:
+
+```bash
+curl -X POST http://localhost:3000/v1/ecommerce/order-placeholder \
+  -H "Authorization: Bearer <your_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"productId":"test-product","qty":1}'
+```
+
+---
+
+### ✅ Outcome:
+> An initial `EcommerceController` with secure placeholder logic is operational and integrated in a modular fashion, ready for expansion with real-world order creation, Shopify sync, payment processing, and POS logic.
+
+```
+
+Let me know if you want to scaffold real endpoints for Shopify order sync or POS inventory tracking next.

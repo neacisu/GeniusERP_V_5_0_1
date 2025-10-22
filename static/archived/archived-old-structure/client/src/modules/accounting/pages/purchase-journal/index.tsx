@@ -1,0 +1,1733 @@
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import AppLayout from "@/components/layout/AppLayout";
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription,
+  CardFooter
+} from "@/components/ui/card";
+import { 
+  Table, 
+  TableHeader, 
+  TableRow, 
+  TableHead, 
+  TableBody, 
+  TableCell 
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter,
+  DialogDescription
+} from "@/components/ui/dialog";
+import { 
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from "@/components/ui/tabs";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format, startOfMonth, endOfMonth } from "date-fns";
+import { ro } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { apiRequest } from "@/lib/queryClient";
+import { 
+  PlusCircle,
+  FileText,
+  Search,
+  Filter,
+  Calendar,
+  ChevronDown,
+  Eye,
+  Download,
+  Printer,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Receipt,
+  UserCircle,
+  Building,
+  ShoppingCart,
+  Send,
+  AlertCircle,
+  Loader2,
+  FileSpreadsheet
+} from "lucide-react";
+import { Link } from "wouter";
+
+// Type definitions
+type PurchaseInvoice = {
+  id: string;
+  number: string;
+  supplierNumber: string;
+  date: string;
+  dueDate: string;
+  supplierId: string;
+  supplierName: string;
+  customerId: string;
+  amount: number;
+  vatAmount: number;
+  totalAmount: number;
+  status: 'draft' | 'registered' | 'paid' | 'canceled' | 'overdue';
+  posted: boolean;
+  createdBy: string;
+  createdByName?: string;
+  createdAt: string;
+  lines?: any[];
+};
+
+type InvoiceItem = {
+  id: string;
+  invoiceId: string;
+  productCode: string;
+  productName: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  vatRate: number;
+  amount: number;
+  vatAmount: number;
+  totalAmount: number;
+};
+
+type InvoiceJournalEntry = {
+  id: string;
+  journalEntryId: string;
+  accountCode: string;
+  accountName: string;
+  description: string;
+  debit: number;
+  credit: number;
+};
+
+type Supplier = {
+  id: string;
+  name: string;
+  fiscalCode: string;
+  registrationNumber: string;
+  address: string;
+  contactName?: string;
+  email?: string;
+  phone?: string;
+};
+
+export default function PurchaseJournalPage() {
+  const { toast } = useToast();
+  
+  // Main section selector  
+  const [mainSection, setMainSection] = useState<'invoices' | 'journal-report'>('invoices');
+  
+  // Invoices section
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [selectedInvoice, setSelectedInvoice] = useState<PurchaseInvoice | null>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isJournalDialogOpen, setIsJournalDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [invoicesPerPage] = useState(10);
+  const [dateRange, setDateRange] = useState({ 
+    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0], 
+    to: new Date().toISOString().split('T')[0] 
+  });
+  
+  // Journal Report section (NOU!)
+  const [reportPeriodStart, setReportPeriodStart] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [reportPeriodEnd, setReportPeriodEnd] = useState<Date>(new Date());
+  
+  // NEW: State pentru crearea facturii
+  const [isCreateInvoiceDialogOpen, setIsCreateInvoiceDialogOpen] = useState(false);
+  const [invoiceForm, setInvoiceForm] = useState({
+    supplierNumber: '',
+    series: 'ACH',
+    supplierId: '',
+    supplierName: '',
+    issueDate: new Date().toISOString().split('T')[0],
+    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    description: '',
+    expenseType: 'services'
+  });
+  const [invoiceItems, setInvoiceItems] = useState([{
+    id: '1',
+    productName: '',
+    description: '',
+    quantity: 1,
+    unitPrice: 0,
+    vatRate: 19,
+    netAmount: 0,
+    vatAmount: 0,
+    grossAmount: 0
+  }]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Fetch Purchase Journal Report
+  const { data: journalReport, isLoading: isLoadingReport, refetch: refetchReport } = useQuery({
+    queryKey: ['purchase-journal-report', reportPeriodStart, reportPeriodEnd],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        periodStart: format(reportPeriodStart, 'yyyy-MM-dd'),
+        periodEnd: format(reportPeriodEnd, 'yyyy-MM-dd')
+      });
+      const response = await apiRequest(`/api/accounting/purchases/journal?${params}`);
+      return response.data || response;
+    },
+    enabled: mainSection === 'journal-report' && !!reportPeriodStart && !!reportPeriodEnd
+  });
+
+  // Fetch purchase invoices
+  const { data: invoicesResponse, isLoading: isLoadingInvoices } = useQuery<{ data: PurchaseInvoice[]; total: number; page: number; limit: number }>({
+    queryKey: ['/api/accounting/purchases/invoices', dateRange],
+    // This is just for structure - we'll use actual API data in production
+    placeholderData: { data: [
+      {
+        id: '1',
+        number: 'ACH-2025-0001',
+        supplierNumber: 'F-12345',
+        date: '2025-04-10',
+        dueDate: '2025-05-10',
+        supplierId: '1',
+        customerId: '1',
+        supplierName: 'SC Tech Supply SRL',
+        amount: 4200.00,
+        vatAmount: 798.00,
+        totalAmount: 4998.00,
+        status: 'registered',
+        posted: true,
+        createdBy: 'Maria Ionescu',
+        createdAt: '2025-04-10T10:15:00Z'
+      },
+      {
+        id: '2',
+        number: 'ACH-2025-0002',
+        supplierNumber: 'F-23456',
+        date: '2025-04-09',
+        dueDate: '2025-05-09',
+        supplierId: '2',
+        customerId: '2',
+        supplierName: 'SC Office Supplies SRL',
+        amount: 1850.00,
+        vatAmount: 351.50,
+        totalAmount: 2201.50,
+        status: 'paid',
+        posted: true,
+        createdBy: 'Alexandru Popescu',
+        createdAt: '2025-04-09T14:35:00Z'
+      },
+      { 
+        id: '3', 
+        number: 'ACH-2025-0003', 
+        supplierNumber: 'F-7890', 
+        date: '2025-04-09', 
+        dueDate: '2025-05-09',
+        supplierId: '3',
+        customerId: '3',
+        supplierName: 'SC Transport Solutions SA',
+        amount: 3600.00,
+        vatAmount: 684.00,
+        totalAmount: 4284.00,
+        status: 'overdue',
+        posted: true,
+        createdBy: 'Maria Ionescu',
+        createdAt: '2025-04-09T09:15:00Z'
+      },
+      { 
+        id: '4', 
+        number: 'ACH-2025-0004', 
+        supplierNumber: 'F-4567', 
+        date: '2025-04-08', 
+        dueDate: '2025-05-08',
+        supplierId: '4',
+        customerId: '4',
+        supplierName: 'SC Utility Provider SA',
+        amount: 2450.00,
+        vatAmount: 465.50,
+        totalAmount: 2915.50,
+        status: 'registered',
+        posted: true,
+        createdBy: 'Alexandru Popescu',
+        createdAt: '2025-04-08T16:45:00Z'
+      },
+      { 
+        id: '5', 
+        number: 'ACH-2025-0005', 
+        supplierNumber: 'F-5522', 
+        date: '2025-04-08', 
+        dueDate: '2025-05-08',
+        supplierId: '5',
+        customerId: '5',
+        supplierName: 'SC Cleaning Services SRL',
+        amount: 1240.00,
+        vatAmount: 235.60,
+        totalAmount: 1475.60,
+        status: 'paid',
+        posted: true,
+        createdBy: 'Maria Ionescu',
+        createdAt: '2025-04-08T10:25:00Z'
+      },
+      { 
+        id: '6', 
+        number: 'ACH-2025-0006', 
+        supplierNumber: 'F-6789', 
+        date: '2025-04-07',
+        dueDate: '2025-05-07',
+        supplierId: '1',
+        customerId: '1',
+        supplierName: 'SC Tech Supply SRL',
+        amount: 7850.00,
+        vatAmount: 1491.50,
+        totalAmount: 9341.50,
+        status: 'registered',
+        posted: true,
+        createdBy: 'Alexandru Popescu',
+        createdAt: '2025-04-07T11:30:00Z'
+      },
+      { 
+        id: '7', 
+        number: 'ACH-2025-0007', 
+        supplierNumber: 'F-7788', 
+        date: '2025-04-07', 
+        dueDate: '2025-05-07',
+        supplierId: '6',
+        customerId: '6',
+        supplierName: 'SC Marketing Agency SRL',
+        amount: 5320.00,
+        vatAmount: 1010.80,
+        totalAmount: 6330.80,
+        status: 'registered',
+        posted: false,
+        createdBy: 'Maria Ionescu',
+        createdAt: '2025-04-07T14:45:00Z'
+      },
+      { 
+        id: '8', 
+        number: 'ACH-2025-0008', 
+        supplierNumber: 'F-8877', 
+        date: '2025-04-06', 
+        dueDate: '2025-05-06',
+        supplierId: '6',
+        customerId: '6',
+        supplierName: 'SC Marketing Agency SRL',
+        amount: 1540.00,
+        vatAmount: 292.60,
+        totalAmount: 1832.60,
+        status: 'draft',
+        posted: false,
+        createdBy: 'Alexandru Popescu',
+        createdAt: '2025-04-06T09:55:00Z'
+      },
+      { 
+        id: '9', 
+        number: 'ACH-2025-0009', 
+        supplierNumber: 'F-9900', 
+        date: '2025-04-05', 
+        dueDate: '2025-05-05',
+        supplierId: '3',
+        customerId: '3',
+        supplierName: 'SC Transport Solutions SA',
+        amount: 2150.00,
+        vatAmount: 408.50,
+        totalAmount: 2558.50,
+        status: 'canceled',
+        posted: false,
+        createdBy: 'Maria Ionescu',
+        createdAt: '2025-04-05T15:20:00Z'
+      },
+      { 
+        id: '10', 
+        number: 'ACH-2025-0010', 
+        supplierNumber: 'F-1010', 
+        date: '2025-04-05', 
+        dueDate: '2025-05-05',
+        supplierId: '4',
+        customerId: '4',
+        supplierName: 'SC Utility Provider SA',
+        amount: 3650.00,
+        vatAmount: 693.50,
+        totalAmount: 4343.50,
+        status: 'registered',
+        posted: true,
+        createdBy: 'Alexandru Popescu',
+        createdAt: '2025-04-05T11:10:00Z'
+      },
+    ], total: 10, page: 1, limit: 10 }
+  });
+
+  // Extract invoices array from response and map DB fields to UI
+  const invoices = (invoicesResponse?.data || []).map((inv: any) => ({
+    ...inv,
+    supplierName: inv.customerName || inv.supplierName, // DB folosește customer_name pentru purchase
+    supplierNumber: inv.invoiceNumber || inv.supplierNumber, // DB folosește invoice_number
+    number: String(inv.number || inv.series || ''), // Conversie safe la string
+  }));
+
+
+  // Fetch invoice journal entry
+  const { data: journalEntry, isLoading: isLoadingJournal } = useQuery<InvoiceJournalEntry[]>({
+    queryKey: ['/api/accounting/purchases/invoices', selectedInvoice?.id, 'journal'],
+    enabled: !!selectedInvoice && isJournalDialogOpen && selectedInvoice.posted,
+    // This is just for structure - we'll use actual API data in production
+    placeholderData: [
+      {
+        id: '1',
+        journalEntryId: 'JE-2025-001',
+        accountCode: '213',
+        accountName: 'Echipamente tehnologice',
+        description: 'Factură achiziție ACH-2025-0001',
+        debit: 4200.00,
+        credit: 0
+      },
+      {
+        id: '2',
+        journalEntryId: 'JE-2025-001',
+        accountCode: '4426',
+        accountName: 'TVA deductibilă',
+        description: 'Factură achiziție ACH-2025-0001',
+        debit: 798.00,
+        credit: 0
+      },
+      {
+        id: '3',
+        journalEntryId: 'JE-2025-001',
+        accountCode: '401',
+        accountName: 'Furnizori',
+        description: 'Factură achiziție ACH-2025-0001',
+        debit: 0,
+        credit: 4998.00
+      }
+    ]
+  });
+
+  // Fetch supplier details when viewing an invoice
+  const { data: supplier, isLoading: isLoadingSupplier } = useQuery<Supplier>({
+    queryKey: ['/api/accounting/suppliers', selectedInvoice?.customerId],
+    enabled: !!selectedInvoice && isViewDialogOpen,
+    // This is just for structure - we'll use actual API data in production
+    placeholderData: { 
+      id: '1',
+      name: 'SC Tech Supply SRL',
+      fiscalCode: 'RO12345678',
+      registrationNumber: 'J40/123/2020',
+      address: 'Str. Tehnologiei nr. 123, București, Sector 1',
+      contactName: 'Mihai Popescu',
+      email: 'contact@techsupply.ro',
+      phone: '+40722234567'
+    }
+  });
+
+  // Filter invoices based on search term and active tab
+  const filteredInvoices = invoices?.filter((invoice: any) => {
+    // Filter by search term
+    const matchesSearch = 
+      String(invoice.number || invoice.series || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (invoice.supplierNumber || invoice.invoiceNumber || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (invoice.supplierName || invoice.customerName || '').toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Filter by tab (status)
+    const matchesTab = 
+      activeTab === 'all' || 
+      (activeTab === 'draft' && invoice.status === 'draft') ||
+      (activeTab === 'registered' && invoice.status === 'registered') ||
+      (activeTab === 'paid' && invoice.status === 'paid') ||
+      (activeTab === 'overdue' && invoice.status === 'overdue') ||
+      (activeTab === 'canceled' && invoice.status === 'canceled');
+    
+    return matchesSearch && matchesTab;
+  }) || [];
+
+  // Pagination logic
+  const indexOfLastInvoice = currentPage * invoicesPerPage;
+  const indexOfFirstInvoice = indexOfLastInvoice - invoicesPerPage;
+  const currentInvoices = filteredInvoices.slice(indexOfFirstInvoice, indexOfLastInvoice);
+  const totalPages = Math.ceil(filteredInvoices.length / invoicesPerPage);
+
+  // Format date strings
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('ro-RO');
+  };
+
+  // Format currency values
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('ro-RO', {
+      minimumFractionDigits: 2
+    }).format(value);
+  };
+
+  // Handle opening the view dialog
+  const handleViewInvoice = (invoice: PurchaseInvoice) => {
+    setSelectedInvoice(invoice);
+    setIsViewDialogOpen(true);
+  };
+
+  // Handle opening the journal entries dialog
+  const handleViewJournal = (invoice: PurchaseInvoice, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedInvoice(invoice);
+    setIsJournalDialogOpen(true);
+  };
+
+  // Get status badge with improved colors and icons
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'draft':
+        return (
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-amber-500" />
+            <span className="text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+              Ciornă
+            </span>
+          </div>
+        );
+      case 'issued':
+      case 'registered':
+        return (
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+            <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+              Înregistrată
+            </span>
+          </div>
+        );
+      case 'sent':
+        return (
+          <div className="flex items-center gap-1.5">
+            <Send className="h-3.5 w-3.5 text-indigo-500" />
+            <span className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
+              Trimisă
+            </span>
+          </div>
+        );
+      case 'paid':
+        return (
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+            <span className="text-xs font-medium text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
+              Plătită
+            </span>
+          </div>
+        );
+      case 'overdue':
+        return (
+          <div className="flex items-center gap-1.5">
+            <AlertCircle className="h-3.5 w-3.5 text-red-500" />
+            <span className="text-xs font-medium text-red-700 bg-red-50 px-2.5 py-1 rounded-full border border-red-200">
+              Restantă
+            </span>
+          </div>
+        );
+      case 'canceled':
+        return (
+          <div className="flex items-center gap-1.5">
+            <XCircle className="h-3.5 w-3.5 text-gray-500" />
+            <span className="text-xs font-medium text-gray-700 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-300">
+              Anulată
+            </span>
+          </div>
+        );
+      default:
+        return (
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-medium text-gray-700 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-300">
+              {status}
+            </span>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <AppLayout>
+      {/* Breadcrumbs */}
+      <div className="mb-6">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/accounting">Contabilitate</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Jurnal Cumpărări</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+
+      {/* Page header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Jurnal Cumpărări</h1>
+          <p className="text-sm text-gray-500">Gestionați facturile și generați raportul conform OMFP 2634/2015</p>
+        </div>
+        
+        <div className="flex space-x-2 mt-4 md:mt-0">
+          {mainSection === 'invoices' && (
+            <Button onClick={() => setIsCreateInvoiceDialogOpen(true)}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              <span>Factură Nouă</span>
+            </Button>
+          )}
+        </div>
+      </div>
+      
+      {/* Main Tabs */}
+      <Tabs value={mainSection} onValueChange={(val: any) => setMainSection(val)} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="invoices">📄 Facturi Achiziție</TabsTrigger>
+          <TabsTrigger value="journal-report">📊 Raport Jurnal Cumpărări</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="invoices">
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex flex-col space-y-4">
+            {/* First row - search and filter */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                <Input
+                  placeholder="Caută după număr sau furnizor..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 w-full"
+                />
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="dateFrom" className="text-sm whitespace-nowrap">De la:</Label>
+                  <Input 
+                    id="dateFrom" 
+                    type="date" 
+                    value={dateRange.from}
+                    onChange={(e) => setDateRange({...dateRange, from: e.target.value})}
+                    className="w-auto"
+                  />
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="dateTo" className="text-sm whitespace-nowrap">Până la:</Label>
+                  <Input 
+                    id="dateTo" 
+                    type="date" 
+                    value={dateRange.to}
+                    onChange={(e) => setDateRange({...dateRange, to: e.target.value})}
+                    className="w-auto"
+                  />
+                </div>
+                
+                <Button variant="outline" size="sm" className="ml-2">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <span>Filtrează</span>
+                </Button>
+              </div>
+            </div>
+            
+            {/* Second row - tabs for status filter */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="w-full sm:w-auto overflow-auto">
+                <TabsTrigger value="all">Toate</TabsTrigger>
+                <TabsTrigger value="draft">Ciorne</TabsTrigger>
+                <TabsTrigger value="registered">Înregistrate</TabsTrigger>
+                <TabsTrigger value="paid">Plătite</TabsTrigger>
+                <TabsTrigger value="overdue">Restante</TabsTrigger>
+                <TabsTrigger value="canceled">Anulate</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="p-0">
+          <div className="border-b">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50 hover:bg-gray-50">
+                  <TableHead className="w-32">Număr intern</TableHead>
+                  <TableHead className="w-32">Număr furnizor</TableHead>
+                  <TableHead className="w-24">Dată</TableHead>
+                  <TableHead className="w-32">Scadență</TableHead>
+                  <TableHead>Furnizor</TableHead>
+                  <TableHead className="w-28">Status</TableHead>
+                  <TableHead className="text-right w-28">Valoare</TableHead>
+                  <TableHead className="text-right w-24">TVA</TableHead>
+                  <TableHead className="text-right w-28">Total</TableHead>
+                  <TableHead className="text-right w-24">Acțiuni</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoadingInvoices ? (
+                  Array(5).fill(null).map((_, index) => (
+                    <TableRow key={index}>
+                      <TableCell colSpan={10} className="h-16">
+                        <div className="h-8 w-full bg-gray-100 animate-pulse rounded"></div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : currentInvoices.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={10} className="h-32 text-center text-gray-500">
+                      {searchTerm || activeTab !== 'all' ? (
+                        <>
+                          <Search className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                          <p>Nu s-au găsit facturi care să corespundă filtrelor.</p>
+                          <Button variant="link" onClick={() => { setSearchTerm(''); setActiveTab('all'); }}>
+                            Resetează filtrele
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                          <p>Nu există facturi de achiziție pentru perioada selectată.</p>
+                        </>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  currentInvoices.map((invoice: PurchaseInvoice) => (
+                    <TableRow 
+                      key={invoice.id} 
+                      className={`cursor-pointer hover:bg-gray-50 ${invoice.status === 'canceled' ? 'opacity-60' : ''}`}
+                      onClick={() => handleViewInvoice(invoice)}
+                    >
+                      <TableCell className="font-medium">{invoice.number}</TableCell>
+                      <TableCell>{invoice.supplierNumber}</TableCell>
+                      <TableCell>{formatDate(invoice.date)}</TableCell>
+                      <TableCell>{formatDate(invoice.dueDate)}</TableCell>
+                      <TableCell className="max-w-md truncate">
+                        {invoice.supplierName}
+                      </TableCell>
+                      <TableCell>
+                        {getStatusBadge(invoice.status)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatCurrency(invoice.amount)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatCurrency(invoice.vatAmount)}
+                      </TableCell>
+                      <TableCell className="text-right font-medium tabular-nums">
+                        {formatCurrency(invoice.totalAmount)}
+                      </TableCell>
+                      <TableCell className="text-right p-0 pr-2">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewInvoice(invoice);
+                            }}
+                          >
+                            <Eye className="h-4 w-4 text-gray-500" />
+                          </Button>
+                          
+                          {invoice.posted && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0"
+                              onClick={(e) => handleViewJournal(invoice, e)}
+                            >
+                              <FileText className="h-4 w-4 text-blue-500" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+        
+        {totalPages > 1 && (
+          <CardFooter className="flex items-center justify-between p-4">
+            <div className="text-sm text-gray-500">
+              Afișare {indexOfFirstInvoice + 1}-{Math.min(indexOfLastInvoice, filteredInvoices.length)} din {filteredInvoices.length} facturi
+            </div>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+              >
+                Anterioara
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                Următoarea
+              </Button>
+            </div>
+          </CardFooter>
+        )}
+      </Card>
+
+      {/* View Invoice Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle>Detalii Factură Achiziție</DialogTitle>
+            <DialogDescription>
+              Vizualizați informațiile și articolele facturii
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedInvoice && (
+            <div className="py-4 overflow-y-auto flex-1 pr-2">
+              {/* Invoice header */}
+              <div className="bg-gray-50 p-4 rounded-md mb-6">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-lg font-semibold">Factură {selectedInvoice.number}</h3>
+                    <p className="text-sm text-gray-500 mt-1">Nr. furnizor: {selectedInvoice.supplierNumber}</p>
+                    <p className="text-sm text-gray-500">Data: {formatDate(selectedInvoice.date)}</p>
+                    <p className="text-sm text-gray-500">Scadență: {formatDate(selectedInvoice.dueDate)}</p>
+                  </div>
+                  <div>
+                    {getStatusBadge(selectedInvoice.status)}
+                    {selectedInvoice.posted && (
+                      <span className="inline-block ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-50 text-blue-700">
+                        Contabilizată
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                <Separator className="my-4" />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Supplier info */}
+                  <div className="space-y-2">
+                    <div className="flex items-center text-sm font-medium text-gray-500">
+                      <Building className="h-4 w-4 mr-2" />
+                      <span>Informații Furnizor</span>
+                    </div>
+                    
+                    {isLoadingSupplier ? (
+                      <div className="space-y-2">
+                        <div className="h-5 w-48 bg-gray-200 animate-pulse rounded"></div>
+                        <div className="h-4 w-32 bg-gray-200 animate-pulse rounded"></div>
+                        <div className="h-4 w-52 bg-gray-200 animate-pulse rounded"></div>
+                      </div>
+                    ) : supplier ? (
+                      <div className="space-y-1">
+                        <p className="font-medium">{supplier.name}</p>
+                        <p className="text-sm">CUI: {supplier.fiscalCode}</p>
+                        <p className="text-sm">Reg. Com.: {supplier.registrationNumber}</p>
+                        <p className="text-sm">{supplier.address}</p>
+                        {supplier.contactName && (
+                          <div className="flex items-center mt-2 text-sm">
+                            <UserCircle className="h-3.5 w-3.5 mr-1.5 text-gray-500" />
+                            <span>{supplier.contactName}</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">Furnizor: {selectedInvoice.supplierName}</p>
+                    )}
+                  </div>
+                  
+                  {/* Invoice summary */}
+                  <div>
+                    <div className="flex items-center text-sm font-medium text-gray-500">
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      <span>Sumar Factură</span>
+                    </div>
+                    
+                    <div className="mt-2 space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-sm">Valoare netă:</span>
+                        <span className="font-medium">{formatCurrency(selectedInvoice.amount)} RON</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm">TVA (19%):</span>
+                        <span className="font-medium">{formatCurrency(selectedInvoice.vatAmount)} RON</span>
+                      </div>
+                      <Separator className="my-2" />
+                      <div className="flex justify-between">
+                        <span className="font-medium">Total factură:</span>
+                        <span className="font-bold">{formatCurrency(selectedInvoice.totalAmount)} RON</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 space-y-1 text-sm text-gray-500">
+                      <p>Înregistrată de: {selectedInvoice.createdByName || selectedInvoice.createdBy}</p>
+                      <p>Data înregistrării: {new Date(selectedInvoice.createdAt).toLocaleString('ro-RO')}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Invoice items */}
+              <h3 className="text-base font-medium mb-3">Articole Factură</h3>
+              
+              {selectedInvoice.lines && selectedInvoice.lines.length > 0 ? (
+                <div className="border rounded-md overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="w-28">Cod Produs</TableHead>
+                        <TableHead>Denumire</TableHead>
+                        <TableHead className="w-20 text-right">Cant.</TableHead>
+                        <TableHead className="text-right">Preț Unit.</TableHead>
+                        <TableHead className="text-right">Valoare</TableHead>
+                        <TableHead className="w-20 text-right">TVA (%)</TableHead>
+                        <TableHead className="text-right">TVA</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedInvoice.lines.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium">{item.description || '-'}</TableCell>
+                          <TableCell>
+                            <div>
+                              <p>{item.productName}</p>
+                              {item.description && (
+                                <p className="text-xs text-gray-500">{item.description}</p>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">{item.quantity}</TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {formatCurrency(item.unitPrice)}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {formatCurrency(item.netAmount)}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {item.vatRate}%
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {formatCurrency(item.vatAmount)}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums font-medium">
+                            {formatCurrency(item.totalAmount)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                    <tfoot>
+                      <tr className="bg-gray-50 font-medium">
+                        <td colSpan={4} className="px-4 py-2 text-right">
+                          Total:
+                        </td>
+                        <td className="px-4 py-2 text-right tabular-nums">
+                          {formatCurrency(selectedInvoice.lines.reduce((sum, item) => sum + Number(item.netAmount), 0))} RON
+                        </td>
+                        <td className="px-4 py-2"></td>
+                        <td className="px-4 py-2 text-right tabular-nums">
+                          {formatCurrency(selectedInvoice.lines.reduce((sum, item) => sum + Number(item.vatAmount), 0))} RON
+                        </td>
+                        <td className="px-4 py-2 text-right tabular-nums">
+                          {formatCurrency(selectedInvoice.lines.reduce((sum, item) => sum + Number(item.totalAmount), 0))} RON
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </Table>
+                </div>
+              ) : (
+                <div className="text-center p-8 bg-gray-50 rounded-md">
+                  <p className="text-gray-500">Nu există articole pentru această factură.</p>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
+            <div className="flex justify-between w-full">
+              <div>
+                {selectedInvoice?.posted && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsViewDialogOpen(false);
+                      setIsJournalDialogOpen(true);
+                    }}
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    <span>Vezi nota contabilă</span>
+                  </Button>
+                )}
+              </div>
+              
+              <div className="flex space-x-2">
+                <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
+                  Închide
+                </Button>
+                
+                <Button variant="outline">
+                  <Printer className="h-4 w-4 mr-2" />
+                  Printează
+                </Button>
+              </div>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Journal Entry Dialog */}
+      <Dialog open={isJournalDialogOpen} onOpenChange={setIsJournalDialogOpen}>
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle>Notă Contabilă Factură</DialogTitle>
+            <DialogDescription>
+              {selectedInvoice && (
+                <>Înregistrarea contabilă pentru factura {selectedInvoice.number}</>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedInvoice && (
+            <div className="py-4 overflow-y-auto flex-1 pr-2">
+              {/* Invoice reference */}
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-100 p-2 rounded-full">
+                    <ShoppingCart className="h-5 w-5 text-blue-700" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-blue-900">
+                      Factură achiziție {selectedInvoice.number}
+                    </h3>
+                    <p className="text-sm text-blue-700">
+                      Furnizor: {selectedInvoice.supplierName} | Data: {formatDate(selectedInvoice.date)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Journal entry lines */}
+              {isLoadingJournal ? (
+                <div className="flex justify-center items-center p-8">
+                  <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <span className="ml-2">Se încarcă înregistrările contabile...</span>
+                </div>
+              ) : journalEntry && journalEntry.length > 0 ? (
+                <div className="border rounded-md overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="w-24">Cont</TableHead>
+                        <TableHead>Denumire Cont</TableHead>
+                        <TableHead>Descriere</TableHead>
+                        <TableHead className="text-right">Debit</TableHead>
+                        <TableHead className="text-right">Credit</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {journalEntry.map((line) => (
+                        <TableRow key={line.id}>
+                          <TableCell className="font-medium">{line.accountCode}</TableCell>
+                          <TableCell>{line.accountName}</TableCell>
+                          <TableCell>{line.description}</TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {line.debit > 0 ? formatCurrency(line.debit) : ""}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {line.credit > 0 ? formatCurrency(line.credit) : ""}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                    <tfoot>
+                      <tr className="bg-gray-50 font-medium">
+                        <td colSpan={3} className="px-4 py-2 text-right">
+                          Total:
+                        </td>
+                        <td className="px-4 py-2 text-right tabular-nums">
+                          {formatCurrency(journalEntry.reduce((sum, line) => sum + line.debit, 0))} RON
+                        </td>
+                        <td className="px-4 py-2 text-right tabular-nums">
+                          {formatCurrency(journalEntry.reduce((sum, line) => sum + line.credit, 0))} RON
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </Table>
+                </div>
+              ) : (
+                <div className="text-center p-8 bg-gray-50 rounded-md">
+                  <p className="text-gray-500">
+                    {selectedInvoice.posted 
+                      ? "Nu există înregistrări contabile pentru această factură." 
+                      : "Factura nu a fost contabilizată încă."
+                    }
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
+            <Button variant="outline" onClick={() => setIsJournalDialogOpen(false)}>
+              Închide
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      </TabsContent>
+      
+      {/* TAB 2: Raport Jurnal Cumpărări */}
+      <TabsContent value="journal-report" className="space-y-6">
+        {/* Card Selecție Perioadă - PAS 14 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Selecție Perioadă</CardTitle>
+            <CardDescription>Alegeți perioada pentru generarea jurnalului de cumpărări</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Început Perioadă */}
+              <div className="space-y-2">
+                <Label>Început Perioadă</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-full justify-start text-left", !reportPeriodStart && "text-muted-foreground")}>
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {reportPeriodStart ? format(reportPeriodStart, 'dd MMM yyyy', { locale: ro }) : 'Selectează'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent mode="single" selected={reportPeriodStart} onSelect={(date) => date && setReportPeriodStart(date)} locale={ro} />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              {/* Sfârșit Perioadă */}
+              <div className="space-y-2">
+                <Label>Sfârșit Perioadă</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-full justify-start text-left", !reportPeriodEnd && "text-muted-foreground")}>
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {reportPeriodEnd ? format(reportPeriodEnd, 'dd MMM yyyy', { locale: ro }) : 'Selectează'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent mode="single" selected={reportPeriodEnd} onSelect={(date) => date && setReportPeriodEnd(date)} locale={ro} />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              {/* Buton Actualizează */}
+              <div className="space-y-2">
+                <Label className="opacity-0">Action</Label>
+                <Button onClick={() => refetchReport()} className="w-full" disabled={isLoadingReport}>
+                  {isLoadingReport ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : '🔄'} Actualizează
+                </Button>
+              </div>
+            </div>
+            
+            {/* Butoane scurtătură */}
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => {
+                const now = new Date();
+                setReportPeriodStart(new Date(now.getFullYear(), now.getMonth(), 1));
+                setReportPeriodEnd(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+              }}>
+                Luna curentă
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => {
+                const lastMonth = new Date();
+                lastMonth.setMonth(lastMonth.getMonth() - 1);
+                setReportPeriodStart(new Date(lastMonth.getFullYear(), lastMonth.getMonth(), 1));
+                setReportPeriodEnd(new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0));
+              }}>
+                Luna trecută
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Raport generat */}
+        {journalReport && (
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between">
+                <div>
+                  <CardTitle>Jurnal de Cumpărări - {journalReport.periodLabel}</CardTitle>
+                  <CardDescription>{journalReport.companyName} (CUI: {journalReport.companyFiscalCode})</CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => window.open(`/api/accounting/purchases/journal/export/excel?periodStart=${format(reportPeriodStart, 'yyyy-MM-dd')}&periodEnd=${format(reportPeriodEnd, 'yyyy-MM-dd')}`, '_blank')}>
+                    <FileSpreadsheet className="h-4 w-4 mr-2" />Excel
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => window.open(`/api/accounting/purchases/journal/export/pdf?periodStart=${format(reportPeriodStart, 'yyyy-MM-dd')}&periodEnd=${format(reportPeriodEnd, 'yyyy-MM-dd')}`, '_blank')}>
+                    <FileText className="h-4 w-4 mr-2" />PDF
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-100">
+                      <TableHead className="sticky left-0 bg-gray-100">Nr. Crt</TableHead>
+                      <TableHead>Data Factură</TableHead>
+                      <TableHead>Nr. Document</TableHead>
+                      <TableHead>Furnizor</TableHead>
+                      <TableHead>CUI Furnizor</TableHead>
+                      <TableHead className="text-right">Total Document</TableHead>
+                      
+                      {/* Coloane TVA 19% */}
+                      <TableHead className="text-right bg-blue-50">Bază 19%</TableHead>
+                      <TableHead className="text-right bg-blue-50">TVA 19%</TableHead>
+                      
+                      {/* Coloane TVA 9% */}
+                      <TableHead className="text-right bg-green-50">Bază 9%</TableHead>
+                      <TableHead className="text-right bg-green-50">TVA 9%</TableHead>
+                      
+                      {/* Coloane TVA 5% */}
+                      <TableHead className="text-right bg-yellow-50">Bază 5%</TableHead>
+                      <TableHead className="text-right bg-yellow-50">TVA 5%</TableHead>
+                      
+                      {/* Operațiuni speciale */}
+                      <TableHead className="text-right">Achiziții IC</TableHead>
+                      <TableHead className="text-right">Import</TableHead>
+                      <TableHead className="text-right">Taxare Inversă</TableHead>
+                      
+                      {/* TVA la încasare */}
+                      <TableHead className="text-right bg-orange-50">TVA Neexigibil</TableHead>
+                      <TableHead className="text-right bg-green-50">TVA Deductibil</TableHead>
+                      
+                      <TableHead>Tip Cheltuială</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {journalReport.rows?.map((row: any) => (
+                      <TableRow key={row.rowNumber}>
+                        <TableCell className="sticky left-0 bg-white font-medium">{row.rowNumber}</TableCell>
+                        <TableCell>{new Date(row.date).toLocaleDateString('ro-RO')}</TableCell>
+                        <TableCell>{row.documentNumber}</TableCell>
+                        <TableCell className="max-w-xs truncate">{row.supplierName}</TableCell>
+                        <TableCell>{row.supplierFiscalCode}</TableCell>
+                        <TableCell className="text-right tabular-nums font-medium">{row.totalAmount?.toFixed(2)}</TableCell>
+                        
+                        {/* TVA 19% */}
+                        <TableCell className="text-right tabular-nums bg-blue-50">{row.base19 !== 0 ? row.base19?.toFixed(2) : ''}</TableCell>
+                        <TableCell className="text-right tabular-nums bg-blue-50">{row.vat19 !== 0 ? row.vat19?.toFixed(2) : ''}</TableCell>
+                        
+                        {/* TVA 9% */}
+                        <TableCell className="text-right tabular-nums bg-green-50">{row.base9 !== 0 ? row.base9?.toFixed(2) : ''}</TableCell>
+                        <TableCell className="text-right tabular-nums bg-green-50">{row.vat9 !== 0 ? row.vat9?.toFixed(2) : ''}</TableCell>
+                        
+                        {/* TVA 5% */}
+                        <TableCell className="text-right tabular-nums bg-yellow-50">{row.base5 !== 0 ? row.base5?.toFixed(2) : ''}</TableCell>
+                        <TableCell className="text-right tabular-nums bg-yellow-50">{row.vat5 !== 0 ? row.vat5?.toFixed(2) : ''}</TableCell>
+                        
+                        {/* Operațiuni speciale */}
+                        <TableCell className="text-right tabular-nums">{row.intraCommunity !== 0 ? row.intraCommunity?.toFixed(2) : ''}</TableCell>
+                        <TableCell className="text-right tabular-nums">{row.import !== 0 ? row.import?.toFixed(2) : ''}</TableCell>
+                        <TableCell className="text-right tabular-nums">{row.reverseCharge !== 0 ? row.reverseCharge?.toFixed(2) : ''}</TableCell>
+                        
+                        {/* TVA la încasare */}
+                        <TableCell className="text-right tabular-nums bg-orange-50">{row.vatDeferred !== 0 ? row.vatDeferred?.toFixed(2) : ''}</TableCell>
+                        <TableCell className="text-right tabular-nums bg-green-50">{row.vatDeductible !== 0 ? row.vatDeductible?.toFixed(2) : ''}</TableCell>
+                        
+                        <TableCell className="text-xs">{row.expenseType || ''}</TableCell>
+                      </TableRow>
+                    ))}
+                    
+                    {/* TOTAL ROW - conform OMFP 2634/2015 */}
+                    <TableRow className="font-bold bg-gray-200 border-t-2 border-gray-400">
+                      <TableCell colSpan={5} className="sticky left-0 bg-gray-200">TOTAL:</TableCell>
+                      <TableCell className="text-right">{journalReport.totals?.totalAmount?.toFixed(2)}</TableCell>
+                      
+                      <TableCell className="text-right bg-blue-100">{journalReport.totals?.totalBase19?.toFixed(2)}</TableCell>
+                      <TableCell className="text-right bg-blue-100">{journalReport.totals?.totalVAT19?.toFixed(2)}</TableCell>
+                      
+                      <TableCell className="text-right bg-green-100">{journalReport.totals?.totalBase9?.toFixed(2)}</TableCell>
+                      <TableCell className="text-right bg-green-100">{journalReport.totals?.totalVAT9?.toFixed(2)}</TableCell>
+                      
+                      <TableCell className="text-right bg-yellow-100">{journalReport.totals?.totalBase5?.toFixed(2)}</TableCell>
+                      <TableCell className="text-right bg-yellow-100">{journalReport.totals?.totalVAT5?.toFixed(2)}</TableCell>
+                      
+                      <TableCell className="text-right">{journalReport.totals?.totalIntraCommunity?.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{journalReport.totals?.totalImport?.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{journalReport.totals?.totalReverseCharge?.toFixed(2)}</TableCell>
+                      
+                      <TableCell className="text-right bg-orange-100">{journalReport.totals?.totalVATDeferred?.toFixed(2)}</TableCell>
+                      <TableCell className="text-right bg-green-100">{journalReport.totals?.totalVATDeductible?.toFixed(2)}</TableCell>
+                      
+                      <TableCell></TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+              
+              {/* Verificări contabile - conform documentației */}
+              {journalReport.accountingValidation && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <h4 className="font-semibold mb-3">Verificări Contabile:</h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="font-medium">Cont 4426 (TVA deductibilă):</span>{' '}
+                      {journalReport.accountingValidation.account4426Balance?.toFixed(2)} RON
+                    </div>
+                    <div>
+                      <span className="font-medium">Cont 4428 (TVA neexigibilă):</span>{' '}
+                      {journalReport.accountingValidation.account4428Balance?.toFixed(2)} RON
+                    </div>
+                    <div>
+                      <span className="font-medium">Cont 401 (Furnizori):</span>{' '}
+                      {journalReport.accountingValidation.account401Balance?.toFixed(2)} RON
+                    </div>
+                    <div>
+                      <span className="font-medium">Status:</span>{' '}
+                      <Badge variant={journalReport.accountingValidation.isBalanced ? "default" : "destructive"}>
+                        {journalReport.accountingValidation.isBalanced ? '✓ BALANSAT' : '✗ DISCREPANȚE'}
+                      </Badge>
+                    </div>
+                    {journalReport.accountingValidation.discrepancies && journalReport.accountingValidation.discrepancies.length > 0 && (
+                      <div className="col-span-2 mt-2">
+                        <p className="font-medium text-red-600">Discrepanțe:</p>
+                        <ul className="list-disc list-inside text-xs">
+                          {journalReport.accountingValidation.discrepancies.map((disc: string, idx: number) => (
+                            <li key={idx}>{disc}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <div className="col-span-2 text-xs text-muted-foreground mt-2">
+                      ✅ Verificați că totalurile corespund cu decontul de TVA (D300) și balanța contabilă.
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        {isLoadingReport && <div className="text-center py-12"><Loader2 className="h-8 w-8 animate-spin mx-auto" /><p>Se generează jurnalul...</p></div>}
+      </TabsContent>
+      </Tabs>
+      
+      {/* NEW: Dialog COMPLET Creare Factură Furnizor */}
+      <Dialog open={isCreateInvoiceDialogOpen} onOpenChange={setIsCreateInvoiceDialogOpen}>
+        <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>📄 Înregistrare Factură Furnizor</DialogTitle>
+            <DialogDescription>
+              Înregistrați factura de achiziție cu toate detaliile. Se va contabiliza automat.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setIsSubmitting(true);
+            
+            try {
+              // Calculează totaluri
+              const netTotal = invoiceItems.reduce((sum, item) => sum + Number(item.netAmount), 0);
+              const vatTotal = invoiceItems.reduce((sum, item) => sum + Number(item.vatAmount), 0);
+              const grossTotal = netTotal + vatTotal;
+              
+              // API Call
+              const response = await fetch('/api/accounting/purchases/invoices', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                  invoiceData: {
+                    supplierNumber: invoiceForm.supplierNumber,
+                    series: invoiceForm.series,
+                    issueDate: invoiceForm.issueDate,
+                    dueDate: invoiceForm.dueDate,
+                    description: invoiceForm.description,
+                    currency: 'RON',
+                    exchangeRate: 1,
+                    expenseType: invoiceForm.expenseType,
+                    deductibleVat: true
+                  },
+                  supplier: {
+                    id: invoiceForm.supplierId,
+                    name: invoiceForm.supplierName
+                  },
+                  items: invoiceItems.map(item => ({
+                    productName: item.productName,
+                    description: item.description,
+                    quantity: Number(item.quantity),
+                    unitPrice: Number(item.unitPrice),
+                    netAmount: Number(item.netAmount),
+                    vatRate: Number(item.vatRate),
+                    vatAmount: Number(item.vatAmount),
+                    grossAmount: Number(item.grossAmount)
+                  })),
+                  taxRates: { default: 19 },
+                  paymentTerms: { days: 30 }
+                })
+              });
+              
+              if (!response.ok) throw new Error(await response.text());
+              
+              const result = await response.json();
+              
+              toast({
+                title: '✅ Factură înregistrată cu succes!',
+                description: `Factura ${invoiceForm.supplierNumber} a fost înregistrată și contabilizată automat.`
+              });
+              
+              // Reset form
+              setInvoiceForm({
+                supplierNumber: '',
+                series: 'ACH',
+                supplierId: '',
+                supplierName: '',
+                issueDate: new Date().toISOString().split('T')[0],
+                dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                description: '',
+                expenseType: 'services'
+              });
+              setInvoiceItems([{
+                id: '1',
+                productName: '',
+                description: '',
+                quantity: 1,
+                unitPrice: 0,
+                vatRate: 19,
+                netAmount: 0,
+                vatAmount: 0,
+                grossAmount: 0
+              }]);
+              
+              setIsCreateInvoiceDialogOpen(false);
+              
+              // Refresh automat pagina pentru a actualiza lista
+              setTimeout(() => {
+                window.location.reload();
+              }, 1500);
+              
+            } catch (error: any) {
+              toast({
+                title: '❌ Eroare',
+                description: error.message,
+                variant: 'destructive'
+              });
+            } finally {
+              setIsSubmitting(false);
+            }
+          }} className="space-y-4 py-4">
+            
+            {/* Date generale factură */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="supplierNumber">Număr Factură Furnizor *</Label>
+                <Input 
+                  id="supplierNumber"
+                  placeholder="Ex: F-123456/2025"
+                  value={invoiceForm.supplierNumber}
+                  onChange={(e) => setInvoiceForm({...invoiceForm, supplierNumber: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="series">Serie Internă</Label>
+                <Input 
+                  id="series"
+                  value={invoiceForm.series}
+                  onChange={(e) => setInvoiceForm({...invoiceForm, series: e.target.value})}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="expenseType">Categorie Cheltuială *</Label>
+                <Select value={invoiceForm.expenseType} onValueChange={(val) => setInvoiceForm({...invoiceForm, expenseType: val})}>
+                  <SelectTrigger id="expenseType">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="goods">Mărfuri (cont 607)</SelectItem>
+                    <SelectItem value="materials">Materii prime (cont 601)</SelectItem>
+                    <SelectItem value="services">Servicii (cont 628)</SelectItem>
+                    <SelectItem value="utilities">Utilități (cont 605)</SelectItem>
+                    <SelectItem value="transport">Transport (cont 624)</SelectItem>
+                    <SelectItem value="fixed_assets">Imobilizări (cont 2xxx)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="supplierName">Furnizor *</Label>
+                <Input 
+                  id="supplierName"
+                  placeholder="SC Furnizor SRL"
+                  value={invoiceForm.supplierName}
+                  onChange={(e) => setInvoiceForm({...invoiceForm, supplierName: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="issueDate">Data Facturii *</Label>
+                <Input 
+                  id="issueDate"
+                  type="date"
+                  value={invoiceForm.issueDate}
+                  onChange={(e) => setInvoiceForm({...invoiceForm, issueDate: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="dueDate">Data Scadentă</Label>
+                <Input 
+                  id="dueDate"
+                  type="date"
+                  value={invoiceForm.dueDate}
+                  onChange={(e) => setInvoiceForm({...invoiceForm, dueDate: e.target.value})}
+                />
+              </div>
+            </div>
+            
+            <Separator />
+            
+            {/* Linii factură */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Linii Factură</Label>
+                <Button 
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setInvoiceItems([...invoiceItems, {
+                    id: Date.now().toString(),
+                    productName: '',
+                    description: '',
+                    quantity: 1,
+                    unitPrice: 0,
+                    vatRate: 19,
+                    netAmount: 0,
+                    vatAmount: 0,
+                    grossAmount: 0
+                  }])}
+                >
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Adaugă Linie
+                </Button>
+              </div>
+              
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="w-[200px]">Produs/Serviciu</TableHead>
+                      <TableHead className="w-[150px]">Descriere</TableHead>
+                      <TableHead className="w-[80px]">Cant.</TableHead>
+                      <TableHead className="w-[100px]">Preț Unit.</TableHead>
+                      <TableHead className="w-[80px]">TVA %</TableHead>
+                      <TableHead className="w-[100px]">Valoare</TableHead>
+                      <TableHead className="w-[100px]">TVA</TableHead>
+                      <TableHead className="w-[100px]">Total</TableHead>
+                      <TableHead className="w-[50px]"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invoiceItems.map((item, index) => {
+                      const updateItem = (field: string, value: any) => {
+                        const newItems = [...invoiceItems];
+                        newItems[index] = { ...newItems[index], [field]: value };
+                        
+                        // Calculează automat sumele
+                        const qty = Number(newItems[index].quantity);
+                        const price = Number(newItems[index].unitPrice);
+                        const vat = Number(newItems[index].vatRate);
+                        
+                        newItems[index].netAmount = qty * price;
+                        newItems[index].vatAmount = (qty * price * vat) / 100;
+                        newItems[index].grossAmount = newItems[index].netAmount + newItems[index].vatAmount;
+                        
+                        setInvoiceItems(newItems);
+                      };
+                      
+                      return (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            <Input 
+                              placeholder="Denumire"
+                              value={item.productName}
+                              onChange={(e) => updateItem('productName', e.target.value)}
+                              required
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input 
+                              placeholder="Descriere"
+                              value={item.description}
+                              onChange={(e) => updateItem('description', e.target.value)}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input 
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) => updateItem('quantity', e.target.value)}
+                              min="0.01"
+                              step="0.01"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input 
+                              type="number"
+                              value={item.unitPrice}
+                              onChange={(e) => updateItem('unitPrice', e.target.value)}
+                              min="0"
+                              step="0.01"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Select value={item.vatRate.toString()} onValueChange={(val) => updateItem('vatRate', val)}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="0">0%</SelectItem>
+                                <SelectItem value="5">5%</SelectItem>
+                                <SelectItem value="9">9%</SelectItem>
+                                <SelectItem value="19">19%</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {item.netAmount.toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {item.vatAmount.toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-right font-bold">
+                            {item.grossAmount.toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            {invoiceItems.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setInvoiceItems(invoiceItems.filter(i => i.id !== item.id))}
+                              >
+                                <XCircle className="h-4 w-4 text-red-500" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+            
+            {/* Totaluri */}
+            <div className="bg-gray-50 border rounded-lg p-4">
+              <div className="grid grid-cols-4 gap-4">
+                <div>
+                  <p className="text-sm text-gray-600">Valoare (fără TVA)</p>
+                  <p className="text-xl font-bold">
+                    {invoiceItems.reduce((sum, item) => sum + Number(item.netAmount), 0).toFixed(2)} Lei
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">TVA Total</p>
+                  <p className="text-xl font-bold text-orange-600">
+                    {invoiceItems.reduce((sum, item) => sum + Number(item.vatAmount), 0).toFixed(2)} Lei
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Total de Plată</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {invoiceItems.reduce((sum, item) => sum + Number(item.grossAmount), 0).toFixed(2)} Lei
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Linii Produse</p>
+                  <p className="text-xl font-bold text-gray-700">
+                    {invoiceItems.length}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="description">Observații</Label>
+              <Input 
+                id="description"
+                placeholder="Observații factură..."
+                value={invoiceForm.description}
+                onChange={(e) => setInvoiceForm({...invoiceForm, description: e.target.value})}
+              />
+            </div>
+            
+            <Alert className="bg-green-50 border-green-200">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-900">
+                <strong>Se va contabiliza automat:</strong> Debit 401 Furnizori / Credit cont cheltuială + 4426 TVA deductibilă
+              </AlertDescription>
+            </Alert>
+            
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsCreateInvoiceDialogOpen(false)} disabled={isSubmitting}>
+                Anulează
+              </Button>
+              <Button type="submit" disabled={isSubmitting || !invoiceForm.supplierNumber || !invoiceForm.supplierName}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Se salvează...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    Salvează și Contabilizează
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </AppLayout>
+  );
+}
