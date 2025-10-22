@@ -7,6 +7,11 @@
 
 import { getDrizzle } from '../../../common/drizzle';
 import { LedgerEntryType } from './journal.service';
+import { documentCounters } from '@shared/schema';
+import { eq, and, sql } from 'drizzle-orm';
+import { createModuleLogger } from '../../../common/logger/loki-logger';
+
+const logger = createModuleLogger('journal-numbering');
 
 export class JournalNumberingService {
   /**
@@ -23,21 +28,40 @@ export class JournalNumberingService {
     const series = this.getJournalSeries(journalType);
     
     try {
-      // Obține sau creează counter cu LOCK pentru thread safety
-      const [counter] = await db.$client.unsafe(`
-        INSERT INTO document_counters (company_id, counter_type, series, year, last_number)
-        VALUES ($1, 'JOURNAL', $2, $3, 1)
+      // Strategie: INSERT cu ON CONFLICT pentru thread-safe increment
+      // Drizzle ORM nu suportă direct ON CONFLICT DO UPDATE cu RETURNING,
+      // deci folosim sql template pentru această operație atomică
+      const result = await db.execute<{ last_number: number | string }>(sql`
+        INSERT INTO ${documentCounters} (company_id, counter_type, series, year, last_number)
+        VALUES (${companyId}, 'JOURNAL', ${series}, ${year}, 1)
         ON CONFLICT (company_id, counter_type, series, year)
-        DO UPDATE SET last_number = document_counters.last_number + 1, updated_at = NOW()
+        DO UPDATE SET 
+          last_number = ${documentCounters.lastNumber} + 1,
+          updated_at = NOW()
         RETURNING last_number
-      `, [companyId, series, year]);
+      `);
       
-      const number = counter.last_number.toString().padStart(5, '0');
+      const rows = result as unknown as Array<{ last_number: number | string }>;
+      const lastNumber = typeof rows[0].last_number === 'string' 
+        ? parseInt(rows[0].last_number, 10) 
+        : rows[0].last_number;
+      
+      const number = lastNumber.toString().padStart(5, '0');
+      
+      logger.info('Journal number generated', {
+        context: { companyId, journalType, series, year, number }
+      });
+      
       return `${series}/${year}/${number}`;
     } catch (error) {
-      console.error('Error generating journal number:', error);
-      // Fallback
-      return `${series}/${year}/${Math.floor(Math.random() * 99999).toString().padStart(5, '0')}`;
+      logger.error('Error generating journal number', { 
+        error, 
+        context: { companyId, journalType, series, year } 
+      });
+      
+      // Fallback: număr aleator (nu ideal, dar prevent crash)
+      const fallbackNumber = Math.floor(Math.random() * 99999).toString().padStart(5, '0');
+      return `${series}/${year}/${fallbackNumber}`;
     }
   }
   
@@ -70,20 +94,30 @@ export class JournalNumberingService {
     const series = this.getJournalSeries(journalType);
     
     try {
-      const result = await db.$client.unsafe(`
-        SELECT last_number FROM document_counters
-        WHERE company_id = $1 
-        AND counter_type = 'JOURNAL'
-        AND series = $2
-        AND year = $3
-      `, [companyId, series, year]);
+      const result = await db
+        .select({ lastNumber: documentCounters.lastNumber })
+        .from(documentCounters)
+        .where(
+          and(
+            eq(documentCounters.companyId, companyId),
+            eq(documentCounters.counterType, 'JOURNAL'),
+            eq(documentCounters.series, series),
+            eq(documentCounters.year, year.toString())
+          )
+        )
+        .limit(1);
       
       if (result && result.length > 0) {
-        return result[0].last_number;
+        const lastNumber = result[0].lastNumber;
+        return typeof lastNumber === 'string' ? parseInt(lastNumber, 10) : Number(lastNumber);
       }
       
       return 0;
-    } catch (error) {
+    } catch (_error) {
+      logger.error('Error retrieving last journal number', {
+        error: _error,
+        context: { companyId, journalType, series, year }
+      });
       return 0;
     }
   }
