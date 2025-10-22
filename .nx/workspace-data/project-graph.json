@@ -15286,13 +15286,22 @@
         "hash": "sha512-u7f2xaZ/UG8oLXHvtF/oWTRvT44p9ecwBBqTwgJVq0+4BW1g8OW01TyMEGWBHbyMOYVHXslaut7qEQ1meATXgw=="
       }
     },
-    "npm:nanoid": {
+    "npm:nanoid@3.3.11": {
       "type": "npm",
-      "name": "npm:nanoid",
+      "name": "npm:nanoid@3.3.11",
       "data": {
         "version": "3.3.11",
         "packageName": "nanoid",
         "hash": "sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w=="
+      }
+    },
+    "npm:nanoid@5.1.6": {
+      "type": "npm",
+      "name": "npm:nanoid@5.1.6",
+      "data": {
+        "version": "5.1.6",
+        "packageName": "nanoid",
+        "hash": "sha512-c7+7RQ+dMB5dPwwCp4ee1/iV/q2P6aK1mTZcfr1BTuVlyW9hJYiMPybJCcnBlQtuSmTIWNeazm/zqNoZSSElBg=="
       }
     },
     "npm:napi-postinstall": {
@@ -42249,7 +42258,7 @@
     "npm:postcss": [
       {
         "source": "npm:postcss",
-        "target": "npm:nanoid",
+        "target": "npm:nanoid@3.3.11",
         "type": "static"
       },
       {
@@ -46713,5 +46722,5 @@
   },
   "version": "6.0",
   "errors": [],
-  "computedAt": 1761138860348
+  "computedAt": 1761141762647
 }
