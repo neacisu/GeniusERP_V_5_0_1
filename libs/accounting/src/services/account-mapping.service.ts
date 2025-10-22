@@ -6,7 +6,7 @@
  * Enhanced cu Redis caching (TTL: 24h)
  */
 
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { eq, and } from 'drizzle-orm';
 import { accountMappings } from '../../../../shared/schema/account-mappings.schema';
 import { RedisService } from '../../../services/redis.service';

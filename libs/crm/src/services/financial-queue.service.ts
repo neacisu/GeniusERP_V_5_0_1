@@ -6,14 +6,14 @@
  */
 import { Queue, Worker, Job } from 'bullmq';
 import IORedis from 'ioredis';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { FinancialDataService } from './financial-data.service';
 import { AuditService } from '../../audit/services/audit.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { financialDataJobs } from '../schema/financial-data.schema';
 import { eq } from 'drizzle-orm';
 import { getBullMQRedisConfig } from '../../../config/redis';
-import { BaseDrizzleService } from '../../../common/drizzle/modules/core/base-drizzle.service';
+import { BaseDrizzleService } from "@common/drizzle/modules/core/base-drizzle.service";
 
 // Configurare queue names
 const FINANCIAL_DATA_QUEUE = 'anaf-financial-data';

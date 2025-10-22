@@ -10,10 +10,10 @@
 import { employees, departments } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditService } from '../../audit/services/audit.service';
-import { AuditAction, AuditResourceType } from '../../../common/enums/audit.enum';
+import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";
 import { eq, sql, asc, desc } from 'drizzle-orm';
-import { Logger } from '../../../common/logger';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { Logger } from "@common/logger";
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 
 export class DepartmentService {
   private drizzle: DrizzleService;

@@ -7,10 +7,10 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { ValidateInvoiceService } from '../services/validate-invoice.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { AuditService } from '../../audit/services/audit.service';
 import { ENTITY_NAME } from '../invoices.module';
-import { invoices } from '@shared/schema';
+import { invoices } from '@geniuserp/shared';
 import { eq, and } from 'drizzle-orm';
 
 export class ValidateInvoiceController {

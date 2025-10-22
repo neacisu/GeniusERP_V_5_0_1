@@ -3,7 +3,7 @@
  * 
  * Service for managing deals in the CRM module
  */
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { sql, eq, and, or, like, desc, asc, isNull, not } from "drizzle-orm";
 import {
   deals,

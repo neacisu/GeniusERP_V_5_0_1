@@ -6,8 +6,8 @@
  * Enhanced cu Redis caching (TTL: 1h pentru schedules)
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { getDrizzle } from '../../../common/drizzle';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { getDrizzle } from "@common/drizzle";
 import { JournalService, LedgerEntryType } from './journal.service';
 import { AuditLogService } from './audit-log.service';
 import { eq, and, sql, isNull, lte } from 'drizzle-orm';

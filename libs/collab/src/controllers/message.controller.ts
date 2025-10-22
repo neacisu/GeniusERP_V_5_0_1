@@ -7,8 +7,8 @@ import { Request, Response, Router } from 'express';
 import { z } from 'zod';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from '../../../common/logger';
-import { MessageDrizzleService } from '../../../common/drizzle/modules/collab/message-service';
+import { Logger } from "@common/logger";
+import { MessageDrizzleService } from "@common/drizzle/modules/collab/message-service";
 import { insertCollaborationMessageSchema } from '../../../../shared/schema/collaboration.schema';
 
 // Create module logger

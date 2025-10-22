@@ -1,5 +1,5 @@
 import { IStorage } from "../../../storage";
-import { DrizzleService } from "../../../common/drizzle/drizzle.service";
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { and, eq } from "drizzle-orm";
 import {
   AccountClass, AccountGroup, SyntheticAccount, AnalyticAccount,

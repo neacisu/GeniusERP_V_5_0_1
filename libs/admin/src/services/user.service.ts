@@ -12,7 +12,7 @@ import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq, and, isNull, asc, desc, sql } from 'drizzle-orm';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { users, roles, userRoles } from '../../../../shared/schema/admin.schema';
 
 /**

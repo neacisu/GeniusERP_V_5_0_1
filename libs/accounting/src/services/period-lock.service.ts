@@ -6,11 +6,11 @@
  * Enhanced cu Redis caching (TTL: 1h pentru period status checks - apelat la FIECARE entry!)
  */
 
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { eq, and, gte, lte } from 'drizzle-orm';
 import { RedisService } from '../../../services/redis.service';
 import { fiscalPeriods } from '../schema/accounting.schema';
-import { createModuleLogger } from '../../../common/logger/loki-logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 const logger = createModuleLogger('period-lock');
 

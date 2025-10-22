@@ -9,7 +9,7 @@ import { exchangeRateService } from '../services/exchange-rate.service';
 import { bnrExchangeRateService } from '../services/bnr-exchange-rate.service';
 import { CurrencyService } from '../services/currency.service';
 import { AuditService } from '../../audit/services/audit.service';
-import { Services } from '../../../common/services/registry';
+import { Services } from "@common/services/registry";
 import { fx_rates } from '../../../../shared/schema';
 import { and, eq, gte, lte, inArray, asc } from 'drizzle-orm';
 

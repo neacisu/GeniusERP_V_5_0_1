@@ -5,8 +5,8 @@
  */
 
 import { eq, and, desc, sql, SQL, count } from 'drizzle-orm';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { Logger } from '../../../common/logger';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { Logger } from "@common/logger";
 import { collaborationActivities } from '../../../../shared/schema/collaboration.schema';
 
 /**

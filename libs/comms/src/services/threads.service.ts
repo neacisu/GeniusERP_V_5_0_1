@@ -14,7 +14,7 @@ import {
   CommunicationChannel,
   MessageStatus
 } from '../../../../shared/schema/communications.schema';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger for thread operations
 const logger = new Logger('ThreadsService');

@@ -7,7 +7,7 @@
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { OrdersService } from './orders.service';
 import { TransactionsService } from './transactions.service';
 import { OrderStatus, PaymentStatus } from '../../../../shared/schema/ecommerce.schema';

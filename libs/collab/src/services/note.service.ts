@@ -11,8 +11,8 @@ import {
   CollaborationNote
 } from '../../../../shared/schema/collaboration.schema';
 import { randomUUID } from 'crypto';
-import { Logger } from '../../../common/logger';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { Logger } from "@common/logger";
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 
 /**
  * Note Service Class

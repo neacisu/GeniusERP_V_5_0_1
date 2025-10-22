@@ -8,7 +8,7 @@
 import { Request, Response } from 'express';
 import { ChannelConfigsService } from '../services/channel-configs.service';
 import { CommunicationChannel } from '../../../../shared/schema/communications.schema';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger for the channel configs controller
 const logger = new Logger('ChannelConfigsController');

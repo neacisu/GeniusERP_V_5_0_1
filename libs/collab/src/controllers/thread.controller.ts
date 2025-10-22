@@ -8,8 +8,8 @@ import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from '../../../common/logger';
-import { ThreadDrizzleService } from '../../../common/drizzle/modules/collab/thread-service';
+import { Logger } from "@common/logger";
+import { ThreadDrizzleService } from "@common/drizzle/modules/collab/thread-service";
 import { insertCollaborationThreadSchema } from '../../../../shared/schema/collaboration.schema';
 
 // Create module logger

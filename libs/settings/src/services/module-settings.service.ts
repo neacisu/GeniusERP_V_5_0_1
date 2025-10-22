@@ -5,11 +5,11 @@
  * It provides a centralized way to manage settings for different modules in the application.
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { globalSettings } from '../schema/settings.schema';
 import { eq, and } from 'drizzle-orm';
 import { GlobalSettingsService } from './global-settings.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 export class ModuleSettingsService {
   private drizzle: DrizzleService;

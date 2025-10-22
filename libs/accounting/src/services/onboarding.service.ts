@@ -11,7 +11,7 @@
  * Enhanced cu Redis caching (TTL: 5min pentru status - apelat frecvent în UI!)
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { eq, and } from 'drizzle-orm';
 import {
   accountingSettings,
@@ -20,7 +20,7 @@ import {
   AccountingSettings,
   OpeningBalance,
   InsertSyntheticAccount,
-} from '@shared/schema';
+} from '@geniuserp/shared';
 import { AccountingSettingsService } from './accounting-settings.service';
 import { RedisService } from '../../../services/redis.service';
 import * as XLSX from 'xlsx';

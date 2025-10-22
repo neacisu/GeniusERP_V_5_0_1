@@ -7,7 +7,7 @@
 import { Router, Express } from 'express';
 import { TriggerService } from '../services/trigger.service';
 import { TriggerController } from '../controllers/trigger.controller';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 

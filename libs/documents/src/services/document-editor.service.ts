@@ -10,9 +10,9 @@
 
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { documents, documentVersions } from '@shared/schema';
+import { documents, documentVersions } from '@geniuserp/shared';
 import { DocumentService } from './document.service';
-import { DrizzleService } from '../../../common/drizzle';
+import { DrizzleService } from "@common/drizzle";
 
 /**
  * Document editor types

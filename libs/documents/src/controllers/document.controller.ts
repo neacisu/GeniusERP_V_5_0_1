@@ -11,7 +11,7 @@ import { AuthGuard } from '../../../modules/auth/guards/auth.guard';
 import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
 import { DocumentService } from '../services/document.service';
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 const logger = new Logger('DocumentController');
 

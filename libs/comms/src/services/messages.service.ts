@@ -15,9 +15,9 @@ import {
   MessageStatus,
   SentimentType
 } from '../../../../shared/schema/communications.schema';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { ThreadsService } from './threads.service';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 
 // Create a logger for message operations
 const logger = new Logger('MessagesService');

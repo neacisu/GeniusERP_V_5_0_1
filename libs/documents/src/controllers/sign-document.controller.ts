@@ -9,7 +9,7 @@
 import { Request, Response } from 'express';
 import { signDocumentService } from '../services/sign-document.service';
 import { AuditService, AuditAction } from '../../audit/services/audit.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Define entity name for audit logs
 export const ENTITY_NAME = 'document';

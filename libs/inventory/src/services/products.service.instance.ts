@@ -6,7 +6,7 @@
  */
 
 import { ProductsService } from './products.service';
-import { drizzleService } from '../../../common/drizzle/drizzle.service.instance';
+import { drizzleService } from "@common/drizzle/drizzle.service.instance";
 import AuditService from '../../audit/services/audit.service';
 
 // Create the singleton instance of the products service

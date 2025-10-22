@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { FeatureToggleService } from '../services/feature-toggle.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 export class FeatureToggleController {
   private service: FeatureToggleService;

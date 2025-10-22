@@ -20,10 +20,8 @@ console.log('Starting Express application...');
 
 import express, { type Request, Response, NextFunction } from "express";
 import { createServer } from "http";
+import { setupVite, serveStatic, log } from "./vite";
 import { initializeModules } from './modules';
-
-// Simple logger for NX monorepo (no Vite integration needed)
-const log = (message: string) => console.log(`[API] ${message}`);
 // Import the services registry to ensure it's available globally
 import './common/services';
 // Import the service registry initialization
@@ -201,12 +199,15 @@ const httpServer = createServer(app);
       res.status(status).json({ message });
     });
 
-    // NX Monorepo: Backend is API-only, frontend runs separately with nx serve web
-    // No Vite integration needed here
-    appLogger.info('Backend running in NX monorepo mode (API-only)');
+    // Setup Vite for frontend serving (dev & prod)
+    if (app.get("env") === "development") {
+      await setupVite(app, httpServer);
+    } else {
+      serveStatic(app);
+    }
 
-    // Start HTTP server on port 5001 (frontend proxies /api to this)
-    const port = parseInt(process.env.API_PORT || '5001', 10);
+    // Start HTTP server on port 5000 (un singur port pentru tot)
+    const port = 5000;
     httpServer.listen({
       port,
       host: "0.0.0.0",

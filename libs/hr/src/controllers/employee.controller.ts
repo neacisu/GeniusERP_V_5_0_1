@@ -12,7 +12,7 @@ import { EmployeeService } from '../services/employee.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { AuthenticatedRequest } from '../../../types/express';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Initialize logger
 const logger = new Logger('EmployeeController');

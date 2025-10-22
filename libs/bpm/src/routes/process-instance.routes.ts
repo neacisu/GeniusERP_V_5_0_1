@@ -7,7 +7,7 @@
 import { Router, Express } from 'express';
 import { ProcessInstanceService } from '../services/process-instance.service';
 import { ProcessInstanceController } from '../controllers/process-instance.controller';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 

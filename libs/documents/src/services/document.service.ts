@@ -15,7 +15,7 @@
 
 import { eq, desc, and, asc, or, between, like, inArray, sql } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import * as schema from '../../../../shared/schema';
 import { documents, documentVersions, documentRelations, documentVersionRelations } from '../../../../shared/schema';
 import type { 
@@ -25,7 +25,7 @@ import type {
   InsertDocumentVersion,
   InsertTaggedDocumentVersion
 } from '../../../../shared/schema';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 const logger = new Logger('DocumentService');
 

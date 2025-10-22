@@ -7,8 +7,8 @@ urilor în valută conform OMFP 1802/2014
  * Calculează diferențe de curs la cursul BNR pentru sfârșitul perioadei
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { getDrizzle } from '../../../common/drizzle';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { getDrizzle } from "@common/drizzle";
 import { JournalService, LedgerEntryType } from './journal.service';
 import { AuditLogService } from './audit-log.service';
 import { eq, and, sql, ne, isNull } from 'drizzle-orm';

@@ -5,11 +5,11 @@
  * processing, and management of payment records.
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { v4 as uuidv4 } from 'uuid';
 import { eq, and, desc, gte, lte } from 'drizzle-orm';
 import { ecommerceTransactions, PaymentStatus } from '../../../../shared/schema/ecommerce.schema';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger
 const logger = new Logger('TransactionsService');

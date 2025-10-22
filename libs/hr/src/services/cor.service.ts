@@ -28,7 +28,7 @@ import {
   corOccupations
 } from '../schema/cor.schema';
 import { eq, sql, count } from 'drizzle-orm';
-import { AuditService } from '../../../common/services/audit.service';
+import { AuditService } from "@common/services/audit.service";
 
 export class CorService {
   private db: any;

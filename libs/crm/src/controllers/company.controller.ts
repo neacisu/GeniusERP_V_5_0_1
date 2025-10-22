@@ -4,7 +4,7 @@
  * Handles HTTP requests related to CRM companies
  */
 import { Request, Response } from 'express';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { JwtAuthMode } from '../../auth/types';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { UserRole } from '../../auth/types';

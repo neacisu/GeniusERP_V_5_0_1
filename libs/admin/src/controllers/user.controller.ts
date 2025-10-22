@@ -6,13 +6,13 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { UserService } from '../services/user.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { RolesGuard } from '../../../common/guards';
-import { Roles } from '../../../common/decorators';
-import { Reflector } from '../../../common/reflector/reflector';
+import { RolesGuard } from "@common/guards";
+import { Roles } from "@common/decorators";
+import { Reflector } from "@common/reflector/reflector";
 import { z } from 'zod';
 
 // Create validation schema for user creation

@@ -6,7 +6,7 @@
  */
 
 import { Request, Response } from 'express';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { UserService } from '../services/user.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum'; //Import updated for consistency.  Further updates may be necessary based on the full authentication strategy.

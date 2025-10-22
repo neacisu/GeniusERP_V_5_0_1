@@ -6,12 +6,12 @@
  */
 
 import { Job, JobsOptions } from 'bullmq';
-import { accountingQueue } from '../../../common/bullmq/queues';
+import { accountingQueue } from "@common/bullmq/queues";
 import { 
   BalanceUpdateJob, 
   AccountReconciliationJob,
   ReportGenerationJob 
-} from '../../../common/bullmq/types';
+} from "@common/bullmq/types";
 
 /**
  * Extended job types pentru accounting

@@ -7,7 +7,7 @@
 
 import { IStorage } from "../../../storage";
 import { CurrencyService } from "../../integrations/services/currency.service";
-import { DrizzleService } from "../../../common/drizzle";
+import { DrizzleService } from "@common/drizzle";
 import { randomUUID } from "crypto";
 
 export class InventoryService {

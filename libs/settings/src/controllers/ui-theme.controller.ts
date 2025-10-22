@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { UiThemeService } from '../services/ui-theme.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 export class UiThemeController {
   private service: UiThemeService;

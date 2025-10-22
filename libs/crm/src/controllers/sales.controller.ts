@@ -8,7 +8,7 @@ import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { JwtService } from '../../auth/services/jwt.service';
 import { UserRole } from '../../auth/types';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 const logger = new Logger('SalesController');
 

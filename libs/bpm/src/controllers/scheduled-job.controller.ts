@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { ScheduledJobService } from '../services/scheduled-job.service';
 import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
 

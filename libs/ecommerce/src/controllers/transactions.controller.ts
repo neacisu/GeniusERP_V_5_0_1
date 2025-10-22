@@ -9,7 +9,7 @@ import { TransactionsService } from '../services/transactions.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { PaymentStatus } from '../../../../shared/schema/ecommerce.schema';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger
 const logger = new Logger('TransactionsController');

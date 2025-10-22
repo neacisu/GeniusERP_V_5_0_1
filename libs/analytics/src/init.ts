@@ -11,7 +11,7 @@ import { setupBusinessIntelligenceRoutes } from './routes/business-intelligence.
 import { setupPredictiveRoutes } from './routes/predictive.routes';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { randomUUID } from 'crypto';
-import * as schema from '@shared/schema';
+import * as schema from '@geniuserp/shared';
 
 /**
  * Initialize the Analytics module

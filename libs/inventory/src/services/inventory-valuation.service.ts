@@ -13,7 +13,7 @@
  */
 
 import { desc, eq, and, sql, asc, lt, gte } from 'drizzle-orm';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
 import { 
   insertBatchSchema,

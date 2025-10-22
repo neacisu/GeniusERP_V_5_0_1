@@ -11,7 +11,7 @@ import { setupLedgerRoutes } from "./ledger.routes";
 // Note Contabil routes moved to routes/index.ts (note-contabil.route.ts)
 import { AccountingController } from "../controllers/accounting.controller";
 import { MetricsController } from "../controllers/metrics.controller";
-import { AuthenticatedRequest } from "../../../common/middleware/auth-types";
+import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { Response } from "express";
 import { accountingReadRateLimiter, accountingHeavyRateLimiter } from "../../../middlewares/rate-limit.middleware";
 import { accountingQueueService } from "../services/accounting-queue.service";

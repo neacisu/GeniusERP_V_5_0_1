@@ -10,8 +10,8 @@ import { Request, Response, NextFunction } from 'express';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { UserRole } from '../../auth/types';
-import { Logger } from '../../../common/logger';
-import { DrizzleService } from '../../../common/drizzle';
+import { Logger } from "@common/logger";
+import { DrizzleService } from "@common/drizzle";
 
 // Role constants for inventory operations
 const INVENTORY_ROLES = [UserRole.INVENTORY_MANAGER, UserRole.ADMIN];

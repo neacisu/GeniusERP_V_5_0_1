@@ -7,12 +7,12 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { InvoiceService } from '../services/invoice.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { AuditService } from '../../audit/services/audit.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ENTITY_NAME } from '../invoices.module';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { invoices, invoiceDetails } from '@shared/schema';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { invoices, invoiceDetails } from '@geniuserp/shared';
 import { invoiceItems } from '../schema/invoice.schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { trackInvoiceCreation, invoiceMetrics } from '../../../middlewares/business-metrics.middleware';

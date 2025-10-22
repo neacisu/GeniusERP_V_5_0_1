@@ -7,7 +7,7 @@
 import { Router, Express } from 'express';
 import { StepExecutionService } from '../services/step-execution.service';
 import { StepExecutionController } from '../controllers/step-execution.controller';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 

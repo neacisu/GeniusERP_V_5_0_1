@@ -10,7 +10,7 @@ import {
   taskWatchers
 } from '../../../../shared/schema/collaboration.schema';
 import { randomUUID } from 'crypto';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger instance for the watcher service
 const logger = new Logger('WatcherService');

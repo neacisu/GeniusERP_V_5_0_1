@@ -9,11 +9,11 @@
  * - Handling of Romanian-specific medical leave policies
  */
 
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { absences } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditService } from '../../audit/services/audit.service';
-import { AuditAction, AuditResourceType } from '../../../common/enums/audit.enum';
+import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";
 
 // Absence types according to Romanian labor law
 export enum AbsenceType {

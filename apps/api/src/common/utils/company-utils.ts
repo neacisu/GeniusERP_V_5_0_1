@@ -8,7 +8,7 @@ import { Request } from 'express';
 import { AppError } from '../errors/app-error';
 import { DrizzleService } from '../drizzle/drizzle.service';
 import { eq } from 'drizzle-orm';
-import { users } from '@shared/schema';
+import { users } from '@geniuserp/shared';
 
 /**
  * Get the company ID from the authenticated user's request

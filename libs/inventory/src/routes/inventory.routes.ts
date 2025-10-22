@@ -10,7 +10,7 @@ import { Router } from 'express';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { UserRole } from '../../auth/types';
-import { validateRequest } from '../../../common/middleware/validate-request';
+import { validateRequest } from "@common/middleware/validate-request";
 import { validateCompanyAccess, ensureCompanyId, addCompanyFilter } from '../../auth/middleware/company-access.middleware';
 import { z } from 'zod';
 
@@ -28,7 +28,7 @@ import { InventoryAssessmentService } from '../services/inventory-assessment.ser
 import { InventoryValuationService } from '../services/inventory-valuation.service';
 import { WarehouseService } from '../services/warehouse.service';
 import { AuditService } from '../../../modules/audit/services/audit.service';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 
 // Role constants for inventory operations
 const INVENTORY_ROLES = [UserRole.ADMIN, UserRole.USER];

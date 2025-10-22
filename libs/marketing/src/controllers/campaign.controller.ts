@@ -8,7 +8,7 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { CampaignService } from '../services/campaign.service';
 import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
 import { 

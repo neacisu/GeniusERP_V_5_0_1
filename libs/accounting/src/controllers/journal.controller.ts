@@ -1,8 +1,8 @@
 import { Response } from 'express';
 import { BaseController } from './base.controller';
 import { JournalService, LedgerEntryType } from '../services/journal.service';
-import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
-import { getDrizzle } from '../../../common/drizzle';
+import { AuthenticatedRequest } from "@common/middleware/auth-types";
+import { getDrizzle } from "@common/drizzle";
 import { eq, desc } from 'drizzle-orm';
 import { ledgerEntries, ledgerLines } from '../../../../shared/schema';
 

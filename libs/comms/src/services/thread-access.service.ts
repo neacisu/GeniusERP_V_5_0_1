@@ -11,7 +11,7 @@ import { eq, and } from 'drizzle-orm';
 import { 
   threadAccess
 } from '../../../../shared/schema/communications.schema';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger for thread access operations
 const logger = new Logger('ThreadAccessService');

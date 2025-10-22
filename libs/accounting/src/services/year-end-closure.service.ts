@@ -5,8 +5,8 @@
  * Include: Închidere P&L, Calcul impozit profit, Repartizare profit/acoperire pierdere
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { getDrizzle } from '../../../common/drizzle';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { getDrizzle } from "@common/drizzle";
 import { JournalService, LedgerEntryType } from './journal.service';
 import { AuditLogService } from './audit-log.service';
 import { eq, and, gte, lte, sql } from 'drizzle-orm';

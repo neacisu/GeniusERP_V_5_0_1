@@ -12,7 +12,7 @@
  * - Credit 401 (Furnizori) with the total value (including VAT)
  */
 
-import { BaseDrizzleService } from '../../../common/drizzle/modules/core/base-drizzle.service';
+import { BaseDrizzleService } from "@common/drizzle/modules/core/base-drizzle.service";
 import { randomUUID } from "crypto";
 import {
   InsertNirDocument,

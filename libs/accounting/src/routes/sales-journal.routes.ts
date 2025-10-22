@@ -3,7 +3,7 @@ import { AuthGuard } from "../../auth/guards/auth.guard";
 import { JwtAuthMode } from "../../auth/constants/auth-mode.enum";
 import { salesJournalService } from "..";
 import { SalesJournalController } from "../controllers/sales-journal.controller";
-import { AuthenticatedRequest } from "../../../common/middleware/auth-types";
+import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { Response } from "express";
 import { 
   invoiceCreateRateLimiter,

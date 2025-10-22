@@ -5,7 +5,7 @@
  */
 
 import Stripe from 'stripe';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { IntegrationProvider, IntegrationStatus } from '../schema/integrations.schema';
 import { BaseIntegrationClient } from './base-integration.client';
 

@@ -21,6 +21,9 @@
     "users": "libs/users",
     "collab": "libs/collab",
     "comms": "libs/comms",
-    "company": "libs/company"
+    "company": "libs/company",
+    "audit": "libs/audit",
+    "ai": "libs/ai",
+    "sales": "libs/sales"
   }
 }

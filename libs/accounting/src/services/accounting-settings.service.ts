@@ -11,7 +11,7 @@
  * - Opening balances (no cache - frequently updated)
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { eq, and, desc, sql, like, or } from 'drizzle-orm';
 import { RedisService } from '../../../services/redis.service';
 import {
@@ -30,13 +30,13 @@ import {
   UpdateAccountingSettings,
   UpdateVatSettings,
   UpdateAccountRelationship,
-} from '@shared/schema';
-import { accountMappings, AccountMapping, InsertAccountMapping } from '@shared/schema';
+} from '@geniuserp/shared';
+import { accountMappings, AccountMapping, InsertAccountMapping } from '@geniuserp/shared';
 import { documentCounters, DocumentCounter } from '../schema/accounting.schema';
 import { fiscalPeriods, FiscalPeriod } from '../schema/accounting.schema';
 import { ledgerEntries } from '../schema/accounting.schema';
-import { syntheticAccounts, SyntheticAccount } from '@shared/schema';
-import { invoices } from '@shared/schema';
+import { syntheticAccounts, SyntheticAccount } from '@geniuserp/shared';
+import { invoices } from '@geniuserp/shared';
 
 export interface AllAccountingSettings {
   generalSettings: AccountingSettings | null;

@@ -6,10 +6,10 @@
 
 import { Express, Request, Response } from 'express';
 import { ThreadService } from '../services/thread.service';
-import { AuthGuard } from '../../../common/middleware/auth-guard';
+import { AuthGuard } from "@common/middleware/auth-guard";
 import { z } from 'zod';
 import { insertCollaborationThreadSchema } from '../../../../shared/schema/collaboration.schema';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 const BASE_PATH = '/api/collaboration/threads';
 

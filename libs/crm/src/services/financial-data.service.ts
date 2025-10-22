@@ -5,11 +5,11 @@
  * și interogarea acestora de la ANAF
  */
 import axios from 'axios';
-import { BaseDrizzleService } from '../../../common/drizzle/modules/core/base-drizzle.service';
+import { BaseDrizzleService } from "@common/drizzle/modules/core/base-drizzle.service";
 import { financialData, financialDataErrors, financialDataJobs, FinancialDataInsert, FinancialDataErrorInsert, FinancialDataJobInsert } from '../schema/financial-data.schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { AuditService } from '../../audit/services/audit.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 const ANAF_BILANT_URL = 'https://webservicesp.anaf.ro/bilant';
 const MAX_RETRY_COUNT = 3;

@@ -13,7 +13,7 @@ import { z } from 'zod';
 import { InventoryAssessmentService } from '../services/inventory-assessment.service';
 import { InventoryValuationService } from '../services/inventory-valuation.service';
 import { log } from '../../../vite';
-import { validateRequest } from '../../../common/middleware/validate-request';
+import { validateRequest } from "@common/middleware/validate-request";
 import { pool } from '../../../db';
 
 // Constants for role-based access

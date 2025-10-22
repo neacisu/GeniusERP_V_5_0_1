@@ -9,7 +9,7 @@ import { OrdersService } from '../services/orders.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { OrderStatus } from '../../../../shared/schema/ecommerce.schema';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger
 const logger = new Logger('OrdersController');

@@ -6,9 +6,9 @@
  * and audit-compliant logging of all movements.
  */
 
-import { DrizzleService } from '../../../common/drizzle';
+import { DrizzleService } from "@common/drizzle";
 import { randomUUID } from 'crypto';
-import { Services, logAction } from '../../../common/services/registry';
+import { Services, logAction } from "@common/services/registry";
 import { AuditAction } from '../../../modules/audit/services/audit.service';
 import { eq, and } from 'drizzle-orm';
 

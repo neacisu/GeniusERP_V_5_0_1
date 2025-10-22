@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { UserPreferencesService } from '../services/user-preferences.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 export class UserPreferencesController {
   private service: UserPreferencesService;

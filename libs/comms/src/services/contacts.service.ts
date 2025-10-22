@@ -11,7 +11,7 @@ import { eq, and, or, like, desc } from 'drizzle-orm';
 import { 
   contacts
 } from '../../../../shared/schema/communications.schema';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger for contact operations
 const logger = new Logger('ContactsService');

@@ -8,7 +8,7 @@
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq, and, like, or, desc, SQL, count } from 'drizzle-orm';
 import axios, { AxiosRequestConfig, Method } from 'axios';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { 
   bpmApiConnections,
   ApiConnection,

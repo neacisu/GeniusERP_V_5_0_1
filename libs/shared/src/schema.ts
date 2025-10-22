@@ -5,24 +5,24 @@ import { relations } from "drizzle-orm";
 
 // Export CRM models for shared usage across the application
 // Notă: CRM Activity este exportat ca Activity principal
-export * from "../server/modules/crm/schema/crm.schema";
-export * from "../server/modules/crm/schema/financial-data.schema";
+export * from "./schema/crm.schema";
+export * from "./schema/financial-data.schema";
 
 // Export HR models for shared usage across the application
-export * from "../server/modules/hr/schema/hr.schema";
-export * from "../server/modules/hr/schema/documents.schema";
-export * from "../server/modules/hr/schema/cor.schema";
-export * from "../server/modules/hr/schema/settings.schema";
+export * from "./schema/hr.schema";
+export * from "./schema/documents.schema";
+export * from "./schema/cor.schema";
+export * from "./schema/settings.schema";
 
 // Export Accounting models for shared usage across the application
 export * from "../server/modules/accounting/schema";
 
 // Export Analytics models for shared usage across the application
-export * from "../server/modules/analytics/schema/analytics.schema";
-export * from "../server/modules/analytics/schema/predictive.schema";
+export * from "./schema/analytics.schema";
+export * from "./schema/predictive.schema";
 
 // Export Integrations models for shared usage across the application
-export * from "../server/modules/integrations/schema/integrations.schema";
+export * from "./schema/integrations.schema";
 
 // Export E-commerce models for shared usage across the application
 // Using ONLY the new schema from shared/schema/ecommerce.schema.ts (with transaction_type)
@@ -33,9 +33,9 @@ export * from "./schema/ecommerce.schema";
 export * from "./schema/collaboration.schema";
 
 // Export Invoicing models for shared usage across the application
-export * from "../server/modules/invoicing/schema/invoice.schema";
+export * from "./schema/invoice.schema";
 // Import invoiceItems explicitly for relations (needed to avoid circular dependency)
-import { invoiceItems } from "../server/modules/invoicing/schema/invoice.schema";
+import { invoiceItems } from "./schema/invoice.schema";
 export * from "./schema/invoice-numbering.schema";
 
 // Export Warehouse models for shared usage across the application
@@ -95,16 +95,16 @@ export * from "./schema/accounting-settings.schema";
 export * from "./schema/bpm.schema";
 
 // Export Audit models for shared usage across the application
-export * from "../server/modules/audit/schema/audit.schema";
+export * from "./schema/audit.schema";
 
 // Export Settings models for shared usage across the application
-export * from "../server/modules/settings/schema/settings.schema";
+export * from "./schema/settings.schema";
 
 // Export Admin models for shared usage across the application
 export * from "./schema/admin.schema";
 
 // Export Company models for shared usage across the application
-export * from "../server/modules/company/schema/company.schema";
+export * from "./schema/company.schema";
 
 // User Management
 export const users = pgTable("users", {

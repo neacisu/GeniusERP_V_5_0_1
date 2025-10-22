@@ -12,7 +12,7 @@
 
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
 import { v4 as uuidv4 } from 'uuid';
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { and, desc, eq, gte, lte, isNotNull } from 'drizzle-orm';
 import { invoices, invoiceItems, invoiceDetails, invoicePayments, users, companies, type InvoicePayment, type InvoiceDetail } from '../../../../shared/schema';
 import { accountingLedgerEntries, accountingLedgerLines } from '../schema/accounting.schema';

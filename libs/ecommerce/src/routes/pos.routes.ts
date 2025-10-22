@@ -8,7 +8,7 @@ import { Router, Request, Response } from 'express';
 import { POSIntegrationService } from '../services/pos-integration.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger
 const logger = new Logger('POSRouter');

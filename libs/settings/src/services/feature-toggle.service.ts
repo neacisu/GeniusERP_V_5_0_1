@@ -5,10 +5,10 @@
  * It provides methods for retrieving, creating, updating, and managing feature toggles.
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { featureToggles } from '../schema/settings.schema';
 import { eq, and, isNull } from 'drizzle-orm';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 export class FeatureToggleService {
   private drizzle: DrizzleService;

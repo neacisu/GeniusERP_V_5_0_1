@@ -8,7 +8,8 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { Logger } from '../logger';
-import * as schema from '../../../shared/schema';
+// NX Monorepo: Import schema from shared lib
+import * as schema from '@geniuserp/shared';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 // Create a logger for database operations

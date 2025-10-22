@@ -5,14 +5,14 @@
  */
 import { eq, and, like, or, desc, sql, not, isNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { 
   bpmProcesses, 
   BpmProcess,
   BpmProcessStatus
 } from '../schema/bpm.schema';
 import { ProcessInstanceService, NewProcessInstance } from './process-instance.service';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 
 /**
  * Process filtering options

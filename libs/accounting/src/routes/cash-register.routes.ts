@@ -4,7 +4,7 @@ import { AuthGuard } from "../../auth/guards/auth.guard";
 import { JwtAuthMode } from "../../auth/constants/auth-mode.enum";
 import { cashRegisterService } from "..";
 import { CashRegisterController } from "../controllers/cash-register.controller";
-import { AuthenticatedRequest } from "../../../common/middleware/auth-types";
+import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { Response } from "express";
 import { 
   accountingReadRateLimiter,

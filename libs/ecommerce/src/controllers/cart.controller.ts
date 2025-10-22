@@ -9,7 +9,7 @@ import { CartService } from '../services/cart.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { CartStatus } from '../../../../shared/schema/ecommerce.schema';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger
 const logger = new Logger('CartController');

@@ -7,7 +7,7 @@
 import { Express, Router } from 'express';
 import { CommunityService } from '../services/community.service';
 import { CommunityController } from '../controllers/community.controller';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger instance for the community routes
 const logger = new Logger('CommunityRoutes');

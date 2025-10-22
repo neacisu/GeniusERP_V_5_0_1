@@ -7,8 +7,8 @@
 
 import { eq, and, desc, sql, like, not, isNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from '../../../common/logger';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { Logger } from "@common/logger";
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { CommsModule } from '../../comms/comms.module';
 import { 
   campaigns, 

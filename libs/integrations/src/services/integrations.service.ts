@@ -6,7 +6,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { eq, and, desc, isNull } from 'drizzle-orm';
-import { DrizzleService } from '../../../common/drizzle';
+import { DrizzleService } from "@common/drizzle";
 import { 
   integrations, 
   Integration, 
@@ -15,7 +15,7 @@ import {
   UpdateIntegration 
 } from '../schema/integrations.schema';
 import { AuditService } from '../../audit/services/audit.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // For audit logging
 const RESOURCE_TYPE = 'integration';

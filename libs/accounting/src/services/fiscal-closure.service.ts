@@ -9,7 +9,7 @@
  * - Progress tracking via job status
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { AccountingPeriodsService, PeriodStatus } from './accounting-periods.service';
 import { DepreciationCalculationService } from './depreciation-calculation.service';
 import { FXRevaluationService } from './fx-revaluation.service';

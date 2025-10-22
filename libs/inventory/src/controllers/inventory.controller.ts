@@ -12,7 +12,7 @@ import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { ManageWarehouseService, manageWarehouseService } from '../services/manage-warehouse.service';
 import { TransferStockService, transferStockService } from '../services/transfer-stock.service';
 import { checkStockLevelsService } from '../services/check-stock-levels.service';
-import { validateRequest } from '../../../common/middleware/validate-request';
+import { validateRequest } from "@common/middleware/validate-request";
 import { z } from 'zod';
 import { UserRole } from '../../auth/types';
 

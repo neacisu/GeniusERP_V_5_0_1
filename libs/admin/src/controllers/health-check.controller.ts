@@ -6,7 +6,7 @@
  */
 
 import { Request, Response } from 'express';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { HealthCheckService } from '../services/health-check.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';

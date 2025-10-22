@@ -6,7 +6,7 @@
  * Enhanced cu Redis caching (TTL: 24h pentru templates list, 12h pentru individual)
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { eq, and, sql } from 'drizzle-orm';
 import { JournalService, LedgerEntryType } from './journal.service';
 import { AuditLogService } from './audit-log.service';

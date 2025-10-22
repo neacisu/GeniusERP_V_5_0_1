@@ -5,12 +5,12 @@
  * It provides methods for retrieving, creating, and updating users and their related data.
  */
 
-import { DrizzleService } from "../../../common/drizzle/drizzle.service";
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { User, InsertUser, Role, Permission } from "@shared/schema";
 import { authService } from "../../auth/services/auth.service";
 import { users, roles, permissions, userRoles, rolePermissions } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
-import { Logger } from "../../../common/logger";
+import { Logger } from "@common/logger";
 
 export class UserService {
   private drizzle: DrizzleService;

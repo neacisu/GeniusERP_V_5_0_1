@@ -6,7 +6,7 @@ import session from "express-session";
 import { authService, JWT_SECRET } from "../services/auth.service";
 import { AuthGuard } from "../guards/auth.guard";
 import { JwtAuthMode, UserRole } from "../types";
-import { DrizzleService } from "../../../common/drizzle";
+import { DrizzleService } from "@common/drizzle";
 import { users, User as SelectUser } from "@shared/schema";
 import { authRateLimiter } from "../../../middlewares/rate-limit.middleware";
 import { log } from "../../../vite";

@@ -6,7 +6,7 @@
  * Enhanced cu Redis caching (TTL: 12h pentru periods list, 6h pentru individual)
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import { fiscalPeriods, FiscalPeriod, InsertFiscalPeriod } from '../schema/accounting.schema';
 import { AuditLogService } from './audit-log.service';

@@ -8,7 +8,7 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { TemplateService } from '../services/template.service';
 import { AuditService } from '../../audit/services/audit.service';
 import { CampaignType } from '../../../../shared/schema/marketing.schema';

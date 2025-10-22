@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AccountingService } from '../services/accounting.service';
 import { BaseController } from './base.controller';
-import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
+import { AuthenticatedRequest } from "@common/middleware/auth-types";
 
 /**
  * AccountingController

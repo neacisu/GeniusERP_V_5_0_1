@@ -3,8 +3,8 @@
  * 
  * Service for managing customers in the CRM module
  */
-import { BaseDrizzleService } from '../../../common/drizzle/modules/core/base-drizzle.service';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { BaseDrizzleService } from "@common/drizzle/modules/core/base-drizzle.service";
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { AuditService } from '../../audit/services/audit.service';
 import { customers, Customer, InsertCustomer } from '../schema/crm.schema';
 import { eq, and, sql, desc, asc } from 'drizzle-orm';

@@ -11,11 +11,11 @@ import { v4 as uuidv4 } from 'uuid';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { eq } from 'drizzle-orm';
-import { documents } from '@shared/schema';
+import { documents } from '@geniuserp/shared';
 import { pandaDocService } from './pandadoc.service';
-import { Services, logAction } from '../../../common/services';
+import { Services, logAction } from "@common/services";
 import { AuditAction } from '../../audit/services/audit.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Entity type for audit logs
 export const DOCUMENT_ENTITY = 'document';

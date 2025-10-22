@@ -4,8 +4,8 @@
  * Hook pentru declanșarea automată a interogării datelor financiare 
  * la adăugarea unei noi companii/CUI în baza de date
  */
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { Logger } from '../../../common/logger';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { Logger } from "@common/logger";
 import { FinancialQueueService } from '../services/financial-queue.service';
 import { FinancialDataService } from '../services/financial-data.service';
 import { AuditService } from '../../audit/services/audit.service';

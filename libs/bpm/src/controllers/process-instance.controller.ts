@@ -5,7 +5,7 @@
  */
 
 import { Request, Response } from 'express';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { ProcessInstanceService, ProcessInstanceFilter } from '../services/process-instance.service';
 import { BpmProcessInstanceStatus, ProcessInstance, ProcessInstanceHistory } from '../schema/bpm.schema';
 

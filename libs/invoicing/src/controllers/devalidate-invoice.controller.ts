@@ -7,10 +7,10 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { DevalidateInvoiceService } from '../services/devalidate-invoice.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { AuditService } from '../../audit/services/audit.service';
 import { ENTITY_NAME } from '../invoices.module';
-import { invoices, auditLogs } from '@shared/schema';
+import { invoices, auditLogs } from '@geniuserp/shared';
 import { eq, and, desc } from 'drizzle-orm';
 
 export class DevalidateInvoiceController {

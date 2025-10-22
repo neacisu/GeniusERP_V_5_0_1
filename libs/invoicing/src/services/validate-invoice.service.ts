@@ -5,8 +5,8 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { invoices } from '@shared/schema';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { invoices } from '@geniuserp/shared';
 import { invoiceItems } from '../schema/invoice.schema';
 import { eq, and } from 'drizzle-orm';
 import { JournalService } from '../../accounting/services/journal.service';

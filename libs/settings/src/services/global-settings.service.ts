@@ -5,10 +5,10 @@
  * It provides methods for retrieving, creating, updating, and deleting global settings.
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { globalSettings } from '../schema/settings.schema';
 import { eq, and, sql } from 'drizzle-orm';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 export class GlobalSettingsService {
   private drizzle: DrizzleService;

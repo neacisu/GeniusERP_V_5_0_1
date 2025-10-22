@@ -14,9 +14,9 @@
 import { authenticator } from 'otplib';
 import QRCode from 'qrcode';
 import { randomBytes } from 'crypto';
-import { createModuleLogger } from '../../../common/logger/loki-logger';
-import { DrizzleService } from '../../../common/drizzle';
-import { users } from '@shared/schema';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { DrizzleService } from "@common/drizzle";
+import { users } from '@geniuserp/shared';
 import { eq } from 'drizzle-orm';
 
 const logger = createModuleLogger('mfa-service');

@@ -11,7 +11,7 @@
  */
 
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { and, desc, eq, gte, lte, isNotNull, sql } from 'drizzle-orm';
 import { invoices, invoiceItems, invoiceDetails, invoicePayments, companies, users, ledgerEntries, ledgerLines } from '../../../../shared/schema';
 import { crm_companies } from '../../crm/schema';
@@ -21,7 +21,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { accountingCacheService } from './accounting-cache.service';
 import { accountingQueueService } from './accounting-queue.service';
 import { log } from '../../../vite';
-import { createModuleLogger } from '../../../common/logger/loki-logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Import all type definitions
 import type {

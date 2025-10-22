@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { PurchaseJournalService } from '../services/purchase-journal.service';
 import { PurchaseJournalExportService } from '../services/purchase-journal-export.service';
 import { BaseController } from './base.controller';
-import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
+import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { bulkOperationsService } from '../services/bulk-operations.service';
 
 /**

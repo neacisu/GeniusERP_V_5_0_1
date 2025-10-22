@@ -11,7 +11,7 @@ import { nirService } from '../services/nir.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { UserRole } from '../../auth/types';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { z } from 'zod';
 import { nirStatusEnum } from '../schema/inventory.schema';
 

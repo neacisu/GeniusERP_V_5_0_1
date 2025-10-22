@@ -7,7 +7,7 @@
  */
 
 import { eq, desc, ilike, and, or, isNull, sql } from 'drizzle-orm';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
 // Note: pool is now a postgres-js Sql instance from server/db.ts
 import { pool } from '../../../db';

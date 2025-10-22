@@ -7,7 +7,7 @@
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq, and, like, or, desc, SQL, gte, lte, count } from 'drizzle-orm';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { ProcessService } from './process.service';
 import { ProcessInstanceService } from './process-instance.service';
 import { 

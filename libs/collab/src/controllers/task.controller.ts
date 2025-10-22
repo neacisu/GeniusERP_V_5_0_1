@@ -6,7 +6,7 @@
  */
 
 import { Request, Response, Router } from 'express';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { TaskService } from '../services/task.service';
 import { TaskStatus, TaskPriority } from '../../../../shared/schema/collaboration.schema';
 

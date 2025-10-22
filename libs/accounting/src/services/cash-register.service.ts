@@ -10,7 +10,7 @@
  */
 
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { and, desc, eq, gte, lte, SQL, sql } from 'drizzle-orm';
 import { cashRegisters, cashTransactions, CashRegister, CashTransaction } from '../../../../shared/schema/cash-register.schema';
 import { documentCounters } from '../../../../shared/schema/document-counters.schema';

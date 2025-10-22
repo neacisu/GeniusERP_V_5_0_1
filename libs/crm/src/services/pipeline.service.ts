@@ -3,7 +3,7 @@
  * 
  * Service for managing sales pipelines and stages in the CRM module
  */
-import { DrizzleService } from "../../../common/drizzle";
+import { DrizzleService } from "@common/drizzle";
 import { sql, eq, and, asc } from "drizzle-orm";
 import { 
   pipelines, 

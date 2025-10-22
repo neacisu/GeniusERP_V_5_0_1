@@ -8,14 +8,14 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { eq, desc } from 'drizzle-orm';
 import { ledgerEntries } from '../../../../shared/schema';
 import { AuditService } from '../../audit/services/audit.service';
 import { Service } from '../../../../shared/types';
 import { RedisService } from '../../../services/redis.service';
-import { warehouses, companies } from '@shared/schema';
-import { createModuleLogger } from '../../../common/logger/loki-logger';
+import { warehouses, companies } from '@geniuserp/shared';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import type {
   NoteContabilData,
   CreatedNote,

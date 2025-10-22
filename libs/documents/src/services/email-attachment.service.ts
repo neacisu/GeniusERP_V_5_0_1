@@ -10,11 +10,11 @@
 
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { documents } from '@shared/schema';
+import { documents } from '@geniuserp/shared';
 import { DocumentService } from './document.service';
 import { OcrService } from './ocr.service';
 import { DocumentRegistryService, DocumentFlow } from './document-registry.service';
-import { DrizzleService } from '../../../common/drizzle';
+import { DrizzleService } from "@common/drizzle";
 
 /**
  * Email attachment metadata

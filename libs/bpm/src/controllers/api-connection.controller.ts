@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { ApiConnectionService } from '../services/api-connection.service';
 import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
 import { BpmApiConnectionType } from '../schema/bpm.schema';

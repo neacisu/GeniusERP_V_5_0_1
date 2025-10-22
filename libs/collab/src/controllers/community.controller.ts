@@ -9,7 +9,7 @@
 import { Request, Response, Router } from 'express';
 import { z } from 'zod';
 import { CommunityService, CommunityCategory } from '../services/community.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { insertCollaborationThreadSchema } from '../../../../shared/schema/collaboration.schema';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';

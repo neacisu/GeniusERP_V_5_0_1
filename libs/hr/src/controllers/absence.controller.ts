@@ -12,7 +12,7 @@ import { AbsenceService, AbsenceStatus } from '../services/absence.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { AuthenticatedRequest, JwtUserData } from '../../../types/express';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Initialize logger
 const logger = new Logger('AbsenceController');

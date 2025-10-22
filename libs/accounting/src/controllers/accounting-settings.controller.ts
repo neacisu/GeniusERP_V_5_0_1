@@ -6,14 +6,14 @@
 
 import { Response } from 'express';
 import { BaseController } from './base.controller';
-import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
+import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { AccountingSettingsService } from '../services/accounting-settings.service';
 import { 
   updateAccountingSettingsSchema,
   updateVatSettingsSchema,
   insertAccountRelationshipsSchema,
   updateAccountRelationshipsSchema,
-} from '@shared/schema';
+} from '@geniuserp/shared';
 
 export class AccountingSettingsController extends BaseController {
   constructor(private settingsService: AccountingSettingsService) {

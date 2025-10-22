@@ -6,9 +6,9 @@
  */
 
 import { eq, and, sql, desc, asc, like, isNull, inArray } from "drizzle-orm";
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { getDrizzleInstance } from '../../../common/drizzle/db';
-import { Logger } from '../../../common/logger';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { getDrizzleInstance } from "@common/drizzle/db";
+import { Logger } from "@common/logger";
 import { 
   collaborationThreads, 
   collaborationMessages,

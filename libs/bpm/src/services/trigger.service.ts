@@ -5,8 +5,8 @@
  */
 import { eq, and, like, or, desc, sql, not, isNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { Logger } from '../../../common/logger';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { Logger } from "@common/logger";
 import { 
   bpmTriggers, 
   Trigger,

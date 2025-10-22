@@ -11,7 +11,7 @@ import { transferStockService } from '../services/transfer-stock.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { UserRole } from '../../auth/types';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { z } from 'zod';
 
 // Role constants for inventory operations

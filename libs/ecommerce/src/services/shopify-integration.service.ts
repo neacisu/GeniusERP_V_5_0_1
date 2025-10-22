@@ -12,7 +12,7 @@ import { eq, and } from 'drizzle-orm';
 import { ecommerceIntegrations } from '../../../../shared/schema/ecommerce.schema';
 import { OrdersService } from './orders.service';
 import { TransactionsService } from './transactions.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { OrderStatus, PaymentStatus } from '../../../../shared/schema/ecommerce.schema';
 
 // Create a logger

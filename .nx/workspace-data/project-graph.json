@@ -558,6 +558,65 @@
         "implicitDependencies": []
       }
     },
+    "audit": {
+      "name": "audit",
+      "type": "lib",
+      "data": {
+        "root": "libs/audit",
+        "name": "audit",
+        "$schema": "../../node_modules/nx/schemas/project-schema.json",
+        "sourceRoot": "libs/audit/src",
+        "projectType": "library",
+        "tags": [
+          "type:lib",
+          "scope:audit"
+        ],
+        "targets": {
+          "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": [
+              "{options.outputPath}"
+            ],
+            "options": {
+              "outputPath": "dist/libs/audit",
+              "tsConfig": "libs/audit/tsconfig.json",
+              "main": "libs/audit/src/index.ts"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "dependsOn": [
+              "^build"
+            ]
+          },
+          "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": [
+              "{workspaceRoot}/coverage/{projectRoot}"
+            ],
+            "options": {
+              "jestConfig": "libs/audit/jest.config.ts",
+              "passWithNoTests": true
+            },
+            "configurations": {},
+            "parallelism": true
+          },
+          "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": [
+              "{options.outputFile}"
+            ],
+            "options": {
+              "lintFilePatterns": [
+                "libs/audit/**/*.ts"
+              ]
+            },
+            "configurations": {},
+            "parallelism": true
+          }
+        },
+        "implicitDependencies": []
+      }
+    },
     "comms": {
       "name": "comms",
       "type": "lib",
@@ -587,6 +646,65 @@
             "dependsOn": [
               "^build"
             ]
+          }
+        },
+        "implicitDependencies": []
+      }
+    },
+    "sales": {
+      "name": "sales",
+      "type": "lib",
+      "data": {
+        "root": "libs/sales",
+        "name": "sales",
+        "$schema": "../../node_modules/nx/schemas/project-schema.json",
+        "sourceRoot": "libs/sales/src",
+        "projectType": "library",
+        "tags": [
+          "type:lib",
+          "scope:sales"
+        ],
+        "targets": {
+          "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": [
+              "{options.outputPath}"
+            ],
+            "options": {
+              "outputPath": "dist/libs/sales",
+              "tsConfig": "libs/sales/tsconfig.json",
+              "main": "libs/sales/src/index.ts"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "dependsOn": [
+              "^build"
+            ]
+          },
+          "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": [
+              "{workspaceRoot}/coverage/{projectRoot}"
+            ],
+            "options": {
+              "jestConfig": "libs/sales/jest.config.ts",
+              "passWithNoTests": true
+            },
+            "configurations": {},
+            "parallelism": true
+          },
+          "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": [
+              "{options.outputFile}"
+            ],
+            "options": {
+              "lintFilePatterns": [
+                "libs/sales/**/*.ts"
+              ]
+            },
+            "configurations": {},
+            "parallelism": true
           }
         },
         "implicitDependencies": []
@@ -981,6 +1099,65 @@
             "options": {
               "lintFilePatterns": [
                 "apps/web/src/**/*.{ts,tsx,js,jsx}"
+              ]
+            },
+            "configurations": {},
+            "parallelism": true
+          }
+        },
+        "implicitDependencies": []
+      }
+    },
+    "ai": {
+      "name": "ai",
+      "type": "lib",
+      "data": {
+        "root": "libs/ai",
+        "name": "ai",
+        "$schema": "../../node_modules/nx/schemas/project-schema.json",
+        "sourceRoot": "libs/ai/src",
+        "projectType": "library",
+        "tags": [
+          "type:lib",
+          "scope:ai"
+        ],
+        "targets": {
+          "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": [
+              "{options.outputPath}"
+            ],
+            "options": {
+              "outputPath": "dist/libs/ai",
+              "tsConfig": "libs/ai/tsconfig.json",
+              "main": "libs/ai/src/index.ts"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "dependsOn": [
+              "^build"
+            ]
+          },
+          "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": [
+              "{workspaceRoot}/coverage/{projectRoot}"
+            ],
+            "options": {
+              "jestConfig": "libs/ai/jest.config.ts",
+              "passWithNoTests": true
+            },
+            "configurations": {},
+            "parallelism": true
+          },
+          "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": [
+              "{options.outputFile}"
+            ],
+            "options": {
+              "lintFilePatterns": [
+                "libs/ai/**/*.ts"
               ]
             },
             "configurations": {},
@@ -19636,13 +19813,16 @@
     "company": [],
     "collab": [],
     "admin": [],
+    "audit": [],
     "comms": [],
+    "sales": [],
     "users": [],
     "auth": [],
     "api": [],
     "bpm": [],
     "crm": [],
     "web": [],
+    "ai": [],
     "npm:@ampproject/remapping": [
       {
         "source": "npm:@ampproject/remapping",
@@ -46295,5 +46475,5 @@
   },
   "version": "6.0",
   "errors": [],
-  "computedAt": 1761119042495
+  "computedAt": 1761122873019
 }

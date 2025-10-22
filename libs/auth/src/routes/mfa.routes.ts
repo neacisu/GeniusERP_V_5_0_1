@@ -8,7 +8,7 @@ import { Router } from 'express';
 import { getMfaService } from '../services/mfa.service';
 import { AuthGuard } from '../guards/auth.guard';
 import { JwtAuthMode } from '../types';
-import { createModuleLogger } from '../../../common/logger/loki-logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 const logger = createModuleLogger('mfa-routes');
 const router = Router();

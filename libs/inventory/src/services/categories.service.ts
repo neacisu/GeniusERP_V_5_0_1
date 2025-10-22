@@ -7,7 +7,7 @@
 
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { inventoryCategories } from '../../../../shared/schema';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { AuditService } from '../../../modules/audit/services/audit.service';
 import { InventoryCategory } from '../../../../shared/schema';
 import { ENTITY_NAME } from '../inventory.module';

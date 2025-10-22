@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../../../types/express';
-import { captureException, addBreadcrumb } from '../../../common/sentry';
-import { createModuleLogger } from '../../../common/logger/loki-logger';
+import { captureException, addBreadcrumb } from "@common/sentry";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 const logger = createModuleLogger('BaseController');
 

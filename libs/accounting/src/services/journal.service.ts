@@ -10,7 +10,7 @@
  * - BullMQ async processing for balance updates
  */
 
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { accountingLedgerEntries, accountingLedgerLines } from '../schema/accounting.schema';
 import { eq } from 'drizzle-orm';
 import { AuditService, AuditAction } from '../../audit/services/audit.service';

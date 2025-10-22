@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { SetupService, SetupStepStatus } from '../services/setup.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 export class SetupController {
   private service: SetupService;

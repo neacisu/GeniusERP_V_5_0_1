@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
+import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { db } from '../../../db';
 import { Logger } from '../../../utils/logger';
 import { accountingLedgerEntries, accountingLedgerLines } from '../schema/accounting.schema';

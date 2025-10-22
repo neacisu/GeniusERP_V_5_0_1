@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { User as SelectUser } from "@shared/schema";
 import { JwtPayload } from "@shared/types";
 import { storage } from "../../../storage";
-import { DrizzleService, getDrizzle } from "../../../common/drizzle";
+import { DrizzleService, getDrizzle } from "@common/drizzle";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { log } from "../../../vite";

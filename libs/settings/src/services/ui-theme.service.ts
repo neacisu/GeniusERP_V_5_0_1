@@ -5,10 +5,10 @@
  * It provides methods for retrieving, creating, updating, and managing UI themes.
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { uiThemes } from '../schema/settings.schema';
 import { eq, and, not } from 'drizzle-orm';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 export class UiThemeService {
   private drizzle: DrizzleService;

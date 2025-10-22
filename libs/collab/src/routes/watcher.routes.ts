@@ -9,7 +9,7 @@ import { WatcherService } from '../services/watcher.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { z } from 'zod';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create logger instance
 const logger = new Logger('WatcherRoutes');

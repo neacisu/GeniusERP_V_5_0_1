@@ -8,7 +8,7 @@
 
 import { eq, and, sql, desc, asc, or, like, inArray, isNull, isNotNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { DrizzleService } from '../../../common/drizzle';
+import { DrizzleService } from "@common/drizzle";
 import { z } from 'zod';
 
 /**

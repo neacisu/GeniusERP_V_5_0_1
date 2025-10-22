@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { MessageAccessService } from '../services/message-access.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger for the message access controller
 const logger = new Logger('MessageAccessController');

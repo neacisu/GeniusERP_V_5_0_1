@@ -3,7 +3,7 @@
  * 
  * Service for managing contacts in the CRM module
  */
-import { DrizzleService } from "../../../common/drizzle";
+import { DrizzleService } from "@common/drizzle";
 import { sql, eq, and, or, like, desc, asc } from "drizzle-orm";
 import { contacts, InsertContact, Contact } from "../schema/crm.schema";
 import { randomUUID } from "crypto";

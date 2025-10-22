@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { BusinessIntelligenceService } from '../services/business-intelligence.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { hasBusinessIntelligenceAccess } from '../analytics.roles';

@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { PredictiveService } from '../services/predictive.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { hasPredictiveAnalyticsAccess } from '../analytics.roles';

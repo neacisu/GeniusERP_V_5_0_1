@@ -7,7 +7,7 @@
 
 import { Request, Response, NextFunction } from "express";
 import { UserService } from "../services/user.service";
-import { Logger } from "../../../common/logger";
+import { Logger } from "@common/logger";
 
 export class UserController {
   private userService: UserService;

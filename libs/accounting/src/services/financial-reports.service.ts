@@ -5,7 +5,7 @@
  * Includes Redis caching for performance optimization
  */
 
-import { getPostgresClient } from '../../../common/drizzle/db';
+import { getPostgresClient } from "@common/drizzle/db";
 import { RedisService } from '../../../services/redis.service';
 
 /**

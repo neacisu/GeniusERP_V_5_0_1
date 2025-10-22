@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { ModuleSettingsService } from '../services/module-settings.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 export class ModuleSettingsController {
   private service: ModuleSettingsService;

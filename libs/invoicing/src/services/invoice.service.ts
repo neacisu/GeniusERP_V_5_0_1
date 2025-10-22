@@ -6,15 +6,15 @@
  * Leverages currency service for currency conversion functionality.
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { Invoice, InvoiceDetail, InsertInvoice, InsertInvoiceDetail } from '@shared/schema';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { Invoice, InvoiceDetail, InsertInvoice, InsertInvoiceDetail } from '@geniuserp/shared';
 import { InvoiceItem, InsertInvoiceItem, InvoiceWithRelations } from '../schema/invoice.schema';
 import { ENTITY_NAME } from '../index';
 import { AuditService } from '../../audit/services/audit.service';
-import { AuditActionType } from '../../../common/enums/audit-action.enum';
+import { AuditActionType } from "@common/enums/audit-action.enum";
 import { CurrencyService } from '../../integrations/services/currency.service';
 import { eq } from 'drizzle-orm';
-import { invoices, invoiceDetails } from '@shared/schema';
+import { invoices, invoiceDetails } from '@geniuserp/shared';
 import { invoiceItems } from '../schema/invoice.schema';
 
 export class InvoiceService {

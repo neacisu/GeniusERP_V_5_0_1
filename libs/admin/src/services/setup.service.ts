@@ -11,7 +11,7 @@ import { eq, and } from 'drizzle-orm';
 import { Express, Request, Response, NextFunction, Router } from 'express';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Define setup step status types
 export type SetupStepStatus = 'completed' | 'in_progress' | 'not_started' | 'skipped';

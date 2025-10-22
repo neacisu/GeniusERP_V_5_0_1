@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { JournalService, LedgerEntryType } from '../services/journal.service';
 import { AccountingPeriodsService } from '../services/accounting-periods.service';
 import { BaseController } from './base.controller';
-import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
+import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { AuditLogService } from '../services/audit-log.service';
 
 /**

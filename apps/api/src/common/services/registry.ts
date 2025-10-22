@@ -4,7 +4,8 @@
  * This module provides centralized access to singleton service instances
  * across the application without the need for a full DI container.
  */
-import AuditService from '../../modules/audit/services/audit.service';
+// NX Monorepo: Import from libs using @geniuserp alias
+import AuditService from '@geniuserp/audit';
 import { getDrizzle } from '../drizzle';
 import { notificationService } from './notification.service';
 

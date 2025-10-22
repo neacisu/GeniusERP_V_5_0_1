@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { GlobalSettingsService } from '../services/global-settings.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 export class GlobalSettingsController {
   private service: GlobalSettingsService;

@@ -7,7 +7,7 @@
 
 import { Response } from 'express';
 import { CompanyService } from '../services/company.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { insertCompanySchema } from '../schema/company.schema';
 import { z } from 'zod';
 import { JwtUserData, AuthenticatedRequest } from '../../auth/types';

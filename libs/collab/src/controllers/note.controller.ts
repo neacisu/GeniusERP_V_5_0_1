@@ -7,7 +7,7 @@ import { Request, Response, Router } from 'express';
 import { z } from 'zod';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { NoteService } from '../services/note.service';
 import { insertCollaborationNoteSchema } from '../../../../shared/schema/collaboration.schema';
 

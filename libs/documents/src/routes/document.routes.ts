@@ -6,10 +6,10 @@
  */
 
 import { Express } from 'express';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { DocumentController } from '../controllers/document.controller';
 import { DocumentService } from '../services/document.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 const logger = new Logger('DocumentRoutes');
 

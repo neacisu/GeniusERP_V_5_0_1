@@ -5,12 +5,12 @@
  * including database connections, external services, and system resources.
  */
 
-import { DrizzleService } from '../../../common/drizzle';
+import { DrizzleService } from "@common/drizzle";
 import { sql } from 'drizzle-orm';
 import { Express, Request, Response, Router } from 'express';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { AuditService } from '../../../modules/audit/services/audit.service';
 import * as os from 'os';
 import * as fs from 'fs';

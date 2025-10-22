@@ -5,11 +5,11 @@
  * Asigură numerotare secvențială pentru fiecare tip de jurnal
  */
 
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { LedgerEntryType } from './journal.service';
-import { documentCounters } from '@shared/schema';
+import { documentCounters } from '@geniuserp/shared';
 import { eq, and, sql } from 'drizzle-orm';
-import { createModuleLogger } from '../../../common/logger/loki-logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 const logger = createModuleLogger('journal-numbering');
 

@@ -7,7 +7,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { TemplateService } from '../services/template.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 import { 

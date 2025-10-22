@@ -7,17 +7,17 @@
  * This is essential for low-stock notifications and warehouse replenishment automation.
  */
 
-import { getDrizzle, DrizzleService } from '../../../common/drizzle';
+import { getDrizzle, DrizzleService } from "@common/drizzle";
 import { Queue } from 'bullmq';
 import { randomUUID } from 'crypto';
 import { log } from '../../../vite';
 // Import the queue from the centralized BullMQ module
-import { inventoryQueue } from '../../../common/bullmq';
+import { inventoryQueue } from "@common/bullmq";
 // Keep QueueService import for backward compatibility
 import { QueueService } from '../../../services/queue.service';
 // Import notification service for alerting
-import { Services } from '../../../common/services/registry';
-import { NotificationType, NotificationPriority } from '../../../common/services/notification.service';
+import { Services } from "@common/services/registry";
+import { NotificationType, NotificationPriority } from "@common/services/notification.service";
 import { eq, and, lte, gt } from 'drizzle-orm';
 
 // Types for stock alerts

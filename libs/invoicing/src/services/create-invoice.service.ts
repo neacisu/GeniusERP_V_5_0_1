@@ -6,12 +6,12 @@
  * via BNR (National Bank of Romania) official rates.
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { invoices } from '@shared/schema';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { invoices } from '@geniuserp/shared';
 import { exchangeRateService } from '../../integrations/services/exchange-rate.service';
 import { InvoiceStatus } from '../types/invoice-status.enum';
 import { AuditService } from '../../audit/services/audit.service';
-import { AuditActionType } from '../../../common/enums/audit-action.enum';
+import { AuditActionType } from "@common/enums/audit-action.enum";
 import { log } from '../../../vite';
 import { InvoiceService } from './invoice.service';
 import { ENTITY_NAME } from '../index';

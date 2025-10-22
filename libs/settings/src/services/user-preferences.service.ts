@@ -5,10 +5,10 @@
  * It provides methods for retrieving, creating, updating, and deleting user preferences.
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { userPreferences } from '../schema/settings.schema';
 import { eq, and } from 'drizzle-orm';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 export class UserPreferencesService {
   private drizzle: DrizzleService;

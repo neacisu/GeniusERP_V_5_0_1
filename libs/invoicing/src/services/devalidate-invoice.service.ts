@@ -4,8 +4,8 @@
  * This service handles invoice devalidation and reversal of accounting notes.
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
-import { invoices } from '@shared/schema';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { invoices } from '@geniuserp/shared';
 import { eq, and, isNull } from 'drizzle-orm';
 import { JournalService } from '../../accounting/services/journal.service';
 import { AuditService, AuditAction } from '../../audit/services/audit.service';

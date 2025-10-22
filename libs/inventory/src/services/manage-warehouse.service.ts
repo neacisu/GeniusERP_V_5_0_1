@@ -9,7 +9,7 @@
  * for 371 synthetics (Mărfuri) with codes 371.x
  */
 
-import { getDrizzle, DrizzleService } from '../../../common/drizzle';
+import { getDrizzle, DrizzleService } from "@common/drizzle";
 import { randomUUID } from 'crypto';
 import { gestiuneTypeEnum } from '../schema/inventory.schema';
 import { AccountingService } from '../../accounting/services/accounting.service';

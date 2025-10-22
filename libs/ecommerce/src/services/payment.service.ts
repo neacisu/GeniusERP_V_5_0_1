@@ -8,8 +8,8 @@
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { v4 as uuidv4 } from 'uuid';
 import Stripe from 'stripe';
-import { Logger } from '../../../common/logger';
-import { IntegrationService, IntegrationProvider } from '../../../common/services/integration.service';
+import { Logger } from "@common/logger";
+import { IntegrationService, IntegrationProvider } from "@common/services/integration.service";
 import { PaymentMethod, mapPaymentMethodToGateway } from '../utils/payment-methods.util';
 
 // Initialize logger

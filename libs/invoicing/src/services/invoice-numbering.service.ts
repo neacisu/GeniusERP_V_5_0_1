@@ -5,10 +5,10 @@
  * according to Romanian fiscal regulations and e-factura requirements.
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { eq, and, isNull, sql } from 'drizzle-orm';
 import { invoiceNumberingSettings } from '@shared/schema/invoice-numbering.schema';
-import { AppError } from '../../../common/errors/app-error';
+import { AppError } from "@common/errors/app-error";
 
 export class InvoiceNumberingService {
   private drizzle: DrizzleService;

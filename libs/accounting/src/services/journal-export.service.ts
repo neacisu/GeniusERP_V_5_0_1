@@ -9,7 +9,7 @@
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { and, eq, gte, lte, asc } from 'drizzle-orm';
 import { RedisService } from '../../../services/redis.service';
 

@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import drizzleDb from '../../../common/drizzle/db';
+import drizzleDb from "@common/drizzle/db";
 import { and, eq } from 'drizzle-orm';
 import { hrSettings } from '../schema/settings.schema';
-import { companies } from '@shared/schema';
+import { companies } from '@geniuserp/shared';
 
 // Obținem instanța de bază de date
 const db = drizzleDb.getDrizzleInstance();

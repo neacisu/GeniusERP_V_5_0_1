@@ -6,7 +6,7 @@
 
 import { Request, Response, Router } from 'express';
 import { ActivityService } from '../services/activity.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { AuthGuard } from '../../../modules/auth/guards/auth.guard';
 import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
 

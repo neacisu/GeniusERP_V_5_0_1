@@ -5,7 +5,7 @@
  * from shared/schema.ts and accounting.schema.ts
  */
 
-import type { Invoice, InvoiceDetail, InvoiceItem, InvoicePayment } from '@shared/schema';
+import type { Invoice, InvoiceDetail, InvoiceItem, InvoicePayment } from '@geniuserp/shared';
 import type { SQL } from 'drizzle-orm';
 
 /**

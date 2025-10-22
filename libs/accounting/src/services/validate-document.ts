@@ -8,7 +8,7 @@
 import { AuditService, AuditAction } from '../../audit/services/audit.service';
 import { JournalService, LedgerEntryType } from './journal.service';
 import { SalesJournalService } from './sales-journal.service';
-import { DrizzleService } from '../../../common/drizzle';
+import { DrizzleService } from "@common/drizzle";
 import { eq } from 'drizzle-orm';
 
 /**

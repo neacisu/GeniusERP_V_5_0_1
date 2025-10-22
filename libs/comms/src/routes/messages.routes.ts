@@ -9,7 +9,7 @@ import express, { Router } from 'express';
 import { MessagesService } from '../services/messages.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { createMessagesController } from '../controllers/messages.controller';
 
 // Create a logger for the messages routes

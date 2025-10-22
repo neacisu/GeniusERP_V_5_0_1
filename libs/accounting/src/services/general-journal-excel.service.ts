@@ -8,11 +8,11 @@
 
 import fs from 'fs';
 import path from 'path';
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { eq, and, gte, lte, inArray, ne, sql as drizzleSql } from 'drizzle-orm';
 import { ledgerEntries, ledgerLines, chartOfAccounts } from '../schema/accounting.schema';
 import { RedisService } from '../../../services/redis.service';
-import { createModuleLogger } from '../../../common/logger/loki-logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import type {
   ExcelExportOptions,
   ExcelJournalEntry,

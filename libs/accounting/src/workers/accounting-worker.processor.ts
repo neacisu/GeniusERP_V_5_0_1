@@ -9,7 +9,7 @@
  */
 
 import { Job } from 'bullmq';
-import { JobTypeMap } from '../../../common/bullmq/types';
+import { JobTypeMap } from "@common/bullmq/types";
 import { log } from '../../../vite';
 import { RedisService } from '../../../services/redis.service';
 import {

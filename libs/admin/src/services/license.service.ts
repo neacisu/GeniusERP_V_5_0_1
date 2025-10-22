@@ -10,12 +10,12 @@ import { and, eq, sql } from 'drizzle-orm';
 import { Express, Request, Response, Router } from 'express';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
 import { v4 as uuidv4 } from 'uuid';
 import * as crypto from 'crypto';
 import * as os from 'os';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 
 /**
  * License status enum

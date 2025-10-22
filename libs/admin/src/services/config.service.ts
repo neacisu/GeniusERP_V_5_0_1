@@ -8,7 +8,7 @@
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { configurations } from '../../../../shared/schema/admin.schema';
 import { and, eq, isNull, sql, like } from 'drizzle-orm';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { v4 as uuidv4 } from 'uuid';
 
 /**

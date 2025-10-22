@@ -7,7 +7,7 @@
 
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../../types/express';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 const logger = new Logger('CompanyAccessMiddleware');
 

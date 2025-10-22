@@ -14,7 +14,7 @@ import { TaskService } from '../services/task.service';
 import { TaskController } from '../controllers/task.controller';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger instance for task routes
 const logger = new Logger('TaskRoutes');

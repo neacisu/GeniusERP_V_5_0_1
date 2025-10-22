@@ -12,7 +12,7 @@ import {
   CollaborationThread
 } from '../../../../shared/schema/collaboration.schema';
 import { randomUUID } from 'crypto';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger instance for the thread service
 const logger = new Logger('ThreadService');

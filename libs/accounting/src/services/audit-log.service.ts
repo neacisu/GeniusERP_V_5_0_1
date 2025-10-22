@@ -5,7 +5,7 @@
  * Înregistrează toate operațiunile sensibile pentru audit și conformitate
  */
 
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { v4 as uuidv4 } from 'uuid';
 
 /**

@@ -10,10 +10,10 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { AuditService } from '../../audit/services/audit.service';
-import { AuditAction, AuditResourceType } from '../../../common/enums/audit.enum';
+import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";
 import { eq, sql } from 'drizzle-orm';
-import { Logger } from '../../../common/logger';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { Logger } from "@common/logger";
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import * as fs from 'fs';
 import * as path from 'path';
 import { hrDocuments, hrEmployeeDrafts } from '../schema/documents.schema';

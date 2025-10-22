@@ -13,9 +13,9 @@
 import { employees, payrollLogs } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
 import AuditService from '../../audit/services/audit.service';
-import { AuditAction, AuditResourceType } from '../../../common/enums/audit.enum';
+import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";
 import { sql } from 'drizzle-orm';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 
 export class PayrollService {
   private drizzle: DrizzleService;

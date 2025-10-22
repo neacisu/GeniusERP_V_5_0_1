@@ -19,7 +19,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { companies } from '../../company/schema/company.schema';
-import { users } from '@shared/schema';
+import { users } from '@geniuserp/shared';
 
 /**
  * Global Settings

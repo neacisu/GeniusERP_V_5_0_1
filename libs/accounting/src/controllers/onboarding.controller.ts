@@ -6,7 +6,7 @@
 
 import { Response } from 'express';
 import { BaseController } from './base.controller';
-import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
+import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { OnboardingService } from '../services/onboarding.service';
 
 export class OnboardingController extends BaseController {

@@ -8,9 +8,9 @@ import { TaskService } from '../services/task.service';
 import { NoteService } from '../services/note.service';
 import { ActivityService } from '../services/activity.service';
 import { NotificationService } from '../services/notification.service';
-import { ThreadDrizzleService } from '../../../common/drizzle/modules/collab/thread-service';
-import { MessageDrizzleService } from '../../../common/drizzle/modules/collab/message-service';
-import { WatcherDrizzleService } from '../../../common/drizzle/modules/collab/watcher-service';
+import { ThreadDrizzleService } from "@common/drizzle/modules/collab/thread-service";
+import { MessageDrizzleService } from "@common/drizzle/modules/collab/message-service";
+import { WatcherDrizzleService } from "@common/drizzle/modules/collab/watcher-service";
 
 import {
   // Modern class controllers

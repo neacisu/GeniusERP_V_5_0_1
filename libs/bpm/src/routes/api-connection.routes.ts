@@ -7,7 +7,7 @@
 import { Router, Express } from 'express';
 import { ApiConnectionService } from '../services/api-connection.service';
 import { ApiConnectionController } from '../controllers/api-connection.controller';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
 

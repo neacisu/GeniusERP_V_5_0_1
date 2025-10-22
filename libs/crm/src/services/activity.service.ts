@@ -3,7 +3,7 @@
  * 
  * Service for managing activities (calls, meetings, tasks, emails, etc.) in the CRM module
  */
-import { DrizzleService } from '../../../common/drizzle';
+import { DrizzleService } from "@common/drizzle";
 import { sql, eq, and, or, like, desc, asc, gte, lte } from "drizzle-orm";
 import { activities, InsertActivity, Activity } from "../schema/crm.schema";
 import { randomUUID } from "crypto";

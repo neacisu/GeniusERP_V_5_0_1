@@ -6,8 +6,8 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from '../../../common/logger';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { Logger } from "@common/logger";
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { OrdersService } from './orders.service';
 import { TransactionsService } from './transactions.service';
 import { CartService } from './cart.service';

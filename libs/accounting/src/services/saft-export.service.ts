@@ -8,7 +8,7 @@
  * Enhanced cu Redis caching (TTL: 15min pentru export XML)
  */
 
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { and, eq, gte, lte } from 'drizzle-orm';
 import { cashTransactions } from '../../../../shared/schema/cash-register.schema';
 import { bankTransactions } from '../../../../shared/schema/bank-journal.schema';

@@ -8,7 +8,7 @@ import express, { Router, Request, Response } from 'express';
 import { ContactsService } from '../services/contacts.service';
 import { AuthGuard } from '../../../modules/auth/guards/auth.guard';
 import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger for the contacts routes
 const logger = new Logger('ContactsRouter');

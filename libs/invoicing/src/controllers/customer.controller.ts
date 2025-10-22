@@ -5,8 +5,8 @@
  * mapping customers from CRM to a format suitable for invoicing.
  */
 import { Request, Response, NextFunction } from 'express';
-import { Logger } from '../../../common/logger';
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { Logger } from "@common/logger";
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { eq, and } from 'drizzle-orm';
 import { JwtUserData } from '../../../../shared/types';
 

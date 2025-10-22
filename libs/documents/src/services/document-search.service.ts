@@ -12,9 +12,9 @@ import postgres from 'postgres';
 import { sql, SQL } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { eq, and, or, like, ilike, isNull, not, desc } from 'drizzle-orm';
-import { documents, documentVersions } from '@shared/schema';
+import { documents, documentVersions } from '@geniuserp/shared';
 import { OcrService } from './ocr.service';
-import { DrizzleService } from '../../../common/drizzle';
+import { DrizzleService } from "@common/drizzle";
 
 /**
  * Search result with relevance scoring

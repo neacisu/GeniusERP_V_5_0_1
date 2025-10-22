@@ -6,11 +6,11 @@
  * for updating and tracking setup progress.
  */
 
-import { DrizzleService } from '../../../common/drizzle/drizzle.service';
+import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { setupSteps } from '../schema/settings.schema'; // using the setup steps from settings schema
 import { eq, and } from 'drizzle-orm';
 import { createId } from '../../../utils/id';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Define setup step status types
 export type SetupStepStatus = 'completed' | 'in_progress' | 'not_started' | 'skipped' | 'pending';

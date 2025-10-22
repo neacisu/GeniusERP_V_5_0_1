@@ -10,7 +10,7 @@
  */
 
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
-import { getDrizzle } from '../../../common/drizzle';
+import { getDrizzle } from "@common/drizzle";
 import { and, desc, eq, gte, lte } from 'drizzle-orm';
 import { bankAccounts, bankTransactions, BankAccount, BankTransaction } from '../../../../shared/schema';
 import { v4 as uuidv4 } from 'uuid';

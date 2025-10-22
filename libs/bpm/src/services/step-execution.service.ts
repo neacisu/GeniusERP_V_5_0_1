@@ -7,7 +7,7 @@
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq, and } from 'drizzle-orm';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { 
   bpmStepExecutions,
   BpmStepExecutionStatus,

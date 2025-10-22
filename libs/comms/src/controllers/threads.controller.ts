@@ -8,7 +8,7 @@
 import { Request, Response } from 'express';
 import { ThreadsService } from '../services/threads.service';
 import { CommunicationChannel, MessageStatus } from '../../../../shared/schema/communications.schema';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger for the threads controller
 const logger = new Logger('ThreadsController');

@@ -5,7 +5,7 @@
  */
 
 import { Response } from 'express';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { MessagesService } from '../services/messages.service';
 import { MessageDirection, MessageStatus } from '../../../../shared/schema/communications.schema';
 import { AuthenticatedRequest } from '../../../types/express';

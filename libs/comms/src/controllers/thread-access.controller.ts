@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { ThreadAccessService } from '../services/thread-access.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger for the thread access controller
 const logger = new Logger('ThreadAccessController');

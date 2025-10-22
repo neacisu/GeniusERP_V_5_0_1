@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { ContactsService } from '../services/contacts.service';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 
 // Create a logger for the contacts controller
 const logger = new Logger('ContactsController');

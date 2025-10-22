@@ -7,7 +7,7 @@
 
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { Logger } from '../../../common/logger';
+import { Logger } from "@common/logger";
 import { StepExecutionService } from '../services/step-execution.service';
 import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
 import { BpmStepExecutionStatus } from '../schema/bpm.schema';
