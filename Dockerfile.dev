@@ -15,7 +15,8 @@ RUN npm install -g nodemon drizzle-kit tsx ts-node
 COPY package*.json ./
 
 # Instalăm toate dependențele inclusiv cele de dezvoltare
-RUN npm install
+# Folosim --legacy-peer-deps pentru compatibilitate Cypress 15 cu NX
+RUN npm install --legacy-peer-deps
 
 # Copiem TOATE fișierele, inclusiv .env și credențiale
 COPY . .
