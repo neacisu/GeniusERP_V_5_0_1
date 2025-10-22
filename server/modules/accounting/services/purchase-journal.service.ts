@@ -36,6 +36,7 @@ import type {
   SupplierInvoiceListResponse,
   InvoiceValidationResult,
   PurchaseJournalReport,
+  PurchaseJournalTotals,
   GeneratePurchaseJournalParams,
   SupplierStatementResponse,
   PurchaseJournalRow
@@ -188,13 +189,29 @@ export class PurchaseJournalService {
         .offset(offset);
       
       // Fetch invoice lines for each invoice
-      const invoicesWithLines = await Promise.all(
+      const invoicesWithLines: InvoiceWithLines[] = await Promise.all(
         result.map(async (invoice) => {
           const lines = await db
             .select()
             .from(invoiceItems)
             .where(eq(invoiceItems.invoiceId, invoice.id));
-          return { ...invoice, lines };
+          
+          // Transform DB types to match InvoiceWithLines interface
+          return { 
+            ...invoice, 
+            lines: lines.map(line => ({
+              productName: line.productName,
+              description: line.description,
+              quantity: Number(line.quantity),
+              unitPrice: Number(line.unitPrice),
+              netAmount: Number(line.netAmount),
+              vatRate: Number(line.vatRate),
+              vatAmount: Number(line.vatAmount),
+              grossAmount: Number(line.grossAmount),
+              vatCategory: line.vatCategory || undefined,
+              expenseType: undefined // Not in DB, used for categorization
+            }))
+          } as InvoiceWithLines;
         })
       );
       
@@ -234,11 +251,18 @@ export class PurchaseJournalService {
           franchiseId: invoices.franchiseId,
           customerId: invoices.customerId, // NOTE: For PURCHASE invoices, this represents supplierId
           invoiceNumber: invoices.invoiceNumber,
+          customerName: invoices.customerName,
           status: invoices.status,
           issueDate: invoices.issueDate,
           dueDate: invoices.dueDate,
+          amount: invoices.amount,
+          totalAmount: invoices.totalAmount,
+          netAmount: invoices.netAmount,
+          vatAmount: invoices.vatAmount,
           currency: invoices.currency,
           exchangeRate: invoices.exchangeRate,
+          type: invoices.type,
+          description: invoices.description,
           notes: invoices.notes,
           isValidated: invoices.isValidated,
           validatedAt: invoices.validatedAt,
@@ -262,12 +286,43 @@ export class PurchaseJournalService {
       }
 
       const invoice = invoiceResult[0];
-      const lines = await db
+      const linesFromDB = await db
         .select()
         .from(invoiceItems)
         .where(eq(invoiceItems.invoiceId, invoice.id));
+      
+      // Transform DB lines to InvoiceItemData
+      const lines: InvoiceItemData[] = linesFromDB.map(line => ({
+        productName: line.productName,
+        description: line.description,
+        quantity: Number(line.quantity),
+        unitPrice: Number(line.unitPrice),
+        netAmount: Number(line.netAmount),
+        vatRate: Number(line.vatRate),
+        vatAmount: Number(line.vatAmount),
+        grossAmount: Number(line.grossAmount),
+        vatCategory: line.vatCategory || undefined,
+        expenseType: undefined
+      }));
 
-      return { ...invoice, lines };
+      // Transform to InvoiceWithLines
+      const result: InvoiceWithLines = {
+        id: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        customerName: invoice.customerName,
+        amount: invoice.amount,
+        totalAmount: invoice.totalAmount,
+        netAmount: invoice.netAmount,
+        vatAmount: invoice.vatAmount,
+        issueDate: invoice.issueDate,
+        dueDate: invoice.dueDate,
+        type: invoice.type,
+        description: invoice.description,
+        createdBy: invoice.createdBy,
+        lines
+      };
+
+      return result;
     } catch (error) {
       console.error('Error getting supplier invoice:', error);
       throw new Error('Failed to retrieve supplier invoice');
@@ -317,8 +372,7 @@ export class PurchaseJournalService {
         });
       }
 
-      const _drizzleDb = getDrizzle();
-      logger.info('Drizzle instance obtained');
+      logger.info('Drizzle instance will be obtained');
 
       const invoiceId = invoiceData.id || uuidv4();
       logger.info('Invoice ID generated', { context: { invoiceId } });
@@ -896,10 +950,43 @@ export class PurchaseJournalService {
     for (const invoice of invoicesResult) {
       // Obține detalii furnizor (NOTE: customerId = supplierId for PURCHASE!)
       const [details] = await db.select().from(invoiceDetails).where(eq(invoiceDetails.invoiceId, invoice.id)).limit(1);
-      const lines = await db.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, invoice.id));
+      const linesFromDB = await db.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, invoice.id));
+      
+      // Transform DB lines to InvoiceItemData format
+      const lines: InvoiceItemData[] = linesFromDB.map(line => ({
+        productName: line.productName,
+        description: line.description,
+        quantity: Number(line.quantity),
+        unitPrice: Number(line.unitPrice),
+        netAmount: Number(line.netAmount),
+        vatRate: Number(line.vatRate),
+        vatAmount: Number(line.vatAmount),
+        grossAmount: Number(line.grossAmount),
+        vatCategory: line.vatCategory || undefined,
+        expenseType: undefined
+      }));
+      
+      // Transform invoice_details to SupplierData for grouping
+      const supplierData: SupplierData = details ? {
+        id: details.partnerId || '',
+        name: details.partnerName,
+        fiscalCode: details.partnerFiscalCode,
+        vatNumber: details.partnerFiscalCode,
+        registrationNumber: details.partnerRegistrationNumber || undefined,
+        address: details.partnerAddress || undefined,
+        city: details.partnerCity || undefined,
+        county: details.partnerCounty || undefined,
+        country: details.partnerCountry || 'Romania',
+        partnerCountry: details.partnerCountry || 'Romania'
+      } : {
+        id: '',
+        name: invoice.customerName || 'Unknown',
+        fiscalCode: '',
+        country: 'Romania'
+      };
       
       // 4. Grupare linii pe categorie fiscală (ca la Sales Journal)
-      const linesByCategory = this.groupLinesByCategory(lines, details);
+      const linesByCategory = this.groupLinesByCategory(lines, supplierData);
       
       // 5. Creare rânduri pentru fiecare categorie
       for (const [category, categoryLines] of linesByCategory.entries()) {
@@ -909,9 +996,9 @@ export class PurchaseJournalService {
         const row: PurchaseJournalRow = {
           rowNumber: rowNumber++,
           date: invoice.issueDate,
-          documentNumber: invoice.invoiceNumber,
-          documentType: invoice.type,
-          supplierName: details?.partnerName || invoice.customerName, // NOTE: customerName = supplierName for PURCHASE!
+          documentNumber: invoice.invoiceNumber || 'N/A',
+          documentType: invoice.type || 'PURCHASE',
+          supplierName: details?.partnerName || invoice.customerName || 'Unknown',
           supplierFiscalCode: details?.partnerFiscalCode || '',
           supplierCountry: details?.partnerCountry || 'Romania',
           totalAmount: Number(invoice.amount),
@@ -1054,8 +1141,14 @@ export class PurchaseJournalService {
     companyId: string, 
     periodStart: Date, 
     _periodEnd: Date, 
-    totals: Record<string, number>
-  ): Promise<Record<string, unknown>> {
+    totals: PurchaseJournalTotals
+  ): Promise<{
+    account4426Balance: number;
+    account4428Balance: number;
+    account401Balance: number;
+    isBalanced: boolean;
+    discrepancies?: string[];
+  }> {
     try {
       const year = periodStart.getFullYear();
       const month = periodStart.getMonth() + 1;
@@ -1066,11 +1159,11 @@ export class PurchaseJournalService {
       
       const discrepancies: string[] = [];
       
-      if (Math.abs(account4426 - totals.totalVATDeductible) > 0.01) {
-        discrepancies.push(`TVA deductibilă: Jurnal ${totals.totalVATDeductible.toFixed(2)} vs Cont 4426 ${account4426.toFixed(2)}`);
+      if (Math.abs(account4426 - totals['totalVATDeductible']) > 0.01) {
+        discrepancies.push(`TVA deductibilă: Jurnal ${totals['totalVATDeductible'].toFixed(2)} vs Cont 4426 ${account4426.toFixed(2)}`);
       }
-      if (Math.abs(account4428 - totals.totalVATDeferred) > 0.01) {
-        discrepancies.push(`TVA neexigibilă: Jurnal ${totals.totalVATDeferred.toFixed(2)} vs Cont 4428 ${account4428.toFixed(2)}`);
+      if (Math.abs(account4428 - totals['totalVATDeferred']) > 0.01) {
+        discrepancies.push(`TVA neexigibilă: Jurnal ${totals['totalVATDeferred'].toFixed(2)} vs Cont 4428 ${account4428.toFixed(2)}`);
       }
       
       return {
@@ -1082,7 +1175,12 @@ export class PurchaseJournalService {
       };
     } catch (error) {
       console.error('Error validating journal:', error);
-      return { account4426Balance: 0, account4428Balance: 0, account401Balance: 0, isBalanced: false };
+      return { 
+        account4426Balance: 0, 
+        account4428Balance: 0, 
+        account401Balance: 0, 
+        isBalanced: false 
+      };
     }
   }
   
@@ -1267,8 +1365,8 @@ export class PurchaseJournalService {
         paymentDate: paymentData.paymentDate,
         amount: paymentData.amount.toString(),
         paymentMethod: paymentData.paymentMethod,
-        paymentReference: paymentData.reference,
-        notes: paymentData.notes
+        paymentReference: paymentData.paymentReference || paymentData.reference || null,
+        notes: paymentData.notes || null
       }).returning({ id: invoicePayments.id });
 
       logger.info('Successfully recorded invoice payment', { context: { paymentId: insertedPayment.id } });
@@ -1290,7 +1388,7 @@ export class PurchaseJournalService {
     try {
       const db = getDrizzle();
 
-      const payment = await db
+      const paymentFromDB = await db
         .select()
         .from(invoicePayments)
         .where(and(
@@ -1299,7 +1397,20 @@ export class PurchaseJournalService {
         ))
         .limit(1);
 
-      return payment[0] || null;
+      if (!paymentFromDB || paymentFromDB.length === 0) return null;
+      
+      const payment = paymentFromDB[0];
+      // Transform DB result to PaymentRecord (reference field from paymentReference)
+      return {
+        id: payment.id,
+        invoiceId: payment.invoiceId,
+        amount: payment.amount,
+        paymentDate: payment.paymentDate,
+        paymentMethod: payment.paymentMethod,
+        reference: payment.paymentReference,
+        createdAt: payment.createdAt,
+        createdBy: payment.createdBy || 'system'
+      };
     } catch (error) {
       console.error('Error getting invoice payment:', error);
       throw new Error(`Failed to get invoice payment: ${(error as Error).message}`);
@@ -1317,7 +1428,7 @@ export class PurchaseJournalService {
     try {
       const db = getDrizzle();
 
-      return await db
+      const paymentsFromDB = await db
         .select()
         .from(invoicePayments)
         .where(and(
@@ -1325,6 +1436,18 @@ export class PurchaseJournalService {
           eq(invoicePayments.companyId, companyId)
         ))
         .orderBy(desc(invoicePayments.paymentDate));
+      
+      // Transform DB results to PaymentRecord[]
+      return paymentsFromDB.map(payment => ({
+        id: payment.id,
+        invoiceId: payment.invoiceId,
+        amount: payment.amount,
+        paymentDate: payment.paymentDate,
+        paymentMethod: payment.paymentMethod,
+        reference: payment.paymentReference,
+        createdAt: payment.createdAt,
+        createdBy: payment.createdBy || 'system'
+      }));
     } catch (error) {
       console.error('Error getting invoice payments:', error);
       throw new Error(`Failed to get invoice payments: ${(error as Error).message}`);
@@ -1360,10 +1483,10 @@ export class PurchaseJournalService {
   /**
    * Create purchase ledger entry
    *
-   * @param data Ledger entry data
+   * @param data Purchase invoice data
    * @returns Created entry
    */
-  public async createPurchaseLedgerEntry(data: LedgerEntryData): Promise<LedgerEntryData> {
+  public async createPurchaseLedgerEntry(data: PurchaseInvoiceData): Promise<LedgerEntryData> {
     try {
       return await this.createPurchaseInvoiceEntry(data);
     } catch (error) {
@@ -1381,8 +1504,6 @@ export class PurchaseJournalService {
    */
   public async getPurchaseLedgerEntry(_entryId: string, _companyId: string): Promise<LedgerEntryData | null> {
     try {
-      const _db = getDrizzle();
-
       // This would need to be implemented based on the actual ledger entry table
       // For now, return a placeholder
       logger.info('getPurchaseLedgerEntry not fully implemented');
@@ -1505,7 +1626,7 @@ export class PurchaseJournalService {
       const invoiceIds = invoiceList.map((inv) => inv.id);
       let payments: PaymentRecord[] = [];
       if (invoiceIds.length > 0) {
-        payments = await db
+        const paymentsFromDB = await db
           .select()
           .from(invoicePayments)
           .where(and(
@@ -1513,7 +1634,23 @@ export class PurchaseJournalService {
             sql`${invoicePayments.invoiceId} IN (${invoiceIds.join(',')})`
           ))
           .orderBy(invoicePayments.paymentDate);
+        
+        // Transform to PaymentRecord[]
+        payments = paymentsFromDB.map(p => ({
+          id: p.id,
+          invoiceId: p.invoiceId,
+          amount: p.amount,
+          paymentDate: p.paymentDate,
+          paymentMethod: p.paymentMethod,
+          reference: p.paymentReference,
+          createdAt: p.createdAt,
+          createdBy: p.createdBy || 'system'
+        }));
       }
+
+      // Calculate totals
+      const totalInvoiced = invoiceList.reduce((sum, inv) => sum + Number(inv.amount || 0), 0);
+      const totalPaid = payments.reduce((sum, pay) => sum + Number(pay.amount), 0);
 
       return {
         supplier,
@@ -1521,9 +1658,9 @@ export class PurchaseJournalService {
         transactions: [],
         summary: {
           openingBalance: 0,
-          totalInvoiced: invoiceList.reduce((sum: number, inv: InvoiceWithLines) => sum + Number(inv.amount), 0),
-          totalPaid: payments.reduce((sum: number, pay: PaymentRecord) => sum + Number(pay.amount), 0),
-          closingBalance: 0
+          totalInvoiced,
+          totalPaid,
+          closingBalance: totalInvoiced - totalPaid
         }
       };
     } catch (error) {
@@ -1564,7 +1701,7 @@ export class PurchaseJournalService {
         ));
 
       // Get all payments up to the date
-      const payments = await db
+      const paymentsFromDB = await db
         .select()
         .from(invoicePayments)
         .where(and(
@@ -1573,25 +1710,20 @@ export class PurchaseJournalService {
           sql`EXISTS (
             SELECT 1 FROM invoices i
             WHERE i.id = invoice_payments.invoice_id
-            AND i.customer_id = $1
-            AND i.company_id = $2
+            AND i.customer_id = ${supplierId}
+            AND i.company_id = ${companyId}
             AND i.type = 'PURCHASE'
-          )`,
-          sql`${supplierId}`,
-          sql`${companyId}`
+          )`
         ));
 
-      const totalInvoiced = invoiceList.reduce((sum: number, inv: InvoiceWithLines) => sum + Number(inv.amount), 0);
-      const totalPaid = payments.reduce((sum: number, pay: PaymentRecord) => sum + Number(pay.amount), 0);
+      const totalInvoiced = invoiceList.reduce((sum, inv) => sum + Number(inv.amount || 0), 0);
+      const totalPaid = paymentsFromDB.reduce((sum, pay) => sum + Number(pay.amount), 0);
       const balance = totalInvoiced - totalPaid;
 
       return {
-        supplierId,
-        asOfDate,
         totalInvoiced,
         totalPaid,
-        balance,
-        currency: 'RON'
+        balance
       };
     } catch (error) {
       console.error('Error getting supplier balance:', error);

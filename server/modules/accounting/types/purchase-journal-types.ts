@@ -15,11 +15,13 @@ export interface SupplierData {
   id: string;
   name: string;
   fiscalCode: string;
+  vatNumber?: string; // CUI/VAT number (same as fiscalCode in many cases)
   registrationNumber?: string;
   address?: string;
   city?: string;
   county?: string;
   country?: string;
+  partnerCountry?: string; // Alias for country in invoice_details
 }
 
 /**
@@ -27,13 +29,15 @@ export interface SupplierData {
  */
 export interface InvoiceItemData {
   productName: string;
-  description: string;
+  description: string | null; // Nullable in DB
   quantity: number;
   unitPrice: number;
   netAmount: number;
   vatRate: number;
   vatAmount: number;
   grossAmount: number;
+  vatCategory?: string; // VAT category for journal grouping
+  expenseType?: string; // Expense type for purchase classification
 }
 
 /**
@@ -69,6 +73,14 @@ export interface InvoiceData {
   expenseType?: string;
   deductibleVat?: boolean;
   isCashVAT?: boolean;
+  // Additional fields used in validation
+  supplierId?: string;
+  supplier?: SupplierData;
+  vatRate?: number;
+  items?: InvoiceItemData[];
+  netTotal?: number;
+  vatTotal?: number;
+  grossTotal?: number;
 }
 
 /**
@@ -80,6 +92,8 @@ export interface PaymentData {
   paymentDate: Date;
   paymentMethod: string;
   reference?: string;
+  paymentReference?: string; // DB field name
+  notes?: string;
   companyId: string;
   userId?: string;
 }
@@ -103,17 +117,17 @@ export interface PaymentRecord {
  */
 export interface InvoiceWithLines {
   id: string;
-  invoiceNumber: string;
-  customerName: string;
+  invoiceNumber: string | null; // Nullable in DB
+  customerName: string | null; // Nullable in DB
   amount: string;
   totalAmount: string;
-  netAmount: string;
-  vatAmount: string;
+  netAmount: string | null; // Nullable in DB
+  vatAmount: string | null; // Nullable in DB
   issueDate: Date;
   dueDate: Date | null;
-  type: string;
+  type: string | null; // Nullable in DB
   description: string | null;
-  createdBy: string;
+  createdBy: string | null; // Nullable in DB
   lines: InvoiceItemData[];
 }
 
