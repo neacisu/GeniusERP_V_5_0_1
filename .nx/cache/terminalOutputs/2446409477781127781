@@ -1,0 +1,42 @@
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.18.0.7:[1m5000[22m/[39m
+[2m8:21:36 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/user[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m8:21:36 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/user[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m8:21:37 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/user[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m8:21:38 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/user[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m8:21:51 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/user[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m8:21:58 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/user[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m8:22:00 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/user[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m8:22:02 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m8:22:07 PM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/user[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m8:22:30 PM[22m [36m[1m[vite][22m[39m [32mapps/web/vite.config.ts changed, restarting server...[39m
+[2m8:22:30 PM[22m [36m[1m[vite][22m[39m server restarted.
+[2m8:22:35 PM[22m [36m[1m[vite][22m[39m [32mapps/web/vite.config.ts changed, restarting server...[39m
+[2m8:22:35 PM[22m [36m[1m[vite][22m[39m server restarted.

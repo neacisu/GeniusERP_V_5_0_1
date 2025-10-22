@@ -76,11 +76,11 @@ export async function setupVite(app: Express, server: Server) {
   app.use(vite.middlewares);
   
   // Catch-all route for SPA - ONLY serve HTML if Vite didn't handle the request
-  // This ensures Vite processes .tsx, .ts, .css files FIRST
-  app.use(async (req, res, next) => {
+  // IMPORTANT: This must NOT intercept API routes!
+  app.use((req, res, next) => {
     const url = req.originalUrl;
 
-    // Skip for API routes
+    // Skip for API routes - let them pass through to registered API handlers
     if (url.startsWith('/api/')) {
       return next();
     }
@@ -95,28 +95,31 @@ export async function setupVite(app: Express, server: Server) {
       return next();
     }
 
-    try {
-      // NX Monorepo: index.html este în apps/web/
-      const clientTemplate = path.resolve(
-        __dirname,
-        "..",
-        "..",
-        "web",
-        "index.html",
-      );
+    // For all other routes, serve the SPA HTML
+    (async () => {
+      try {
+        // NX Monorepo: index.html este în apps/web/
+        const clientTemplate = path.resolve(
+          __dirname,
+          "..",
+          "..",
+          "web",
+          "index.html",
+        );
 
-      // always reload the index.html file from disk incase it changes
-      let template = await fs.promises.readFile(clientTemplate, "utf-8");
-      template = template.replace(
-        `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${Date.now()}`,
-      );
-      const page = await vite.transformIndexHtml(url, template);
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
-    } catch (e) {
-      vite.ssrFixStacktrace(e as Error);
-      next(e);
-    }
+        // always reload the index.html file from disk incase it changes
+        let template = await fs.promises.readFile(clientTemplate, "utf-8");
+        template = template.replace(
+          `src="/src/main.tsx"`,
+          `src="/src/main.tsx?v=${Date.now()}`,
+        );
+        const page = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ "Content-Type": "text/html" }).end(page);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    })();
   });
 }
 
