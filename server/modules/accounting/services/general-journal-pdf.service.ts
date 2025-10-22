@@ -9,7 +9,9 @@
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
-import { getClient } from '../../../common/drizzle';
+import { getDrizzle } from '../../../common/drizzle';
+import { eq, and, gte, lte, inArray, ne, sql as drizzleSql } from 'drizzle-orm';
+import { ledgerEntries, ledgerLines, chartOfAccounts } from '../schema/accounting.schema';
 import { RedisService } from '../../../services/redis.service';
 
 /**
@@ -34,6 +36,29 @@ interface JournalLine {
   debitAmount: number;
   creditAmount: number;
   description: string;
+}
+
+/**
+ * Interface pentru rezultatele query-ului Drizzle ORM
+ * Mapează rezultatul din baza de date cu structura așteptată
+ */
+interface JournalQueryResult {
+  entry_id: string;
+  journal_number: string | null;
+  entry_date: Date | null;
+  document_date: Date | null;
+  document_number: string | null;
+  document_type: string;
+  entry_description: string;
+  entry_amount: string;
+  entry_type: string;
+  lines: Array<{
+    accountCode: string;
+    accountName: string | null;
+    debitAmount: string;
+    creditAmount: string;
+    description: string | null;
+  }>;
 }
 
 /**
@@ -144,68 +169,89 @@ export class GeneralJournalPDFService {
       }
     }
     
-    const sql = getClient();
+    const db = getDrizzle();
 
-    // Construiește query-ul în funcție de opțiuni
-    let whereClause = `
-      WHERE e.company_id = $1 
-      AND e.entry_date >= $2 
-      AND e.entry_date <= $3
-    `;
-    
-    const params: any[] = [options.companyId, options.startDate, options.endDate];
+    // Construiește conditions pentru query
+    const conditions = [
+      eq(ledgerEntries.companyId, options.companyId),
+      gte(ledgerEntries.entryDate, options.startDate),
+      lte(ledgerEntries.entryDate, options.endDate)
+    ];
 
     if (options.journalTypes && options.journalTypes.length > 0) {
-      whereClause += ` AND e.type = ANY($${params.length + 1})`;
-      params.push(options.journalTypes);
+      conditions.push(inArray(ledgerEntries.type, options.journalTypes));
     }
 
     if (!options.includeReversals) {
-      whereClause += ` AND e.type != 'REVERSAL'`;
+      conditions.push(ne(ledgerEntries.type, 'REVERSAL'));
     }
 
-    const query = `
-      SELECT 
-        e.id,
-        e.journal_number,
-        e.entry_date,
-        e.document_date,
-        e.reference_number as document_number,
-        e.type as document_type,
-        e.description,
-        e.amount,
-        e.type,
-        json_agg(
+    // Query folosind Drizzle ORM cu agregare pentru lines
+    const results = await db
+      .select({
+        entry_id: ledgerEntries.id,
+        journal_number: ledgerEntries.journalNumber,
+        entry_date: ledgerEntries.entryDate,
+        document_date: ledgerEntries.documentDate,
+        document_number: ledgerEntries.referenceNumber,
+        document_type: ledgerEntries.type,
+        entry_description: ledgerEntries.description,
+        entry_amount: drizzleSql<string>`${ledgerEntries.amount}::numeric`,
+        entry_type: ledgerEntries.type,
+        // Agregare JSON pentru lines
+        lines: drizzleSql<Array<{
+          accountCode: string;
+          accountName: string | null;
+          debitAmount: string;
+          creditAmount: string;
+          description: string | null;
+        }>>`json_agg(
           json_build_object(
-            'accountCode', l.account_id,
-            'accountName', COALESCE(coa.name, l.account_id),
-            'debitAmount', l.debit_amount::numeric,
-            'creditAmount', l.credit_amount::numeric,
-            'description', l.description
-          ) ORDER BY l.created_at
-        ) as lines
-      FROM ledger_entries e
-      LEFT JOIN ledger_lines l ON l.ledger_entry_id = e.id
-      LEFT JOIN chart_of_accounts coa ON coa.code = l.account_id AND coa.company_id = e.company_id
-      ${whereClause}
-      GROUP BY e.id, e.journal_number, e.entry_date, e.document_date, e.reference_number, 
-               e.type, e.description, e.amount
-      ORDER BY e.entry_date, e.journal_number
-    `;
+            'accountCode', ${ledgerLines.accountId},
+            'accountName', COALESCE(${chartOfAccounts.name}, ${ledgerLines.accountId}),
+            'debitAmount', ${ledgerLines.debitAmount}::numeric,
+            'creditAmount', ${ledgerLines.creditAmount}::numeric,
+            'description', ${ledgerLines.description}
+          ) ORDER BY ${ledgerLines.createdAt}
+        )`
+      })
+      .from(ledgerEntries)
+      .leftJoin(ledgerLines, eq(ledgerLines.ledgerEntryId, ledgerEntries.id))
+      .leftJoin(chartOfAccounts, and(
+        eq(chartOfAccounts.code, ledgerLines.accountId),
+        eq(chartOfAccounts.companyId, ledgerEntries.companyId)
+      ))
+      .where(and(...conditions))
+      .groupBy(
+        ledgerEntries.id,
+        ledgerEntries.journalNumber,
+        ledgerEntries.entryDate,
+        ledgerEntries.documentDate,
+        ledgerEntries.referenceNumber,
+        ledgerEntries.type,
+        ledgerEntries.description,
+        ledgerEntries.amount
+      )
+      .orderBy(ledgerEntries.entryDate, ledgerEntries.journalNumber);
 
-    const result = await sql.unsafe(query, params);
-
-    const entries = result.map(row => ({
-      id: row.id,
-      journalNumber: row.journal_number || 'N/A',
-      entryDate: new Date(row.entry_date),
-      documentDate: new Date(row.document_date || row.entry_date),
-      documentType: this.getDocumentTypeLabel(row.document_type),
-      documentNumber: row.document_number || '',
-      description: row.description,
-      amount: parseFloat(row.amount),
-      type: row.type,
-      lines: row.lines || []
+    // Mapare rezultate la JournalEntry cu bracket notation pentru strict mode
+    const entries: JournalEntry[] = results.map((row: JournalQueryResult) => ({
+      id: row['entry_id'],
+      journalNumber: row['journal_number'] || 'N/A',
+      entryDate: row['entry_date'] ? new Date(row['entry_date']) : new Date(),
+      documentDate: new Date(row['document_date'] || row['entry_date'] || new Date()),
+      documentType: this.getDocumentTypeLabel(row['document_type']),
+      documentNumber: row['document_number'] || '',
+      description: row['entry_description'],
+      amount: parseFloat(row['entry_amount']),
+      type: row['entry_type'],
+      lines: (row['lines'] || []).map(line => ({
+        accountCode: line.accountCode,
+        accountName: line.accountName || line.accountCode,
+        debitAmount: parseFloat(line.debitAmount) || 0,
+        creditAmount: parseFloat(line.creditAmount) || 0,
+        description: line.description || ''
+      }))
     }));
     
     // Cache for 10 minutes
@@ -245,7 +291,8 @@ export class GeneralJournalPDFService {
    * Generează tabelul cu înregistrările
    */
   private generatePDFTable(doc: PDFKit.PDFDocument, entries: JournalEntry[], options: GeneralJournalReportOptions): void {
-    const pageWidth = 842 - 60; // A4 landscape minus margins
+    // A4 landscape: 842pt width, minus margins (30 left + 30 right = 60)
+    // const pageWidth = 842 - 60; // Not currently used but kept for future enhancements
     const tableTop = doc.y;
 
     // Lățimi coloane conform OMFP 2634/2015
@@ -456,7 +503,7 @@ export class GeneralJournalPDFService {
   /**
    * Generează raport Excel pentru Registrul Jurnal
    */
-  public async generateGeneralJournalExcel(options: GeneralJournalReportOptions): Promise<string> {
+  public async generateGeneralJournalExcel(_options: GeneralJournalReportOptions): Promise<string> {
     // TODO: Implementare export Excel cu ExcelJS
     // Similar cu structura PDF dar în format Excel pentru pivot tables
     throw new Error('Excel export not implemented yet');
