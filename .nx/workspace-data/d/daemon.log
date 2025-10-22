@@ -1,24 +1,86 @@
-[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.028Z - Started listening on: /tmp/86eddcb4f3675083317d/d.sock
-[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.030Z - [WATCHER]: Subscribed to changes within: /var/www/GeniusERP (native)
-[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.035Z - Established a connection. Number of open connections: 1
-[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.036Z - Established a connection. Number of open connections: 2
-[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.038Z - Closed a connection. Number of open connections: 1
-[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.039Z - [REQUEST]: Responding to the client. Shutdown initiated
-[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.040Z - Done responding to the client Shutdown initiated
-[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.040Z - Handled FORCE_SHUTDOWN. Handling time: 0. Response time: 1.
-[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.040Z - [WATCHER]: Stopping the watcher for /var/www/GeniusERP (sources)
-[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.040Z - Closed a connection. Number of open connections: 0
-[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.041Z - [WATCHER]: Stopping the watcher for /var/www/GeniusERP (outputs)
-[NX v20.7.0 Daemon Server] - 2025-05-22T06:18:09.041Z - Server stopped because: "Request to shutdown"
-[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.427Z - Started listening on: /var/folders/ns/7pylqyns1450zw311nrf168h0000gn/T/c04b4b5f7aafaff89512/d.sock
-[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.430Z - [WATCHER]: Subscribed to changes within: /Volumes/Storage/Data/Proiecte/GeniusERP/GeniusERP_V_5 (native)
-[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.439Z - Established a connection. Number of open connections: 1
-[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.441Z - Established a connection. Number of open connections: 2
-[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.443Z - Closed a connection. Number of open connections: 1
-[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.445Z - [REQUEST]: Responding to the client. Shutdown initiated
-[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.446Z - Done responding to the client Shutdown initiated
-[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.446Z - Handled FORCE_SHUTDOWN. Handling time: 0. Response time: 1.
-[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.447Z - Closed a connection. Number of open connections: 0
-[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.448Z - [WATCHER]: Stopping the watcher for /Volumes/Storage/Data/Proiecte/GeniusERP/GeniusERP_V_5 (sources)
-[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.448Z - [WATCHER]: Stopping the watcher for /Volumes/Storage/Data/Proiecte/GeniusERP/GeniusERP_V_5 (outputs)
-[NX v20.7.0 Daemon Server] - 2025-09-30T19:31:51.448Z - Server stopped because: "Request to shutdown"
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:43.071Z - Started listening on: /private/var/folders/t3/t2gm2m0s2pjf20h0fp56k94w0000gn/T/c4824fd9faedc49a1ddb/d.sock
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:43.100Z - [WATCHER]: Subscribed to changes within: /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5 (native)
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:43.113Z - Established a connection. Number of open connections: 1
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:43.128Z - Established a connection. Number of open connections: 2
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:43.143Z - Closed a connection. Number of open connections: 1
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:43.255Z - [REQUEST]: Client Request for Project Graph Received
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:43.341Z - Time taken for 'loadSpecifiedNxPlugins' 3.0154979999999796ms
+Time for 'plugin worker 57170 code loading' 9.280867999999998
+Time for 'plugin worker 57171 code loading' 80.20263399999999
+Time for 'plugin worker 57172 code loading' 16.165593
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:45.757Z - Time taken for 'Load Nx Plugin: /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/nx/src/plugins/package-json' 2498.1610549999996ms
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:45.841Z - Time taken for 'Load Nx Plugin: /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/node_modules/nx/src/plugins/project-json/build-nodes/project-json' 2581.5321599999997ms
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:45.940Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:45.940Z - [REQUEST]: 
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:45.940Z - [REQUEST]: 
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:46.156Z - No files changed, but no in-memory cached project graph found. Recomputing it...
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:46.165Z - Time taken for 'loadDefaultNxPlugins' 2681.5136ms
+Time for 'nx/core/package-json:createNodes' 1.3124860000000353
+Time for 'nx/core/project-json:createNodes' 2.2018460000001596
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 152.98327999999992
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:46.580Z - Time taken for 'build-project-configs' 216.39314000000013ms
+Time for 'build typescript dependencies' 11.659163000000262
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:47.360Z - Wrote project graph cache to /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/.nx/workspace-data/project-graph.json
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:47.361Z - [SYNC]: collect registered sync generators
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:47.362Z - [REQUEST]: Responding to the client. project-graph
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:47.365Z - Time taken for 'total for creating and serializing project graph' 4106.709734ms
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:47.384Z - Done responding to the client project-graph
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:47.384Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 4108. Response time: 22.
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:40:48.965Z - Closed a connection. Number of open connections: 0
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:21.806Z - Established a connection. Number of open connections: 1
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:21.806Z - Closed a connection. Number of open connections: 0
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:21.809Z - Established a connection. Number of open connections: 1
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:21.810Z - [REQUEST]: Client Request for Project Graph Received
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:21.810Z - Reusing in-memory cached project graph because no files changed.
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:21.810Z - [REQUEST]: Responding to the client. project-graph
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:21.813Z - Time taken for 'total for creating and serializing project graph' 0.4217419999986305ms
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:22.108Z - Done responding to the client project-graph
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:22.108Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 298.
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:39.945Z - [REQUEST]: Client Request for Project Graph Received
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:39.946Z - Reusing in-memory cached project graph because no files changed.
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:39.946Z - [REQUEST]: Responding to the client. project-graph
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:39.948Z - Time taken for 'total for creating and serializing project graph' 1.3819500000026892ms
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:39.955Z - Done responding to the client project-graph
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:39.956Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 1. Response time: 10.
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:39.972Z - [REQUEST]: Client Request for Project Graph Received
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:39.972Z - Reusing in-memory cached project graph because no files changed.
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:39.972Z - [REQUEST]: Responding to the client. project-graph
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:39.975Z - Time taken for 'total for creating and serializing project graph' 0.5229899999976624ms
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:39.999Z - Done responding to the client project-graph
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:39.999Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 27.
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.002Z - [WATCHER]: Processing file changes in outputs
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.022Z - [WATCHER]: 0 file(s) created or restored, 5 file(s) modified, 0 file(s) deleted
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.143Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.143Z - [REQUEST]: static/styles.css,static/styles.js,static/environment.js,static/main.js,static/runtime.js
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.143Z - [REQUEST]: 
+Time for 'nx/core/package-json:createNodes' 0.5467090000020107
+Time for 'nx/core/project-json:createNodes' 1.1566689999963273
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.249Z - Time taken for 'hash changed files from watcher' 18.930795000000217ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 22.691961999997147
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.455Z - Time taken for 'build-project-configs' 46.76704400000017ms
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.708Z - [REQUEST]: Responding to the client. handleContextFileData
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.738Z - Done responding to the client handleContextFileData
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.738Z - Handled GET_CONTEXT_FILE_DATA. Handling time: 2. Response time: 30.
+Time for 'build typescript dependencies' 0.8941709999999148
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.985Z - Wrote project graph cache to /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/.nx/workspace-data/project-graph.json
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.985Z - [SYNC]: collect registered sync generators
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.987Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.987Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:40.989Z - Time taken for 'total execution time for createProjectGraph()' 481.3456550000046ms
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:41.405Z - Closed a connection. Number of open connections: 0
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:41.423Z - [WATCHER]: 1 file(s) created or restored, 1 file(s) modified, 0 file(s) deleted
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:41.423Z - [WATCHER]: Processing file changes in outputs
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:41.535Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:41.535Z - [REQUEST]: nx-graph.html,static/environment.js
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:41.535Z - [REQUEST]: 
+Time for 'nx/core/package-json:createNodes' 0.44701200000417884
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:41.815Z - Time taken for 'hash changed files from watcher' 9.29016799999954ms
+Time for 'nx/core/project-json:createNodes' 1.0576560000044992
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 13.097078999999212
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:41.900Z - Time taken for 'build-project-configs' 25.766339000001608ms
+Time for 'build typescript dependencies' 0.026476999999431428
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:42.278Z - Wrote project graph cache to /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/.nx/workspace-data/project-graph.json
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:42.278Z - [SYNC]: collect registered sync generators
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:42.279Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:42.279Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.6.5 Daemon Server] - 2025-10-22T06:41:42.279Z - Time taken for 'total execution time for createProjectGraph()' 112.07339599999978ms

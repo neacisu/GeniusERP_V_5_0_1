@@ -1,113 +1,26 @@
 {
   "version": 2,
   "projects": {
-    "api": {
-      "root": "apps/api",
-      "sourceRoot": "apps/api/src",
-      "projectType": "application",
-      "targets": {
-        "build": {
-          "executor": "@nx/webpack:webpack",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/apps/api",
-            "main": "apps/api/src/main.ts",
-            "tsConfig": "apps/api/tsconfig.json",
-            "webpackConfig": "apps/api/webpack.config.js"
-          }
-        },
-        "serve": {
-          "executor": "@nx/node:node",
-          "options": {
-            "buildTarget": "api:build"
-          }
-        }
-      }
-    },
-    "web": {
-      "root": "apps/web",
-      "sourceRoot": "apps/web/src",
-      "projectType": "application",
-      "targets": {
-        "build": {
-          "executor": "@nx/next:build",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/apps/web"
-          }
-        },
-        "serve": {
-          "executor": "@nx/next:server",
-          "options": {
-            "buildTarget": "web:build",
-            "dev": true
-          }
-        }
-      }
-    },
-    "shared": {
-      "root": "libs/shared",
-      "sourceRoot": "libs/shared/src",
-      "projectType": "library",
-      "targets": {
-        "build": {
-          "executor": "@nx/js:tsc",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/libs/shared",
-            "tsConfig": "libs/shared/tsconfig.json",
-            "main": "libs/shared/src/index.ts"
-          }
-        }
-      }
-    },
-    "auth": {
-      "root": "libs/auth",
-      "sourceRoot": "libs/auth/src",
-      "projectType": "library",
-      "targets": {
-        "build": {
-          "executor": "@nx/js:tsc",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/libs/auth",
-            "tsConfig": "libs/auth/tsconfig.json",
-            "main": "libs/auth/src/index.ts"
-          }
-        }
-      }
-    },
-    "accounting": {
-      "root": "libs/accounting",
-      "sourceRoot": "libs/accounting/src",
-      "projectType": "library",
-      "targets": {
-        "build": {
-          "executor": "@nx/js:tsc",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/libs/accounting",
-            "tsConfig": "libs/accounting/tsconfig.json",
-            "main": "libs/accounting/src/index.ts"
-          }
-        }
-      }
-    },
-    "inventory": {
-      "root": "libs/inventory",
-      "sourceRoot": "libs/inventory/src",
-      "projectType": "library",
-      "targets": {
-        "build": {
-          "executor": "@nx/js:tsc",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/libs/inventory",
-            "tsConfig": "libs/inventory/tsconfig.json",
-            "main": "libs/inventory/src/index.ts"
-          }
-        }
-      }
-    }
+    "api": "apps/api",
+    "web": "apps/web",
+    "shared": "libs/shared",
+    "auth": "libs/auth",
+    "accounting": "libs/accounting",
+    "inventory": "libs/inventory",
+    "hr": "libs/hr",
+    "crm": "libs/crm",
+    "invoicing": "libs/invoicing",
+    "admin": "libs/admin",
+    "analytics": "libs/analytics",
+    "documents": "libs/documents",
+    "bpm": "libs/bpm",
+    "ecommerce": "libs/ecommerce",
+    "integrations": "libs/integrations",
+    "marketing": "libs/marketing",
+    "settings": "libs/settings",
+    "users": "libs/users",
+    "collab": "libs/collab",
+    "comms": "libs/comms",
+    "company": "libs/company"
   }
 }

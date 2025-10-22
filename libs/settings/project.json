@@ -1,0 +1,18 @@
+{
+  "name": "settings",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/settings/src",
+  "projectType": "library",
+  "tags": ["type:lib", "scope:settings"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/settings",
+        "tsConfig": "libs/settings/tsconfig.json",
+        "main": "libs/settings/src/index.ts"
+      }
+    }
+  }
+}

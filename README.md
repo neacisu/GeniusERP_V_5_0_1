@@ -86,18 +86,37 @@ npm run lint
 
 ## 🛠️ Stack Tehnologic
 
+### 🏗️ Architecture: NX Monorepo
+GeniusERP folosește **Nx Monorepo** pentru modularitate, cache inteligent și scalabilitate:
+```
+GeniusERP_V_5/
+├── apps/
+│   ├── api/              # Backend Express
+│   └── web/              # Frontend React + Vite
+├── libs/
+│   ├── shared/           # Tipuri, schema, utilități comune
+│   ├── auth/             # Modul autentificare
+│   ├── accounting/       # Modul contabilitate
+│   ├── inventory/        # Modul inventar
+│   ├── hr/               # Modul HR
+│   ├── crm/              # Modul CRM
+│   └── ... (alte module)
+```
+
 ### Backend
 - **Node.js** + **Express.js**
 - **PostgreSQL 17** (Drizzle ORM)
 - **Redis Cloud** (BullMQ queues)
 - **Passport.js** + **JWT** (Authentication)
-- **TypeScript**
+- **TypeScript** + **NX Build System**
+- **esbuild** (Fast compilation)
 
 ### Frontend
 - **React 18** + **Vite**
 - **TanStack Query v5** (Data fetching)
 - **Wouter** (Routing)
 - **Tailwind CSS** (Styling)
+- **Vitest** (Unit testing)
 - **React Hook Form** (Forms)
 
 ### Infrastructure
@@ -127,20 +146,65 @@ cp .env.template .env
 nano .env
 ```
 
-### 3. Start cu Docker
+### 3. Instalare Dependențe
 ```bash
-# Start toate serviciile
-./docker-dev.sh start
-
-# Verifică status
-./docker-dev.sh status
-
-# Vezi logs
-./docker-dev.sh logs
+npm install
 ```
 
-### 4. Accesare Aplicație
-- **Frontend & API:** http://localhost:5000
+### 4. Dezvoltare cu NX
+
+**Pornire ambele aplicații (recomandat):**
+```bash
+npm run dev
+# Sau explicit cu NX:
+nx run-many --target=serve --projects=api,web --parallel
+```
+
+**Pornire separată:**
+```bash
+# Doar API (backend)
+npm run dev:api
+# sau: nx serve api
+
+# Doar Frontend
+npm run dev:web
+# sau: nx serve web
+```
+
+**Build pentru producție:**
+```bash
+# Build tot
+npm run build
+
+# Build specific
+npm run build:api
+npm run build:web
+```
+
+**Testing:**
+```bash
+# Rulare teste
+npm test
+
+# Teste specific
+npm run test:api    # Jest pentru backend
+npm run test:web    # Vitest pentru frontend
+```
+
+**Linting:**
+```bash
+npm run lint
+npm run lint:fix
+```
+
+**Vizualizare graf dependențe:**
+```bash
+npm run graph
+```
+
+### 5. Accesare Aplicație
+- **Frontend:** http://localhost:5000
+- **API:** http://localhost:5001
 - **PostgreSQL:** localhost:5433
 - **Credentials default:** admin / admin
 
@@ -150,19 +214,30 @@ nano .env
 - [🔍 Audit Arhitectură](./CLEANUP_AUDIT_REPORT.md) - Analiză detaliată sistem
 - [🔐 Securitate](./.env.template) - Template variabile de mediu
 
-## 🗂️ Structură Proiect
+## 🗂️ Structură Proiect (NX Monorepo)
 
 ```
-GeniusERP_V_5_0_1/
-├── client/              # React Frontend
-│   ├── src/
-│   │   ├── modules/     # Module business
-│   │   ├── components/  # Componente reutilizabile
-│   │   └── hooks/       # Custom hooks
-├── server/              # Express Backend
-│   ├── modules/         # Module API
-│   ├── common/          # Servicii comune
-│   └── db.ts           # Database config
+GeniusERP_V_5/
+├── apps/
+│   ├── api/             # Express Backend
+│   │   └── src/
+│   │       ├── main.ts        # Entry point
+│   │       ├── config/        # Configurări
+│   │       ├── middlewares/   # Express middlewares
+│   │       └── routes/        # API routes
+│   └── web/             # React Frontend
+│       └── src/
+│           ├── modules/       # Module business
+│           ├── components/    # Componente reutilizabile
+│           └── hooks/         # Custom hooks
+├── libs/                # Librării partajate (NX)
+│   ├── shared/          # Tipuri și utilități comune
+│   ├── auth/            # Modul autentificare
+│   ├── accounting/      # Modul contabilitate
+│   ├── inventory/       # Modul inventar
+│   ├── hr/              # Modul resurse umane
+│   ├── crm/             # Modul CRM
+│   └── ...              # Alte module de business
 ├── shared/              # Schema & types comune
 ├── docker-compose.yml   # Docker configuration
 ├── .env.template       # Template environment

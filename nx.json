@@ -1,5 +1,6 @@
 {
   "extends": "nx/presets/npm.json",
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "tasksRunnerOptions": {
     "default": {
       "runner": "nx/tasks-runners/default",
@@ -11,12 +12,10 @@
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"]
-    },
-    "dev": {
-      "dependsOn": ["^build"]
     }
   },
   "affected": {
     "defaultBase": "main"
-  }
+  },
+  "defaultProject": "api"
 }

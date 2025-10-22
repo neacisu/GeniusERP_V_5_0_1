@@ -1,0 +1,18 @@
+{
+  "name": "bpm",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/bpm/src",
+  "projectType": "library",
+  "tags": ["type:lib", "scope:bpm"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/bpm",
+        "tsConfig": "libs/bpm/tsconfig.json",
+        "main": "libs/bpm/src/index.ts"
+      }
+    }
+  }
+}

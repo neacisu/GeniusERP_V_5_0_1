@@ -1,0 +1,18 @@
+{
+  "name": "company",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/company/src",
+  "projectType": "library",
+  "tags": ["type:lib", "scope:company"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/company",
+        "tsConfig": "libs/company/tsconfig.json",
+        "main": "libs/company/src/index.ts"
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "comms",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/comms/src",
+  "projectType": "library",
+  "tags": ["type:lib", "scope:comms"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/comms",
+        "tsConfig": "libs/comms/tsconfig.json",
+        "main": "libs/comms/src/index.ts"
+      }
+    }
+  }
+}

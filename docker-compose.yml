@@ -6,10 +6,12 @@ services:
     container_name: geniuserp-app
     volumes:
       - .:/app
+      - ./apps:/app/apps
+      - ./libs:/app/libs
       - node_modules_volume:/app/node_modules
     ports:
-      - "5000:5000" # API
-      - "3000:3000" # Frontend Vite
+      - "5000:5000" # Frontend Vite
+      - "5001:5001" # API Backend
     labels:
       - logging=promtail
       - logging_jobname=geniuserp-app

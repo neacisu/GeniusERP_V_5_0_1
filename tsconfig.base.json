@@ -1,10 +1,10 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "target": "es2020",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "lib": ["es2020", "dom"],
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "dom", "dom.iterable"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "declaration": true,
@@ -14,6 +14,7 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "noEmitHelpers": true,
+    "jsx": "preserve",
     
     /* Strict Type-Checking */
     "strict": true,
@@ -25,19 +26,30 @@
     "noPropertyAccessFromIndexSignature": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
+    "exactOptionalPropertyTypes": false,
     
     /* Module Resolution */
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
     "baseUrl": ".",
+    "types": ["node"],
     "paths": {
       "@geniuserp/shared": ["libs/shared/src/index.ts"],
       "@geniuserp/auth": ["libs/auth/src/index.ts"],
       "@geniuserp/accounting": ["libs/accounting/src/index.ts"],
-      "@geniuserp/inventory": ["libs/inventory/src/index.ts"]
+      "@geniuserp/inventory": ["libs/inventory/src/index.ts"],
+      "@geniuserp/hr": ["libs/hr/src/index.ts"],
+      "@geniuserp/crm": ["libs/crm/src/index.ts"],
+      "@geniuserp/invoicing": ["libs/invoicing/src/index.ts"],
+      "@geniuserp/admin": ["libs/admin/src/index.ts"],
+      "@geniuserp/analytics": ["libs/analytics/src/index.ts"],
+      "@geniuserp/documents": ["libs/documents/src/index.ts"],
+      "@/*": ["client/src/*"],
+      "@shared/*": ["shared/*"]
     }
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": ["node_modules", "tmp", "dist", "build"]
 }
