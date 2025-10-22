@@ -48,6 +48,9 @@ export * from "./schema/cash-register.schema";
 // Export Bank Journal models for shared usage across the application
 export * from "./schema/bank-journal.schema";
 
+// Export Document Counters models for shared usage across the application
+export * from "./schema/document-counters.schema";
+
 // Export Communications models for shared usage across the application
 // Notă: contacts redenumit în communicationsContacts pentru a evita conflicte cu CRM
 export {

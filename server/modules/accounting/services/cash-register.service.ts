@@ -11,13 +11,36 @@
 
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
 import { getDrizzle } from '../../../common/drizzle';
-import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { and, desc, eq, gte, lte, SQL, sql } from 'drizzle-orm';
 import { cashRegisters, cashTransactions, CashRegister, CashTransaction } from '../../../../shared/schema/cash-register.schema';
+import { documentCounters } from '../../../../shared/schema/document-counters.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditLogService } from './audit-log.service';
 import { accountingQueueService } from './accounting-queue.service';
 import { RedisService } from '../../../services/redis.service';
 import { log } from '../../../vite';
+import {
+  CashRegisterWithClosing,
+  CreateCashRegisterData,
+  UpdateCashRegisterData,
+  RecordCashReceiptData,
+  RecordCashPaymentData,
+  TransferCashData,
+  CashDepositToBankData,
+  CashWithdrawalFromBankData,
+  CreateReconciliationData,
+  CashTransactionAdditionalData,
+  CashRegisterReport,
+  DailyClosingResult,
+  CashRegisterBalance,
+  CashRegisterListResponse,
+  CashTransactionsListResponse,
+  CashTransferResult,
+  BankTransactionResult,
+  ReconciliationJobResult,
+  TransactionValidationResult,
+  CashTransactionItem
+} from '../types/cash-register-types';
 
 /**
  * Cash transaction type enum
@@ -73,20 +96,7 @@ export interface CashTransactionData {
   fiscalReceiptNumber?: string; // Bon fiscal number (for fiscal receipts)
   isFiscalReceipt: boolean; // Whether this is a fiscal receipt (bon fiscal)
   items?: CashTransactionItem[]; // Line items for fiscal receipts
-  additionalData?: Record<string, any>; // For any additional data needed
-}
-
-/**
- * Cash transaction item for fiscal receipts
- */
-export interface CashTransactionItem {
-  description: string;
-  quantity: number;
-  unitPrice: number;
-  netAmount: number;
-  vatAmount: number;
-  vatRate: number;
-  grossAmount: number;
+  additionalData?: CashTransactionAdditionalData; // For any additional data needed
 }
 
 /**
@@ -151,7 +161,7 @@ export class CashRegisterService {
   /**
    * Get all cash registers for a company
    */
-  public async getCashRegisters(companyId: string): Promise<{ data: CashRegister[]; total: number }> {
+  public async getCashRegisters(companyId: string): Promise<CashRegisterListResponse> {
     try {
       const db = getDrizzle();
       
@@ -200,7 +210,7 @@ export class CashRegisterService {
   /**
    * Create a new cash register
    */
-  public async createCashRegister(data: any): Promise<string> {
+  public async createCashRegister(data: CreateCashRegisterData): Promise<string> {
     try {
       const db = getDrizzle();
       const id = uuidv4();
@@ -222,7 +232,7 @@ export class CashRegisterService {
         status: 'active',
         isActive: true,
         createdBy: data.userId,
-      } as any);
+      });
       
       return id;
     } catch (error) {
@@ -234,7 +244,7 @@ export class CashRegisterService {
   /**
    * Update cash register
    */
-  public async updateCashRegister(id: string, data: any, userId: string): Promise<void> {
+  public async updateCashRegister(id: string, data: UpdateCashRegisterData, userId: string): Promise<void> {
     try {
       const db = getDrizzle();
       
@@ -250,7 +260,7 @@ export class CashRegisterService {
           isActive: data.isActive,
           updatedBy: userId,
           updatedAt: new Date(),
-        } as any)
+        })
         .where(and(
           eq(cashRegisters.id, id),
           eq(cashRegisters.companyId, data.companyId)
@@ -275,13 +285,13 @@ export class CashRegisterService {
     limit: number = 20,
     startDate?: Date,
     endDate?: Date
-  ): Promise<{ data: CashTransaction[]; total: number; page: number; limit: number }> {
+  ): Promise<CashTransactionsListResponse> {
     try {
       const db = getDrizzle();
       const offset = (page - 1) * limit;
       
       // Build conditions
-      const conditions: any[] = [eq(cashTransactions.companyId, companyId)];
+      const conditions: SQL[] = [eq(cashTransactions.companyId, companyId)];
       
       if (registerId) {
         conditions.push(eq(cashTransactions.cashRegisterId, registerId));
@@ -344,7 +354,7 @@ export class CashRegisterService {
   /**
    * Record cash receipt (Chitanță)
    */
-  public async recordCashReceipt(data: any): Promise<string> {
+  public async recordCashReceipt(data: RecordCashReceiptData): Promise<string> {
     try {
       const db = getDrizzle();
       const transactionId = uuidv4();
@@ -361,8 +371,9 @@ export class CashRegisterService {
       }
       
       // PAS 5: Verifică dacă ziua curentă este închisă
-      if ((register as any).lastClosedDate) {
-        const lastClosed = new Date((register as any).lastClosedDate);
+      const registerWithClosing = register as CashRegisterWithClosing;
+      if (registerWithClosing.lastClosedDate) {
+        const lastClosed = new Date(registerWithClosing.lastClosedDate);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
@@ -397,7 +408,7 @@ export class CashRegisterService {
         series: 'CH',
         number: documentNumber.split('/')[2], // Folosește / ca separator
         transactionType: 'cash_receipt',
-        transactionPurpose: data.purpose || 'customer_payment',
+        transactionPurpose: (data.purpose || 'customer_payment') as typeof cashTransactions.$inferInsert.transactionPurpose,
         transactionDate: new Date(),
         amount: data.amount.toString(),
         vatAmount: (data.vatAmount || 0).toString(),
@@ -416,16 +427,16 @@ export class CashRegisterService {
         isPosted: false,
         isCanceled: false,
         createdBy: data.userId,
-      } as any);
+      });
       
       // RECOMANDARE 5: Update atomic pentru prevenție race condition  
-      // Folosim SQL direct pentru a actualiza soldul atomic (currentBalance = currentBalance + amount)
-      await db.$client.unsafe(`
-        UPDATE cash_registers 
-        SET current_balance = current_balance + $1, 
-            updated_at = NOW()
-        WHERE id = $2
-      `, [Number(data.amount), data.cashRegisterId]);
+      // Folosim Drizzle ORM cu sql pentru update atomic
+      await db.update(cashRegisters)
+        .set({
+          currentBalance: sql`${cashRegisters.currentBalance} + ${Number(data.amount)}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(cashRegisters.id, data.cashRegisterId));
       
       // PAS 3: POSTARE AUTOMATĂ ÎN CONTABILITATE pentru ÎNCASĂRI
       try {
@@ -436,7 +447,7 @@ export class CashRegisterService {
           transactionId,
           receiptNumber: documentNumber,
           transactionType: CashTransactionType.CASH_RECEIPT,
-          transactionPurpose: data.purpose || CashTransactionPurpose.CUSTOMER_PAYMENT,
+          transactionPurpose: (data.purpose || 'customer_payment') as CashTransactionPurpose,
           amount: Number(data.amount),
           vatAmount: Number(data.vatAmount || 0),
           vatRate: Number(data.vatRate || 19),
@@ -455,7 +466,13 @@ export class CashRegisterService {
           items: data.items || []
         });
         
-        await db.$client.unsafe(`UPDATE cash_transactions SET is_posted = true, posted_at = NOW(), ledger_entry_id = $1 WHERE id = $2`, [entry.id, transactionId]);
+        await db.update(cashTransactions)
+          .set({
+            isPosted: true,
+            postedAt: new Date(),
+            ledgerEntryId: entry.id,
+          })
+          .where(eq(cashTransactions.id, transactionId));
       } catch (error) {
         console.error('Error posting cash receipt to ledger:', error);
         // Nu facem rollback - tranzacția rămâne nepostată și poate fi postată manual
@@ -471,7 +488,7 @@ export class CashRegisterService {
   /**
    * Record cash payment (Dispoziție de Plată)
    */
-  public async recordCashPayment(data: any): Promise<string> {
+  public async recordCashPayment(data: RecordCashPaymentData): Promise<string> {
     try {
       const db = getDrizzle();
       const transactionId = uuidv4();
@@ -488,8 +505,9 @@ export class CashRegisterService {
       }
       
       // PAS 5: Verifică dacă ziua curentă este închisă
-      if ((register as any).lastClosedDate) {
-        const lastClosed = new Date((register as any).lastClosedDate);
+      const registerWithClosing2 = register as CashRegisterWithClosing;
+      if (registerWithClosing2.lastClosedDate) {
+        const lastClosed = new Date(registerWithClosing2.lastClosedDate);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
@@ -528,7 +546,7 @@ export class CashRegisterService {
         series: 'DP',
         number: documentNumber.split('-')[2],
         transactionType: 'cash_payment',
-        transactionPurpose: data.purpose || 'expense_payment',
+        transactionPurpose: (data.purpose || 'expense_payment') as typeof cashTransactions.$inferInsert.transactionPurpose,
         transactionDate: new Date(),
         amount: data.amount.toString(),
         vatAmount: (data.vatAmount || 0).toString(),
@@ -544,16 +562,16 @@ export class CashRegisterService {
         isPosted: false,
         isCanceled: false,
         createdBy: data.userId,
-      } as any);
+      });
       
       // RECOMANDARE 5: Update atomic pentru prevenție race condition
-      // Folosim SQL direct pentru a actualiza soldul atomic (currentBalance = currentBalance - amount)
-      await db.$client.unsafe(`
-        UPDATE cash_registers 
-        SET current_balance = current_balance - $1, 
-            updated_at = NOW()
-        WHERE id = $2
-      `, [Number(data.amount), data.cashRegisterId]);
+      // Folosim Drizzle ORM cu sql pentru update atomic
+      await db.update(cashRegisters)
+        .set({
+          currentBalance: sql`${cashRegisters.currentBalance} - ${Number(data.amount)}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(cashRegisters.id, data.cashRegisterId));
       
       // PAS 4: POSTARE AUTOMATĂ ÎN CONTABILITATE
       try {
@@ -564,7 +582,7 @@ export class CashRegisterService {
           transactionId,
           receiptNumber: documentNumber,
           transactionType: CashTransactionType.CASH_PAYMENT,
-          transactionPurpose: data.purpose || CashTransactionPurpose.EXPENSE_PAYMENT,
+          transactionPurpose: (data.purpose || 'expense_payment') as CashTransactionPurpose,
           amount: Number(data.amount),
           vatAmount: Number(data.vatAmount || 0),
           vatRate: Number(data.vatRate || 0),
@@ -582,7 +600,13 @@ export class CashRegisterService {
           items: []
         });
         
-        await db.$client.unsafe(`UPDATE cash_transactions SET is_posted = true, posted_at = NOW(), ledger_entry_id = $1 WHERE id = $2`, [entry.id, transactionId]);
+        await db.update(cashTransactions)
+          .set({
+            isPosted: true,
+            postedAt: new Date(),
+            ledgerEntryId: entry.id,
+          })
+          .where(eq(cashTransactions.id, transactionId));
       } catch (error) {
         console.error('Error posting cash payment to ledger:', error);
       }
@@ -597,7 +621,7 @@ export class CashRegisterService {
   /**
    * Transfer cash between registers
    */
-  public async transferCash(data: any): Promise<{ fromTransactionId: string; toTransactionId: string }> {
+  public async transferCash(data: TransferCashData): Promise<CashTransferResult> {
     try {
       // Record payment from source register
       const fromTransactionId = await this.recordCashPayment({
@@ -626,7 +650,7 @@ export class CashRegisterService {
    * PAS 9: Record cash deposit to bank - CU LEGARE AUTOMATĂ
    * Înregistrează depunerea în casierie ȘI încasarea în cont bancar
    */
-  public async recordCashDepositToBank(data: any): Promise<{ cashTransactionId: string; bankTransactionId: string }> {
+  public async recordCashDepositToBank(data: CashDepositToBankData): Promise<BankTransactionResult> {
     try {
       // Importă BankJournalService doar când este necesar
       const { BankJournalService } = await import('./bank-journal.service');
@@ -676,7 +700,7 @@ export class CashRegisterService {
    * PAS 9: Record cash withdrawal from bank - CU LEGARE AUTOMATĂ
    * Înregistrează ridicarea în casierie ȘI plata din cont bancar
    */
-  public async recordCashWithdrawalFromBank(data: any): Promise<{ cashTransactionId: string; bankTransactionId: string }> {
+  public async recordCashWithdrawalFromBank(data: CashWithdrawalFromBankData): Promise<BankTransactionResult> {
     try {
       // Importă BankJournalService doar când este necesar
       const { BankJournalService } = await import('./bank-journal.service');
@@ -723,7 +747,7 @@ export class CashRegisterService {
    * PAS 4: ÎNCHIDERE ZILNICĂ - Închide registrul de casă pentru o zi
    * Marchează ziua ca închisă și blochează modificările ulterioare
    */
-  public async closeDailyCashRegister(cashRegisterId: string, companyId: string, date: Date, userId: string): Promise<{ success: boolean; closingBalance: number; pdfPath?: string }> {
+  public async closeDailyCashRegister(cashRegisterId: string, companyId: string, date: Date, userId: string): Promise<DailyClosingResult> {
     try {
       const db = getDrizzle();
       
@@ -741,8 +765,9 @@ export class CashRegisterService {
       }
       
       // Verifică dacă ziua este deja închisă
-      if ((register as any).lastClosedDate) {
-        const lastClosed = new Date((register as any).lastClosedDate);
+      const registerWithClosing3 = register as CashRegisterWithClosing;
+      if (registerWithClosing3.lastClosedDate) {
+        const lastClosed = new Date(registerWithClosing3.lastClosedDate);
         const closeDate = new Date(date);
         closeDate.setHours(0, 0, 0, 0);
         
@@ -778,10 +803,10 @@ export class CashRegisterService {
       // Marchează ziua ca închisă
       await db.update(cashRegisters)
         .set({
-          lastClosedDate: date.toISOString().split('T')[0] as any, // Format DATE
+          lastClosedDate: date.toISOString().split('T')[0],
           updatedAt: new Date(),
           updatedBy: userId,
-        } as any)
+        })
         .where(eq(cashRegisters.id, cashRegisterId));
       
       // RECOMANDARE 4: Log audit pentru închidere zilnică
@@ -811,7 +836,7 @@ export class CashRegisterService {
   /**
    * Get cash register balance as of date
    */
-  public async getCashRegisterBalanceAsOf(cashRegisterId: string, companyId: string, asOfDate: Date): Promise<{ balance: number; currency: string }> {
+  public async getCashRegisterBalanceAsOf(cashRegisterId: string, companyId: string, asOfDate: Date): Promise<CashRegisterBalance> {
     try {
       const db = getDrizzle();
       
@@ -877,7 +902,7 @@ export class CashRegisterService {
   /**
    * Create cash register reconciliation (Închidere Casă Zilnică)
    */
-  public async createReconciliation(data: any): Promise<string> {
+  public async createReconciliation(data: CreateReconciliationData): Promise<string> {
     try {
       const db = getDrizzle();
       
@@ -915,15 +940,15 @@ export class CashRegisterService {
           balanceAfter: physicalCount.toString(),
           notes: data.notes || null,
           createdBy: data.userId,
-        } as any);
+        });
         
         // RECOMANDARE 5: Update atomic - setăm direct la physical count
-        await db.$client.unsafe(`
-          UPDATE cash_registers 
-          SET current_balance = $1, 
-              updated_at = NOW()
-          WHERE id = $2
-        `, [physicalCount, data.cashRegisterId]);
+        await db.update(cashRegisters)
+          .set({
+            currentBalance: physicalCount.toString(),
+            updatedAt: new Date(),
+          })
+          .where(eq(cashRegisters.id, data.cashRegisterId));
         
         return adjustmentId;
       }
@@ -943,7 +968,7 @@ export class CashRegisterService {
     cashRegisterId: string,
     startDate: Date,
     endDate: Date
-  ): Promise<any> {
+  ): Promise<CashRegisterReport> {
     try {
       const db = getDrizzle();
       
@@ -992,7 +1017,7 @@ export class CashRegisterService {
     companyId: string,
     cashRegisterId: string,
     date: Date
-  ): Promise<any> {
+  ): Promise<CashRegisterReport> {
     try {
       const startOfDay = new Date(date);
       startOfDay.setHours(0, 0, 0, 0);
@@ -1531,7 +1556,7 @@ export class CashRegisterService {
    * @param transactionData Cash transaction data
    * @returns Validation result
    */
-  public validateCashTransaction(transactionData: any): { valid: boolean; errors: string[] } {
+  public validateCashTransaction(transactionData: CashTransactionData): TransactionValidationResult {
     const errors: string[] = [];
     
     // Check required fields according to Romanian standards
@@ -1663,8 +1688,8 @@ export class CashRegisterService {
         }
         
         // Check totals - validate gross and VAT amounts
-        const totalVat = transactionData.items.reduce((sum: number, item: any) => sum + Number(item.vatAmount), 0);
-        const totalGross = transactionData.items.reduce((sum: number, item: any) => sum + Number(item.grossAmount), 0);
+        const totalVat = transactionData.items.reduce((sum: number, item: CashTransactionItem) => sum + Number(item.vatAmount), 0);
+        const totalGross = transactionData.items.reduce((sum: number, item: CashTransactionItem) => sum + Number(item.grossAmount), 0);
         
         if (Math.abs(totalGross - Number(transactionData.amount)) > 0.01) {
           errors.push("Transaction amount does not match the sum of item gross amounts");
@@ -1713,7 +1738,7 @@ export class CashRegisterService {
    * Generate a cash receipt number
    * This follows Romanian requirements for sequential numbering
    * @param companyId Company ID
-   * @param cashRegisterId Cash register ID
+   * @param _cashRegisterId Cash register ID (unused - reserved for future filtering)
    * @param isPayment Whether this is a payment (default: false, meaning it's a receipt)
    * @returns Generated receipt number
    */
@@ -1727,16 +1752,31 @@ export class CashRegisterService {
     const series = isPayment ? 'DP' : 'CH'; // CH = Chitanță, DP = Dispoziție Plată
     
     try {
-      // Obține sau creează counter
-      const [counter] = await db.$client.unsafe(`
-        INSERT INTO document_counters (company_id, counter_type, series, year, last_number)
-        VALUES ($1, 'CASH', $2, $3, 1)
-        ON CONFLICT (company_id, counter_type, series, year)
-        DO UPDATE SET last_number = document_counters.last_number + 1, updated_at = NOW()
-        RETURNING last_number
-      `, [companyId, series, year]);
+      // Obține sau creează counter folosind Drizzle ORM cu upsert pattern
+      const [counter] = await db
+        .insert(documentCounters)
+        .values({
+          companyId,
+          counterType: 'CASH',
+          series,
+          year: year.toString(),
+          lastNumber: '1',
+        })
+        .onConflictDoUpdate({
+          target: [
+            documentCounters.companyId,
+            documentCounters.counterType,
+            documentCounters.series,
+            documentCounters.year,
+          ],
+          set: {
+            lastNumber: sql`${documentCounters.lastNumber} + 1`,
+            updatedAt: new Date(),
+          },
+        })
+        .returning({ lastNumber: documentCounters.lastNumber });
       
-      const number = counter['last_number'].toString().padStart(6, '0');
+      const number = counter.lastNumber.toString().padStart(6, '0');
       return `${series}/${year}/${number}`;
     } catch (error) {
       console.error('Error generating receipt number:', error);
@@ -1759,7 +1799,7 @@ export class CashRegisterService {
     cashRegisterId: string,
     date: Date,
     useCache: boolean = true
-  ): Promise<any> {
+  ): Promise<CashRegisterReport> {
     const dateStr = date.toISOString().split('T')[0];
     const cacheKey = `acc:cash-report:${companyId}:${cashRegisterId}:${dateStr}`;
     
@@ -1769,7 +1809,7 @@ export class CashRegisterService {
       await redisService.connect();
       
       if (redisService.isConnected()) {
-        const cached = await redisService.getCached<any>(cacheKey);
+        const cached = await redisService.getCached<CashRegisterReport>(cacheKey);
         
         if (cached) {
           log(`Daily cash report cache hit for ${cashRegisterId}`, 'cash-register-cache');
@@ -1807,7 +1847,7 @@ export class CashRegisterService {
     startDate: string,
     endDate: string,
     _userId: string
-  ): Promise<{ jobId: string; message: string }> {
+  ): Promise<ReconciliationJobResult> {
     try {
       log(`Queueing async cash reconciliation for ${cashRegisterId}`, 'cash-register-async');
       
