@@ -33,7 +33,6 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "allowImportingTsExtensions": true,
     "baseUrl": ".",
     "types": ["node"],
     "paths": {
