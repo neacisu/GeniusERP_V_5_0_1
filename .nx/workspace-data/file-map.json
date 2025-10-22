@@ -87,192 +87,192 @@
   "fileMap": {
     "nonProjectFiles": [
       {
-        "file": ".cursor/rules/projectrules.mdc",
-        "hash": "17333625274048045026"
-      },
-      {
-        "file": "package-lock.json",
-        "hash": "13708639139637610258"
-      },
-      {
-        "file": "tsconfig.recommended.json",
-        "hash": "4273117205151743949"
-      },
-      {
-        "file": "update-all-deps.sh",
-        "hash": "9373315178666461615"
-      },
-      {
         "file": ".github/workflows/auto-close-issues.yml",
         "hash": "5844208170528065750"
-      },
-      {
-        "file": "jest.preset.js",
-        "hash": "14256848549375763892"
-      },
-      {
-        "file": "workspace.json",
-        "hash": "13758832699223912910"
-      },
-      {
-        "file": "send-logs-fixed.sh",
-        "hash": "6006324813976929674"
-      },
-      {
-        "file": "static/main.js",
-        "hash": "2502095695658726145"
-      },
-      {
-        "file": ".nxignore",
-        "hash": "3898690521357059722"
-      },
-      {
-        "file": "theme.json",
-        "hash": "6566695290860262687"
-      },
-      {
-        "file": "tsconfig.json",
-        "hash": "15612277622291190958"
-      },
-      {
-        "file": "ecosystem.config.cjs",
-        "hash": "1168840501236215077"
-      },
-      {
-        "file": "accounting-drizzle.config.ts",
-        "hash": "4328149913544239751"
-      },
-      {
-        "file": "NX_MIGRATION_SUMMARY.md",
-        "hash": "17720370455424587827"
-      },
-      {
-        "file": ".gitignore",
-        "hash": "18206471369677257317"
-      },
-      {
-        "file": "static/styles.css",
-        "hash": "5790686815247881049"
-      },
-      {
-        "file": "static/runtime.js",
-        "hash": "14980783667260047515"
-      },
-      {
-        "file": "docker-entrypoint.sh",
-        "hash": "5488974447701606866"
-      },
-      {
-        "file": "eslint.config.js",
-        "hash": "1726959496359336324"
-      },
-      {
-        "file": ".dockerignore",
-        "hash": "1270526425827491408"
-      },
-      {
-        "file": ".cursor/rules/git-rules.mdc",
-        "hash": "9977818838785392159"
-      },
-      {
-        "file": "token.txt",
-        "hash": "7410506273438272391"
-      },
-      {
-        "file": "drizzle.config.ts",
-        "hash": "5821457968997086548"
-      },
-      {
-        "file": "Dockerfile.prod",
-        "hash": "10838177161594906992"
-      },
-      {
-        "file": ".env.template",
-        "hash": "17034787304841500978"
-      },
-      {
-        "file": ".nxrc.json",
-        "hash": "10052673949290900250"
-      },
-      {
-        "file": "docker-dev.sh",
-        "hash": "6995104699959580004"
-      },
-      {
-        "file": "nx-graph.html",
-        "hash": "6183388263616623200"
-      },
-      {
-        "file": "nx.json",
-        "hash": "12124539994595073338"
-      },
-      {
-        "file": ".github/copilot-instructions.md",
-        "hash": "7108852932962447988"
-      },
-      {
-        "file": "env.example.txt",
-        "hash": "10297499776199025027"
       },
       {
         "file": ".eslintrc.json",
         "hash": "10312024542810267567"
       },
       {
-        "file": "postcss.config.js",
-        "hash": "14886562286554270667"
-      },
-      {
-        "file": "static/styles.js",
-        "hash": "16803620677878581351"
-      },
-      {
-        "file": "docker-compose.yml",
-        "hash": "11426503431455370092"
-      },
-      {
-        "file": "README.md",
-        "hash": "8295246255624576194"
-      },
-      {
-        "file": "package.json",
-        "hash": "5090028892650894883"
-      },
-      {
-        "file": "jest.config.ts",
-        "hash": "10282790185360246113"
-      },
-      {
-        "file": "docker-compose.prod.yml",
-        "hash": "17312180959511933040"
-      },
-      {
-        "file": "Dockerfile.dev",
-        "hash": "9546727682556335600"
-      },
-      {
-        "file": "start-server.sh",
-        "hash": "6005706762831169434"
-      },
-      {
-        "file": "static/environment.js",
-        "hash": "9078378275448581270"
+        "file": "static/runtime.js",
+        "hash": "14980783667260047515"
       },
       {
         "file": "tsconfig.base.json",
         "hash": "15660426983320052029"
       },
       {
-        "file": "vite.config.ts",
-        "hash": "12036326497812031099"
+        "file": "static/styles.css",
+        "hash": "5790686815247881049"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "18206471369677257317"
+      },
+      {
+        "file": "static/styles.js",
+        "hash": "16803620677878581351"
+      },
+      {
+        "file": "update-all-deps.sh",
+        "hash": "9373315178666461615"
+      },
+      {
+        "file": "eslint.config.js",
+        "hash": "1726959496359336324"
+      },
+      {
+        "file": "README.md",
+        "hash": "8295246255624576194"
       },
       {
         "file": "package.json.backup-before-major-update",
         "hash": "6926238877786970399"
       },
       {
+        "file": "workspace.json",
+        "hash": "13758832699223912910"
+      },
+      {
+        "file": "tsconfig.json",
+        "hash": "15612277622291190958"
+      },
+      {
+        "file": "accounting-drizzle.config.ts",
+        "hash": "4328149913544239751"
+      },
+      {
+        "file": ".nxignore",
+        "hash": "3898690521357059722"
+      },
+      {
+        "file": ".cursor/rules/projectrules.mdc",
+        "hash": "17333625274048045026"
+      },
+      {
+        "file": "drizzle.config.ts",
+        "hash": "5821457968997086548"
+      },
+      {
+        "file": ".env.template",
+        "hash": "17034787304841500978"
+      },
+      {
+        "file": "NX_MIGRATION_SUMMARY.md",
+        "hash": "17720370455424587827"
+      },
+      {
+        "file": "Dockerfile.dev",
+        "hash": "9546727682556335600"
+      },
+      {
+        "file": "theme.json",
+        "hash": "6566695290860262687"
+      },
+      {
+        "file": "docker-dev.sh",
+        "hash": "6995104699959580004"
+      },
+      {
+        "file": ".nxrc.json",
+        "hash": "10052673949290900250"
+      },
+      {
+        "file": "docker-compose.prod.yml",
+        "hash": "17312180959511933040"
+      },
+      {
+        "file": "tsconfig.recommended.json",
+        "hash": "4273117205151743949"
+      },
+      {
+        "file": "postcss.config.js",
+        "hash": "14886562286554270667"
+      },
+      {
+        "file": ".cursor/rules/git-rules.mdc",
+        "hash": "9977818838785392159"
+      },
+      {
+        "file": "jest.config.ts",
+        "hash": "10282790185360246113"
+      },
+      {
         "file": ".replit",
         "hash": "2351295864897168589"
+      },
+      {
+        "file": "start-server.sh",
+        "hash": "6005706762831169434"
+      },
+      {
+        "file": "package.json",
+        "hash": "5090028892650894883"
+      },
+      {
+        "file": "static/main.js",
+        "hash": "2502095695658726145"
+      },
+      {
+        "file": "jest.preset.js",
+        "hash": "14256848549375763892"
+      },
+      {
+        "file": "send-logs-fixed.sh",
+        "hash": "6006324813976929674"
+      },
+      {
+        "file": "Dockerfile.prod",
+        "hash": "10838177161594906992"
+      },
+      {
+        "file": "nx.json",
+        "hash": "12124539994595073338"
+      },
+      {
+        "file": "nx-graph.html",
+        "hash": "6183388263616623200"
+      },
+      {
+        "file": "token.txt",
+        "hash": "7410506273438272391"
+      },
+      {
+        "file": "package-lock.json",
+        "hash": "13708639139637610258"
+      },
+      {
+        "file": "docker-entrypoint.sh",
+        "hash": "5488974447701606866"
+      },
+      {
+        "file": "env.example.txt",
+        "hash": "10297499776199025027"
+      },
+      {
+        "file": "vite.config.ts",
+        "hash": "12036326497812031099"
+      },
+      {
+        "file": "ecosystem.config.cjs",
+        "hash": "1168840501236215077"
+      },
+      {
+        "file": ".github/copilot-instructions.md",
+        "hash": "7108852932962447988"
+      },
+      {
+        "file": ".dockerignore",
+        "hash": "1270526425827491408"
+      },
+      {
+        "file": "static/environment.js",
+        "hash": "9078378275448581270"
+      },
+      {
+        "file": "docker-compose.yml",
+        "hash": "11426503431455370092"
       }
     ],
     "projectFileMap": {
@@ -3174,6 +3174,46 @@
           "hash": "17832804071957983348"
         },
         {
+          "file": "apps/api/seeds/README.md",
+          "hash": "5183107841499636232"
+        },
+        {
+          "file": "apps/api/seeds/accounting/account-classes.json",
+          "hash": "16844560205460604455"
+        },
+        {
+          "file": "apps/api/seeds/accounting/account-groups.json",
+          "hash": "765342806599513786"
+        },
+        {
+          "file": "apps/api/seeds/accounting/seed-chart-of-accounts.ts",
+          "hash": "2236410051585231698"
+        },
+        {
+          "file": "apps/api/seeds/accounting/synthetic-accounts.json",
+          "hash": "6136677298166915333"
+        },
+        {
+          "file": "apps/api/seeds/essential-configurations.ts",
+          "hash": "4676249166709254390"
+        },
+        {
+          "file": "apps/api/seeds/initial-admin-users.ts",
+          "hash": "15053550159143236345"
+        },
+        {
+          "file": "apps/api/seeds/onboarding.ts",
+          "hash": "5545655783876617119"
+        },
+        {
+          "file": "apps/api/src/@types/express/index.d.ts",
+          "hash": "5728067911598813327"
+        },
+        {
+          "file": "apps/api/src/admin-roles-api.ts",
+          "hash": "17418893894431375737"
+        },
+        {
           "file": "apps/api/src/common/auth/auth-guard.ts",
           "hash": "10131536223490091633"
         },
@@ -3310,6 +3350,10 @@
           "hash": "18118997006197852251"
         },
         {
+          "file": "apps/api/src/global.d.ts",
+          "hash": "12867868912365789236"
+        },
+        {
           "file": "apps/api/src/instrument.ts",
           "hash": "7189931132766851248"
         },
@@ -3352,6 +3396,14 @@
         {
           "file": "apps/api/src/routes/test-sentry.route.ts",
           "hash": "5072196970338051430"
+        },
+        {
+          "file": "apps/api/src/service-registry.ts",
+          "hash": "12246762907154141670"
+        },
+        {
+          "file": "apps/api/src/storage.ts",
+          "hash": "2783974970626243877"
         },
         {
           "file": "apps/api/src/vite.ts",
