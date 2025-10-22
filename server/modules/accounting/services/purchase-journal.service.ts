@@ -13,15 +13,37 @@
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
 import { getDrizzle } from '../../../common/drizzle';
 import { and, desc, eq, gte, lte, isNotNull, sql } from 'drizzle-orm';
-import { sql as drizzleSql } from 'drizzle-orm';
-import { invoices, invoiceItems, invoiceDetails, invoicePayments, companies, users, ledgerEntries, ledgerLines, insertInvoiceSchema, insertInvoiceDetailSchema } from '../../../../shared/schema';
+import { invoices, invoiceItems, invoiceDetails, invoicePayments, companies, users, ledgerEntries, ledgerLines } from '../../../../shared/schema';
+import { crm_companies } from '../../crm/schema';
 
 import { v4 as uuidv4 } from 'uuid';
-import { VATCategory, determineVATCategory } from '../types/vat-categories';
 
 import { accountingCacheService } from './accounting-cache.service';
 import { accountingQueueService } from './accounting-queue.service';
 import { log } from '../../../vite';
+import { createModuleLogger } from '../../../common/logger/loki-logger';
+
+// Import all type definitions
+import type {
+  SupplierData,
+  InvoiceItemData,
+  PaymentTerms,
+  TaxRates,
+  InvoiceData,
+  PaymentData,
+  PaymentRecord,
+  InvoiceWithLines,
+  SupplierInvoiceListResponse,
+  InvoiceValidationResult,
+  PurchaseJournalReport,
+  GeneratePurchaseJournalParams,
+  SupplierStatementParams,
+  SupplierStatementResponse,
+  QueryCondition,
+  PurchaseJournalRow
+} from '../types/purchase-journal-types';
+
+const logger = createModuleLogger('purchase-journal');
 
 /**
  * Purchase invoice data interface for entry creation
@@ -130,13 +152,13 @@ export class PurchaseJournalService {
     endDate?: Date,
     supplierId?: string,
     status?: string
-  ): Promise<{ data: any[]; total: number; page: number; limit: number }> {
+  ): Promise<SupplierInvoiceListResponse> {
     try {
       const db = getDrizzle();
       const offset = (page - 1) * limit;
       
-      // Build where conditions
-      const conditions: any[] = [
+      // Build where conditions using SQL builders (not QueryCondition interface)
+      const conditions = [
         eq(invoices.companyId, companyId),
         eq(invoices.type, 'PURCHASE') // Filter for purchase invoices
       ];
@@ -202,7 +224,7 @@ export class PurchaseJournalService {
    * @param companyId Company ID
    * @returns Supplier invoice or null
    */
-  public async getSupplierInvoice(invoiceId: string, companyId: string): Promise<any | null> {
+  public async getSupplierInvoice(invoiceId: string, companyId: string): Promise<InvoiceWithLines | null> {
     try {
       const db = getDrizzle();
 
@@ -265,11 +287,11 @@ export class PurchaseJournalService {
    * @returns Created invoice ID
    */
   public async recordSupplierInvoice(
-    invoiceData: any,
-    supplier: any,
-    items: any[],
-    taxRates: any,
-    paymentTerms: any,
+    invoiceData: InvoiceData,
+    supplier: SupplierData,
+    items: InvoiceItemData[],
+    taxRates: TaxRates,
+    paymentTerms: PaymentTerms,
     notes?: string
   ): Promise<string> {
     console.log('=== START recordSupplierInvoice ===');
@@ -287,7 +309,7 @@ export class PurchaseJournalService {
         console.log('dueDate:', invoiceData.dueDate, 'type:', typeof invoiceData.dueDate);
       }
 
-      const drizzleDb = getDrizzle();
+      const _drizzleDb = getDrizzle();
       console.log('Drizzle instance obtained');
 
       const invoiceId = invoiceData.id || uuidv4();
@@ -364,55 +386,63 @@ export class PurchaseJournalService {
           paymentDueDays: paymentTerms?.dueDays || 30
         });
 
-        console.log('Successfully recorded purchase invoice with supplier details (OMFP 2634/2015 compliance)');
+        logger.info('Successfully recorded purchase invoice with supplier details (OMFP 2634/2015 compliance)', {
+          context: { invoiceId: actualInvoiceId }
+        });
+
+        // GENERARE AUTOMATĂ NOTĂ CONTABILĂ (Integrare în contabilitate)
+        logger.info('Generating automatic accounting entry for purchase invoice', {
+          context: { invoiceId: actualInvoiceId }
+        });
+        try {
+          const entry = await this.createPurchaseInvoiceEntry({
+            companyId: invoiceData.companyId,
+            franchiseId: invoiceData.franchiseId,
+            invoiceNumber: invoiceData.invoiceNumber,
+            invoiceId: actualInvoiceId,
+            supplierId: supplier.id,
+            supplierName: supplier.name,
+            amount: grossAmount,
+            netAmount,
+            vatAmount,
+            vatRate: taxRates.standard || 19,
+            currency: invoiceData.currency || 'RON',
+            exchangeRate: invoiceData.exchangeRate || 1,
+            issueDate: new Date(invoiceData.issueDate),
+            dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : new Date(),
+            description: notes || `Purchase invoice ${invoiceData.invoiceNumber} from ${supplier.name}`,
+            userId: invoiceData.userId,
+            expenseType: invoiceData.expenseType || 'services',
+            deductibleVat: invoiceData.deductibleVat !== false
+          });
+
+          // Actualizare factură cu ledgerEntryId folosind Drizzle ORM
+          await db.update(invoices)
+            .set({
+              ledgerEntryId: entry.id,
+              isValidated: true,
+              validatedAt: new Date()
+            })
+            .where(eq(invoices.id, actualInvoiceId));
+          logger.info('Invoice validated and linked to ledger entry', {
+            context: { invoiceId: actualInvoiceId, ledgerEntryId: entry.id }
+          });
+        } catch (accountingError) {
+          logger.error('Warning: Failed to generate automatic accounting entry', {
+            error: accountingError,
+            context: { invoiceId: actualInvoiceId }
+          });
+          // Nu aruncăm eroare - înregistrarea facturii a reușit, doar nota contabilă a eșuat
+        }
+
         return actualInvoiceId;
 
       } catch (error) {
-        console.error('Error recording supplier invoice:', error);
+        logger.error('Error recording supplier invoice', { error });
         throw new Error(`Failed to record supplier invoice: ${(error as Error).message}`);
       }
-
-      // GENERARE AUTOMATĂ NOTĂ CONTABILĂ (Integrare în contabilitate)
-      console.log('Generating automatic accounting entry for purchase invoice...');
-      try {
-        const entry = await this.createPurchaseInvoiceEntry({
-          companyId: invoiceData.companyId,
-          franchiseId: invoiceData.franchiseId,
-          invoiceNumber: invoiceData.invoiceNumber,
-          invoiceId: actualInvoiceId,
-          supplierId: supplier.id,
-          supplierName: supplier.name,
-          amount: grossAmount,
-          netAmount,
-          vatAmount,
-          vatRate: taxRates.standard || 19,
-          currency: invoiceData.currency || 'RON',
-          exchangeRate: invoiceData.exchangeRate || 1,
-          issueDate: new Date(invoiceData.issueDate),
-          dueDate: invoiceData.dueDate ? new Date(invoiceData.dueDate) : new Date(),
-          description: notes || `Purchase invoice ${invoiceData.invoiceNumber} from ${supplier.name}`,
-          userId: invoiceData.userId,
-          expenseType: invoiceData.expenseType || 'services',
-          deductibleVat: invoiceData.deductibleVat !== false
-        });
-
-        // Actualizare factură cu ledgerEntryId folosind Drizzle ORM
-        await db.update(invoices)
-          .set({
-            ledgerEntryId: entry.id,
-            isValidated: true,
-            validatedAt: new Date()
-          })
-          .where(eq(invoices.id, actualInvoiceId));
-        console.log('Invoice validated and linked to ledger entry:', entry.id);
-      } catch (accountingError) {
-        console.error('Warning: Failed to generate automatic accounting entry:', accountingError);
-        // Nu aruncăm eroare - înregistrarea facturii a reușit, doar nota contabilă a eșuat
-      }
-
-      return actualInvoiceId;
     } catch (error) {
-      console.error('Error recording supplier invoice:', error);
+      logger.error('Error recording supplier invoice (outer)', { error });
       throw new Error(`Failed to record supplier invoice: ${(error as Error).message}`);
     }
   }
@@ -427,8 +457,8 @@ export class PurchaseJournalService {
       companyId,
       franchiseId,
       invoiceNumber,
-      invoiceId,
-      supplierId,
+      invoiceId: _invoiceId,
+      supplierId: _supplierId,
       supplierName,
       amount,
       netAmount,
@@ -436,8 +466,8 @@ export class PurchaseJournalService {
       vatRate,
       currency,
       exchangeRate,
-      issueDate,
-      dueDate,
+      issueDate: _issueDate,
+      dueDate: _dueDate,
       description,
       userId,
       expenseType,
@@ -536,7 +566,7 @@ export class PurchaseJournalService {
    * @param invoiceData Purchase invoice data
    * @returns Validation result
    */
-  public validatePurchaseInvoice(invoiceData: any): { valid: boolean; errors: string[] } {
+  public validatePurchaseInvoice(invoiceData: InvoiceData): InvoiceValidationResult {
     const errors: string[] = [];
     
     // Check required fields according to Romanian standards
@@ -693,30 +723,40 @@ export class PurchaseJournalService {
 
         if (supplierId) {
           try {
-            // Use raw SQL query to get supplier data
-            const supplierQuery = `
-              SELECT id, name, cui, registration_number, address, city, postal_code, country
-              FROM crm_companies
-              WHERE id = $1 AND is_supplier = true
-              LIMIT 1
-            `;
-            const supplierResult = await db.$client.unsafe(supplierQuery, [supplierId]);
+            // Use Drizzle ORM to get supplier data
+            const supplierResult = await db
+              .select({
+                id: crm_companies.id,
+                name: crm_companies.name,
+                cui: crm_companies.cui,
+                registrationNumber: crm_companies.registrationNumber,
+                address: crm_companies.address,
+                city: crm_companies.city,
+                postalCode: crm_companies.postalCode,
+                country: crm_companies.country
+              })
+              .from(crm_companies)
+              .where(and(eq(crm_companies.id, supplierId), eq(crm_companies.isSupplier, true)))
+              .limit(1);
 
             if (supplierResult.length > 0) {
               const supplier = supplierResult[0];
               supplierData = {
                 id: supplier.id,
                 name: supplier.name,
-                fiscalCode: supplier.cui,
-                registrationNumber: supplier.registration_number,
-                address: supplier.address,
-                city: supplier.city,
-                county: supplier.postal_code, // Using postal_code as county approximation
-                country: supplier.country
+                fiscalCode: supplier.cui || '',
+                registrationNumber: supplier.registrationNumber || '',
+                address: supplier.address || '',
+                city: supplier.city || '',
+                county: supplier.postalCode || '', // Using postal_code as county approximation
+                country: supplier.country || ''
               };
             }
           } catch (error) {
-            console.warn(`Could not find supplier ${supplierId} in crm_companies:`, error);
+            logger.error('Could not find supplier in crm_companies', {
+              error,
+              context: { supplierId }
+            });
           }
         }
 
@@ -768,7 +808,7 @@ export class PurchaseJournalService {
    * PARTEA 2 - PLĂȚI ȘI TRANSFER TVA
    */
   
-  public async recordSupplierPayment(paymentData: any): Promise<string> {
+  public async recordSupplierPayment(paymentData: PaymentData): Promise<string> {
     const db = getDrizzle();
     const [invoice] = await db.select().from(invoices).where(eq(invoices.id, paymentData.invoiceId)).limit(1);
     if (!invoice) throw new Error('Invoice not found');
@@ -797,7 +837,7 @@ export class PurchaseJournalService {
     return payment.id;
   }
   
-  public async transferDeferredVATForPurchases(invoiceId: string, paymentAmount: number, paymentDate: Date, userId?: string): Promise<LedgerEntryData | null> {
+  public async transferDeferredVATForPurchases(invoiceId: string, paymentAmount: number, _paymentDate: Date, userId?: string): Promise<LedgerEntryData | null> {
     const db = getDrizzle();
     const [invoice] = await db.select().from(invoices).where(eq(invoices.id, invoiceId)).limit(1);
     if (!invoice || !invoice.isCashVAT) return null;
@@ -829,7 +869,7 @@ export class PurchaseJournalService {
    * Generare Jurnal de Cumpărări COMPLET conform OMFP 2634/2015
    * Similar cu generateSalesJournal dar adaptat pentru achiziții
    */
-  public async generatePurchaseJournal(params: any): Promise<any> {
+  public async generatePurchaseJournal(params: GeneratePurchaseJournalParams): Promise<PurchaseJournalReport> {
     const { companyId, periodStart, periodEnd } = params;
     const db = getDrizzle();
     
@@ -863,7 +903,7 @@ export class PurchaseJournalService {
         const totals = { base: categoryLines.reduce((s, l) => s + Number(l.netAmount), 0), vat: categoryLines.reduce((s, l) => s + Number(l.vatAmount), 0) };
         
         // Construire rând
-        const row: any = {
+        const row: PurchaseJournalRow = {
           rowNumber: rowNumber++,
           date: invoice.issueDate,
           documentNumber: invoice.invoiceNumber,
@@ -952,7 +992,7 @@ export class PurchaseJournalService {
   /**
    * PAS 8: Adaugă rânduri pentru plăți furnizori (TVA la încasare)
    */
-  private async addSupplierPaymentRows(db: any, periodStart: Date, periodEnd: Date, companyId: string, existingRows: any[]): Promise<any[]> {
+  private async addSupplierPaymentRows(db: ReturnType<typeof getDrizzle>, periodStart: Date, periodEnd: Date, companyId: string, _existingRows: PurchaseJournalRow[]): Promise<PurchaseJournalRow[]> {
     try {
       const paymentsInPeriod = await db.select({
         paymentId: invoicePayments.id,
@@ -1006,7 +1046,13 @@ export class PurchaseJournalService {
   /**
    * PAS 9: Validare jurnal cu balanța contabilă
    */
-  private async validatePurchaseJournalWithAccounts(db: any, companyId: string, periodStart: Date, periodEnd: Date, totals: any): Promise<any> {
+  private async validatePurchaseJournalWithAccounts(
+    db: ReturnType<typeof getDrizzle>, 
+    companyId: string, 
+    periodStart: Date, 
+    _periodEnd: Date, 
+    totals: Record<string, number>
+  ): Promise<Record<string, unknown>> {
     try {
       const year = periodStart.getFullYear();
       const month = periodStart.getMonth() + 1;
@@ -1037,7 +1083,7 @@ export class PurchaseJournalService {
     }
   }
   
-  private async getAccountBalancePurchase(db: any, companyId: string, accountCode: string, year: number, month: number): Promise<number> {
+  private async getAccountBalancePurchase(db: ReturnType<typeof getDrizzle>, companyId: string, accountCode: string, year: number, month: number): Promise<number> {
     try {
       const result = await db.select().from(ledgerLines)
         .innerJoin(ledgerEntries, eq(ledgerLines.ledgerEntryId, ledgerEntries.id))
@@ -1055,13 +1101,13 @@ export class PurchaseJournalService {
         balance += accountCode === '401' ? (credit - debit) : (debit - credit);
       }
       return balance;
-    } catch (error) {
+    } catch (_error) {
       return 0;
     }
   }
   
-  private groupLinesByCategory(lines: any[], supplierDetails: any): Map<string, any[]> {
-    const grouped = new Map<string, any[]>();
+  private groupLinesByCategory(lines: InvoiceItemData[], supplierDetails: SupplierData): Map<string, InvoiceItemData[]> {
+    const grouped = new Map<string, InvoiceItemData[]>();
     for (const line of lines) {
       let category = line.vatCategory || 'STANDARD_19';
       if (!line.vatCategory) {
@@ -1071,7 +1117,8 @@ export class PurchaseJournalService {
         else if (line.vatRate === 0) category = supplierDetails?.partnerCountry !== 'Romania' ? 'EXEMPT_WITH_CREDIT' : 'NOT_SUBJECT';
       }
       if (!grouped.has(category)) grouped.set(category, []);
-      grouped.get(category)!.push(line);
+      const categoryLines = grouped.get(category);
+      if (categoryLines) categoryLines.push(line);
     }
     return grouped;
   }
@@ -1095,11 +1142,11 @@ export class PurchaseJournalService {
    */
   public async updateSupplierInvoice(
     invoiceId: string,
-    invoiceData: any,
-    supplier: any,
-    items: any[],
-    taxRates: any,
-    paymentTerms: any,
+    invoiceData: InvoiceData,
+    supplier: SupplierData,
+    items: InvoiceItemData[],
+    _taxRates: TaxRates,
+    paymentTerms: PaymentTerms,
     notes?: string
   ): Promise<string> {
     try {
@@ -1184,7 +1231,7 @@ export class PurchaseJournalService {
    * @param companyId Company ID
    * @returns Success status
    */
-  public async deleteSupplierInvoice(invoiceId: string, companyId: string): Promise<boolean> {
+  public async deleteSupplierInvoice(invoiceId: string, _companyId: string): Promise<boolean> {
     try {
       const db = getDrizzle();
 
@@ -1207,7 +1254,7 @@ export class PurchaseJournalService {
    * @param paymentData Payment data
    * @returns Created payment ID
    */
-  public async recordInvoicePayment(paymentData: any): Promise<string> {
+  public async recordInvoicePayment(paymentData: PaymentData): Promise<string> {
     try {
       const db = getDrizzle();
 
@@ -1236,7 +1283,7 @@ export class PurchaseJournalService {
    * @param companyId Company ID
    * @returns Payment data
    */
-  public async getInvoicePayment(paymentId: string, companyId: string): Promise<any> {
+  public async getInvoicePayment(paymentId: string, companyId: string): Promise<PaymentRecord | null> {
     try {
       const db = getDrizzle();
 
@@ -1263,7 +1310,7 @@ export class PurchaseJournalService {
    * @param companyId Company ID
    * @returns Array of payments
    */
-  public async getInvoicePayments(invoiceId: string, companyId: string): Promise<any[]> {
+  public async getInvoicePayments(invoiceId: string, companyId: string): Promise<PaymentRecord[]> {
     try {
       const db = getDrizzle();
 
@@ -1313,7 +1360,7 @@ export class PurchaseJournalService {
    * @param data Ledger entry data
    * @returns Created entry
    */
-  public async createPurchaseLedgerEntry(data: any): Promise<any> {
+  public async createPurchaseLedgerEntry(data: LedgerEntryData): Promise<LedgerEntryData> {
     try {
       return await this.createPurchaseInvoiceEntry(data);
     } catch (error) {
@@ -1329,9 +1376,9 @@ export class PurchaseJournalService {
    * @param companyId Company ID
    * @returns Ledger entry
    */
-  public async getPurchaseLedgerEntry(entryId: string, companyId: string): Promise<any> {
+  public async getPurchaseLedgerEntry(_entryId: string, _companyId: string): Promise<LedgerEntryData | null> {
     try {
-      const db = getDrizzle();
+      const _db = getDrizzle();
 
       // This would need to be implemented based on the actual ledger entry table
       // For now, return a placeholder
@@ -1354,12 +1401,12 @@ export class PurchaseJournalService {
    * @returns Array of ledger entries
    */
   public async getPurchaseLedgerEntries(
-    companyId: string,
-    page?: number,
-    limit?: number,
-    startDate?: Date,
-    endDate?: Date
-  ): Promise<any[]> {
+    _companyId: string,
+    _page?: number,
+    _limit?: number,
+    _startDate?: Date,
+    _endDate?: Date
+  ): Promise<LedgerEntryData[]> {
     try {
       // This would need to be implemented based on the actual ledger entry table
       // For now, return empty array
@@ -1378,21 +1425,37 @@ export class PurchaseJournalService {
    * @param companyId Company ID
    * @returns Supplier data
    */
-  public async getSupplier(supplierId: string, companyId: string): Promise<any> {
+  public async getSupplier(supplierId: string, companyId: string): Promise<SupplierData | null> {
     try {
       const db = getDrizzle();
 
-      const supplier = await db.$client.unsafe(`
-        SELECT id, name, fiscal_code as "fiscalCode", registration_number as "registrationNumber",
-               address, city, county, country
-        FROM crm_companies
-        WHERE id = $1 AND company_id = $2 AND is_supplier = true
-        LIMIT 1
-      `, [supplierId, companyId]);
+      const supplierResult = await db
+        .select({
+          id: crm_companies.id,
+          name: crm_companies.name,
+          fiscalCode: crm_companies.cui,
+          registrationNumber: crm_companies.registrationNumber,
+          address: crm_companies.address,
+          city: crm_companies.city,
+          county: crm_companies.postalCode,
+          country: crm_companies.country
+        })
+        .from(crm_companies)
+        .where(
+          and(
+            eq(crm_companies.id, supplierId),
+            eq(crm_companies.companyId, companyId),
+            eq(crm_companies.isSupplier, true)
+          )
+        )
+        .limit(1);
 
-      return supplier[0] || null;
+      return supplierResult[0] || null;
     } catch (error) {
-      console.error('Error getting supplier:', error);
+      logger.error('Error getting supplier', {
+        error,
+        context: { supplierId, companyId }
+      });
       throw new Error(`Failed to get supplier: ${(error as Error).message}`);
     }
   }
@@ -1411,7 +1474,7 @@ export class PurchaseJournalService {
     companyId: string,
     startDate: Date,
     endDate: Date
-  ): Promise<any> {
+  ): Promise<SupplierStatementResponse> {
     try {
       const db = getDrizzle();
 
@@ -1452,15 +1515,19 @@ export class PurchaseJournalService {
       return {
         supplier,
         period: { startDate, endDate },
-        invoices: invoiceList,
-        payments,
+        transactions: [],
         summary: {
-          totalInvoiced: invoiceList.reduce((sum: number, inv: any) => sum + Number(inv.amount), 0),
-          totalPaid: payments.reduce((sum: number, pay: any) => sum + Number(pay.amount), 0)
+          openingBalance: 0,
+          totalInvoiced: invoiceList.reduce((sum: number, inv: InvoiceWithLines) => sum + Number(inv.amount), 0),
+          totalPaid: payments.reduce((sum: number, pay: PaymentRecord) => sum + Number(pay.amount), 0),
+          closingBalance: 0
         }
       };
     } catch (error) {
-      console.error('Error generating supplier account statement:', error);
+      logger.error('Error generating supplier account statement', {
+        error,
+        context: { supplierId, companyId }
+      });
       throw new Error(`Failed to generate supplier account statement: ${(error as Error).message}`);
     }
   }
@@ -1477,7 +1544,7 @@ export class PurchaseJournalService {
     supplierId: string,
     companyId: string,
     asOfDate: Date
-  ): Promise<any> {
+  ): Promise<{ balance: number; totalInvoiced: number; totalPaid: number }> {
     try {
       const db = getDrizzle();
 
@@ -1511,8 +1578,8 @@ export class PurchaseJournalService {
           sql`${companyId}`
         ));
 
-      const totalInvoiced = invoiceList.reduce((sum: number, inv: any) => sum + Number(inv.amount), 0);
-      const totalPaid = payments.reduce((sum: number, pay: any) => sum + Number(pay.amount), 0);
+      const totalInvoiced = invoiceList.reduce((sum: number, inv: InvoiceWithLines) => sum + Number(inv.amount), 0);
+      const totalPaid = payments.reduce((sum: number, pay: PaymentRecord) => sum + Number(pay.amount), 0);
       const balance = totalInvoiced - totalPaid;
 
       return {
@@ -1544,9 +1611,9 @@ export class PurchaseJournalService {
    * @returns Purchase journal report
    */
   public async generatePurchaseJournalCached(
-    params: any,
+    params: GeneratePurchaseJournalParams,
     useCache: boolean = true
-  ): Promise<any> {
+  ): Promise<PurchaseJournalReport> {
     // Build cache key
     const periodStart = params.periodStart.toISOString().split('T')[0];
     const periodEnd = params.periodEnd.toISOString().split('T')[0];
@@ -1596,7 +1663,7 @@ export class PurchaseJournalService {
    * @returns Job ID for tracking
    */
   public async generatePurchaseJournalAsync(
-    params: any,
+    params: GeneratePurchaseJournalParams,
     userId: string
   ): Promise<{ jobId: string; message: string }> {
     try {
@@ -1613,12 +1680,14 @@ export class PurchaseJournalService {
         userId
       });
       
+      const jobId = job.id || 'unknown';
       return {
-        jobId: job.id!,
-        message: `Purchase journal generation queued. Job ID: ${job.id}`
+        jobId,
+        message: `Purchase journal generation queued. Job ID: ${jobId}`
       };
-    } catch (error: any) {
-      log(`Error queueing purchase journal generation: ${error.message}`, 'purchase-journal-error');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      log(`Error queueing purchase journal generation: ${errorMessage}`, 'purchase-journal-error');
       throw error;
     }
   }
@@ -1654,8 +1723,9 @@ export class PurchaseJournalService {
         await accountingCacheService.invalidatePurchaseJournal(companyId);
         log(`Invalidated all purchase journal cache for ${companyId}`, 'purchase-journal-cache');
       }
-    } catch (error: any) {
-      log(`Error invalidating purchase journal cache: ${error.message}`, 'purchase-journal-error');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      log(`Error invalidating purchase journal cache: ${errorMessage}`, 'purchase-journal-error');
       // Don't throw - cache invalidation failures shouldn't break the main operation
     }
   }
