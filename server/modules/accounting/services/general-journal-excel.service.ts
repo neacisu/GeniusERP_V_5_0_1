@@ -12,47 +12,24 @@ import { getDrizzle } from '../../../common/drizzle';
 import { eq, and, gte, lte, inArray, ne, sql as drizzleSql } from 'drizzle-orm';
 import { ledgerEntries, ledgerLines, chartOfAccounts } from '../schema/accounting.schema';
 import { RedisService } from '../../../services/redis.service';
+import { createModuleLogger } from '../../../common/logger/loki-logger';
+import type {
+  ExcelExportOptions,
+  ExcelJournalEntry,
+  XLSXLibrary,
+  XLSXWorkbook,
+  JournalTypeSummary,
+  AccountSummary
+} from '../types/general-journal-excel-types';
 
-// Dynamic import pentru XLSX (pattern existent în proiect)
-let XLSX: any;
+const logger = createModuleLogger('general-journal-excel');
+
+// Dynamic import pentru XLSX cu type safety
+let XLSX: XLSXLibrary | null = null;
 try {
-  XLSX = require('xlsx');
-} catch (e) {
-  console.warn('XLSX not available, Excel export will be disabled');
-}
-
-/**
- * Interface pentru opțiunile de export Excel
- */
-interface ExcelExportOptions {
-  companyId: string;
-  companyName: string;
-  startDate: Date;
-  endDate: Date;
-  journalTypes?: string[];
-  includeReversals?: boolean;
-  responsiblePersonName?: string;
-  includeMetadata?: boolean; // Include foi suplimentare cu metadata
-}
-
-/**
- * Interface pentru datele de export
- */
-interface ExcelJournalEntry {
-  rowNumber: number;
-  journalNumber: string;
-  entryDate: string;
-  documentDate: string;
-  documentType: string;
-  documentNumber: string;
-  description: string;
-  accountCode: string;
-  accountName: string;
-  debitAmount: number;
-  creditAmount: number;
-  amount: number;
-  journalType: string;
-  entryId: string;
+  XLSX = require('xlsx') as XLSXLibrary;
+} catch (_e) {
+  logger.warn('XLSX not available, Excel export will be disabled');
 }
 
 /**
@@ -100,6 +77,9 @@ export class GeneralJournalExcelService {
       throw new Error('XLSX nu este disponibil. Excel export este dezactivat.');
     }
 
+    // Referință non-null pentru metodele private (XLSX verificat mai sus)
+    const xlsx = XLSX;
+
     const reportsDir = path.join(process.cwd(), 'reports', 'general-journals-excel');
     if (!fs.existsSync(reportsDir)) {
       fs.mkdirSync(reportsDir, { recursive: true });
@@ -112,21 +92,23 @@ export class GeneralJournalExcelService {
     const entries = await this.getJournalEntriesForExcel(options);
 
     // Creează workbook cu XLSX
-    const workbook = XLSX.utils.book_new();
+    const workbook = xlsx.utils.book_new();
 
     // Creează foaia principală
-    this.createMainSheetXLSX(workbook, entries, options);
+    this.createMainSheetXLSX(workbook, entries, options, xlsx);
 
     // Creează foi suplimentare dacă este cerut
     if (options.includeMetadata) {
-      this.createSummarySheetXLSX(workbook, entries, options);
-      this.createAccountsSheetXLSX(workbook, entries, options);
+      this.createSummarySheetXLSX(workbook, entries, options, xlsx);
+      this.createAccountsSheetXLSX(workbook, entries, options, xlsx);
     }
 
     // Salvează fișierul
-    XLSX.writeFile(workbook, filePath);
+    xlsx.writeFile(workbook, filePath);
 
-    console.log(`✅ Registru Jurnal Excel generat: ${filePath}`);
+    logger.info('Registru Jurnal Excel generat', { 
+      context: { filePath, companyId: options.companyId, entriesCount: entries.length } 
+    });
     return filePath;
   }
 
@@ -221,7 +203,12 @@ export class GeneralJournalExcelService {
   /**
    * Creează foaia principală cu toate datele (XLSX)
    */
-  private createMainSheetXLSX(workbook: any, entries: ExcelJournalEntry[], options: ExcelExportOptions): void {
+  private createMainSheetXLSX(
+    workbook: XLSXWorkbook, 
+    entries: ExcelJournalEntry[], 
+    options: ExcelExportOptions,
+    xlsx: XLSXLibrary
+  ): void {
     // Pregătește datele pentru XLSX (array de obiecte)
     const worksheetData = [
       // Header informații
@@ -290,7 +277,7 @@ export class GeneralJournalExcelService {
     }
 
     // Creează worksheet din date
-    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    const worksheet = xlsx.utils.aoa_to_sheet(worksheetData);
 
     // Setează lățimi coloane (aproximativ)
     worksheet['!cols'] = [
@@ -310,13 +297,18 @@ export class GeneralJournalExcelService {
     ];
 
     // Adaugă la workbook
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Registru Jurnal');
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Registru Jurnal');
   }
 
   /**
    * Creează foaia cu sumarul pe tipuri de jurnal (XLSX)
    */
-  private createSummarySheetXLSX(workbook: any, entries: ExcelJournalEntry[], options: ExcelExportOptions): void {
+  private createSummarySheetXLSX(
+    workbook: XLSXWorkbook, 
+    entries: ExcelJournalEntry[], 
+    options: ExcelExportOptions,
+    xlsx: XLSXLibrary
+  ): void {
     // Calculează sumarul
     const summary = entries.reduce((acc, entry) => {
       if (!acc[entry.journalType]) {
@@ -330,7 +322,7 @@ export class GeneralJournalExcelService {
       acc[entry.journalType].totalDebit += entry.debitAmount;
       acc[entry.journalType].totalCredit += entry.creditAmount;
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, JournalTypeSummary>);
 
     // Pregătește datele pentru XLSX
     const summaryData = [
@@ -347,7 +339,7 @@ export class GeneralJournalExcelService {
       ])
     ];
 
-    const worksheet = XLSX.utils.aoa_to_sheet(summaryData);
+    const worksheet = xlsx.utils.aoa_to_sheet(summaryData);
     
     // Setează lățimi coloane
     worksheet['!cols'] = [
@@ -358,13 +350,18 @@ export class GeneralJournalExcelService {
       { wch: 15 }
     ];
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sumar pe Jurnale');
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Sumar pe Jurnale');
   }
 
   /**
    * Creează foaia cu planul de conturi utilizat (XLSX)
    */
-  private createAccountsSheetXLSX(workbook: any, entries: ExcelJournalEntry[], options: ExcelExportOptions): void {
+  private createAccountsSheetXLSX(
+    workbook: XLSXWorkbook, 
+    entries: ExcelJournalEntry[], 
+    options: ExcelExportOptions,
+    xlsx: XLSXLibrary
+  ): void {
     // Calculează utilizarea conturilor
     const accounts = entries.reduce((acc, entry) => {
       if (!acc[entry.accountCode]) {
@@ -379,7 +376,7 @@ export class GeneralJournalExcelService {
       acc[entry.accountCode].totalDebit += entry.debitAmount;
       acc[entry.accountCode].totalCredit += entry.creditAmount;
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, AccountSummary>);
 
     // Pregătește datele pentru XLSX
     const accountsData = [
@@ -399,7 +396,7 @@ export class GeneralJournalExcelService {
         ])
     ];
 
-    const worksheet = XLSX.utils.aoa_to_sheet(accountsData);
+    const worksheet = xlsx.utils.aoa_to_sheet(accountsData);
     
     // Setează lățimi coloane
     worksheet['!cols'] = [
@@ -410,7 +407,7 @@ export class GeneralJournalExcelService {
       { wch: 15 }
     ];
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Plan de Conturi');
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Plan de Conturi');
   }
 
   // Nu mai e nevoie de createJournalTypesSheet - informația e în main sheet
