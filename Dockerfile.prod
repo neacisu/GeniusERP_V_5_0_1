@@ -8,17 +8,20 @@ RUN apk add --no-cache python3 make g++ git postgresql-client redis \
     cairo cairo-dev pango pango-dev pixman pixman-dev \
     jpeg-dev giflib-dev librsvg-dev
 
-# Copiem fișierele package*.json
-COPY package*.json ./
+# Instalăm pnpm
+RUN npm install -g pnpm@latest
+
+# Copiem fișierele de dependințe
+COPY package.json pnpm-lock.yaml .npmrc pnpm-workspace.yaml ./
 
 # Instalăm dependențele
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 
 # Copiem tot codul sursă, inclusiv configurările și credențialele
 COPY . .
 
 # Construim aplicația pentru producție cu NX
-RUN npm run build
+RUN pnpm run build
 
 # Imaginea finală pentru producție
 FROM node:24.9.0-alpine
@@ -30,9 +33,12 @@ WORKDIR /app
 RUN apk add --no-cache postgresql-client redis curl busybox-extras \
     cairo pango pixman jpeg giflib librsvg python3 py3-pip dcron
 
+# Instalăm pnpm
+RUN npm install -g pnpm@latest
+
 # Instalăm doar dependențele de producție
-COPY package*.json ./
-RUN npm ci --only=production
+COPY package.json pnpm-lock.yaml .npmrc pnpm-workspace.yaml ./
+RUN pnpm install --prod --frozen-lockfile
 
 # Copiem artefactele de build din etapa anterioară (NX structure)
 COPY --from=builder /app/dist ./dist

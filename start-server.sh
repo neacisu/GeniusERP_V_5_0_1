@@ -21,4 +21,4 @@ echo ""
 
 # Pornirea serverului
 echo "🚀 Pornire server în modul ${NODE_ENV}..."
-npm run dev
+pnpm run dev

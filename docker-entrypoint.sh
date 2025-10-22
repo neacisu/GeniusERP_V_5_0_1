@@ -118,7 +118,7 @@ echo "Verificăm existența fișierelor de configurare..."
 # Rulăm migrările bazei de date dacă e necesar
 if [ "$RUN_MIGRATIONS" = "true" ]; then
   echo "Rulăm migrările bazei de date..."
-  npm run db:push
+  pnpm run db:push
 fi
 
 # ================================================================================================

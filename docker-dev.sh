@@ -12,7 +12,7 @@ show_help() {
     echo "  logs       - Arată logurile aplicației în timp real (Ctrl+C pentru a ieși)"
     echo "  ps         - Arată statusul containerelor"
     echo "  exec       - Intră în shell-ul containerului aplicației"
-    echo "  npm [cmd]  - Rulează o comandă npm în containerul aplicației"
+    echo "  pnpm [cmd] - Rulează o comandă pnpm în containerul aplicației"
     echo "  migrate    - Rulează migrările bazei de date"
     echo "  build      - Reconstruiește containerul aplicației"
     echo "  rebuild    - Reconstruiește complet toate containerele (atenție: șterge datele din volumes)"
@@ -45,18 +45,18 @@ case "$1" in
         echo "Intru în shell-ul containerului aplicației..."
         docker-compose exec app sh
         ;;
-    npm)
+    pnpm)
         if [ -z "$2" ]; then
-            echo "Specificați comanda npm pe care doriți să o rulați, de exemplu: ./docker-dev.sh npm install"
+            echo "Specificați comanda pnpm pe care doriți să o rulați, de exemplu: ./docker-dev.sh pnpm install"
         else
-            echo "Rulez comanda npm $2 în container..."
-            shift # Eliminăm primul argument (npm)
-            docker-compose exec app npm "$@"
+            echo "Rulez comanda pnpm $2 în container..."
+            shift # Eliminăm primul argument (pnpm)
+            docker-compose exec app pnpm "$@"
         fi
         ;;
     migrate)
         echo "Rulez migrările bazei de date..."
-        docker-compose exec app npm run db:push
+        docker-compose exec app pnpm run db:push
         ;;
     build)
         echo "Reconstruiesc containerul aplicației..."

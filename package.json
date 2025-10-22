@@ -109,6 +109,7 @@
     "lucide-react": "^0.545.0",
     "memorystore": "^1.6.7",
     "multer": "^2.0.2",
+    "nanoid": "^5.1.6",
     "node-cron": "^4.2.1",
     "nx": "^21.6.4",
     "openai": "^6.3.0",

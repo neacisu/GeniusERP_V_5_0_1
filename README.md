@@ -76,10 +76,10 @@ docker-compose up -d
 - Wazuh: https://localhost:9443 (admin/SecretPassword)
 
 # Scanare vulnerabilități
-npm run scan:vulnerabilities
+pnpm run scan:vulnerabilities
 
 # Linting
-npm run lint
+pnpm run lint
 ```
 
 ---
@@ -129,6 +129,7 @@ GeniusERP_V_5/
 ### Prerequisite
 - Docker & Docker Compose
 - Node.js 18+ (pentru development local)
+- pnpm (package manager)
 - Git
 
 ### 1. Clone Repository
@@ -137,7 +138,12 @@ git clone https://github.com/neacisu/GeniusERP_V_5_0_1.git
 cd GeniusERP_V_5_0_1
 ```
 
-### 2. Configurare Environment
+### 2. Instalare pnpm (dacă nu este deja instalat)
+```bash
+npm install -g pnpm@latest
+```
+
+### 3. Configurare Environment
 ```bash
 # Copiază template-ul
 cp .env.template .env
@@ -146,63 +152,63 @@ cp .env.template .env
 nano .env
 ```
 
-### 3. Instalare Dependențe
+### 4. Instalare Dependențe
 ```bash
-npm install
+pnpm install
 ```
 
-### 4. Dezvoltare cu NX
+### 5. Dezvoltare cu NX
 
 **Pornire ambele aplicații (recomandat):**
 ```bash
-npm run dev
+pnpm run dev
 # Sau explicit cu NX:
-nx run-many --target=serve --projects=api,web --parallel
+pnpm nx run-many --target=serve --projects=api,web --parallel
 ```
 
 **Pornire separată:**
 ```bash
 # Doar API (backend)
-npm run dev:api
-# sau: nx serve api
+pnpm run dev:api
+# sau: pnpm nx serve api
 
 # Doar Frontend
-npm run dev:web
-# sau: nx serve web
+pnpm run dev:web
+# sau: pnpm nx serve web
 ```
 
 **Build pentru producție:**
 ```bash
 # Build tot
-npm run build
+pnpm run build
 
 # Build specific
-npm run build:api
-npm run build:web
+pnpm run build:api
+pnpm run build:web
 ```
 
 **Testing:**
 ```bash
 # Rulare teste
-npm test
+pnpm test
 
 # Teste specific
-npm run test:api    # Jest pentru backend
-npm run test:web    # Vitest pentru frontend
+pnpm run test:api    # Jest pentru backend
+pnpm run test:web    # Vitest pentru frontend
 ```
 
 **Linting:**
 ```bash
-npm run lint
-npm run lint:fix
+pnpm run lint
+pnpm run lint:fix
 ```
 
 **Vizualizare graf dependențe:**
 ```bash
-npm run graph
+pnpm run graph
 ```
 
-### 5. Accesare Aplicație
+### 6. Accesare Aplicație
 - **Frontend:** http://localhost:5000
 - **API:** http://localhost:5001
 - **PostgreSQL:** localhost:5433
@@ -257,10 +263,10 @@ GeniusERP_V_5/
 
 ### Development Local
 ```bash
-npm install              # Instalează dependențe
-npm run dev             # Start dev server
-npm run build           # Build production
-npm run db:push         # Apply schema changes
+pnpm install            # Instalează dependențe
+pnpm run dev            # Start dev server
+pnpm run build          # Build production
+pnpm run db:push        # Apply schema changes
 ```
 
 ## 🔐 Variabile de Mediu

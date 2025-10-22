@@ -208,13 +208,13 @@ async function main() {
       log('✅ Configurația TypeScript este validă', 'green');
     } catch (error) {
       log('⚠️  Există încă erori TypeScript, dar configurația este validă', 'yellow');
-      log('   Rulați "npm run check" pentru a vedea erorile rămase', 'yellow');
+      log('   Rulați "pnpm run check" pentru a vedea erorile rămase', 'yellow');
     }
     
     // 7. Recomandări finale
     log('\n📋 Pași următori recomandați:', 'magenta');
     log('1. Reporniți TypeScript server în IDE: Cmd+Shift+P -> "TypeScript: Restart TS Server"', 'blue');
-    log('2. Verificați erorile rămase: npm run check', 'blue');
+    log('2. Verificați erorile rămase: pnpm run check', 'blue');
     log('3. Începeți refactorizarea serviciilor conform documentației', 'blue');
     log('4. Consultați raportul complet: documentation/tsconfig-audit-report-2025.md', 'blue');
     

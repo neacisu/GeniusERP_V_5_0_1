@@ -60,7 +60,7 @@ echo -e "${GREEN}✓ Port $PORT disponibil${NC}"
 # Verifică dacă tsx este instalat
 if ! command -v tsx &> /dev/null; then
   echo -e "${RED}❌ Eroare: tsx nu este instalat${NC}"
-  echo -e "${YELLOW}   Instalează cu: npm install -g tsx${NC}"
+  echo -e "${YELLOW}   Instalează cu: pnpm add -g tsx${NC}"
   exit 1
 fi
 
