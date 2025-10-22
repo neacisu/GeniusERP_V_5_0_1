@@ -1,10 +1,9 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { PurchaseJournalService } from '../services/purchase-journal.service';
 import { PurchaseJournalExportService } from '../services/purchase-journal-export.service';
 import { BaseController } from './base.controller';
 import { AuthenticatedRequest } from '../../../common/middleware/auth-types';
 import { bulkOperationsService } from '../services/bulk-operations.service';
-import { accountingQueueService } from '../services/accounting-queue.service';
 
 /**
  * PurchaseJournalController
@@ -32,10 +31,10 @@ export class PurchaseJournalController extends BaseController {
       const { page, limit } = this.getPaginationParams(req);
       
       // Parse filter parameters
-      const startDate = this.parseDate(req.query.startDate as string);
-      const endDate = this.parseDate(req.query.endDate as string);
-      const supplierId = req.query.supplierId as string;
-      const status = req.query.status as string;
+      const startDate = this.parseDate(req.query['startDate'] as string);
+      const endDate = this.parseDate(req.query['endDate'] as string);
+      const supplierId = req.query['supplierId'] as string;
+      const status = req.query['status'] as string;
       
       return await this.purchaseJournalService.getSupplierInvoices(
         companyId,
@@ -55,7 +54,7 @@ export class PurchaseJournalController extends BaseController {
   async getSupplierInvoice(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const invoiceId = req.params.id;
+      const invoiceId = req.params['id'];
       
       const invoice = await this.purchaseJournalService.getSupplierInvoice(invoiceId, companyId);
       
@@ -71,17 +70,9 @@ export class PurchaseJournalController extends BaseController {
    * Record supplier invoice
    */
   async recordSupplierInvoice(req: AuthenticatedRequest, res: Response): Promise<void> {
-    console.log('=== CONTROLLER START ===');
-    console.log('req.user:', req.user);
-    console.log('req.body keys:', Object.keys(req.body));
-
     await this.handleRequest(req, res, async () => {
-      console.log('Inside handleRequest');
       const companyId = this.getCompanyId(req);
-      console.log('companyId from getCompanyId:', companyId, 'type:', typeof companyId);
-
       const userId = this.getUserId(req);
-      console.log('userId from getUserId:', userId, 'type:', typeof userId);
 
       const {
         invoiceData,
@@ -92,14 +83,9 @@ export class PurchaseJournalController extends BaseController {
         notes
       } = req.body;
 
-      console.log('invoiceData from req.body:', invoiceData);
-      console.log('invoiceData.companyId:', invoiceData.companyId, 'type:', typeof invoiceData.companyId);
-
       // Add company and user information
       invoiceData.companyId = companyId;
       invoiceData.userId = userId;
-
-      console.log('After assignment - invoiceData.companyId:', invoiceData.companyId, 'type:', typeof invoiceData.companyId);
       
       const invoiceId = await this.purchaseJournalService.recordSupplierInvoice(
         invoiceData,
@@ -120,7 +106,7 @@ export class PurchaseJournalController extends BaseController {
   async updateSupplierInvoice(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const invoiceId = req.params.id;
+      const invoiceId = req.params['id'];
       
       // Verify that the invoice exists and belongs to the company
       const existingInvoice = await this.purchaseJournalService.getSupplierInvoice(invoiceId, companyId);
@@ -161,7 +147,7 @@ export class PurchaseJournalController extends BaseController {
   async deleteSupplierInvoice(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const invoiceId = req.params.id;
+      const invoiceId = req.params['id'];
       
       // Verify that the invoice exists and belongs to the company
       const existingInvoice = await this.purchaseJournalService.getSupplierInvoice(invoiceId, companyId);
@@ -183,7 +169,7 @@ export class PurchaseJournalController extends BaseController {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
       const userId = this.getUserId(req);
-      const invoiceId = req.params.id;
+      const invoiceId = req.params['id'];
       
       // Verify that the invoice exists and belongs to the company
       const existingInvoice = await this.purchaseJournalService.getSupplierInvoice(invoiceId, companyId);
@@ -218,7 +204,7 @@ export class PurchaseJournalController extends BaseController {
   async getInvoicePayments(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const invoiceId = req.params.id;
+      const invoiceId = req.params['id'];
       
       // Verify that the invoice exists and belongs to the company
       const existingInvoice = await this.purchaseJournalService.getSupplierInvoice(invoiceId, companyId);
@@ -236,7 +222,7 @@ export class PurchaseJournalController extends BaseController {
   async deleteInvoicePayment(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const paymentId = req.params.id;
+      const paymentId = req.params['id'];
       
       // Verify that the payment exists and belongs to the company
       const existingPayment = await this.purchaseJournalService.getInvoicePayment(paymentId, companyId);
@@ -284,8 +270,8 @@ export class PurchaseJournalController extends BaseController {
       const { page, limit } = this.getPaginationParams(req);
       
       // Parse filter parameters
-      const startDate = this.parseDate(req.query.startDate as string);
-      const endDate = this.parseDate(req.query.endDate as string);
+      const startDate = this.parseDate(req.query['startDate'] as string);
+      const endDate = this.parseDate(req.query['endDate'] as string);
       
       return await this.purchaseJournalService.getPurchaseLedgerEntries(
         companyId,
@@ -303,7 +289,7 @@ export class PurchaseJournalController extends BaseController {
   async getPurchaseLedgerEntry(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const entryId = req.params.id;
+      const entryId = req.params['id'];
       
       const entry = await this.purchaseJournalService.getPurchaseLedgerEntry(entryId, companyId);
       
@@ -321,11 +307,11 @@ export class PurchaseJournalController extends BaseController {
   async getSupplierAccountStatement(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const supplierId = req.params.id;
+      const supplierId = req.params['id'];
       
       // Parse date parameters
-      const startDate = this.parseDate(req.query.startDate as string);
-      const endDate = this.parseDate(req.query.endDate as string) || new Date();
+      const startDate = this.parseDate(req.query['startDate'] as string);
+      const endDate = this.parseDate(req.query['endDate'] as string) || new Date();
       
       if (!startDate) {
         throw { statusCode: 400, message: 'startDate is required' };
@@ -346,10 +332,10 @@ export class PurchaseJournalController extends BaseController {
   async getSupplierBalance(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const supplierId = req.params.id;
+      const supplierId = req.params['id'];
       
       // Parse date parameter
-      const asOfDate = this.parseDate(req.query.asOfDate as string) || new Date();
+      const asOfDate = this.parseDate(req.query['asOfDate'] as string) || new Date();
       
       return await this.purchaseJournalService.getSupplierBalanceAsOf(
         companyId,
@@ -380,8 +366,8 @@ export class PurchaseJournalController extends BaseController {
   async generatePurchaseJournal(req: AuthenticatedRequest, res: Response): Promise<void> {
     await this.handleRequest(req, res, async () => {
       const companyId = this.getCompanyId(req);
-      const periodStart = this.parseDate(req.query.periodStart as string);
-      const periodEnd = this.parseDate(req.query.periodEnd as string);
+      const periodStart = this.parseDate(req.query['periodStart'] as string);
+      const periodEnd = this.parseDate(req.query['periodEnd'] as string);
 
       if (!periodStart || !periodEnd) {
         throw { statusCode: 400, message: 'periodStart and periodEnd required' };
@@ -396,8 +382,8 @@ export class PurchaseJournalController extends BaseController {
   async exportPurchaseJournalExcel(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const companyId = this.getCompanyId(req);
-      const periodStart = this.parseDate(req.query.periodStart as string);
-      const periodEnd = this.parseDate(req.query.periodEnd as string);
+      const periodStart = this.parseDate(req.query['periodStart'] as string);
+      const periodEnd = this.parseDate(req.query['periodEnd'] as string);
       
       if (!periodStart || !periodEnd) {
         res.status(400).json({ error: 'periodStart and periodEnd required' });
@@ -413,7 +399,7 @@ export class PurchaseJournalController extends BaseController {
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       res.send(excelBuffer);
-    } catch (error) {
+    } catch (_error) {
       res.status(500).json({ error: 'Failed to export' });
     }
   }
@@ -421,8 +407,8 @@ export class PurchaseJournalController extends BaseController {
   async exportPurchaseJournalPDF(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const companyId = this.getCompanyId(req);
-      const periodStart = this.parseDate(req.query.periodStart as string);
-      const periodEnd = this.parseDate(req.query.periodEnd as string);
+      const periodStart = this.parseDate(req.query['periodStart'] as string);
+      const periodEnd = this.parseDate(req.query['periodEnd'] as string);
       
       if (!periodStart || !periodEnd) {
         res.status(400).json({ error: 'periodStart and periodEnd required' });
@@ -438,7 +424,7 @@ export class PurchaseJournalController extends BaseController {
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       res.send(pdfBuffer);
-    } catch (error) {
+    } catch (_error) {
       res.status(500).json({ error: 'Failed to export' });
     }
   }
