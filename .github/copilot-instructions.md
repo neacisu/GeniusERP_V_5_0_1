@@ -69,6 +69,38 @@ router.get('/resource',
 }
 ```
 
+**TypeScript Strict Mode Compliance:**
+
+This project uses `noPropertyAccessFromIndexSignature: true` in `tsconfig.json`. This means:
+
+❌ **WRONG - Will cause TS4111 errors:**
+```typescript
+const companyId = req.user.companyId;        // Error if companyId is optional
+const value = req.params.companyId;          // Error - params is index signature
+const query = req.query.fiscalYear;          // Error - query is index signature
+```
+
+✅ **CORRECT - Use bracket notation for optional properties and index signatures:**
+```typescript
+// For optional properties from JwtPayload
+const companyId = req.user?.['companyId'];
+
+// For req.params (always index signature)
+const companyId = req.params['companyId'];
+
+// For req.query (always index signature)
+const fiscalYear = req.query['fiscalYear'];
+
+// For req.body properties that might be optional
+const value = req.body['optionalProperty'];
+```
+
+**When to use bracket notation:**
+1. All `req.params.*` access
+2. All `req.query.*` access
+3. Optional properties from `JwtPayload` (companyId, email, etc.)
+4. Any property that TypeScript flags with TS4111 error
+
 ### 4. API Route Standards
 
 **URL pattern**: `/api/{module}/{resource}` (NO `/api/v1/` prefix)
@@ -288,6 +320,91 @@ Required:
 - `SENTRY_DSN`, `VITE_SENTRY_DSN`
 - `OPENAI_API_KEY` (for AI features)
 
+## Critical Investigation Protocol
+
+**BEFORE making ANY changes, follow this mandatory investigation protocol:**
+
+### Step 1: Verify the Problem is Real
+- Check if it's an actual code issue or a TypeScript/ESLint configuration glitch
+- Verify `tsconfig.json`, `tsconfig.base.json`, `eslint.config.js` settings
+- Check for conflicting strict mode settings (`noPropertyAccessFromIndexSignature`, `strictNullChecks`, etc.)
+
+### Step 2: Deep Database & Schema Verification
+```bash
+# Connect to Docker PostgreSQL
+DATABASE_URL=postgresql://postgres:postgres@postgres:5432/geniuserp
+PGDATABASE=geniuserp PGUSER=postgres PGPASSWORD=postgres PGHOST=postgres PGPORT=5432
+
+# Verify tables, columns, types, constraints
+# Check actual data structure vs schema definitions
+```
+
+**Schema Check Protocol:**
+1. Verify `shared/schema.ts` - main schema export point
+2. Check module-specific schemas in `server/modules/{module}/schema/`
+3. Cross-reference with actual database tables
+4. Ensure NO duplicate schema definitions exist
+
+### Step 3: Application Logic Verification
+- Trace the full execution flow for the problematic code
+- Verify all function parameters and their types
+- Check all variable declarations and their usage
+- Validate business logic correctness
+
+### Step 4: Drizzle ORM Enforcement
+**CRITICAL RULE: NO RAW SQL STATEMENTS IN CODEBASE**
+
+❌ **NEVER use:**
+```typescript
+db.execute(sql`SELECT * FROM ...`)
+pool.query('SELECT * FROM ...')
+client.query('INSERT INTO ...')
+```
+
+✅ **ALWAYS use Drizzle ORM:**
+```typescript
+import { getDrizzle } from '@/common/drizzle';
+const db = getDrizzle();
+
+// Queries
+await db.select().from(table).where(eq(table.column, value));
+await db.insert(table).values(data);
+await db.update(table).set(data).where(eq(table.id, id));
+await db.delete(table).where(eq(table.id, id));
+```
+
+### Step 5: Fix Implementation
+- Apply fixes ONLY after completing Steps 1-4
+- Update all functions to use Drizzle ORM exclusively
+- Update all type definitions to match actual schema
+- Ensure type safety with proper TypeScript types
+
+### Step 6: Quality Verification
+```bash
+# MUST pass all checks before commit
+npm run lint          # 0 errors required
+npm run check         # 0 TypeScript errors required
+```
+
+### Step 7: Proper Commit & Push
+```bash
+git add <files>
+git commit -m "type(scope): descriptive message
+
+PROBLEMA IDENTIFICATĂ:
+- Clear problem description
+
+SOLUȚII APLICATE:
+- Detailed solution steps
+
+REZULTAT:
+- What was achieved
+
+Fixes: #issue or error codes"
+
+git push origin main
+```
+
 ## Common Pitfalls
 
 1. **Schema duplication** - Always check `shared/schema.ts` before creating tables
@@ -298,6 +415,8 @@ Required:
 6. **Rate limits** - Apply appropriate limiter based on operation cost
 7. **Cache invalidation** - Clear cache after mutations
 8. **Module load order** - Check `server/modules/index.ts` for dependencies
+9. **Raw SQL usage** - NEVER use raw SQL, always use Drizzle ORM
+10. **Assuming problems** - Always verify thoroughly before making changes
 
 ## Documentation References
 
