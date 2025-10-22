@@ -2878,3 +2878,35 @@ Time for 'build typescript dependencies' 0.017009999603033066
 [NX v21.6.5 Daemon Server] - 2025-10-22T09:39:53.455Z - [SYNC]: project graph hash is the same, not collecting task sync generators
 [NX v21.6.5 Daemon Server] - 2025-10-22T09:39:53.456Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
 [NX v21.6.5 Daemon Server] - 2025-10-22T09:39:53.457Z - Time taken for 'total execution time for createProjectGraph()' 109.94471300020814ms
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:51.775Z - [WATCHER]: Processing file changes in outputs
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:51.786Z - [WATCHER]: tsconfig.json was modified
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:51.989Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:51.989Z - [REQUEST]: tsconfig.json
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:51.989Z - [REQUEST]: 
+Time for 'nx/core/package-json:createNodes' 0.36330199986696243
+Time for 'nx/core/project-json:createNodes' 0.9649580009281635
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:52.211Z - Time taken for 'hash changed files from watcher' 1.9602610003203154ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 11.92964799888432
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:52.564Z - Time taken for 'build-project-configs' 22.055934000760317ms
+Time for 'build typescript dependencies' 0.013081999495625496
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:53.276Z - Wrote project graph cache to /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/.nx/workspace-data/project-graph.json
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:53.276Z - [SYNC]: collect registered sync generators
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:53.276Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:53.276Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:53.277Z - Time taken for 'total execution time for createProjectGraph()' 773.7334610000253ms
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:57.280Z - [WATCHER]: tsconfig.json was modified
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:57.280Z - [WATCHER]: Processing file changes in outputs
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:57.682Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:57.682Z - [REQUEST]: tsconfig.json
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:57.682Z - [REQUEST]: 
+Time for 'nx/core/package-json:createNodes' 0.3896800000220537
+Time for 'nx/core/project-json:createNodes' 0.8293689992278814
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:57.898Z - Time taken for 'hash changed files from watcher' 0.9659919999539852ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 73.60026799887419
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:58.194Z - Time taken for 'build-project-configs' 94.0964540001005ms
+Time for 'build typescript dependencies' 0.014203999191522598
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:58.758Z - Wrote project graph cache to /Users/alexneacsu/Projects/GeniusERP/GeniusERP_V_5/.nx/workspace-data/project-graph.json
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:58.758Z - [SYNC]: collect registered sync generators
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:58.758Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:58.759Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.6.5 Daemon Server] - 2025-10-22T09:42:58.759Z - Time taken for 'total execution time for createProjectGraph()' 401.8023140002042ms

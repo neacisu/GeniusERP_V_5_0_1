@@ -14,7 +14,10 @@
     "utils/testing",
     "build",
     "dist",
-    "node_modules"
+    "node_modules",
+    "client",
+    "server",
+    "shared"
   ],
   "compilerOptions": {
     "incremental": true,

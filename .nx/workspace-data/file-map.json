@@ -87,160 +87,156 @@
   "fileMap": {
     "nonProjectFiles": [
       {
-        "file": ".github/workflows/auto-close-issues.yml",
-        "hash": "5844208170528065750"
-      },
-      {
-        "file": ".eslintrc.json",
-        "hash": "10312024542810267567"
-      },
-      {
-        "file": "static/runtime.js",
-        "hash": "14980783667260047515"
-      },
-      {
-        "file": "tsconfig.base.json",
-        "hash": "15660426983320052029"
-      },
-      {
-        "file": "static/styles.css",
-        "hash": "5790686815247881049"
-      },
-      {
-        "file": ".gitignore",
-        "hash": "18206471369677257317"
-      },
-      {
-        "file": "static/styles.js",
-        "hash": "16803620677878581351"
-      },
-      {
-        "file": "update-all-deps.sh",
-        "hash": "9373315178666461615"
-      },
-      {
         "file": "eslint.config.js",
         "hash": "1726959496359336324"
-      },
-      {
-        "file": "README.md",
-        "hash": "8295246255624576194"
-      },
-      {
-        "file": "package.json.backup-before-major-update",
-        "hash": "6926238877786970399"
-      },
-      {
-        "file": "workspace.json",
-        "hash": "13758832699223912910"
-      },
-      {
-        "file": "tsconfig.json",
-        "hash": "15612277622291190958"
-      },
-      {
-        "file": "accounting-drizzle.config.ts",
-        "hash": "4328149913544239751"
-      },
-      {
-        "file": ".nxignore",
-        "hash": "3898690521357059722"
-      },
-      {
-        "file": ".cursor/rules/projectrules.mdc",
-        "hash": "17333625274048045026"
-      },
-      {
-        "file": "drizzle.config.ts",
-        "hash": "5821457968997086548"
-      },
-      {
-        "file": ".env.template",
-        "hash": "17034787304841500978"
-      },
-      {
-        "file": "NX_MIGRATION_SUMMARY.md",
-        "hash": "17720370455424587827"
-      },
-      {
-        "file": "Dockerfile.dev",
-        "hash": "9546727682556335600"
-      },
-      {
-        "file": "theme.json",
-        "hash": "6566695290860262687"
-      },
-      {
-        "file": "docker-dev.sh",
-        "hash": "6995104699959580004"
-      },
-      {
-        "file": ".nxrc.json",
-        "hash": "10052673949290900250"
-      },
-      {
-        "file": "docker-compose.prod.yml",
-        "hash": "17312180959511933040"
-      },
-      {
-        "file": "tsconfig.recommended.json",
-        "hash": "4273117205151743949"
-      },
-      {
-        "file": "postcss.config.js",
-        "hash": "14886562286554270667"
-      },
-      {
-        "file": ".cursor/rules/git-rules.mdc",
-        "hash": "9977818838785392159"
-      },
-      {
-        "file": "jest.config.ts",
-        "hash": "10282790185360246113"
       },
       {
         "file": ".replit",
         "hash": "2351295864897168589"
       },
       {
-        "file": "start-server.sh",
-        "hash": "6005706762831169434"
+        "file": "ecosystem.config.cjs",
+        "hash": "1168840501236215077"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "18206471369677257317"
+      },
+      {
+        "file": "drizzle.config.ts",
+        "hash": "5821457968997086548"
+      },
+      {
+        "file": "README.md",
+        "hash": "8295246255624576194"
+      },
+      {
+        "file": "vite.config.ts",
+        "hash": "12036326497812031099"
       },
       {
         "file": "package.json",
         "hash": "5090028892650894883"
       },
       {
-        "file": "static/main.js",
-        "hash": "2502095695658726145"
+        "file": ".dockerignore",
+        "hash": "1270526425827491408"
+      },
+      {
+        "file": "NX_MIGRATION_SUMMARY.md",
+        "hash": "17720370455424587827"
+      },
+      {
+        "file": "theme.json",
+        "hash": "6566695290860262687"
+      },
+      {
+        "file": "tsconfig.json",
+        "hash": "760330175640022103"
       },
       {
         "file": "jest.preset.js",
         "hash": "14256848549375763892"
       },
       {
-        "file": "send-logs-fixed.sh",
-        "hash": "6006324813976929674"
-      },
-      {
-        "file": "Dockerfile.prod",
-        "hash": "10838177161594906992"
+        "file": "Dockerfile.dev",
+        "hash": "9546727682556335600"
       },
       {
         "file": "nx.json",
         "hash": "12124539994595073338"
       },
       {
-        "file": "nx-graph.html",
-        "hash": "6183388263616623200"
+        "file": "tsconfig.base.json",
+        "hash": "15660426983320052029"
+      },
+      {
+        "file": "postcss.config.js",
+        "hash": "14886562286554270667"
+      },
+      {
+        "file": "update-all-deps.sh",
+        "hash": "9373315178666461615"
+      },
+      {
+        "file": ".github/workflows/auto-close-issues.yml",
+        "hash": "5844208170528065750"
+      },
+      {
+        "file": ".github/copilot-instructions.md",
+        "hash": "7108852932962447988"
+      },
+      {
+        "file": ".nxrc.json",
+        "hash": "10052673949290900250"
       },
       {
         "file": "token.txt",
         "hash": "7410506273438272391"
       },
       {
+        "file": "static/styles.css",
+        "hash": "5790686815247881049"
+      },
+      {
+        "file": "docker-compose.prod.yml",
+        "hash": "17312180959511933040"
+      },
+      {
+        "file": "send-logs-fixed.sh",
+        "hash": "6006324813976929674"
+      },
+      {
+        "file": ".env.template",
+        "hash": "17034787304841500978"
+      },
+      {
         "file": "package-lock.json",
         "hash": "13708639139637610258"
+      },
+      {
+        "file": "package.json.backup-before-major-update",
+        "hash": "6926238877786970399"
+      },
+      {
+        "file": ".nxignore",
+        "hash": "3898690521357059722"
+      },
+      {
+        "file": "start-server.sh",
+        "hash": "6005706762831169434"
+      },
+      {
+        "file": "Dockerfile.prod",
+        "hash": "10838177161594906992"
+      },
+      {
+        "file": "docker-dev.sh",
+        "hash": "6995104699959580004"
+      },
+      {
+        "file": "accounting-drizzle.config.ts",
+        "hash": "4328149913544239751"
+      },
+      {
+        "file": ".eslintrc.json",
+        "hash": "10312024542810267567"
+      },
+      {
+        "file": "docker-compose.yml",
+        "hash": "11426503431455370092"
+      },
+      {
+        "file": "static/styles.js",
+        "hash": "16803620677878581351"
+      },
+      {
+        "file": "static/runtime.js",
+        "hash": "14980783667260047515"
+      },
+      {
+        "file": ".cursor/rules/projectrules.mdc",
+        "hash": "17333625274048045026"
       },
       {
         "file": "docker-entrypoint.sh",
@@ -251,28 +247,32 @@
         "hash": "10297499776199025027"
       },
       {
-        "file": "vite.config.ts",
-        "hash": "12036326497812031099"
+        "file": ".cursor/rules/git-rules.mdc",
+        "hash": "9977818838785392159"
       },
       {
-        "file": "ecosystem.config.cjs",
-        "hash": "1168840501236215077"
-      },
-      {
-        "file": ".github/copilot-instructions.md",
-        "hash": "7108852932962447988"
-      },
-      {
-        "file": ".dockerignore",
-        "hash": "1270526425827491408"
+        "file": "workspace.json",
+        "hash": "13758832699223912910"
       },
       {
         "file": "static/environment.js",
         "hash": "9078378275448581270"
       },
       {
-        "file": "docker-compose.yml",
-        "hash": "11426503431455370092"
+        "file": "nx-graph.html",
+        "hash": "6183388263616623200"
+      },
+      {
+        "file": "static/main.js",
+        "hash": "2502095695658726145"
+      },
+      {
+        "file": "tsconfig.recommended.json",
+        "hash": "4273117205151743949"
+      },
+      {
+        "file": "jest.config.ts",
+        "hash": "10282790185360246113"
       }
     ],
     "projectFileMap": {
