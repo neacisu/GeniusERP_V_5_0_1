@@ -55,14 +55,6 @@ export default defineConfig({
       clientPort: parseInt(process.env['VITE_HMR_CLIENT_PORT']!),
       overlay: true,
     },
-    
-    // Proxy pentru API - port DOAR din .env
-    proxy: {
-      '/api': {
-        target: `http://localhost:${process.env['APP_PORT_BACKEND']}`,
-        changeOrigin: true
-      }
-    }
   },
   
   build: {
