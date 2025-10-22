@@ -133,10 +133,11 @@ export function serveStatic(app: Express): void {
 
   // fall through to index.html if the file doesn't exist, but exclude API routes
   // Use middleware without path parameter to avoid path-to-regexp issues
-  app.use((req, res) => {
+  app.use((req, res): void => {
     // Don't serve index.html for API routes
     if (req.originalUrl.startsWith('/api/')) {
-      return res.status(404).json({ error: 'API endpoint not found' });
+      res.status(404).json({ error: 'API endpoint not found' });
+      return;
     }
     res.sendFile(path.resolve(distPath, "index.html"));
   });
