@@ -4,4 +4,4 @@
  * RE-EXPORT from server/types/express.ts for convenience
  * DO NOT define AuthenticatedRequest here - use the canonical definition
  */
-export type { AuthenticatedRequest, JwtUserData } from '../../types/express';
+export type { AuthenticatedRequest, JwtUserData } from '@common/middleware/auth-types';

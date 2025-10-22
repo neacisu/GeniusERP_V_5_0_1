@@ -7,8 +7,8 @@
 
 import { Router, Request, Response } from 'express';
 import { CustomerService } from './customer.service';
-import { AuthGuard } from '../../modules/auth/guards/auth.guard';
-import { JwtAuthMode } from '../../modules/auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth/guards/auth.guard';
+import { JwtAuthMode } from '@geniuserp/auth/constants/auth-mode.enum';
 import { Logger } from '../../common/logger';
 import { DrizzleService } from '../../common/drizzle/drizzle.service';
 

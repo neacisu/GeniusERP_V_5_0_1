@@ -8,7 +8,7 @@
 import { Logger } from '../../../logger';
 import { BaseDrizzleService } from '../core/base-drizzle.service';
 import { SQL, eq, and, or, isNull, sql } from 'drizzle-orm';
-import { companies } from '../../../../../shared/schema';
+import { companies } from '@geniuserp/shared';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 // Create a logger for company query operations

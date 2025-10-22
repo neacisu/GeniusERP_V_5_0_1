@@ -10,7 +10,7 @@ import { BaseDrizzleService } from '../core/base-drizzle.service';
 import { eq, and } from 'drizzle-orm';
 import {
   taskWatchers
-} from '../../../../../shared/schema/collaboration.schema';
+} from '@geniuserp/shared';
 import { randomUUID } from 'crypto';
 import { Logger } from '../../../../common/logger';
 

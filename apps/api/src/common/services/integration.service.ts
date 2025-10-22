@@ -8,7 +8,7 @@
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { v4 as uuidv4 } from 'uuid';
 import { Logger } from '../logger';
-import { integrations, IntegrationProvider, IntegrationStatus } from '../../modules/integrations/schema/integrations.schema';
+import { integrations, IntegrationProvider, IntegrationStatus } from '@geniuserp/integrations/schema/integrations.schema';
 import { eq, and } from 'drizzle-orm';
 
 // Re-export IntegrationProvider and IntegrationStatus for convenience

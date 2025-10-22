@@ -31,8 +31,8 @@ export enum UserRole {
  * JWT token payload structure and AuthenticatedRequest
  * RE-EXPORT from shared types and server types for consistency
  */
-export type { JwtUserData, JwtPayload } from '../../../shared/types';
-export type { AuthenticatedRequest } from '../../types/express';
+export type { JwtUserData, JwtPayload } from '@geniuserp/shared';
+export type { AuthenticatedRequest } from '@common/middleware/auth-types';
 
 /**
  * Login request data

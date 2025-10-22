@@ -11,7 +11,7 @@
 import { Queue, QueueOptions } from 'bullmq';
 import { QueueName } from './types';
 import { log } from '../../vite';
-import { RedisService } from '../../services/redis.service';
+import { RedisService } from '@common/config/redis';
 
 // Get a Redis connection instance
 let redisConnection: any;

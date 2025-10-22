@@ -7,10 +7,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { Logger } from '../logger';
-import { JwtUserData } from '../../../shared/types';
+import { JwtUserData } from '@geniuserp/shared';
 
 // Import JWT_SECRET from auth service for consistency
-import { JWT_SECRET } from '../../modules/auth/services/auth.service';
+import { JWT_SECRET } from '@geniuserp/auth/services/auth.service';
 
 // Create logger for AuthGuard
 const logger = new Logger('AuthGuard');

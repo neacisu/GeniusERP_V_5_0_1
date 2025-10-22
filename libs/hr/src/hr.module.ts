@@ -24,7 +24,7 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { JwtAuthMode } from '../auth/constants/auth-mode.enum';
 import { Logger } from '../../common/logger';
 import { AuditService } from '../../common/services/audit.service';
-import { AuthenticatedRequest } from '../../types/express';
+import { AuthenticatedRequest } from '@common/middleware/auth-types';
 
 /**
  * Type-safe wrapper pentru AuthenticatedRequest handlers

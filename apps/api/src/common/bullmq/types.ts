@@ -5,7 +5,7 @@
  * These types provide proper type checking for job data across the application.
  */
 
-import { LowStockAlert } from '../../modules/inventory/services/check-stock-levels.service';
+import { LowStockAlert } from '@geniuserp/inventory/services/check-stock-levels.service';
 
 /**
  * Queue names used throughout the application

@@ -6,7 +6,7 @@
  */
 
 import { DrizzleService } from '../../common/drizzle/drizzle.service';
-import { AuditService } from '../../modules/audit/services/audit.service';
+import { AuditService } from '@geniuserp/audit/services/audit.service';
 import { CategoriesService } from './services/categories.service';
 
 // Get service dependencies

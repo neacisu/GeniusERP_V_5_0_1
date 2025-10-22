@@ -7,7 +7,7 @@
 
 import { Logger } from '../../../logger';
 import { BaseDrizzleService } from '../core/base-drizzle.service';
-import { Company } from '../../../../../shared/schema';
+import { Company } from '@geniuserp/shared';
 import { CompanyQueryService } from './company-query.service';
 import { CompanyMutationService } from './company-mutation.service';
 import { CompanyHierarchyService } from './company-hierarchy.service';

@@ -8,7 +8,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { Logger } from '../logger';
-import { JwtUserData } from '../../../shared/types';
+import { JwtUserData } from '@geniuserp/shared';
 
 // Note: Request.user type is already defined in server/@types/express/index.d.ts
 // as JwtUserData which includes: id, username, role, roles, companyId, email

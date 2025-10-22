@@ -12,7 +12,7 @@ import {
   collaborationMessages,
   NewCollaborationMessage,
   CollaborationMessage
-} from '../../../../../shared/schema/collaboration.schema';
+} from '@geniuserp/shared';
 import { randomUUID } from 'crypto';
 import { Logger } from '../../../../common/logger';
 import { ThreadDrizzleService } from './thread-service';

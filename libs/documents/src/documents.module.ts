@@ -24,7 +24,7 @@ import { PandaDocService } from './services/pandadoc.service';
 import { DocumentRegistryService } from './services/document-registry.service';
 import { OcrService } from './services/ocr.service';
 import { TemplateService } from './services/template.service';
-import { ExchangeRateService } from '../../modules/integrations/services/exchange-rate.service';
+import { ExchangeRateService } from '@geniuserp/integrations/services/exchange-rate.service';
 import { Logger } from '../../common/logger';
 
 // Create a logger for the documents module

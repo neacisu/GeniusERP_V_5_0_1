@@ -8,7 +8,7 @@
 import { Logger } from '../../../logger';
 import { BaseDrizzleService } from '../core/base-drizzle.service';
 import { SQL, sql } from 'drizzle-orm';
-import { companies } from '../../../../../shared/schema';
+import { companies } from '@geniuserp/shared';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { CompanyQueryService } from './company-query.service';
 
