@@ -15,7 +15,6 @@ export * from "./schema/cor.schema";
 export * from "./schema/settings.schema";
 
 // Export Accounting models for shared usage across the application
-export * from "../server/modules/accounting/schema";
 
 // Export Analytics models for shared usage across the application
 export * from "./schema/analytics.schema";
@@ -647,7 +646,6 @@ export type InventoryCategory = typeof inventoryCategories.$inferSelect;
 export type InventoryUnit = typeof inventoryUnits.$inferSelect;
 
 // Romanian Inventory Models (Gestiune)
-export * from '../server/modules/inventory/schema';
 
 // Audit Logs
 export const auditLogs = pgTable("audit_logs", {

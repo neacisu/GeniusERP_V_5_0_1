@@ -7,7 +7,7 @@
     "declaration": true,
     "declarationMap": true,
     "outDir": "../../dist/libs/shared",
-    "rootDir": "src"
+    "noEmit": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
