@@ -11,11 +11,10 @@
 
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
 import { getDrizzle } from '../../../common/drizzle';
-import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, lte } from 'drizzle-orm';
 import { cashRegisters, cashTransactions, CashRegister, CashTransaction } from '../../../../shared/schema/cash-register.schema';
-import { companies } from '../../../../shared/schema';
 import { v4 as uuidv4 } from 'uuid';
-import { AuditLogService, AuditAction, AuditSeverity } from './audit-log.service';
+import { AuditLogService } from './audit-log.service';
 import { accountingQueueService } from './accounting-queue.service';
 import { RedisService } from '../../../services/redis.service';
 import { log } from '../../../vite';
@@ -860,9 +859,8 @@ export class CashRegisterService {
         }
         // Ajustări (pot fi + sau -)
         else if (txn.transactionType === 'cash_count_adjustment') {
-          // Pentru ajustări, verificăm dacă e plus sau minus
-          const adjustmentAmount = Number(txn.amount);
-          balance = Number(txn.balanceAfter); // Folosim direct balanceAfter din tranzacție
+          // Pentru ajustări, folosim direct balanceAfter din tranzacție
+          balance = Number(txn.balanceAfter);
         }
       }
       
@@ -1018,8 +1016,8 @@ export class CashRegisterService {
     const {
       companyId,
       franchiseId,
-      cashRegisterId,
-      transactionId,
+      cashRegisterId: _cashRegisterId,
+      transactionId: _transactionId,
       receiptNumber,
       transactionType,
       transactionPurpose,
@@ -1028,12 +1026,12 @@ export class CashRegisterService {
       vatRate,
       currency,
       exchangeRate,
-      transactionDate,
+      transactionDate: _transactionDate,
       description,
-      personId,
+      personId: _personId,
       personName,
-      personIdNumber,
-      invoiceId,
+      personIdNumber: _personIdNumber,
+      invoiceId: _invoiceId,
       invoiceNumber,
       userId,
       fiscalReceiptNumber,
@@ -1236,7 +1234,7 @@ export class CashRegisterService {
             let expenseAccount = CASH_ACCOUNTS.OTHER_SERVICES; // Default
             
             // Extract expense type from additional data if available
-            const expenseType = data.additionalData?.expenseType;
+            const expenseType = data.additionalData?.['expenseType'];
             if (expenseType) {
               switch (expenseType) {
                 case 'utilities':
@@ -1664,8 +1662,7 @@ export class CashRegisterService {
           }
         }
         
-        // Check totals
-        const totalNet = transactionData.items.reduce((sum: number, item: any) => sum + Number(item.netAmount), 0);
+        // Check totals - validate gross and VAT amounts
         const totalVat = transactionData.items.reduce((sum: number, item: any) => sum + Number(item.vatAmount), 0);
         const totalGross = transactionData.items.reduce((sum: number, item: any) => sum + Number(item.grossAmount), 0);
         
@@ -1700,11 +1697,11 @@ export class CashRegisterService {
   
   /**
    * Get cash transaction entry by transaction ID
-   * @param companyId Company ID
-   * @param transactionId Transaction ID
+   * @param _companyId Company ID (unused - reserved for future filtering)
+   * @param _transactionId Transaction ID (unused - reserved for future query)
    * @returns Ledger entry or null if not found
    */
-  public async getCashTransactionEntryByTransactionId(companyId: string, transactionId: string): Promise<LedgerEntryData | null> {
+  public async getCashTransactionEntryByTransactionId(_companyId: string, _transactionId: string): Promise<LedgerEntryData | null> {
     // This would typically involve a database query to find the ledger entry
     // associated with the transaction ID
     
@@ -1724,7 +1721,7 @@ export class CashRegisterService {
    * Generare număr secvențial CORECT conform OMFP 2634/2015
    * Format: CH/2025/000123 sau DP/2025/000456
    */
-  public async generateReceiptNumber(companyId: string, cashRegisterId: string, isPayment: boolean = false): Promise<string> {
+  public async generateReceiptNumber(companyId: string, _cashRegisterId: string, isPayment: boolean = false): Promise<string> {
     const db = getDrizzle();
     const year = new Date().getFullYear();
     const series = isPayment ? 'DP' : 'CH'; // CH = Chitanță, DP = Dispoziție Plată
@@ -1739,7 +1736,7 @@ export class CashRegisterService {
         RETURNING last_number
       `, [companyId, series, year]);
       
-      const number = counter.last_number.toString().padStart(6, '0');
+      const number = counter['last_number'].toString().padStart(6, '0');
       return `${series}/${year}/${number}`;
     } catch (error) {
       console.error('Error generating receipt number:', error);
@@ -1809,7 +1806,7 @@ export class CashRegisterService {
     cashRegisterId: string,
     startDate: string,
     endDate: string,
-    userId: string
+    _userId: string
   ): Promise<{ jobId: string; message: string }> {
     try {
       log(`Queueing async cash reconciliation for ${cashRegisterId}`, 'cash-register-async');
@@ -1822,11 +1819,12 @@ export class CashRegisterService {
       });
       
       return {
-        jobId: job.id!,
-        message: `Cash reconciliation queued. Job ID: ${job.id}`
+        jobId: job.id || 'unknown',
+        message: `Cash reconciliation queued. Job ID: ${job.id || 'unknown'}`
       };
-    } catch (error: any) {
-      log(`Error queueing cash reconciliation: ${error.message}`, 'cash-register-error');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      log(`Error queueing cash reconciliation: ${errorMessage}`, 'cash-register-error');
       throw error;
     }
   }
@@ -1852,8 +1850,9 @@ export class CashRegisterService {
       
       await redisService.invalidatePattern(pattern);
       log(`Invalidated cash report cache for ${companyId}`, 'cash-register-cache');
-    } catch (error: any) {
-      log(`Error invalidating cash report cache: ${error.message}`, 'cash-register-error');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      log(`Error invalidating cash report cache: ${errorMessage}`, 'cash-register-error');
     }
   }
 }
