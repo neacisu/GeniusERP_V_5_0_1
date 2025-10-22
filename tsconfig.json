@@ -3,11 +3,6 @@
   "include": [
     "apps/**/*",
     "libs/**/*",
-    "client/src/**/*",
-    "shared/**/*",
-    "server/**/*",
-    "migrations/**/*",
-    "scripts/**/*",
     "*.config.ts"
   ],
   "exclude": [
@@ -15,9 +10,7 @@
     "build",
     "dist",
     "node_modules",
-    "client",
-    "server",
-    "shared"
+    "archived-old-structure"
   ],
   "compilerOptions": {
     "incremental": true,
