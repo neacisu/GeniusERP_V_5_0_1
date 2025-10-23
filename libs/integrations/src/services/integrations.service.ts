@@ -17,8 +17,6 @@ import {
 import { AuditService } from '../../../audit/src/services/audit.service';
 import { Logger } from "@common/logger";
 
-// For audit logging
-const RESOURCE_TYPE = 'integration';
 const logger = new Logger('IntegrationsService');
 
 /**
@@ -26,11 +24,11 @@ const logger = new Logger('IntegrationsService');
  */
 export class IntegrationsService {
   private drizzle: DrizzleService;
-  private auditService: AuditService;
+  private _auditService: AuditService;
 
   constructor() {
     this.drizzle = new DrizzleService();
-    this.auditService = new AuditService();
+    this._auditService = new AuditService();
     logger.info('IntegrationsService initialized');
   }
 

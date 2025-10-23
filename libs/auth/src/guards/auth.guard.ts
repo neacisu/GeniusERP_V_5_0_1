@@ -124,7 +124,7 @@ export class AuthGuard {
         }
         
         req.user = decoded;
-        next();
+        return next();
       } catch (error) {
         return res.status(401).json({ error: 'Invalid or expired token' });
       }
@@ -147,12 +147,11 @@ export class AuthGuard {
    * @returns Express middleware
    */
   optional() {
-    return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    return (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
       const token = this.extractToken(req);
       
       if (!token) {
-        next();
-        return;
+        return next();
       }
       
       try {
@@ -315,8 +314,8 @@ export class AuthGuard {
     }
     
     // Check query parameter (token=xyz)
-    if (req.query && req.query.token) {
-      return req.query.token as string;
+    if (req.query && req.query['token']) {
+      return req.query['token'] as string;
     }
     
     // Check cookies if available

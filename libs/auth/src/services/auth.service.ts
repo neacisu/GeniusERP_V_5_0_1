@@ -10,15 +10,15 @@ import { log } from "../../../../apps/api/src/vite";
 
 // JWT Settings
 // Pentru mediul de dezvoltare, folosim o valoare prestabilită dacă JWT_SECRET nu este setat
-const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
-export const JWT_SECRET: Secret = process.env.JWT_SECRET || (isDevelopment ? 'dev_secret_key_for_local_development_only' : '');
+const isDevelopment = process.env['NODE_ENV'] === 'development' || !process.env['NODE_ENV'];
+export const JWT_SECRET: Secret = process.env['JWT_SECRET'] || (isDevelopment ? 'dev_secret_key_for_local_development_only' : '');
 
 if (!JWT_SECRET) {
   console.error('[AuthService] ERROR: JWT_SECRET is not set in environment variables.');
   throw new Error('JWT_SECRET environment variable is required for authentication');
 }
 
-export const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || "24h";
+export const JWT_EXPIRES_IN: string = process.env['JWT_EXPIRES_IN'] || "24h";
 
 // Log the JWT settings for debugging
 log('JWT_SECRET exists and is being used', 'auth-service');

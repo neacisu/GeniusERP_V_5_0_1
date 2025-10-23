@@ -102,9 +102,9 @@ export class SettingsModule {
     // Register Global Settings routes
     const globalRouter = Router();
     globalRouter.get('/', (req: Request, res: Response) => {
-      if (req.query.category) {
+      if (req.query['category']) {
         return globalSettingsController.getSettingsByCategory(req, res);
-      } else if (req.query.module) {
+      } else if (req.query['module']) {
         return globalSettingsController.getSettingsByCategory(req, res);
       } else {
         return res.status(400).json({ error: 'Must provide category or module parameter' });
@@ -119,9 +119,9 @@ export class SettingsModule {
     // Register Feature Toggle routes
     const featuresRouter = Router();
     featuresRouter.get('/', (req: Request, res: Response) => {
-      if (req.query.module) {
+      if (req.query['module']) {
         return featureToggleController.getFeaturesByModule(req, res);
-      } else if (req.query.companyId) {
+      } else if (req.query['companyId']) {
         return featureToggleController.getCompanyFeatures(req, res);
       } else {
         return res.status(400).json({ error: 'Must provide module or companyId parameter' });
