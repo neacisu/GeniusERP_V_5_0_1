@@ -38,7 +38,7 @@ const MODULE_PATH_CORRECTIONS = {
   '../../../common/middleware/company-guard': '../../common/auth/company-guard',
   '../../common/logging/logger': '../../common/logger',
   '../logger': '../../common/logger',
-  '../../../../shared/types': '@shared/types'
+  '../../../../libs/shared/src/types': '@shared/types'
 };
 
 console.log('🚀 START: Fix Quick Wins TypeScript errors');

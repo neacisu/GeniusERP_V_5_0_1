@@ -51,18 +51,18 @@ const mainTsConfig = {
     tsBuildInfoFile: "./node_modules/.cache/typescript/tsbuildinfo",
     baseUrl: ".",
     paths: {
-      "@/*": ["./client/src/*"],
-      "@shared/*": ["./shared/*"],
-      "@server/*": ["./server/*"]
+      "@/*": ["./apps/web/src/*"],
+      "@shared/*": ["./libs/shared/src/*"],
+      "@server/*": ["./apps/api/src/*"]
     },
     types: ["node"],
     experimentalDecorators: true,
     emitDecoratorMetadata: true
   },
   include: [
-    "client/src/**/*",
-    "server/**/*",
-    "shared/**/*"
+    "apps/web/src/**/*",
+    "apps/api/src/**/*",
+    "libs/**/*"
   ],
   exclude: [
     "node_modules",
@@ -80,13 +80,13 @@ const serverTsConfig = {
   compilerOptions: {
     module: "ES2022",
     target: "ES2022",
-    outDir: "./dist/server",
-    rootDir: "./server",
+    outDir: "./dist/apps/api",
+    rootDir: "./apps/api/src",
     allowImportingTsExtensions: false,
     noEmit: false
   },
-  include: ["server/**/*"],
-  exclude: ["server/**/*.test.ts", "server/**/*.spec.ts"]
+  include: ["apps/api/src/**/*"],
+  exclude: ["apps/api/src/**/*.test.ts", "apps/api/src/**/*.spec.ts"]
 };
 
 // Configurație pentru client
@@ -99,7 +99,7 @@ const clientTsConfig = {
     allowImportingTsExtensions: true,
     noEmit: true
   },
-  include: ["client/src/**/*"]
+  include: ["apps/web/src/**/*"]
 };
 
 // Configurație pentru teste

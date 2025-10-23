@@ -1,5 +1,5 @@
 {
-  "include": ["client/src/**/*", "shared/**/*", "server/**/*"],
+  "include": ["apps/web/src/**/*", "libs/**/*", "apps/api/src/**/*"],
   "exclude": [
     "utils/testing",
     "build",
@@ -54,8 +54,8 @@
     "baseUrl": ".",
     "types": ["node"],
     "paths": {
-      "@/*": ["./client/src/*"],
-      "@shared/*": ["./shared/*"]
+      "@/*": ["./apps/web/src/*"],
+      "@shared/*": ["./libs/shared/src/*"]
     }
   }
 }

@@ -10,7 +10,7 @@ import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 import * as dotenv from 'dotenv';
 import path from 'path';
-import * as schema from './shared/schema';
+import * as schema from '../libs/shared/src/schema';
 import { sql } from 'drizzle-orm';
 
 dotenv.config();
