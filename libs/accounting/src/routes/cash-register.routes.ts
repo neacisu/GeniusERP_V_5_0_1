@@ -2,10 +2,8 @@ import { Router } from "express";
 import { CashRegisterService } from "../services";
 import { AuthGuard } from "../../../auth/src/guards/auth.guard";
 import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
-import { cashRegisterService } from "..";
 import { CashRegisterController } from "../controllers/cash-register.controller";
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
-import { Response } from "express";
 import { 
   accountingReadRateLimiter,
   accountingHeavyRateLimiter,
@@ -19,7 +17,8 @@ import {
 export function setupCashRegisterRoutes() {
   const router = Router();
   
-  // Create controller instance
+  // Create service and controller instances
+  const cashRegisterService = new CashRegisterService();
   const cashRegisterController = new CashRegisterController(cashRegisterService);
   
   // Apply authentication middleware to all cash register routes

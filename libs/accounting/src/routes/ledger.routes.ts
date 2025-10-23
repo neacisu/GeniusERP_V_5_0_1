@@ -3,7 +3,6 @@ import { JournalService } from "../services/journal.service";
 import { AuthGuard } from "../../../auth/src/guards/auth.guard";
 import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
-import { Response } from "express";
 import { JournalController } from "../controllers/journal.controller";
 import { accountingReadRateLimiter, accountingHeavyRateLimiter } from '../../../../apps/api/src/middlewares/rate-limit.middleware';
 

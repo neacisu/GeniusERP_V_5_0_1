@@ -29,7 +29,7 @@ export class AuditController {
     try {
       const { entityType, entityId } = req.params;
       const companyId = req.user?.companyId || '';
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const limit = req.query['limit'] ? parseInt(req.query['limit'] as string) : 50;
       
       this.logger.debug(`Getting audit logs for entity ${entityType}:${entityId} in company ${companyId}`);
       
@@ -56,8 +56,8 @@ export class AuditController {
     try {
       const { userId } = req.params;
       const companyId = req.user?.companyId || '';
-      const page = parseInt(req.query.page as string || '1', 10);
-      const pageSize = parseInt(req.query.pageSize as string || '20', 10);
+      const page = parseInt(req.query['page'] as string || '1', 10);
+      const pageSize = parseInt(req.query['pageSize'] as string || '20', 10);
       const offset = (page - 1) * pageSize;
       
       this.logger.debug(`Getting audit logs for user ${userId} in company ${companyId}`);
@@ -122,7 +122,7 @@ export class AuditController {
    */
   async getRecentLogs(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const limit = parseInt(req.params.limit || '10', 10);
+      const limit = parseInt(req.params['limit'] || '10', 10);
       
       // Get company ID from authenticated user
       const companyId = req.user?.companyId || '';
@@ -156,7 +156,7 @@ export class AuditController {
   async searchLogs(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Extract query parameters for filtering
-      const { entity, action, userId, from, to, limit } = req.query;
+      const { entity, action, userId, limit } = req.query;
       const queryLimit = limit ? parseInt(limit as string, 10) : 50;
       
       // Get company ID from authenticated user

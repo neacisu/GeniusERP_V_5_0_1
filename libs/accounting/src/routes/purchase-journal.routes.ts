@@ -1,15 +1,13 @@
 import { Router } from "express";
 import { AuthGuard } from "../../../auth/src/guards/auth.guard";
 import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
-import { purchaseJournalService } from "..";
+import { PurchaseJournalService } from "../services";
 import { PurchaseJournalController } from "../controllers/purchase-journal.controller";
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
-import { Response } from "express";
 import { 
   invoiceCreateRateLimiter,
   paymentRecordRateLimiter,
   accountingHeavyRateLimiter,
-  exportRateLimiter,
   accountingReadRateLimiter
 } from '../../../../apps/api/src/middlewares/rate-limit.middleware';
 
@@ -20,7 +18,8 @@ import {
 export function setupPurchaseJournalRoutes() {
   const router = Router();
   
-  // Create controller instance
+  // Create service and controller instances
+  const purchaseJournalService = new PurchaseJournalService();
   const purchaseJournalController = new PurchaseJournalController(purchaseJournalService);
   
   // Apply authentication middleware to all purchase journal routes

@@ -3,11 +3,6 @@ import { AccountingService } from "../services/accounting.service";
 import { storage } from "../../../../apps/api/src/storage";
 import { AuthGuard } from "../../../auth/src/guards/auth.guard";
 import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
-import { setupSalesJournalRoutes } from "./sales-journal.routes";
-import { setupPurchaseJournalRoutes } from "./purchase-journal.routes";
-import { setupBankJournalRoutes } from "./bank-journal.routes";
-import { setupCashRegisterRoutes } from "./cash-register.routes";
-import { setupLedgerRoutes } from "./ledger.routes";
 // Note Contabil routes moved to routes/index.ts (note-contabil.route.ts)
 import { AccountingController } from "../controllers/accounting.controller";
 import { MetricsController } from "../controllers/metrics.controller";

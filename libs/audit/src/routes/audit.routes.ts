@@ -1,15 +1,13 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import AuditService from '../services/audit.service';
 import { getDrizzle } from "@common/drizzle";
 import { auditLogs } from '../schema/audit.schema';
 import { storage } from '../../../../apps/api/src/storage';
 import { v4 as uuidv4 } from 'uuid';
-import { JwtAuthMode } from '../../auth';
-import { AuthGuard } from '../../auth/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
 import { eq, and, or, desc, like } from 'drizzle-orm';
 
-// Create AuditService instance
-const auditService = new AuditService();
 // Get database instance
 const db = getDrizzle();
 
@@ -102,7 +100,7 @@ export function initAuditRoutes() {
     AuthGuard.protect(JwtAuthMode.REQUIRED), 
     async (req, res) => {
       try {
-        const limit = parseInt(req.params.limit || '10', 10);
+        const limit = parseInt(req.params['limit'] || '10', 10);
         
         // Get company ID from authenticated user or fall back to default company
         let companyId = req.user?.companyId;
@@ -174,7 +172,7 @@ export function initAuditRoutes() {
     async (req: Request, res: Response) => {
       try {
         // Extract query parameters for filtering
-        const { entity, action, userId, from, to, limit } = req.query;
+        const { entity, action, userId, limit } = req.query;
         const queryLimit = limit ? parseInt(limit as string, 10) : 50;
         
         // Get company ID from authenticated user or fall back to default company
@@ -276,8 +274,8 @@ export function initAuditRoutes() {
     async (req: Request, res: Response) => {
       try {
         const { userId } = req.params;
-        const page = parseInt(req.query.page as string || '1', 10);
-        const pageSize = parseInt(req.query.pageSize as string || '20', 10);
+        const page = parseInt(req.query['page'] as string || '1', 10);
+        const pageSize = parseInt(req.query['pageSize'] as string || '20', 10);
         const offset = (page - 1) * pageSize;
         
         // Get company ID from authenticated user or fall back to default company
