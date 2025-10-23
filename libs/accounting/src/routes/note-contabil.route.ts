@@ -296,7 +296,7 @@ router.get(
       }
       
       // Check cache first
-      const { RedisService } = await import('../../../services/redis.service');
+      const { RedisService } = await import('../../../../apps/api/src/common/services/redis.service');
       const redisService = new RedisService();
       await redisService.connect();
       

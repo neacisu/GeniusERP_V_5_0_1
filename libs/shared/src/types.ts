@@ -2,6 +2,8 @@
  * Common types shared between client and server
  */
 
+/// <reference path="./types/express.d.ts" />
+
 import { User as DbUser } from './schema';
 
 /**

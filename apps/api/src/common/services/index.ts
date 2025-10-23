@@ -18,3 +18,4 @@
  */
 
 export * from './registry';
+export { RedisService, type CacheMetrics } from './redis.service';
