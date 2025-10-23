@@ -10,7 +10,7 @@
 
 import { Job } from 'bullmq';
 import { JobTypeMap } from "@common/bullmq/types";
-import { log } from '../../../vite';
+import { log } from '../../../../apps/api/src/vite';
 import { RedisService } from '../../../services/redis.service';
 import {
   BalanceUpdateResult,

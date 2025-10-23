@@ -6,12 +6,12 @@
  */
 
 import { Express, Router } from "express";
-import { DrizzleService } from "../../common/drizzle/drizzle.service";
+import { DrizzleService } from "../../../apps/api/src/common/drizzle/drizzle.service";
 import { UserService } from "./services/user.service";
 import { UserController } from "./controllers/user.controller";
-import { AuthGuard } from "../auth/guards/auth.guard";
-import { UserRole } from "../auth/types";
-import { JwtAuthMode } from '../auth/constants/auth-mode.enum';
+import { AuthGuard } from "../../auth/src/guards/auth.guard";
+import { UserRole } from "../../auth/src/types";
+import { JwtAuthMode } from '../../auth/src/constants/auth-mode.enum';
 
 export class UsersModule {
   private userController: UserController;

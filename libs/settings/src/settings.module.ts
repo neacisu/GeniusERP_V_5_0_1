@@ -8,8 +8,8 @@
  */
 
 import { Express, Router, Request, Response } from 'express';
-import { AuthGuard } from '../auth/guards/auth.guard';
-import { JwtAuthMode } from '../auth/constants/auth-mode.enum';
+import { AuthGuard } from '../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../auth/src/constants/auth-mode.enum';
 
 // Import controllers
 import { 

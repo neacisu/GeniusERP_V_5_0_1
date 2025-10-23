@@ -14,7 +14,7 @@ import { CheckStockLevelsService } from './services/check-stock-levels.service';
 import { NirService } from './services/nir.service';
 import { ExchangeRateService } from '../integrations/services/exchange-rate.service';
 import { setupInventoryRoutes } from './routes/inventory.routes';
-import { log } from '../../vite';
+import { log } from '../../../apps/api/src/vite';
 
 // Controllers
 import { nirController } from './controllers/nir.controller';
