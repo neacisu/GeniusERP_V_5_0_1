@@ -20,7 +20,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { Service, JwtUserData } from '../../../../shared/types';
+import { Service, JwtUserData } from '../../../shared/src/types';
 import { JwtAuthMode } from '../constants/auth-mode.enum';
 import { JWT_SECRET } from '../services/auth.service';
 import { Logger } from "@common/logger";
