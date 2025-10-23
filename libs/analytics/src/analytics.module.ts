@@ -6,9 +6,9 @@
  */
 
 import express from 'express';
-import { DrizzleService } from '../../common/drizzle';
-import AuditService from '../audit/services/audit.service';
-import { Logger } from '../../common/logger';
+import { DrizzleService } from '@common/drizzle';
+import AuditService from '@geniuserp/audit';
+import { Logger } from '@common/logger';
 
 // Services
 import { AnalyticsService } from './services/analytics.service';

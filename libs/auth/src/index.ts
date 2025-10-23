@@ -3,5 +3,6 @@ export * from './services/auth.service';
 export * from './guards/auth.guard';
 export * from './routes/auth.routes';
 export * from './middleware/auth.middleware';
-// Export only types that don't conflict
-export type { JwtUserData, UserRole, JwtAuthMode } from './types';
+// Export types AND enums (enums are both types and values)
+export type { JwtUserData } from './types';
+export { UserRole, JwtAuthMode } from './types';

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/types';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/types';
 import { SettingsService } from '../services/settings.service';
 import { EmployeeService } from '../services/employee.service';
 import { HrDocumentService } from '../services/document.service';

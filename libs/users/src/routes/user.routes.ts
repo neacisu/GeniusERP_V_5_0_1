@@ -1,8 +1,8 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { UserService } from "../services/user.service";
-import { AuthGuard } from "../../auth/guards/auth.guard";
-import { UserRole } from "../../auth/types";
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from "@geniuserp/auth";
+import { UserRole } from "@geniuserp/auth";
+import { JwtAuthMode } from '@geniuserp/auth';
 
 export function setupUserRoutes() {
   const router = Router();

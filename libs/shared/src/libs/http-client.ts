@@ -13,7 +13,17 @@
  */
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import { log } from '../../../apps/api/src/vite';
+
+// Simple log function to avoid dependency on vite module
+const log = (message: string, source = 'http-client') => {
+  const formattedTime = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+  console.log(`${formattedTime} [${source}] ${message}`);
+};
 
 export interface RetryConfig {
   retries: number;

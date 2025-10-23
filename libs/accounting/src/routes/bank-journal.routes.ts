@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { BankJournalService } from "../services";
-import { AuthGuard } from "../../auth/guards/auth.guard";
-import { JwtAuthMode } from "../../auth/constants/auth-mode.enum";
+import { AuthGuard } from "../../../auth/src/guards/auth.guard";
+import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
 import { bankJournalService } from "..";
 import { BankJournalController } from "../controllers/bank-journal.controller";
 import { AuthenticatedRequest } from "@common/middleware/auth-types";

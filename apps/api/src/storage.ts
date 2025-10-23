@@ -1,24 +1,21 @@
 import { companies, users, accounts, accountClasses, accountGroups, syntheticAccounts, analyticAccounts, 
   inventoryProducts, inventoryCategories, inventoryUnits, 
   roles, permissions, userRoles, rolePermissions, auditLogs,
-  invoices, invoiceDetails, invoiceStatus,
-  journalEntries, journalLines } from "../../libs/shared/src/schema";
-import { invoiceItems, type InvoiceItem, type InsertInvoiceItem } from "./modules/invoicing/schema/invoice.schema";
+  invoices, invoiceDetails,
+  journalEntries, journalLines } from "../../../libs/shared/src/schema";
+import { invoiceItems, type InsertInvoiceItem } from "../../../libs/invoicing/src/schema/invoice.schema";
 import type { User, InsertUser, Company, InsertCompany, 
   Account, InsertAccount, AccountClass, InsertAccountClass, 
   AccountGroup, InsertAccountGroup, SyntheticAccount, InsertSyntheticAccount,
   AnalyticAccount, InsertAnalyticAccount,
   InventoryProduct, InsertInventoryProduct, InventoryCategory, InventoryUnit, 
-  JournalEntry, InsertJournalEntry, JournalLine, InsertJournalLine, 
+  JournalEntry, InsertJournalEntry, InsertJournalLine, 
   InventoryStockMovement, InsertInventoryStockMovement,
-  Role, Permission, UserRole, RolePermission,
-  AuditLog, InsertAuditLog, InsertRole, InsertPermission,
-  Invoice, InvoiceDetail, 
-  InsertInvoice, InsertInvoiceDetail } from "../../libs/shared/src/schema";
+  Role, Permission, InsertRole, InsertPermission,
+  Invoice, 
+  InsertInvoice, InsertInvoiceDetail } from "../../../libs/shared/src/schema";
   
-// Import insert schemas directly
-import { insertRoleSchema, insertPermissionSchema, insertUserRoleSchema, insertRolePermissionSchema } from "../../libs/shared/src/schema";
-import { eq, and, desc, sql, gte, lte, count, countDistinct, sum, max } from "drizzle-orm";
+import { eq, and, desc, sql, gte, lte, max } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { getDrizzle } from './common/drizzle';

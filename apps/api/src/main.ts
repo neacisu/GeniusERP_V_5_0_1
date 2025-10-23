@@ -13,7 +13,7 @@ import { validateEnv } from './config/env-validation';
 validateEnv();
 
 // Set BullMQ to ignore eviction policy before importing any other modules
-process.env.BULLMQ_IGNORE_EVICTION_POLICY = "true";
+process.env['BULLMQ_IGNORE_EVICTION_POLICY'] = "true";
 
 // We are using Express as our standardized framework
 console.log('Starting Express application...');
@@ -51,7 +51,7 @@ const app = express();
 
 // Helmet configuration for security headers
 app.use(helmet({
-  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
+  contentSecurityPolicy: process.env['NODE_ENV'] === 'production' ? {
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // unsafe-eval needed for React dev
@@ -64,7 +64,7 @@ app.use(helmet({
       upgradeInsecureRequests: []
     }
   } : false, // Disable CSP in development for HMR
-  hsts: process.env.NODE_ENV === 'production' ? {
+  hsts: process.env['NODE_ENV'] === 'production' ? {
     maxAge: 31536000,
     includeSubDomains: true,
     preload: true
@@ -76,7 +76,7 @@ app.use(helmet({
 }));
 
 // CORS configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+const allowedOrigins = process.env['ALLOWED_ORIGINS']?.split(',') || [
   'http://localhost:3000',
   'http://localhost:5000',
   'http://0.0.0.0:5000'
@@ -115,12 +115,12 @@ app.use(loggingMiddleware);
 app.use('/templates', express.static('public/templates'));
 
 // Basic health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // SENTRY TEST - Simple error route
-app.get('/test-error', (req, res) => {
+app.get('/test-error', () => {
   throw new Error('🧪 TEST: This is a test error for Sentry!');
 });
 
@@ -128,7 +128,7 @@ app.get('/test-error', (req, res) => {
 app.get('/metrics', metricsHandler);
 
 // Sentry test routes (DOAR în development!)
-if (process.env.NODE_ENV === 'development') {
+if (process.env['NODE_ENV'] === 'development') {
   app.use('/api/test-sentry', testSentryRoutes);
   appLogger.info('✅ Sentry test routes enabled at /api/test-sentry/*');
 }
@@ -172,7 +172,8 @@ const httpServer = createServer(app);
     // Simplified startup for debugging purposes
     appLogger.info('Starting server with minimal services for debugging');
     
-    // Initialize essential modules
+    // Initialize essential modules FIRST - BEFORE Vite middleware
+    // This ensures API routes are registered before the catch-all SPA handler
     appLogger.info('Initializing modules...');
     await initializeModules(app);
     
@@ -186,11 +187,29 @@ const httpServer = createServer(app);
 
     // Sentry error handler - MUST be before the default error handler
     // Only setup if Sentry is configured
-    if (process.env.SENTRY_DSN) {
+    if (process.env['SENTRY_DSN']) {
       Sentry.setupExpressErrorHandler(app);
     }
 
-    // Error handling middleware
+    // Error handling middleware for API routes
+    // This catches API errors BEFORE Vite's catch-all handler
+    app.use('/api/*', (err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+
+      appLogger.error('API Error handler', err, { status, message });
+      res.status(status).json({ message });
+    });
+
+    // Setup Vite for frontend serving (dev & prod)
+    // This MUST come AFTER API routes registration
+    if (app.get("env") === "development") {
+      await setupVite(app, httpServer);
+    } else {
+      serveStatic(app);
+    }
+    
+    // General error handling middleware for non-API routes
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
@@ -198,13 +217,6 @@ const httpServer = createServer(app);
       appLogger.error('Error handler', err, { status, message });
       res.status(status).json({ message });
     });
-
-    // Setup Vite for frontend serving (dev & prod)
-    if (app.get("env") === "development") {
-      await setupVite(app, httpServer);
-    } else {
-      serveStatic(app);
-    }
 
     // Start HTTP server on port 5000 (un singur port pentru tot)
     const port = 5000;

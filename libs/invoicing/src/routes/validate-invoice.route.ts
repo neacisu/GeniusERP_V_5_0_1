@@ -6,8 +6,8 @@
 
 import { Router, Request, Response } from 'express';
 import { ValidateInvoiceService } from '../services/validate-invoice.service';
-import { AuthGuard } from '../../../modules/auth/guards/auth.guard';
-import { JwtAuthMode, UserRole, AuthenticatedRequest } from '../../../modules/auth/types';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode, UserRole, AuthenticatedRequest } from '../../../auth/src/types';
 
 // Create router
 const router = Router();

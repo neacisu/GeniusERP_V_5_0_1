@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { CashRegisterService } from "../services";
-import { AuthGuard } from "../../auth/guards/auth.guard";
-import { JwtAuthMode } from "../../auth/constants/auth-mode.enum";
+import { AuthGuard } from "../../../auth/src/guards/auth.guard";
+import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
 import { cashRegisterService } from "..";
 import { CashRegisterController } from "../controllers/cash-register.controller";
 import { AuthenticatedRequest } from "@common/middleware/auth-types";

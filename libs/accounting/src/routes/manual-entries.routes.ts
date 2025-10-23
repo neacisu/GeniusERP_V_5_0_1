@@ -6,7 +6,7 @@
 
 import { Router } from 'express';
 import { ManualEntriesController } from '../controllers/manual-entries.controller';
-import { AuthGuard } from '../../auth/guards/auth.guard';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
 import { accountingReadRateLimiter, accountingHeavyRateLimiter } from '../../../../apps/api/src/middlewares/rate-limit.middleware';
 
 const router = Router();

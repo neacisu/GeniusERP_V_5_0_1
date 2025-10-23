@@ -6,7 +6,7 @@
 
 import { Router } from 'express';
 import { GeneralJournalController } from '../controllers/general-journal.controller';
-import { AuthGuard } from '../../auth/guards/auth.guard';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
 import { 
   accountingReadRateLimiter,
   exportRateLimiter

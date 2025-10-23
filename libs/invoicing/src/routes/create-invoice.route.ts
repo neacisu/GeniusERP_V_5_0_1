@@ -7,11 +7,11 @@
  */
 
 import { Router } from 'express';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 import { CreateInvoiceService } from '../services/create-invoice.service';
 import { CreateInvoiceInput } from '../types/invoice.input';
-import { UserRole } from '../../auth/types';
+import { UserRole } from '../../../auth/src/types';
 
 // Create a router instance
 const router = Router();

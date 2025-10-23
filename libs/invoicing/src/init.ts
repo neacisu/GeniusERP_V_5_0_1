@@ -17,8 +17,9 @@ import { customerRoutes } from './routes/customer.routes';
 import { ValidateInvoiceService } from './services/validate-invoice.service';
 import { DevalidateInvoiceService } from './services/devalidate-invoice.service';
 import { InvoiceNumberingService } from './services/invoice-numbering.service';
-import { AuthGuard } from '../auth/guards/auth.guard';
-import { JwtAuthMode } from '../auth/constants/auth-mode.enum';
+import { Router, Request, Response } from 'express';
+import { AuthGuard } from '../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../auth/src/constants/auth-mode.enum';
 
 // Export entity name for reference in other modules
 export const ENTITY_NAME = 'invoice';

@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { AccountingService } from "../services/accounting.service";
 import { storage } from "../../../../apps/api/src/storage";
-import { AuthGuard } from "../../auth/guards/auth.guard";
-import { JwtAuthMode } from "../../auth/constants/auth-mode.enum";
+import { AuthGuard } from "../../../auth/src/guards/auth.guard";
+import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
 import { setupSalesJournalRoutes } from "./sales-journal.routes";
 import { setupPurchaseJournalRoutes } from "./purchase-journal.routes";
 import { setupBankJournalRoutes } from "./bank-journal.routes";

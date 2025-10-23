@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { AuthGuard } from "../../auth/guards/auth.guard";
-import { JwtAuthMode } from "../../auth/constants/auth-mode.enum";
+import { AuthGuard } from "../../../auth/src/guards/auth.guard";
+import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
 import { accountingReadRateLimiter } from '../../../../apps/api/src/middlewares/rate-limit.middleware';
 import { financialReportsService } from "../services/financial-reports.service";
 

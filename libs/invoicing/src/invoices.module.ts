@@ -6,7 +6,7 @@
  */
 
 import { Express, Router } from 'express';
-import { ExchangeRateService } from '../integrations/services/exchange-rate.service';
+import { ExchangeRateService } from '../../integrations/src/services/exchange-rate.service';
 import { InvoiceService } from './services/invoice.service';
 import { CreateInvoiceService } from './services/create-invoice.service';
 import { ValidateInvoiceService } from './services/validate-invoice.service';
@@ -16,10 +16,10 @@ import { CreateInvoiceController } from './controllers/create-invoice.controller
 import { ValidateInvoiceController } from './controllers/validate-invoice.controller';
 import { DevalidateInvoiceController } from './controllers/devalidate-invoice.controller';
 import { CustomerController } from './controllers/customer.controller';
-import { AuthGuard } from '../auth/guards/auth.guard';
-import { JwtAuthMode } from '../auth/constants/auth-mode.enum';
-import { UserRole } from '../auth/types';
-import { Logger } from '../../common/logger';
+import { AuthGuard } from '../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../auth/src/constants/auth-mode.enum';
+import { UserRole } from '../../auth/src/types';
+import { Logger } from '@common/logger';
 
 // Entity name used for audit logging
 export const ENTITY_NAME = 'invoice';

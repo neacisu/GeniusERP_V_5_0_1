@@ -7,12 +7,12 @@
  */
 
 import express from 'express';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { UserRole } from '../../auth/types';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
+import { UserRole } from '../../../auth/src/types';
 import NoteContabilService from '../services/note-contabil.service';
 import { DocumentType } from '../services/validate-document';
-import AuditService, { AuditAction } from '../../audit/services/audit.service';
+import AuditService, { AuditAction } from '../../../audit/src/services/audit.service';
 import { 
   accountingReadRateLimiter,
   exportRateLimiter,

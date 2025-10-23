@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { AuthGuard } from "../../auth/guards/auth.guard";
-import { JwtAuthMode } from "../../auth/constants/auth-mode.enum";
+import { AuthGuard } from "../../../auth/src/guards/auth.guard";
+import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
 import { salesJournalService } from "..";
 import { SalesJournalController } from "../controllers/sales-journal.controller";
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
