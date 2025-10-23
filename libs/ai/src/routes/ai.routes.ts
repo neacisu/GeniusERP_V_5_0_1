@@ -20,7 +20,7 @@ import { AIService } from '../services/ai.service';
 const router = express.Router();
 
 // Basic health check endpoint
-router.get('/health', (req, res) => {
+router.get('/health', (_req, res) => {
   res.status(200).json({
     status: 'ok',
     module: 'ai',
@@ -35,7 +35,7 @@ router.get('/health', (req, res) => {
 });
 
 // Feature status endpoint (requires authentication)
-router.get('/status', AuthGuard.protect(JwtAuthMode.REQUIRED), (req, res) => {
+router.get('/status', AuthGuard.protect(JwtAuthMode.REQUIRED), (_req, res) => {
   res.status(200).json({
     status: 'operational',
     module: 'ai',

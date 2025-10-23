@@ -5,7 +5,7 @@
  * forecasting, trend analysis, and machine learning model management.
  */
 
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { PredictiveService } from '../services/predictive.service';
 import { Logger } from "@common/logger";
 import { AuthGuard } from '../../../auth/src/guards/auth.guard';
@@ -19,21 +19,23 @@ const logger = new Logger('PredictiveController');
  * Authentication middleware with role check for predictive analytics
  * Allows ADMIN, COMPANY_ADMIN, DATA_SCIENTIST, and other specialized roles
  */
-const predictiveRoleGuard = (req: any, res: Response, next: any) => {
+const predictiveRoleGuard = (req: any, res: Response, next: any): void => {
   // Make sure user is authenticated
   if (!req.user) {
-    return res.status(401).json({ 
+    res.status(401).json({ 
       error: 'Unauthorized', 
       message: 'You must be logged in to access Predictive Analytics features' 
     });
+    return;
   }
 
   // Check if user has predictive analytics access
   if (!hasPredictiveAnalyticsAccess(req.user.roles)) {
-    return res.status(403).json({ 
+    res.status(403).json({ 
       error: 'Forbidden', 
       message: 'You do not have permission to access Predictive Analytics features' 
     });
+    return;
   }
 
   next();
@@ -131,7 +133,7 @@ export function registerPredictiveControllerRoutes(app: any, predictiveService: 
     async (req: any, res: Response) => {
       try {
         const modelId = req.params.id;
-        const companyId = req.user.companyId;
+        // const companyId = // TODO: Use in implementation req.user.companyId;
         
         const model = await predictiveService.getModelById(modelId);
         
@@ -215,7 +217,7 @@ export function registerPredictiveControllerRoutes(app: any, predictiveService: 
     async (req: any, res: Response) => {
       try {
         const modelId = req.params.id;
-        const companyId = req.user.companyId;
+        // const companyId = // TODO: Use in implementation req.user.companyId;
         
         // Verify model exists and belongs to company
         // TODO: Implement getById with validation
@@ -258,9 +260,9 @@ export function registerPredictiveControllerRoutes(app: any, predictiveService: 
     async (req: any, res: Response) => {
       try {
         const modelId = req.params.id;
-        const companyId = req.user.companyId;
-        const userId = req.user.id;
-        const trainingParams = req.body.parameters || {};
+        // const companyId = // TODO: Use in implementation req.user.companyId;
+        // const userId = // TODO: Use in implementation req.user.id;
+        // const trainingParams = // TODO: Use in implementation req.body.parameters || {};
         
         // Verify model exists and belongs to company
         // TODO: Implement getById with validation
@@ -274,7 +276,7 @@ export function registerPredictiveControllerRoutes(app: any, predictiveService: 
         }
         
         // TODO: Implement training functionality
-        const result = undefined;
+        // const result = // TODO: Use in implementation undefined;
         throw new Error('Model training not yet implemented');
       } catch (error) {
         logger.error(`Error training predictive model ${req.params.id}:`, error);
@@ -300,9 +302,9 @@ export function registerPredictiveControllerRoutes(app: any, predictiveService: 
     async (req: any, res: Response) => {
       try {
         const modelId = req.params.id;
-        const companyId = req.user.companyId;
-        const userId = req.user.id;
-        const inputData = req.body.data || {};
+        // const companyId = // TODO: Use in implementation req.user.companyId;
+        // const userId = // TODO: Use in implementation req.user.id;
+        // const inputData = // TODO: Use in implementation req.body.data || {};
         
         // Verify model exists and belongs to company
         // TODO: Implement getById with validation
@@ -324,7 +326,7 @@ export function registerPredictiveControllerRoutes(app: any, predictiveService: 
         }
         
         // TODO: Implement prediction functionality
-        const prediction = undefined;
+        // const prediction = // TODO: Use in implementation undefined;
         throw new Error('Model prediction not yet implemented');
       } catch (error) {
         logger.error(`Error generating prediction with model ${req.params.id}:`, error);
@@ -350,7 +352,7 @@ export function registerPredictiveControllerRoutes(app: any, predictiveService: 
     async (req: any, res: Response) => {
       try {
         const modelId = req.params.id;
-        const companyId = req.user.companyId;
+        // const companyId = // TODO: Use in implementation req.user.companyId;
         
         // Verify model exists and belongs to company
         // TODO: Implement getById with validation
@@ -364,7 +366,7 @@ export function registerPredictiveControllerRoutes(app: any, predictiveService: 
         }
         
         // TODO: Implement history functionality
-        const history = undefined;
+        // const history = // TODO: Use in implementation undefined;
         throw new Error('Model history not yet implemented');
       } catch (error) {
         logger.error(`Error fetching training history for model ${req.params.id}:`, error);
@@ -387,14 +389,13 @@ export function registerPredictiveControllerRoutes(app: any, predictiveService: 
     `${BASE_PATH}/forecast`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     predictiveRoleGuard,
-    async (req: any, res: Response) => {
+    async (_req: any, res: Response) => {
       try {
-        const companyId = req.user.companyId;
-        const userId = req.user.id;
-        const forecastParams = req.body;
-        
         // TODO: Implement forecasting functionality
-        const forecast = undefined;
+        // const companyId = req.user.companyId;
+        // const userId = req.user.id;
+        // const forecastParams = req.body;
+        // const forecast = undefined;
         throw new Error('Model forecasting not yet implemented');
       } catch (error) {
         logger.error('Error generating forecast:', error);

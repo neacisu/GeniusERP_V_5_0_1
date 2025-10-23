@@ -34,7 +34,7 @@ router.get('/', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
     }
     
     // Get franchise ID from query if present
-    const franchiseId = req.query.franchiseId as string;
+    const franchiseId = req.query['franchiseId'] as string;
     
     // Get integrations
     const integrations = await integrationsService.listIntegrations(companyId, franchiseId);
@@ -78,7 +78,7 @@ router.get('/:id', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => 
     }
     
     // Get integration ID from URL params
-    const integrationId = req.params.id;
+    const integrationId = req.params['id'];
     
     // Get integration
     const integration = await integrationsService.getIntegration(integrationId, companyId);
@@ -146,7 +146,7 @@ router.post('/',
         });
       }
       
-      const { provider: providerString, franchiseId, name, description, config } = validationResult.data;
+      const { provider: providerString, franchiseId, config } = validationResult.data;
       
       // Convert provider string to enum and validate it
       let provider: IntegrationProvider;
@@ -228,7 +228,7 @@ router.patch('/:id',
       }
       
       // Get integration ID from URL params
-      const integrationId = req.params.id;
+      const integrationId = req.params['id'];
       
       // Check if integration exists
       const existingIntegration = await integrationsService.getIntegration(integrationId, companyId);
@@ -319,7 +319,7 @@ router.delete('/:id',
       }
       
       // Get integration ID from URL params
-      const integrationId = req.params.id;
+      const integrationId = req.params['id'];
       
       // Check if integration exists
       const existingIntegration = await integrationsService.getIntegration(integrationId, companyId);
@@ -376,10 +376,10 @@ router.post('/:provider/initialize',
       }
       
       // Get provider from URL params
-      const providerString = req.params.provider;
+      const providerString = req.params['provider'];
       
       // Get franchise ID from query if present
-      const franchiseId = req.query.franchiseId as string;
+      const franchiseId = req.query['franchiseId'] as string;
       
       // Convert provider string to enum and validate it
       let provider: IntegrationProvider;
@@ -557,7 +557,7 @@ router.post('/:id/test',
       }
       
       // Get integration ID from URL params
-      const integrationId = req.params.id;
+      const integrationId = req.params['id'];
       
       // Check if integration exists
       const existingIntegration = await integrationsService.getIntegration(integrationId, companyId);

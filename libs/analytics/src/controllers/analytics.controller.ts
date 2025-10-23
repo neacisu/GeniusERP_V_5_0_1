@@ -5,13 +5,12 @@
  * dashboards, metrics, and alerts.
  */
 
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AnalyticsService } from '../services/analytics.service';
 import { Logger } from "@common/logger";
 import { AuthGuard } from '../../../auth/src/guards/auth.guard';
 import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 import { hasAnalyticsAccess } from '../analytics.roles';
-import { z } from 'zod';
 
 // Create logger instance
 const logger = new Logger('AnalyticsController');
@@ -20,21 +19,23 @@ const logger = new Logger('AnalyticsController');
  * Authentication middleware with role check for analytics
  * Allows users with analytics-related roles
  */
-const analyticsRoleGuard = (req: any, res: Response, next: any) => {
+const analyticsRoleGuard = (req: any, res: Response, next: any): void => {
   // Make sure user is authenticated
   if (!req.user) {
-    return res.status(401).json({ 
+    res.status(401).json({ 
       error: 'Unauthorized', 
       message: 'You must be logged in to access Analytics features' 
     });
+    return;
   }
 
   // Check if user has analytics access
   if (!hasAnalyticsAccess(req.user.roles)) {
-    return res.status(403).json({ 
+    res.status(403).json({ 
       error: 'Forbidden', 
       message: 'You do not have permission to access Analytics features' 
     });
+    return;
   }
 
   next();
@@ -137,7 +138,7 @@ export function registerAnalyticsControllerRoutes(app: any, analyticsService: An
     async (req: any, res: Response) => {
       try {
         const reportId = req.params.id;
-        const companyId = req.user.companyId;
+        // const companyId = req.user.companyId; // TODO: Use for access control
 
         const report = await analyticsService.getReportById(reportId);
 
@@ -174,7 +175,7 @@ export function registerAnalyticsControllerRoutes(app: any, analyticsService: An
       try {
         const reportId = req.params.id;
         const parameters = req.body.parameters;
-        const companyId = req.user.companyId;
+        // const companyId = req.user.companyId; // TODO: Use for access control
 
         // Get the report to verify ownership
         const report = await analyticsService.getReportById(reportId);
@@ -287,7 +288,7 @@ export function registerAnalyticsControllerRoutes(app: any, analyticsService: An
     async (req: any, res: Response) => {
       try {
         const dashboardId = req.params.id;
-        const companyId = req.user.companyId;
+        // const companyId = req.user.companyId; // TODO: Use for access control
 
         const dashboard = await analyticsService.getDashboardById(dashboardId);
 
@@ -323,7 +324,7 @@ export function registerAnalyticsControllerRoutes(app: any, analyticsService: An
     async (req: any, res: Response) => {
       try {
         const dashboardId = req.params.id;
-        const companyId = req.user.companyId;
+        // const companyId = req.user.companyId; // TODO: Use for access control
 
         // Get the dashboard to verify ownership
         const dashboard = await analyticsService.getDashboardById(dashboardId);
@@ -441,7 +442,7 @@ export function registerAnalyticsControllerRoutes(app: any, analyticsService: An
     analyticsRoleGuard,
     async (req: any, res: Response) => {
       try {
-        const companyId = req.user.companyId;
+        // const companyId = req.user.companyId; // TODO: Use for access control
         const alertId = req.query.alertId as string;
         const page = req.query.page ? parseInt(req.query.page as string) : 1;
         const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
@@ -459,11 +460,12 @@ export function registerAnalyticsControllerRoutes(app: any, analyticsService: An
         }
 
         // Get alert history
-        const filter = {
-          companyId,
-          limit,
-          offset: (page - 1) * limit
-        };
+        // TODO: Use filter for pagination
+        // const filter = {
+        //   companyId,
+        //   limit,
+        //   offset: (page - 1) * limit
+        // };
         
         const history = alertId
           ? await analyticsService.getAlertHistory(alertId, limit)
@@ -542,8 +544,8 @@ export function registerAnalyticsControllerRoutes(app: any, analyticsService: An
     async (req: any, res: Response) => {
       try {
         const companyId = req.user.companyId;
-        const periodStart = req.query.periodStart as string;
-        const periodEnd = req.query.periodEnd as string;
+        // const periodStart = req.query.periodStart as string; // TODO: Use for date filtering
+        // const periodEnd = req.query.periodEnd as string; // TODO: Use for date filtering
 
         // Get summary metrics
         const metrics = await analyticsService.getMetrics({

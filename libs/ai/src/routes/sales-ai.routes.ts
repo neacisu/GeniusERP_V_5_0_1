@@ -7,8 +7,6 @@
 
 import express from 'express';
 import { SalesAiService } from '../services/sales-ai.service';
-import { DrizzleService } from "@common/drizzle";
-import AuditService from '../../../audit/src/services/audit.service';
 import { AuthGuard } from '../../../auth/src/guards/auth.guard';
 import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 
@@ -16,8 +14,7 @@ import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 const router = express.Router();
 
 // Create service instances for route handlers
-const drizzle = new DrizzleService();
-const salesAiService = new SalesAiService(drizzle);
+const salesAiService = new SalesAiService();
 
 /**
  * @route POST /api/ai/sales/lead-scoring/:leadId
@@ -58,10 +55,11 @@ router.post('/recommendations/deal/:dealId', AuthGuard.protect(JwtAuthMode.REQUI
 
     // Validate required parameters
     if (!customerId) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Missing required parameter: customerId'
       });
+      return;
     }
 
     const recommendations = await salesAiService.generateDealRecommendations(

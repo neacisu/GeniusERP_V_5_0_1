@@ -118,7 +118,7 @@ export function setupCompanyRoutes() {
     '/companies/:id',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     AuthGuard.companyGuard('id'),
-    async (req: AuthenticatedRequest, res: Response) => {
+    async (_req: AuthenticatedRequest, res: Response) => {
       // Company controller logic here
       res.status(501).json({ message: 'Not implemented - use new API endpoints' });
     }
@@ -129,7 +129,7 @@ export function setupCompanyRoutes() {
     '/companies',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     AuthGuard.roleGuard([UserRole.ADMIN]),
-    async (req: AuthenticatedRequest, res: Response) => {
+    async (_req: AuthenticatedRequest, res: Response) => {
       // Create company logic here
       res.status(501).json({ message: 'Not implemented - use new API endpoints' });
     }
@@ -141,7 +141,7 @@ export function setupCompanyRoutes() {
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     AuthGuard.roleGuard([UserRole.ADMIN, UserRole.COMPANY_ADMIN]),
     AuthGuard.companyGuard('id'),
-    async (req: AuthenticatedRequest, res: Response) => {
+    async (_req: AuthenticatedRequest, res: Response) => {
       // Update company logic here
       res.status(501).json({ message: 'Not implemented - use new API endpoints' });
     }
@@ -152,7 +152,7 @@ export function setupCompanyRoutes() {
     '/companies/:id',
     AuthGuard.protect(JwtAuthMode.REQUIRED), 
     AuthGuard.roleGuard([UserRole.ADMIN]),
-    async (req: AuthenticatedRequest, res: Response) => {
+    async (_req: AuthenticatedRequest, res: Response) => {
       // Delete company logic here
       res.status(501).json({ message: 'Not implemented - use new API endpoints' });
     }

@@ -11,7 +11,7 @@ import { AuthGuard } from '../../../auth/src/guards/auth.guard';
 import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 import { UserRole } from '../../../auth/src/types';
 import { validateRequest } from "@common/middleware/validate-request";
-import { validateCompanyAccess, ensureCompanyId, addCompanyFilter } from '../../../auth/src/middleware/company-access.middleware';
+import { addCompanyFilter } from '../../../auth/src/middleware/company-access.middleware';
 import { z } from 'zod';
 
 // Import controllers
@@ -27,21 +27,10 @@ import { createWarehouseController } from '../controllers/warehouse.controller';
 import { InventoryAssessmentService } from '../services/inventory-assessment.service';
 import { InventoryValuationService } from '../services/inventory-valuation.service';
 import { WarehouseService } from '../services/warehouse.service';
-import { AuditService } from '../../../modules/audit/services/audit.service';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 
 // Role constants for inventory operations
 const INVENTORY_ROLES = [UserRole.ADMIN, UserRole.USER];
-
-// Create validation schemas
-const createWarehouseSchema = z.object({
-  name: z.string().min(2, 'Warehouse name must be at least 2 characters'),
-  code: z.string().optional(),
-  location: z.string().optional(),
-  address: z.string().optional(),
-  type: z.enum(['depozit', 'magazin', 'custodie', 'transfer']),
-  is_active: z.boolean().optional().default(true)
-});
 
 const transferStockSchema = z.object({
   sourceStockId: z.string().uuid('Invalid source stock ID'),
@@ -110,7 +99,7 @@ export function setupInventoryRoutes() {
   // Mount the new warehouse controller with company access validation
   router.use('/warehouses', 
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    addCompanyFilter,
+    addCompanyFilter as any, // Type compatibility with Express middleware
     newWarehouseController
   );
 

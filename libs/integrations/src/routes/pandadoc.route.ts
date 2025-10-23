@@ -17,7 +17,6 @@ const router = express.Router();
 const integrationsService = new IntegrationsService();
 
 // Resource type for audit logs
-const RESOURCE_TYPE = IntegrationProvider.PANDADOC;
 
 /**
  * Initialize PandaDoc integration

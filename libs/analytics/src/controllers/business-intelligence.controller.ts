@@ -5,7 +5,7 @@
  * business unit performance, KPIs, OLAP operations, and data warehousing.
  */
 
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { BusinessIntelligenceService } from '../services/business-intelligence.service';
 import { Logger } from "@common/logger";
 import { AuthGuard } from '../../../auth/src/guards/auth.guard';
@@ -19,21 +19,23 @@ const logger = new Logger('BusinessIntelligenceController');
  * Authentication middleware with role check for business intelligence
  * Allows users with BI-related roles
  */
-const biRoleGuard = (req: any, res: Response, next: any) => {
+const biRoleGuard = (req: any, res: Response, next: any): void => {
   // Make sure user is authenticated
   if (!req.user) {
-    return res.status(401).json({ 
+    res.status(401).json({ 
       error: 'Unauthorized', 
       message: 'You must be logged in to access Business Intelligence features' 
     });
+    return;
   }
 
   // Check if user has business intelligence access
   if (!hasBusinessIntelligenceAccess(req.user.roles)) {
-    return res.status(403).json({ 
+    res.status(403).json({ 
       error: 'Forbidden', 
       message: 'You do not have permission to access Business Intelligence features' 
     });
+    return;
   }
 
   next();
@@ -86,14 +88,14 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
     `${BASE_PATH}/kpis`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     biRoleGuard,
-    async (req: any, res: Response) => {
+    async (_req: any, res: Response) => {
       try {
-        const companyId = req.user.companyId;
-        const businessUnitId = req.query.businessUnitId as string;
-        const periodStart = req.query.periodStart as string;
-        const periodEnd = req.query.periodEnd as string;
-        
         // TODO: Implement KPI functionality
+        // const companyId = req.user.companyId;
+        // const businessUnitId = req.query.businessUnitId as string;
+        // const periodStart = req.query.periodStart as string;
+        // const periodEnd = req.query.periodEnd as string;
+        
         throw new Error('KPI functionality not yet implemented');
       } catch (error) {
         logger.error('Error fetching KPIs:', error);
@@ -116,15 +118,15 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
     `${BASE_PATH}/kpis`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     biRoleGuard,
-    async (req: any, res: Response) => {
+    async (_req: any, res: Response) => {
       try {
-        const kpiData = {
-          ...req.body,
-          companyId: req.user.companyId,
-          createdBy: req.user.id
-        };
-        
         // TODO: Implement KPI functionality
+        // const kpiData = {
+        //   ...req.body,
+        //   companyId: req.user.companyId,
+        //   createdBy: req.user.id
+        // };
+        
         throw new Error('KPI creation not yet implemented');
       } catch (error) {
         logger.error('Error creating KPI:', error);
@@ -147,12 +149,12 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
     `${BASE_PATH}/dimensions`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     biRoleGuard,
-    async (req: any, res: Response) => {
+    async (_req: any, res: Response) => {
       try {
-        const companyId = req.user.companyId;
-        const datasetId = req.query.datasetId as string;
-        
         // TODO: Implement OLAP functionality
+        // const companyId = req.user.companyId;
+        // const datasetId = req.query.datasetId as string;
+        
         throw new Error('OLAP dimensions not yet implemented');
       } catch (error) {
         logger.error('Error fetching OLAP dimensions:', error);
@@ -175,12 +177,12 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
     `${BASE_PATH}/measures`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     biRoleGuard,
-    async (req: any, res: Response) => {
+    async (_req: any, res: Response) => {
       try {
-        const companyId = req.user.companyId;
-        const datasetId = req.query.datasetId as string;
-        
         // TODO: Implement OLAP functionality
+        // const companyId = req.user.companyId;
+        // const datasetId = req.query.datasetId as string;
+        
         throw new Error('OLAP measures not yet implemented');
       } catch (error) {
         logger.error('Error fetching OLAP measures:', error);
@@ -203,12 +205,12 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
     `${BASE_PATH}/olap-query`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     biRoleGuard,
-    async (req: any, res: Response) => {
+    async (_req: any, res: Response) => {
       try {
-        const companyId = req.user.companyId;
-        const { dimensions, measures, filters, datasetId } = req.body;
-        
         // TODO: Implement OLAP functionality
+        // const companyId = req.user.companyId;
+        // const { dimensions, measures, filters, datasetId } = req.body;
+        
         throw new Error('OLAP query execution not yet implemented');
       } catch (error) {
         logger.error('Error executing OLAP query:', error);
@@ -231,12 +233,12 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
     `${BASE_PATH}/etl-jobs`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     biRoleGuard,
-    async (req: any, res: Response) => {
+    async (_req: any, res: Response) => {
       try {
-        const companyId = req.user.companyId;
-        const status = req.query.status as string;
-        
         // TODO: Implement ETL functionality
+        // const companyId = req.user.companyId;
+        // const status = req.query.status as string;
+        
         throw new Error('ETL jobs not yet implemented');
       } catch (error) {
         logger.error('Error fetching ETL jobs:', error);
@@ -259,15 +261,15 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
     `${BASE_PATH}/etl-jobs`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     biRoleGuard,
-    async (req: any, res: Response) => {
+    async (_req: any, res: Response) => {
       try {
-        const jobData = {
-          ...req.body,
-          companyId: req.user.companyId,
-          createdBy: req.user.id
-        };
-        
         // TODO: Implement ETL functionality
+        // const jobData = {
+        //   ...req.body,
+        //   companyId: req.user.companyId,
+        //   createdBy: req.user.id
+        // };
+        
         throw new Error('ETL job creation not yet implemented');
       } catch (error) {
         logger.error('Error creating ETL job:', error);
@@ -290,12 +292,12 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
     `${BASE_PATH}/datasets`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     biRoleGuard,
-    async (req: any, res: Response) => {
+    async (_req: any, res: Response) => {
       try {
-        const companyId = req.user.companyId;
-        const type = req.query.type as string;
-        
         // TODO: Implement dataset functionality
+        // const companyId = req.user.companyId;
+        // const type = req.query.type as string;
+        
         throw new Error('Dataset retrieval not yet implemented');
       } catch (error) {
         logger.error('Error fetching datasets:', error);
@@ -318,15 +320,15 @@ export function registerBusinessIntelligenceControllerRoutes(app: any, biService
     `${BASE_PATH}/datasets`,
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     biRoleGuard,
-    async (req: any, res: Response) => {
+    async (_req: any, res: Response) => {
       try {
-        const datasetData = {
-          ...req.body,
-          companyId: req.user.companyId,
-          createdBy: req.user.id
-        };
-        
         // TODO: Implement dataset functionality
+        // const datasetData = {
+        //   ...req.body,
+        //   companyId: req.user.companyId,
+        //   createdBy: req.user.id
+        // };
+        
         throw new Error('Dataset creation not yet implemented');
       } catch (error) {
         logger.error('Error creating dataset:', error);

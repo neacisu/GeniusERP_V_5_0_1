@@ -9,7 +9,6 @@
  * - Follow-up reminders
  */
 
-import { DrizzleService } from "@common/drizzle";
 import AuditService from '../../../audit/src/services/audit.service';
 import { randomUUID } from 'crypto';
 
@@ -34,7 +33,7 @@ export interface ResponseSuggestion {
 
 export class InboxAiAssistantService {
   constructor(
-    private drizzleService: DrizzleService
+    // private drizzleService: DrizzleService // TODO: Use for database operations
   ) {
     console.log('Inbox AI Assistant Service initialized');
   }
@@ -42,13 +41,13 @@ export class InboxAiAssistantService {
   /**
    * Analyze an email message for sentiment, topics, and action items
    * @param messageId The ID of the message to analyze
-   * @param messageContent The content of the message
+   * @param _messageContent The content of the message
    * @param userId The ID of the user requesting analysis
    * @returns Analysis of the email including sentiment and action items
    */
   async analyzeEmail(
     messageId: string,
-    messageContent: string,
+    __messageContent: string,
     userId: string
   ): Promise<EmailAnalysis> {
     // Log the action
@@ -94,8 +93,8 @@ export class InboxAiAssistantService {
    */
   async generateResponseSuggestions(
     messageId: string,
-    messageContent: string,
-    emailAnalysis: EmailAnalysis | null,
+    _messageContent: string,
+    _emailAnalysis: EmailAnalysis | null,
     userId: string
   ): Promise<ResponseSuggestion[]> {
     // Log the action
@@ -104,14 +103,12 @@ export class InboxAiAssistantService {
       action: 'generate_suggestions',
       userId,
       companyId: 'default',  // This would come from actual context in a real implementation
-      entity: 'message',
-      details: { 
-        action: 'generate_response_suggestions' 
-      }
+      entity: 'message'
     });
 
     // Use provided analysis or analyze the email first
-    const analysis = emailAnalysis || await this.analyzeEmail(messageId, messageContent, userId);
+    // TODO: Use analysis in actual implementation
+    // const _analysis = emailAnalysis || await this.analyzeEmail(messageId, messageContent, userId);
 
     // In a real implementation, this would generate contextually appropriate
     // response suggestions based on the email content and analysis
@@ -152,7 +149,7 @@ export class InboxAiAssistantService {
    */
   async generateCompleteResponse(
     messageId: string,
-    messageContent: string,
+    _messageContent: string,
     contextHistory: { sender: string; content: string; timestamp: Date }[],
     userId: string
   ): Promise<{
@@ -197,7 +194,7 @@ export class InboxAiAssistantService {
    */
   async createSmartFollowUpReminders(
     messageId: string,
-    emailAnalysis: EmailAnalysis,
+    _emailAnalysis: EmailAnalysis,
     userId: string
   ): Promise<{
     reminderId: string;

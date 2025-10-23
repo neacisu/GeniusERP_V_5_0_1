@@ -9,7 +9,6 @@
  * - Opportunity insights
  */
 
-import { DrizzleService } from "@common/drizzle";
 import AuditService from '../../../audit/src/services/audit.service';
 import { randomUUID } from 'crypto';
 
@@ -37,7 +36,7 @@ export interface SalesRecommendation {
 
 export class SalesAiService {
   constructor(
-    private drizzleService: DrizzleService
+    // private drizzleService: DrizzleService // TODO: Use for database operations
   ) {
     console.log('SalesAI Service initialized');
   }

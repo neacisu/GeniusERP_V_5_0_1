@@ -12,7 +12,6 @@
  * - Usage tracking and monitoring
  */
 
-import { DrizzleService } from "@common/drizzle";
 import AuditService from '../../../audit/src/services/audit.service';
 import { 
   OpenAiConfig, 
@@ -51,7 +50,7 @@ export class OpenAiService {
    * Creates an instance of OpenAIService
    */
   constructor(
-    private drizzleService: DrizzleService
+    // private drizzleService: DrizzleService // TODO: Use for database operations
   ) {
     this.config = defaultOpenAiConfig;
     this.isConfigValid = validateOpenAiConfig(this.config);
