@@ -1,8 +1,8 @@
 {
   "run": {
-    "command": "nx lint ai",
-    "startTime": "2025-10-23T09:01:53.906Z",
-    "endTime": "2025-10-23T09:02:11.462Z",
+    "command": "nx run ai:lint --quiet",
+    "startTime": "2025-10-23T09:05:22.220Z",
+    "endTime": "2025-10-23T09:05:39.540Z",
     "inner": false
   },
   "tasks": [
@@ -10,9 +10,9 @@
       "taskId": "ai:lint",
       "target": "lint",
       "projectName": "ai",
-      "hash": "18112197877731535388",
-      "startTime": "2025-10-23T09:01:53.943Z",
-      "endTime": "2025-10-23T09:02:11.457Z",
+      "hash": "9371851147905154209",
+      "startTime": "2025-10-23T09:05:22.255Z",
+      "endTime": "2025-10-23T09:05:39.535Z",
       "params": "",
       "cacheStatus": "cache-miss",
       "status": 0

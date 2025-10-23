@@ -6,7 +6,7 @@
  * role-based access controls and multi-tenant company guards.
  */
 
-import express, { Router, Request as ExpressRequest, Response } from 'express';
+import express, { Request as ExpressRequest, Response } from 'express';
 import { SetupService } from '../services/setup.service';
 import { AuthGuard } from '../../../auth/src/guards/auth.guard';
 import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
