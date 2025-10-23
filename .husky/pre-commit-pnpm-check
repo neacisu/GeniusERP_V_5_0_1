@@ -1,0 +1,6 @@
+# Only allow pnpm
+if ! command -v pnpm &> /dev/null; then
+  echo "⚠️  PNPM is not installed. Please install it:"
+  echo "npm install -g pnpm@latest"
+  exit 1
+fi

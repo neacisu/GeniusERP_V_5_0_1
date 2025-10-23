@@ -209,16 +209,16 @@ try {
 
 **Local** (without Docker):
 ```bash
-npm run dev             # Start dev server (Vite + Express)
-npm run build           # Production build
-npm run start           # Run production build
+pnpm run dev             # Start dev server (Vite + Express)
+pnpm run build           # Production build
+pnpm run start           # Run production build
 ```
 
 ### Database Operations
 
 ```bash
 # Push schema changes (no migrations)
-npm run db:push
+pnpm run db:push
 
 # Generate migrations (manual)
 npx drizzle-kit generate
@@ -232,16 +232,16 @@ npx drizzle-kit studio
 ### Code Quality
 
 ```bash
-npm run lint            # ESLint check
-npm run lint:fix        # Auto-fix issues
-npm run check           # TypeScript check
+pnpm run lint            # ESLint check
+pnpm run lint:fix        # Auto-fix issues
+pnpm run check           # TypeScript check
 ```
 
 ### Security Scanning
 
 ```bash
-npm run scan:vulnerabilities  # Trivy filesystem scan
-npm run scan:image           # Trivy Docker image scan
+pnpm run scan:vulnerabilities  # Trivy filesystem scan
+pnpm run scan:image           # Trivy Docker image scan
 ```
 
 ## Romanian Accounting Specifics
@@ -382,8 +382,8 @@ await db.delete(table).where(eq(table.id, id));
 ### Step 6: Quality Verification
 ```bash
 # MUST pass all checks before commit
-npm run lint          # 0 errors required
-npm run check         # 0 TypeScript errors required
+pnpm run lint          # 0 errors required
+pnpm run check         # 0 TypeScript errors required
 ```
 
 ### Step 7: Proper Commit & Push

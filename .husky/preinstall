@@ -1,0 +1,22 @@
+#!/bin/bash
+# Preinstall hook pentru a preveni utilizarea npm
+# Acest script va fi executat automat înainte de orice comandă npm install
+
+echo ""
+echo "⚠️  ====================================================="
+echo "⚠️  ATENȚIE: Acest proiect folosește PNPM, nu NPM!"
+echo "⚠️  ====================================================="
+echo ""
+echo "Te rugăm să folosești:"
+echo "  📦 pnpm install      (în loc de npm install)"
+echo "  🚀 pnpm run <script> (în loc de npm run <script>)"
+echo "  ➕ pnpm add <pkg>    (în loc de npm install <pkg>)"
+echo ""
+echo "Pentru a instala pnpm global:"
+echo "  npm install -g pnpm@latest"
+echo ""
+echo "====================================================="
+echo ""
+
+# Oprește executarea npm
+exit 1

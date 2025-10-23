@@ -103,7 +103,7 @@ modules/auth/
 ### Installation
 
 1. Clone the repository
-2. Install dependencies: `npm install`
+2. Install dependencies: `pnpm install`
 3. Set up environment variables (see `.env.example`)
 4. Run database migrations: `npm run db:push`
 5. Start the development server: `npm run dev`
