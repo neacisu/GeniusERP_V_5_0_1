@@ -14,7 +14,7 @@ import { InventoryAssessmentService } from '../services/inventory-assessment.ser
 import { InventoryValuationService } from '../services/inventory-valuation.service';
 import { log } from '../../../../apps/api/src/vite';
 import { validateRequest } from "@common/middleware/validate-request";
-import { pool } from '../../../db';
+import { pool } from '../../../../apps/api/src/db';
 
 // Constants for role-based access
 const INVENTORY_MANAGER_ROLES = [UserRole.ADMIN, UserRole.INVENTORY_MANAGER];
@@ -85,7 +85,7 @@ export function createInventoryAssessmentController(
    * @middleware AuthGuard.roleGuard(INVENTORY_MANAGER_ROLES) - Requires inventory manager role
    */
   router.post('/',
-    (req: Request, res: Response, next: NextFunction) => {
+    (req: Request, res: Response, next: NextFunction): void => {
       // Validate request body manually instead of using middleware
       try {
         // Add assessmentNumber from name if not provided
@@ -101,10 +101,11 @@ export function createInventoryAssessmentController(
         if (!validationResult.success) {
           const errors = validationResult.error.format();
           log(`Validation errors: ${JSON.stringify(errors)}`, 'inventory-assessment');
-          return res.status(400).json({ 
+          res.status(400).json({ 
             message: 'Validation error',
             errors
           });
+          return;
         }
         
         // Update request body with the modified version
@@ -113,13 +114,13 @@ export function createInventoryAssessmentController(
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown validation error';
         log(`Validation error: ${message}`, 'inventory-assessment');
-        return res.status(400).json({ 
+        res.status(400).json({ 
           message: 'Validation error',
           error: message
         });
       }
     },
-    async (req: Request, res: Response, _next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
       try {
         // Log headers for debugging
         log(`Request headers: ${JSON.stringify({
@@ -141,7 +142,8 @@ export function createInventoryAssessmentController(
           
           // If still missing, return auth error
           if (!userId || !companyId) {
-            return res.status(401).json({ error: 'Missing authentication information. Please login again.' });
+            res.status(401).json({ error: 'Missing authentication information. Please login again.' });
+            return;
           }
         }
         
@@ -196,13 +198,14 @@ export function createInventoryAssessmentController(
    */
   router.get('/',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    async (req: Request, res: Response, _next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
         
         if (!userId || !companyId) {
-          return res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          return;
         }
         
         // Using a simple raw SQL query instead of ORM functions
@@ -238,16 +241,17 @@ export function createInventoryAssessmentController(
    */
   router.get('/:id',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    async (req: Request, res: Response, _next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
         
         if (!userId || !companyId) {
-          return res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          return;
         }
         
-        const assessmentId = req.params.id;
+        const assessmentId = req.params['id'];
         
         // Using direct SQL queries instead of ORM
         const assessmentQuery = `
@@ -272,10 +276,11 @@ export function createInventoryAssessmentController(
         const assessmentResult = await pool.unsafe(assessmentQuery, [assessmentId, companyId]);
         
         if (assessmentResult.length === 0) {
-          return res.status(404).json({ 
+          res.status(404).json({ 
             error: 'Document de inventariere negăsit',
             details: 'Documentul de inventariere solicitat nu există sau nu aparține companiei dvs.'
           });
+          return;
         }
         
         const assessment = assessmentResult[0];
@@ -309,16 +314,17 @@ export function createInventoryAssessmentController(
   router.post('/:id/initialize',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     AuthGuard.roleGuard(INVENTORY_MANAGER_ROLES),
-    async (req: Request, res: Response, _next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
         
         if (!userId || !companyId) {
-          return res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          return;
         }
         
-        const assessmentId = req.params.id;
+        const assessmentId = req.params['id'];
         log(`Initializing assessment items for ID: ${assessmentId}, User ID: ${userId}`, 'inventory-assessment');
         
         try {
@@ -328,11 +334,12 @@ export function createInventoryAssessmentController(
           `;
           const assessmentResult = await pool.unsafe(getAssessmentQuery, [assessmentId, companyId]);
           if (assessmentResult.length === 0) {
-            return res.status(404).json({ error: 'Document de inventariere negăsit' });
+            res.status(404).json({ error: 'Document de inventariere negăsit' });
+            return;
           }
           
           const assessment = assessmentResult[0];
-          const warehouseId = assessment.warehouse_id;
+          const warehouseId = assessment['warehouse_id'];
           
           log(`Found assessment with warehouseId: ${warehouseId}`, 'inventory-assessment');
           
@@ -363,16 +370,17 @@ export function createInventoryAssessmentController(
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     AuthGuard.roleGuard(INVENTORY_MANAGER_ROLES),
     validateRequest({ body: updateStatusSchema }),
-    async (req: Request, res: Response, _next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
         
         if (!userId || !companyId) {
-          return res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          return;
         }
         
-        const assessmentId = req.params.id;
+        const assessmentId = req.params['id'];
         const status = req.body.status;
         
         const result = await assessmentService.updateAssessmentStatus(assessmentId, status, userId);
@@ -397,16 +405,17 @@ export function createInventoryAssessmentController(
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     AuthGuard.roleGuard(INVENTORY_USER_ROLES),
     validateRequest({ body: recordCountSchema }),
-    async (req: Request, res: Response, _next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
         
         if (!userId || !companyId) {
-          return res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          return;
         }
         
-        const itemId = req.params.id;
+        const itemId = req.params['id'];
         const { actualQuantity, notes, countedBy } = req.body;
         
         const result = await assessmentService.recordItemCount(
@@ -436,16 +445,17 @@ export function createInventoryAssessmentController(
   router.post('/:id/process',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     AuthGuard.roleGuard(INVENTORY_MANAGER_ROLES),
-    async (req: Request, res: Response, _next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
         
         if (!userId || !companyId) {
-          return res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          return;
         }
         
-        const assessmentId = req.params.id;
+        const assessmentId = req.params['id'];
         const result = await assessmentService.processInventoryDifferences(assessmentId, userId);
         
         res.json(result);
@@ -465,13 +475,14 @@ export function createInventoryAssessmentController(
    */
   router.get('/summary/status',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    async (req: Request, res: Response, _next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
         
         if (!userId || !companyId) {
-          return res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          return;
         }
         
         // Using a simple raw SQL query to get summary counts by status
@@ -503,14 +514,14 @@ export function createInventoryAssessmentController(
         // Structure the response to match the expected format in the frontend
         res.json({ 
           summary: {
-            totalCount: parseInt(summary.total_count),
+            totalCount: parseInt(summary['total_count']),
             statusCounts: {
-              draft: parseInt(summary.draft_count),
-              in_progress: parseInt(summary.in_progress_count),
-              pending_approval: parseInt(summary.pending_approval_count),
-              approved: parseInt(summary.approved_count),
-              finalized: parseInt(summary.finalized_count),
-              cancelled: parseInt(summary.cancelled_count)
+              draft: parseInt(summary['draft_count']),
+              in_progress: parseInt(summary['in_progress_count']),
+              pending_approval: parseInt(summary['pending_approval_count']),
+              approved: parseInt(summary['approved_count']),
+              finalized: parseInt(summary['finalized_count']),
+              cancelled: parseInt(summary['cancelled_count'])
             }
           } 
         });
@@ -531,13 +542,13 @@ export function createInventoryAssessmentController(
   router.post('/valuation/calculate',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     validateRequest({ body: inventoryValuationSchema }),
-    async (req: Request, res: Response, _next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
         
         if (!userId || !companyId) {
-          return res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
         }
         
         const { productId, warehouseId, valuationMethod, date } = req.body;
@@ -567,24 +578,26 @@ export function createInventoryAssessmentController(
    */
   router.get('/valuation/history',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    async (req: Request, res: Response, _next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
       try {
         const userId = req.user?.id;
         const companyId = req.user?.companyId;
         
         if (!userId || !companyId) {
-          return res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          res.status(401).json({ error: 'Utilizator neautentificat sau lipsă ID companie' });
+          return;
         }
         
-        const productId = req.query.productId as string;
-        const warehouseId = req.query.warehouseId as string;
+        const productId = req.query['productId'] as string;
+        const warehouseId = req.query['warehouseId'] as string;
         
         if (!productId || !warehouseId) {
-          return res.status(400).json({ error: 'ID-ul produsului și ID-ul gestiunii sunt obligatorii' });
+          res.status(400).json({ error: 'ID-ul produsului și ID-ul gestiunii sunt obligatorii' });
+          return;
         }
         
-        const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
-        const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+        const startDate = req.query['startDate'] ? new Date(req.query['startDate'] as string) : undefined;
+        const endDate = req.query['endDate'] ? new Date(req.query['endDate'] as string) : undefined;
         
         const result = await valuationService.getValuationHistory(
           productId,

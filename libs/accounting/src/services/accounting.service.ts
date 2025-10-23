@@ -3,10 +3,10 @@ import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { and, eq } from "drizzle-orm";
 import {
   AccountClass, AccountGroup, SyntheticAccount, AnalyticAccount,
-  JournalEntry, JournalLine,
+  JournalEntry,
   InsertJournalEntry, InsertJournalLine
 } from "../../../shared/src/schema";
-import { RedisService } from "../../../services/redis.service";
+import { RedisService } from "@common/services/redis.service";
 
 /**
  * Accounting Service with Redis caching for Chart of Accounts
@@ -383,7 +383,7 @@ export class AccountingService {
    */
   async getSuppliers(companyId: string): Promise<any[]> {
     // Get suppliers from CRM companies table where isSupplier is true using Drizzle ORM
-    const { crm_companies } = await import('../../../modules/crm/schema/crm.schema');
+    const { crm_companies } = await import('../../../crm/src/schema/crm.schema');
     
     return this.drizzleService.db
       .select()
@@ -400,7 +400,7 @@ export class AccountingService {
    */
   async getSupplier(supplierId: string, companyId: string): Promise<any> {
     // Get supplier using Drizzle ORM
-    const { crm_companies } = await import('../../../modules/crm/schema/crm.schema');
+    const { crm_companies } = await import('../../../crm/src/schema/crm.schema');
     
     const result = await this.drizzleService.db
       .select()

@@ -8,7 +8,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ValidateInvoiceService } from '../services/validate-invoice.service';
 import { Logger } from "@common/logger";
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '../../../audit/src/services/audit.service';
 import { ENTITY_NAME } from '../invoices.module';
 import { invoices } from '@geniuserp/shared';
 import { eq, and } from 'drizzle-orm';
@@ -72,7 +72,7 @@ export class ValidateInvoiceController {
         validation: validationResult
       });
     } catch (error) {
-      this.logger.error(`Error validating invoice ${req.params.invoiceId}:`, error);
+      this.logger.error(`Error validating invoice ${req.params['invoiceId']}:`, error);
       next(error);
     }
   }
@@ -166,9 +166,10 @@ export class ValidateInvoiceController {
       }
       
       // Get the validation status using Drizzle ORM
-      const drizzle = new (await import('../../../common/drizzle/drizzle.service')).DrizzleService();
+      const { DrizzleService } = await import('@common/drizzle/drizzle.service');
+      const drizzle = new DrizzleService();
       
-      const results = await drizzle.query(async (db) => {
+      const results = await drizzle.query(async (db: any) => {
         return await db
           .select({
             isValidated: invoices.isValidated,
@@ -193,7 +194,7 @@ export class ValidateInvoiceController {
       this.logger.debug(`Retrieved validation status for invoice ${invoiceId}`);
       res.json(status);
     } catch (error) {
-      this.logger.error(`Error getting validation status for invoice ${req.params.invoiceId}:`, error);
+      this.logger.error(`Error getting validation status for invoice ${req.params['invoiceId']}:`, error);
       next(error);
     }
   }
@@ -214,9 +215,10 @@ export class ValidateInvoiceController {
       }
       
       // Get invoice data for preview using Drizzle ORM
-      const drizzle = new (await import('../../../common/drizzle/drizzle.service')).DrizzleService();
+      const { DrizzleService } = await import('@common/drizzle/drizzle.service');
+      const drizzle = new DrizzleService();
       
-      const results = await drizzle.query(async (db) => {
+      const results = await drizzle.query(async (db: any) => {
         return await db
           .select()
           .from(invoices)
@@ -244,7 +246,7 @@ export class ValidateInvoiceController {
       this.logger.debug(`Generated accounting entries preview for invoice ${invoiceId}`);
       res.json(preview);
     } catch (error) {
-      this.logger.error(`Error previewing accounting entries for invoice ${req.params.invoiceId}:`, error);
+      this.logger.error(`Error previewing accounting entries for invoice ${req.params['invoiceId']}:`, error);
       next(error);
     }
   }

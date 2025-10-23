@@ -8,22 +8,15 @@
 import { Request, Response, NextFunction } from 'express';
 import { InvoiceService } from '../services/invoice.service';
 import { Logger } from "@common/logger";
-import { AuditService } from '../../audit/services/audit.service';
-import { v4 as uuidv4 } from 'uuid';
+import { AuditService } from '../../../audit/src/services/audit.service';
 import { ENTITY_NAME } from '../invoices.module';
-import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { invoices, invoiceDetails } from '@geniuserp/shared';
-import { invoiceItems } from '../schema/invoice.schema';
-import { eq, and, desc } from 'drizzle-orm';
-import { trackInvoiceCreation, invoiceMetrics } from '../../../middlewares/business-metrics.middleware';
+import { trackInvoiceCreation } from '../../../../apps/api/src/middlewares/business-metrics.middleware';
 
 export class InvoiceController {
   private logger: Logger;
-  private drizzle: DrizzleService;
 
   constructor() {
     this.logger = new Logger('InvoiceController');
-    this.drizzle = new DrizzleService();
   }
 
   /**
@@ -113,7 +106,7 @@ export class InvoiceController {
       this.logger.debug(`Retrieved invoice ${id}`);
       res.json(invoice);
     } catch (error) {
-      this.logger.error(`Error getting invoice ${req.params.id}:`, error);
+      this.logger.error(`Error getting invoice ${req.params['id']}:`, error);
       next(error);
     }
   }
@@ -164,7 +157,7 @@ export class InvoiceController {
       this.logger.debug(`Updated invoice ${id}`);
       res.json(result);
     } catch (error) {
-      this.logger.error(`Error updating invoice ${req.params.id}:`, error);
+      this.logger.error(`Error updating invoice ${req.params['id']}:`, error);
       next(error);
     }
   }
@@ -213,7 +206,7 @@ export class InvoiceController {
       this.logger.debug(`Deleted invoice ${id}`);
       res.json({ success: true, message: 'Invoice deleted successfully' });
     } catch (error) {
-      this.logger.error(`Error deleting invoice ${req.params.id}:`, error);
+      this.logger.error(`Error deleting invoice ${req.params['id']}:`, error);
       next(error);
     }
   }
@@ -243,7 +236,7 @@ export class InvoiceController {
       this.logger.debug(`Retrieved ${results.invoices.length} invoices for customer ${customerId}`);
       res.json(results);
     } catch (error) {
-      this.logger.error(`Error getting customer ${req.params.customerId} invoices:`, error);
+      this.logger.error(`Error getting customer ${req.params['customerId']} invoices:`, error);
       next(error);
     }
   }
@@ -291,7 +284,7 @@ export class InvoiceController {
       this.logger.debug(`Successfully exported invoice ${id} to PDF`);
       res.send(pdfBuffer);
     } catch (error) {
-      this.logger.error(`Error exporting invoice ${req.params.id} to PDF:`, error);
+      this.logger.error(`Error exporting invoice ${req.params['id']} to PDF:`, error);
       next(error);
     }
   }

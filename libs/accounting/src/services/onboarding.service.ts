@@ -12,17 +12,15 @@
  */
 
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import {
-  accountingSettings,
-  openingBalances,
   syntheticAccounts,
   AccountingSettings,
   OpeningBalance,
   InsertSyntheticAccount,
 } from '@geniuserp/shared';
 import { AccountingSettingsService } from './accounting-settings.service';
-import { RedisService } from '../../../services/redis.service';
+import { RedisService } from '@common/services/redis.service';
 import * as XLSX from 'xlsx';
 
 export interface OnboardingStatus {
@@ -80,7 +78,7 @@ export class OnboardingService extends DrizzleService {
   async startOnboarding(
     companyId: string,
     startDate: Date,
-    fiscalYear: number,
+    _fiscalYear: number,
     userId: string
   ): Promise<AccountingSettings> {
     // Check if settings already exist

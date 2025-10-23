@@ -9,13 +9,15 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { AuthGuard } from '../../../auth/src/guards/auth.guard';
 import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 import { WarehouseService } from '../services/warehouse.service';
-import { insertWarehouseSchema, warehouseTypeEnum } from '../../../../shared/schema/warehouse';
+import { insertWarehouseSchema } from '@geniuserp/shared';
 import { validateRequest } from "@common/middleware/validate-request";
 import { z } from 'zod';
 
+// Import warehouse type enum from shared schema
+import { warehouseTypeEnum } from '../../../shared/src/schema/warehouse';
+
 // Define user roles that can manage warehouses
 const WAREHOUSE_MANAGER_ROLES = ['admin', 'inventory_manager', 'warehouse_manager'];
-const WAREHOUSE_USER_ROLES = [...WAREHOUSE_MANAGER_ROLES, 'inventory_clerk', 'warehouse_clerk'];
 
 export function createWarehouseController(warehouseService: WarehouseService): Router {
   const router = Router();
@@ -67,7 +69,7 @@ export function createWarehouseController(warehouseService: WarehouseService): R
       }),
       body: insertWarehouseSchema.partial()
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         const { id } = req.params;
         const userId = req.user?.id as string;
@@ -76,11 +78,13 @@ export function createWarehouseController(warehouseService: WarehouseService): R
         // Get warehouse to check if it belongs to the user's company
         const existingWarehouse = await warehouseService.getWarehouseById(id);
         if (!existingWarehouse) {
-          return res.status(404).json({ error: 'Warehouse not found' });
+          res.status(404).json({ error: 'Warehouse not found' });
+          return;
         }
 
         if (existingWarehouse.companyId !== companyId) {
-          return res.status(403).json({ error: 'You do not have permission to update this warehouse' });
+          res.status(403).json({ error: 'You do not have permission to update this warehouse' });
+          return;
         }
 
         const warehouse = await warehouseService.updateWarehouse(id, req.body, userId);
@@ -151,18 +155,20 @@ export function createWarehouseController(warehouseService: WarehouseService): R
         id: z.string().uuid()
       })
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         const { id } = req.params;
         const companyId = req.user?.companyId as string;
 
         const warehouse = await warehouseService.getWarehouseById(id);
         if (!warehouse) {
-          return res.status(404).json({ error: 'Warehouse not found' });
+          res.status(404).json({ error: 'Warehouse not found' });
+          return;
         }
 
         if (warehouse.companyId !== companyId) {
-          return res.status(403).json({ error: 'You do not have permission to view this warehouse' });
+          res.status(403).json({ error: 'You do not have permission to view this warehouse' });
+          return;
         }
 
         res.json(warehouse);
@@ -188,7 +194,7 @@ export function createWarehouseController(warehouseService: WarehouseService): R
         id: z.string().uuid()
       })
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         const { id } = req.params;
         const userId = req.user?.id as string;
@@ -197,13 +203,14 @@ export function createWarehouseController(warehouseService: WarehouseService): R
         // Get warehouse to check if it belongs to the user's company
         const existingWarehouse = await warehouseService.getWarehouseById(id);
         if (!existingWarehouse) {
-          return res.status(404).json({ error: 'Warehouse not found' });
+          res.status(404).json({ error: 'Warehouse not found' });
+          return;
         }
 
         if (existingWarehouse.companyId !== companyId) {
-          return res.status(403).json({ error: 'You do not have permission to delete this warehouse' });
+          res.status(403).json({ error: 'You do not have permission to delete this warehouse' });
+          return;
         }
-
         await warehouseService.deleteWarehouse(id, userId);
         res.status(204).send();
       } catch (error) {
@@ -226,7 +233,7 @@ export function createWarehouseController(warehouseService: WarehouseService): R
         id: z.string().uuid()
       })
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         const { id } = req.params;
         const companyId = req.user?.companyId as string;
@@ -234,11 +241,13 @@ export function createWarehouseController(warehouseService: WarehouseService): R
         // Get parent warehouse to check if it belongs to the user's company
         const parentWarehouse = await warehouseService.getWarehouseById(id);
         if (!parentWarehouse) {
-          return res.status(404).json({ error: 'Parent warehouse not found' });
+          res.status(404).json({ error: 'Parent warehouse not found' });
+          return;
         }
 
         if (parentWarehouse.companyId !== companyId) {
-          return res.status(403).json({ error: 'You do not have permission to view this warehouse' });
+          res.status(403).json({ error: 'You do not have permission to view this warehouse' });
+          return;
         }
 
         const children = await warehouseService.getChildWarehouses(id, companyId);

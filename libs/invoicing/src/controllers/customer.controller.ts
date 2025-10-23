@@ -8,7 +8,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Logger } from "@common/logger";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { eq, and } from 'drizzle-orm';
-import { JwtUserData } from '../../../../shared/types';
+import { JwtUserData } from '../../../shared/src/types';
 
 // Extindere Request pentru a suporta ambele formate de token
 declare global {
@@ -52,7 +52,7 @@ export class CustomerController {
       // Query companies marked as clients using Drizzle ORM
       this.logger.debug(`Getting customers for company ID: ${companyId}`);
       
-      const { crm_companies } = await import('../../crm/schema/crm.schema');
+      const { crm_companies } = await import('../../../crm/src/schema/crm.schema');
       
       const customers = await this.drizzle.query(async (db) => {
         return await db

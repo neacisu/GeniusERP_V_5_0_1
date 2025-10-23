@@ -10,13 +10,11 @@
 
 import { employees, employmentContracts, departments } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '../../../audit/src/services/audit.service';
 import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";
-import { eq, sql, asc, desc } from 'drizzle-orm';
+import { sql, desc } from 'drizzle-orm';
 import { Logger } from "@common/logger";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import * as fs from 'fs';
-import * as path from 'path';
 
 // We won't use an alias for the parent department here, we'll handle it in each query individually
 
@@ -39,12 +37,10 @@ export enum EmploymentContractStatus {
 
 export class EmployeeService {
   private drizzle: DrizzleService;
-  private auditService: AuditService;
   private logger = new Logger('EmployeeService');
 
   constructor() {
     this.drizzle = new DrizzleService();
-    this.auditService = new AuditService();
   }
 
   /**
@@ -76,7 +72,7 @@ export class EmployeeService {
     address: string = '',
     birthDate: Date | string | null = null,
     hireDate: Date | string | null = new Date(),
-    data: Record<string, any> = {},
+    _data: Record<string, any> = {},
     userId: string = ''
   ) {
     try {
@@ -261,7 +257,7 @@ export class EmployeeService {
    */
   async createSimpleEmployee(
     companyId: string,
-    franchiseId: string | null = null,
+    _franchiseId: string | null = null,
     name: string,
     email: string,
     position: string,

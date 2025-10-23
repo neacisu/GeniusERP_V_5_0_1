@@ -9,7 +9,7 @@ import { Request, Response, NextFunction } from 'express';
 import { CreateInvoiceService } from '../services/create-invoice.service';
 import { Logger } from "@common/logger";
 import { validateCreateInvoiceInput } from '../validators/create-invoice.validator';
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '../../../audit/src/services/audit.service';
 import { ENTITY_NAME } from '../invoices.module';
 
 export class CreateInvoiceController {

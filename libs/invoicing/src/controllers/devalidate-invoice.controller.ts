@@ -8,10 +8,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { DevalidateInvoiceService } from '../services/devalidate-invoice.service';
 import { Logger } from "@common/logger";
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '../../../audit/src/services/audit.service';
 import { ENTITY_NAME } from '../invoices.module';
-import { invoices, auditLogs } from '@geniuserp/shared';
-import { eq, and, desc } from 'drizzle-orm';
+import { invoices } from '@geniuserp/shared';
+import { eq, and } from 'drizzle-orm';
 
 export class DevalidateInvoiceController {
   private logger: Logger;
@@ -75,7 +75,7 @@ export class DevalidateInvoiceController {
         result
       });
     } catch (error) {
-      this.logger.error(`Error devalidating invoice ${req.params.invoiceId}:`, error);
+      this.logger.error(`Error devalidating invoice ${req.params['invoiceId']}:`, error);
       next(error);
     }
   }
@@ -96,9 +96,10 @@ export class DevalidateInvoiceController {
       }
       
       // Check if the invoice can be devalidated using Drizzle ORM
-      const drizzle = new (await import('../../../common/drizzle/drizzle.service')).DrizzleService();
+      const { DrizzleService } = await import('@common/drizzle/drizzle.service');
+      const drizzle = new DrizzleService();
       
-      const results = await drizzle.query(async (db) => {
+      const results = await drizzle.query(async (db: any) => {
         return await db
           .select({
             isValidated: invoices.isValidated,
@@ -126,7 +127,7 @@ export class DevalidateInvoiceController {
       this.logger.debug(`Devalidation check for invoice ${invoiceId}: ${canDevalidate.canDevalidate}`);
       res.json(canDevalidate);
     } catch (error) {
-      this.logger.error(`Error checking devalidation status for invoice ${req.params.invoiceId}:`, error);
+      this.logger.error(`Error checking devalidation status for invoice ${req.params['invoiceId']}:`, error);
       next(error);
     }
   }
@@ -137,7 +138,6 @@ export class DevalidateInvoiceController {
   async getDevalidationHistory(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { invoiceId } = req.params;
-      const companyId = req.user?.companyId;
       
       this.logger.debug(`Getting devalidation history for invoice ${invoiceId}`);
       
@@ -147,11 +147,12 @@ export class DevalidateInvoiceController {
       }
       
       // Get the devalidation history from audit logs using Drizzle ORM
-      const drizzle = new (await import('../../../common/drizzle/drizzle.service')).DrizzleService();
-      const { auditLogs } = await import('@shared/schema');
+      const { DrizzleService } = await import('@common/drizzle/drizzle.service');
+      const drizzle = new DrizzleService();
+      const { auditLogs } = await import('@geniuserp/shared');
       const { desc } = await import('drizzle-orm');
       
-      const history = await drizzle.query(async (db) => {
+      const history = await drizzle.query(async (db: any) => {
         return await db
           .select()
           .from(auditLogs)
@@ -167,7 +168,7 @@ export class DevalidateInvoiceController {
       this.logger.debug(`Retrieved devalidation history for invoice ${invoiceId}`);
       res.json({ history: history || [] });
     } catch (error) {
-      this.logger.error(`Error getting devalidation history for invoice ${req.params.invoiceId}:`, error);
+      this.logger.error(`Error getting devalidation history for invoice ${req.params['invoiceId']}:`, error);
       next(error);
     }
   }

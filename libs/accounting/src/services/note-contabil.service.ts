@@ -10,12 +10,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import { getDrizzle } from "@common/drizzle";
 import { eq, desc } from 'drizzle-orm';
-import { ledgerEntries } from '../../../../shared/schema';
-import { AuditService } from '../../audit/services/audit.service';
-import { Service } from '../../../../shared/types';
-import { RedisService } from '../../../services/redis.service';
+import { ledgerEntries } from '../schema/accounting.schema';
+import { AuditService } from '../../../audit/src/services/audit.service';
+import { RedisService } from '@common/services/redis.service';
 import { warehouses, companies } from '@geniuserp/shared';
 import { createModuleLogger } from "@common/logger/loki-logger";
+import { Service } from '../../../shared/src/types';
 import type {
   NoteContabilData,
   CreatedNote,
@@ -404,7 +404,7 @@ export default class NoteContabilService {
     try {
       // Import services and helpers dynamically to avoid circular dependencies
       const { SalesJournalService } = await import('./sales-journal.service');
-      const { InvoiceService } = await import('../../invoicing/services/invoice.service');
+      const { InvoiceService } = await import('../../../invoicing/src/services/invoice.service');
       
       // Generate accounting entries based on document type
       let ledgerEntry;

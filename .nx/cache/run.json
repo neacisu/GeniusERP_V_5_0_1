@@ -1,164 +1,21 @@
 {
   "run": {
-    "command": "nx run-many --target=lint --all",
-    "startTime": "2025-10-23T12:17:38.126Z",
-    "endTime": "2025-10-23T12:19:04.086Z",
+    "command": "nx run-many --target=serve --projects=api,web --parallel=2",
+    "startTime": "2025-10-23T12:32:00.793Z",
+    "endTime": "2025-10-23T12:33:58.448Z",
     "inner": false
   },
   "tasks": [
     {
-      "taskId": "auth:lint",
-      "target": "lint",
-      "projectName": "auth",
-      "hash": "17535532590241082024",
-      "startTime": "2025-10-23T12:17:38.207Z",
-      "endTime": "2025-10-23T12:17:38.208Z",
-      "params": "",
-      "cacheStatus": "local-cache-hit",
-      "status": 0
-    },
-    {
-      "taskId": "audit:lint",
-      "target": "lint",
-      "projectName": "audit",
-      "hash": "10060253737974161126",
-      "startTime": "2025-10-23T12:17:38.230Z",
-      "endTime": "2025-10-23T12:17:38.231Z",
-      "params": "",
-      "cacheStatus": "local-cache-hit",
-      "status": 0
-    },
-    {
-      "taskId": "crm:lint",
-      "target": "lint",
-      "projectName": "crm",
-      "hash": "15812271795887207877",
-      "startTime": "2025-10-23T12:17:38.187Z",
-      "endTime": "2025-10-23T12:17:55.386Z",
-      "params": "",
-      "cacheStatus": "cache-miss",
-      "status": 1
-    },
-    {
-      "taskId": "api:lint",
-      "target": "lint",
+      "taskId": "api:serve",
+      "target": "serve",
       "projectName": "api",
-      "hash": "307585167477057540",
-      "startTime": "2025-10-23T12:17:38.520Z",
-      "endTime": "2025-10-23T12:17:56.679Z",
+      "hash": "6949827135573428032",
+      "startTime": "2025-10-23T12:32:00.817Z",
+      "endTime": "2025-10-23T12:33:58.327Z",
       "params": "",
       "cacheStatus": "cache-miss",
       "status": 1
-    },
-    {
-      "taskId": "inventory:lint",
-      "target": "lint",
-      "projectName": "inventory",
-      "hash": "17801842481417916322",
-      "startTime": "2025-10-23T12:17:56.680Z",
-      "endTime": "2025-10-23T12:18:13.764Z",
-      "params": "",
-      "cacheStatus": "cache-miss",
-      "status": 0
-    },
-    {
-      "taskId": "accounting:lint",
-      "target": "lint",
-      "projectName": "accounting",
-      "hash": "13198798619161964175",
-      "startTime": "2025-10-23T12:17:55.387Z",
-      "endTime": "2025-10-23T12:18:14.272Z",
-      "params": "",
-      "cacheStatus": "cache-miss",
-      "status": 0
-    },
-    {
-      "taskId": "web:lint",
-      "target": "lint",
-      "projectName": "web",
-      "hash": "5955679811158787705",
-      "startTime": "2025-10-23T12:17:38.532Z",
-      "endTime": "2025-10-23T12:18:14.610Z",
-      "params": "",
-      "cacheStatus": "cache-miss",
-      "status": 1
-    },
-    {
-      "taskId": "ai:lint",
-      "target": "lint",
-      "projectName": "ai",
-      "hash": "14553092693799153958",
-      "startTime": "2025-10-23T12:18:13.768Z",
-      "endTime": "2025-10-23T12:18:30.445Z",
-      "params": "",
-      "cacheStatus": "cache-miss",
-      "status": 0
-    },
-    {
-      "taskId": "invoicing:lint",
-      "target": "lint",
-      "projectName": "invoicing",
-      "hash": "9380097339522522490",
-      "startTime": "2025-10-23T12:18:14.612Z",
-      "endTime": "2025-10-23T12:18:30.995Z",
-      "params": "",
-      "cacheStatus": "cache-miss",
-      "status": 1
-    },
-    {
-      "taskId": "analytics:lint",
-      "target": "lint",
-      "projectName": "analytics",
-      "hash": "5029277349937073056",
-      "startTime": "2025-10-23T12:18:14.275Z",
-      "endTime": "2025-10-23T12:18:31.523Z",
-      "params": "",
-      "cacheStatus": "cache-miss",
-      "status": 0
-    },
-    {
-      "taskId": "shared:lint",
-      "target": "lint",
-      "projectName": "shared",
-      "hash": "9727495692574043622",
-      "startTime": "2025-10-23T12:18:30.447Z",
-      "endTime": "2025-10-23T12:18:47.320Z",
-      "params": "",
-      "cacheStatus": "cache-miss",
-      "status": 0
-    },
-    {
-      "taskId": "admin:lint",
-      "target": "lint",
-      "projectName": "admin",
-      "hash": "2705530946141207863",
-      "startTime": "2025-10-23T12:18:30.997Z",
-      "endTime": "2025-10-23T12:18:47.755Z",
-      "params": "",
-      "cacheStatus": "cache-miss",
-      "status": 0
-    },
-    {
-      "taskId": "documents:lint",
-      "target": "lint",
-      "projectName": "documents",
-      "hash": "11566590787436889328",
-      "startTime": "2025-10-23T12:18:31.526Z",
-      "endTime": "2025-10-23T12:18:47.874Z",
-      "params": "",
-      "cacheStatus": "cache-miss",
-      "status": 0
-    },
-    {
-      "taskId": "sales:lint",
-      "target": "lint",
-      "projectName": "sales",
-      "hash": "9579038873479005520",
-      "startTime": "2025-10-23T12:18:47.323Z",
-      "endTime": "2025-10-23T12:19:04.083Z",
-      "params": "",
-      "cacheStatus": "cache-miss",
-      "status": 0
     }
   ]
 }
