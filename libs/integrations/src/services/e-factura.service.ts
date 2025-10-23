@@ -78,9 +78,9 @@ export class EFacturaService {
       // This is a placeholder for the actual API call
       const response = await this.httpClient.post<any>('/upload', invoiceXml, {
         headers: {
-          'X-Transaction-ID': metadata.transactionId || new Date().getTime().toString(),
-          'X-Company-CUI': metadata.companyCui,
-          'X-Company-Name': metadata.companyName
+          'X-Transaction-ID': metadata['transactionId'] || new Date().getTime().toString(),
+          'X-Company-CUI': metadata['companyCui'],
+          'X-Company-Name': metadata['companyName']
         }
       });
       
@@ -135,17 +135,17 @@ export class EFacturaService {
     // In a real implementation, this would generate proper UBL XML
     // For now, we return a placeholder
     
-    log(`📝 Generating UBL XML for invoice ${invoiceData.invoiceNumber}`, 'e-factura');
+    log(`📝 Generating UBL XML for invoice ${invoiceData['invoiceNumber']}`, 'e-factura');
     
     // This is just a simplified example - real UBL XML is much more complex
     return `<?xml version="1.0" encoding="UTF-8"?>
 <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" 
          xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
          xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
-  <cbc:ID>${invoiceData.invoiceNumber}</cbc:ID>
-  <cbc:IssueDate>${invoiceData.issueDate}</cbc:IssueDate>
+  <cbc:ID>${invoiceData['invoiceNumber']}</cbc:ID>
+  <cbc:IssueDate>${invoiceData['issueDate']}</cbc:IssueDate>
   <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
-  <cbc:DocumentCurrencyCode>${invoiceData.currency}</cbc:DocumentCurrencyCode>
+  <cbc:DocumentCurrencyCode>${invoiceData['currency']}</cbc:DocumentCurrencyCode>
   <!-- Additional invoice data would go here -->
 </Invoice>`;
   }

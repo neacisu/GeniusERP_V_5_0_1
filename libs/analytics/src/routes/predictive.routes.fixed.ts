@@ -8,7 +8,6 @@
 import express, { Response, NextFunction } from 'express';
 import { AuthGuard } from '../../../auth/src/guards/auth.guard';
 import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
-import { PredictiveService } from '../services/predictive.service';
 import { hasPredictiveAnalyticsAccess } from '../analytics.roles';
 
 const router = express.Router();
@@ -17,21 +16,23 @@ const router = express.Router();
  * Authentication middleware with role check for predictive analytics
  * Allows ADMIN, COMPANY_ADMIN, DATA_SCIENTIST, and other specialized roles
  */
-const predictiveRoleGuard = (req: any, res: Response, next: NextFunction) => {
+const predictiveRoleGuard = (req: any, res: Response, next: NextFunction): void => {
   // Make sure user is authenticated
   if (!req.user) {
-    return res.status(401).json({ 
+    res.status(401).json({ 
       error: 'Unauthorized', 
       message: 'You must be logged in to access Predictive Analytics features' 
     });
+    return;
   }
   
   // Check if user has predictive analytics access
   if (!hasPredictiveAnalyticsAccess(req.user.roles)) {
-    return res.status(403).json({ 
+    res.status(403).json({ 
       error: 'Forbidden', 
       message: 'You do not have permission to access Predictive Analytics features' 
     });
+    return;
   }
   
   next();

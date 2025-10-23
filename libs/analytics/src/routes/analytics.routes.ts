@@ -8,7 +8,6 @@
 import express, { Response, NextFunction } from 'express';
 import { AuthGuard } from '../../../auth/src/guards/auth.guard';
 import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
-import { AnalyticsService } from '../services/analytics.service';
 import { hasAnalyticsAccess } from '../analytics.roles';
 
 const router = express.Router();
@@ -17,21 +16,23 @@ const router = express.Router();
  * Authentication middleware with role check for analytics
  * Allows users with analytics-related roles
  */
-const analyticsRoleGuard = (req: any, res: Response, next: NextFunction) => {
+const analyticsRoleGuard = (req: any, res: Response, next: NextFunction): void => {
   // Make sure user is authenticated
   if (!req.user) {
-    return res.status(401).json({ 
+    res.status(401).json({ 
       error: 'Unauthorized', 
       message: 'You must be logged in to access Analytics features' 
     });
+    return;
   }
 
   // Check if user has analytics access
   if (!hasAnalyticsAccess(req.user.roles)) {
-    return res.status(403).json({ 
+    res.status(403).json({ 
       error: 'Forbidden', 
       message: 'You do not have permission to access Analytics features' 
     });
+    return;
   }
 
   next();

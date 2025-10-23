@@ -9,23 +9,14 @@
 
 import { 
   pgTable, 
-  uuid, 
   varchar, 
   text, 
   timestamp, 
   boolean, 
   pgEnum, 
-  integer,
-  serial
+  integer
 } from 'drizzle-orm/pg-core';
 import { createId } from '../../../shared/src/utils/id';
-
-// Reference to shared schema - to be replaced with actual imports in final implementation
-// Temporary solution for this module's isolated development
-const users = {
-  id: 'id',
-  companyId: 'company_id'
-};
 
 /**
  * Report types enum

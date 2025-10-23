@@ -24,11 +24,9 @@ const logger = new Logger('IntegrationsService');
  */
 export class IntegrationsService {
   private drizzle: DrizzleService;
-  private _auditService: AuditService;
 
   constructor() {
     this.drizzle = new DrizzleService();
-    this._auditService = new AuditService();
     logger.info('IntegrationsService initialized');
   }
 
