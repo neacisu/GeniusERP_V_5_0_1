@@ -2,10 +2,8 @@ import { Router } from "express";
 import { BankJournalService } from "../services";
 import { AuthGuard } from "../../../auth/src/guards/auth.guard";
 import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
-import { bankJournalService } from "..";
 import { BankJournalController } from "../controllers/bank-journal.controller";
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
-import { Response } from "express";
 import { 
   accountingReadRateLimiter,
   accountingHeavyRateLimiter,
@@ -19,7 +17,8 @@ import {
 export function setupBankJournalRoutes() {
   const router = Router();
   
-  // Create controller instance
+  // Create service and controller instances
+  const bankJournalService = new BankJournalService();
   const bankJournalController = new BankJournalController(bankJournalService);
   
   // Apply authentication middleware to all bank journal routes

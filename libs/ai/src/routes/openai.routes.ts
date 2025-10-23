@@ -52,7 +52,7 @@ router.get('/status', AuthGuard.protect(JwtAuthMode.REQUIRED), (req, res) => {
   const status = {
     ready: openAiService.isReady(),
     apiKeyStatus: openAiService.getApiKeyStatus(),
-    defaultModel: process.env.OPENAI_DEFAULT_MODEL || 'gpt-4o',
+    defaultModel: process.env['OPENAI_DEFAULT_MODEL'] || 'gpt-4o',
     models: ['gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'],
     sdkInstalled,
     useCases: Object.keys(openAiService.getConfigForUseCase('salesAssistant'))
@@ -69,24 +69,26 @@ router.get('/status', AuthGuard.protect(JwtAuthMode.REQUIRED), (req, res) => {
  * @desc Generate a completion using OpenAI
  * @access Private (requires authentication)
  */
-router.post('/completion', AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.companyGuard(), async (req, res) => {
+router.post('/completion', AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.companyGuard(), async (req, res): Promise<void> => {
   try {
     const { messages, model, temperature, maxTokens } = req.body;
     const userId = req.user?.id;
     const companyId = req.user?.companyId;
     
     if (!userId || !companyId) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'User ID and Company ID are required'
       });
+      return;
     }
     
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Messages array is required and must not be empty'
       });
+      return;
     }
     
     const completion = await openAiService.createChatCompletion({
@@ -94,8 +96,8 @@ router.post('/completion', AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.co
       model,
       temperature,
       maxTokens,
-      userId,
-      companyId
+      userId: userId!,
+      companyId: companyId!
     });
     
     res.status(200).json({
@@ -117,24 +119,26 @@ router.post('/completion', AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.co
  * @desc Analyze content using OpenAI
  * @access Private (requires authentication)
  */
-router.post('/analyze', AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.companyGuard(), async (req, res) => {
+router.post('/analyze', AuthGuard.protect(JwtAuthMode.REQUIRED), AuthGuard.companyGuard(), async (req, res): Promise<void> => {
   try {
     const { content, type, options } = req.body;
     const userId = req.user?.id;
     const companyId = req.user?.companyId;
     
     if (!userId || !companyId) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'User ID and Company ID are required'
       });
+      return;
     }
     
     if (!content) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Content is required for analysis'
       });
+      return;
     }
     
     // Build a conversation based on content type

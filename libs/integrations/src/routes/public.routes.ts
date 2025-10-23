@@ -29,8 +29,8 @@ router.get('/exchange-rates/bnr/all', async (req: Request, res: Response) => {
     log('📣 Public access to BNR exchange rates', 'api');
     
     let date: Date | undefined;
-    if (req.query.date) {
-      date = new Date(req.query.date as string);
+    if (req.query['date']) {
+      date = new Date(req.query['date'] as string);
       if (isNaN(date.getTime())) {
         return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD' });
       }
@@ -64,15 +64,15 @@ router.get('/exchange-rates/historical', async (req: Request, res: Response) => 
     
     log('📣 Public access to historical exchange rates', 'api');
     
-    const currencies = req.query.currencies 
-      ? (req.query.currencies as string).split(',') 
+    const currencies = req.query['currencies'] 
+      ? (req.query['currencies'] as string).split(',') 
       : ['USD', 'EUR', 'TRY']; // Default currencies
     
-    const days = parseInt(req.query.days as string || '10');
+    const days = parseInt(req.query['days'] as string || '10');
     const maxDays = 90; // Increased limit to allow more historical data
     
     // Optional source parameter - can be 'BNR', 'BNR_RSS', or blank for all sources
-    const source = req.query.source as string || '';
+    const source = req.query['source'] as string || '';
     
     if (isNaN(days) || days <= 0 || days > maxDays) {
       return res.status(400).json({ 
@@ -193,7 +193,7 @@ router.get('/exchange-rates/historical', async (req: Request, res: Response) => 
 });
 
 // Manually trigger BNR exchange rate update - Public Access
-router.post('/exchange-rates/bnr/update', async (req: Request, res: Response) => {
+router.post('/exchange-rates/bnr/update', async (_req: Request, res: Response) => {
   try {
     // Set response header to explicitly expect JSON
     res.setHeader('Content-Type', 'application/json');

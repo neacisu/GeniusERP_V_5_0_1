@@ -23,17 +23,18 @@ const productQaService = new ProductQaService(drizzle);
  * @desc Answer a product-related question using available documentation
  * @access Private (requires authentication)
  */
-router.post('/answer', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
+router.post('/answer', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res): Promise<void> => {
   try {
     const { question, productId } = req.body;
     const { userId } = req.user as { userId: string };
 
     // Validate required parameters
     if (!question) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Missing required parameter: question'
       });
+      return;
     }
 
     const answer = await productQaService.answerProductQuestion(
@@ -61,17 +62,18 @@ router.post('/answer', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res)
  * @desc Compare multiple products based on their specifications and features
  * @access Private (requires authentication)
  */
-router.post('/compare', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
+router.post('/compare', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res): Promise<void> => {
   try {
     const { productIds } = req.body;
     const { userId } = req.user as { userId: string };
 
     // Validate required parameters
     if (!productIds || !Array.isArray(productIds) || productIds.length < 2) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Missing or invalid required parameter: productIds must be an array with at least 2 items'
       });
+      return;
     }
 
     const comparison = await productQaService.compareProducts(productIds, userId);
@@ -95,17 +97,18 @@ router.post('/compare', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res
  * @desc Search for technical documentation across all product manuals
  * @access Private (requires authentication)
  */
-router.post('/search-documentation', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
+router.post('/search-documentation', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res): Promise<void> => {
   try {
     const { query, filters } = req.body;
     const { userId } = req.user as { userId: string };
 
     // Validate required parameters
     if (!query) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Missing required parameter: query'
       });
+      return;
     }
 
     const searchResults = await productQaService.searchProductDocumentation(

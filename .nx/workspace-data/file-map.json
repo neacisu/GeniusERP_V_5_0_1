@@ -87,244 +87,624 @@
   "fileMap": {
     "nonProjectFiles": [
       {
-        "file": "jest.preset.js",
-        "hash": "14256848549375763892"
+        "file": "migrations/0001_create-documents.sql",
+        "hash": "13746640466253424923"
       },
       {
-        "file": "migrations/migrate-admin-schema.ts",
-        "hash": "7750652609229551250"
-      },
-      {
-        "file": "migrations/20251014_add_accounting_settings_tables.sql",
-        "hash": "17798975444774772307"
-      },
-      {
-        "file": "migrations/add-missing-columns-to-companies.ts",
-        "hash": "4082271724877765845"
-      },
-      {
-        "file": "start-server.sh",
-        "hash": "15678777170297723762"
-      },
-      {
-        "file": "migrations/add_vat_categories_and_cash_vat.sql",
-        "hash": "9082736169577678401"
-      },
-      {
-        "file": "migrations/cor/run-missing-imports.js",
-        "hash": "10224940487028315961"
-      },
-      {
-        "file": "migrations/schema-updates/update-schema.js",
-        "hash": "10054377546758595009"
-      },
-      {
-        "file": "migrations/create-ecommerce-migration.ts",
-        "hash": "17526093313344115758"
-      },
-      {
-        "file": "migrations/cor/focused-cor-import.js",
-        "hash": "6866195794724878793"
-      },
-      {
-        "file": "env.example.txt",
-        "hash": "10297499776199025027"
-      },
-      {
-        "file": ".dockerignore",
-        "hash": "1270526425827491408"
-      },
-      {
-        "file": ".nxrc.json",
-        "hash": "10052673949290900250"
-      },
-      {
-        "file": ".github/workflows/auto-close-issues.yml",
-        "hash": "5844208170528065750"
-      },
-      {
-        "file": "jest.config.ts",
-        "hash": "10282790185360246113"
-      },
-      {
-        "file": "migrations/push-integrations-schema.ts",
-        "hash": "11578169128500894831"
-      },
-      {
-        "file": "migrations/add-social-capital.ts",
-        "hash": "12844332515012503571"
-      },
-      {
-        "file": "migrations/data-population/insert-sample-categories.ts",
-        "hash": "2432984329457446759"
-      },
-      {
-        "file": "migrations/unify-invoice-items-tables.sql",
-        "hash": "3003555211129952582"
-      },
-      {
-        "file": ".cursor/rules/git-rules.mdc",
-        "hash": "9977818838785392159"
+        "file": "migrations/cor/verify-cor-codes.js",
+        "hash": "11213778250292147981"
       },
       {
         "file": "migrations/direct-hr-migration.ts",
         "hash": "1415737853212135787"
       },
       {
-        "file": "docker-entrypoint.sh",
-        "hash": "879705893432100471"
+        "file": "migrations/create-analytics-migration.ts",
+        "hash": "15508351242629005372"
       },
       {
-        "file": "migrations/schema-updates/update-schema.ts",
-        "hash": "6144705160511866827"
+        "file": "migrations/push-integrations-schema.ts",
+        "hash": "11578169128500894831"
       },
       {
-        "file": "pnpm-workspace.yaml",
-        "hash": "7763056701660843368"
+        "file": "migrations/data-population/insert-sample-categories.ts",
+        "hash": "2432984329457446759"
       },
       {
-        "file": "migrations/cor/prepare-cor-data.js",
-        "hash": "7230802612206792681"
-      },
-      {
-        "file": "migrations/add-name-column-to-inventory-assessments.ts",
-        "hash": "14748786912029160245"
-      },
-      {
-        "file": "migrations/cor/import-sample-cor-batch.js",
-        "hash": "2964884606437219913"
-      },
-      {
-        "file": "package.json.backup-before-major-update",
-        "hash": "6926238877786970399"
-      },
-      {
-        "file": "migrations/cor/import-occupations-with-progress.js",
-        "hash": "12160544033086509284"
-      },
-      {
-        "file": ".husky/pre-commit-pnpm-check",
-        "hash": "9827491100955653126"
-      },
-      {
-        "file": "migrations/create-crm-migration.ts",
-        "hash": "13038659082524724459"
-      },
-      {
-        "file": "migrations/schema-updates/create-hr-settings-table.js",
-        "hash": "11330857075778968445"
-      },
-      {
-        "file": "migrations/push-collaboration-schema.ts",
-        "hash": "7418590415195614626"
-      },
-      {
-        "file": "migrations/db-push.ts",
-        "hash": "3751593323152081813"
-      },
-      {
-        "file": "migrations/cor/extract-occupations.js",
-        "hash": "15968069882048635729"
-      },
-      {
-        "file": "migrations/cor/final-import.js",
-        "hash": "7358253349304738367"
-      },
-      {
-        "file": "migrations/consolidate-product-tables.ts",
-        "hash": "4248127156859922798"
-      },
-      {
-        "file": "migrations/migrate-cor.ts",
-        "hash": "7632115559088418796"
-      },
-      {
-        "file": "migrations/add_missing_romanian_accounts.sql",
-        "hash": "330606226065475808"
-      },
-      {
-        "file": "postcss.config.js",
-        "hash": "14886562286554270667"
-      },
-      {
-        "file": "migrations/cor/cor-import-status.js",
-        "hash": "18077707577844645042"
-      },
-      {
-        "file": "migrations/create-financial-data-tables.ts",
-        "hash": "15853445747518209625"
-      },
-      {
-        "file": "migrations/cor/verify-cor-import.js",
-        "hash": "5092373551818043178"
-      },
-      {
-        "file": "migrations/migrate-collaboration.ts",
-        "hash": "11920945356041522497"
-      },
-      {
-        "file": "README.md",
-        "hash": "720166907429467546"
-      },
-      {
-        "file": "migrations/create-inventory-assessment.ts",
-        "hash": "15885943599416494435"
-      },
-      {
-        "file": "migrations/cor/complete-all-imports.js",
-        "hash": "2597015156191394639"
-      },
-      {
-        "file": "migrations/create-predictive-migration.ts",
-        "hash": "9654009589603335227"
-      },
-      {
-        "file": "migrations/run-settings-migration.ts",
-        "hash": "13695408863146413123"
-      },
-      {
-        "file": "migrations/add_collaboration_features.sql",
-        "hash": "14515196760681645546"
-      },
-      {
-        "file": "nx.json",
-        "hash": "12124539994595073338"
-      },
-      {
-        "file": "migrations/cor/import-all-cor-occupations.js",
-        "hash": "12077936538957162125"
-      },
-      {
-        "file": "Dockerfile.prod",
-        "hash": "15643643115114292950"
-      },
-      {
-        "file": "migrations/fix_invoice_lines_missing_columns.sql",
-        "hash": "7689024334377865201"
+        "file": "migrations/migrate-communications.ts",
+        "hash": "2447861907175246763"
       },
       {
         "file": "migrations/cor/update-occupations-from-xml.js",
         "hash": "5872844480919353337"
       },
       {
-        "file": "Dockerfile.dev",
-        "hash": "3334813063124580345"
+        "file": "migrations/meta/0002_snapshot.json",
+        "hash": "142254623320037945"
       },
       {
-        "file": "migrations/create-crm-tables.ts",
-        "hash": "9593583553274323669"
+        "file": "migrations/create-inventory-migration.ts",
+        "hash": "17025937650577644470"
+      },
+      {
+        "file": "migrations/db-push.ts",
+        "hash": "3751593323152081813"
+      },
+      {
+        "file": "migrations/update-inventory-assessments-warehouse-ids.js",
+        "hash": "1522546905636155049"
+      },
+      {
+        "file": "migrations/meta/_journal.json",
+        "hash": "11891409672637676830"
+      },
+      {
+        "file": "migrations/create-configurations-table.sql",
+        "hash": "15301518614296213717"
+      },
+      {
+        "file": "migrations/cor/import-all-cor-occupations.js",
+        "hash": "12077936538957162125"
+      },
+      {
+        "file": "migrations/cor/import-cor-from-csv.js",
+        "hash": "10192294939503056018"
+      },
+      {
+        "file": "migrations/schema-updates/update-schema.js",
+        "hash": "10054377546758595009"
+      },
+      {
+        "file": "tsconfig.json",
+        "hash": "12696543644374922193"
+      },
+      {
+        "file": "migrations/unify-invoice-items-tables.sql",
+        "hash": "3003555211129952582"
+      },
+      {
+        "file": "migrations/create-financial-tables-direct.js",
+        "hash": "13918178453721971769"
+      },
+      {
+        "file": "migrations/create-analytics-module.ts",
+        "hash": "9348378957263149727"
       },
       {
         "file": "migrations/cor/find-missing-occupations.js",
         "hash": "11386153646601420622"
       },
       {
+        "file": "migrations/migrate-integrations.ts",
+        "hash": "1187164045225201915"
+      },
+      {
+        "file": "migrations/add-created-by-column-to-inventory-assessments.ts",
+        "hash": "8336825999626407563"
+      },
+      {
+        "file": "migrations/create-predictive-migration.ts",
+        "hash": "9654009589603335227"
+      },
+      {
+        "file": "migrations/cor/cor-import-optimization.txt",
+        "hash": "2746099207980512297"
+      },
+      {
+        "file": "migrations/migrate-bpm.ts",
+        "hash": "2893897604356502908"
+      },
+      {
+        "file": "migrations/create-hr-migration.ts",
+        "hash": "11857534831648518647"
+      },
+      {
+        "file": "eslint.config.js",
+        "hash": "1726959496359336324"
+      },
+      {
+        "file": ".replit",
+        "hash": "2351295864897168589"
+      },
+      {
+        "file": "migrations/data-population/insert-sample-company.ts",
+        "hash": "1526289564352527479"
+      },
+      {
+        "file": "migrations/consolidate-product-tables.ts",
+        "hash": "4248127156859922798"
+      },
+      {
+        "file": "migrations/cor/cor-import-status.js",
+        "hash": "18077707577844645042"
+      },
+      {
+        "file": "migrations/migrate-bpm-direct.ts",
+        "hash": "8512710767925716306"
+      },
+      {
+        "file": "migrations/cor/final-import.js",
+        "hash": "7358253349304738367"
+      },
+      {
+        "file": "migrations/create-missing-tables-recovery.sql",
+        "hash": "15528478678891426534"
+      },
+      {
+        "file": "migrations/cor/prepare-cor-data.js",
+        "hash": "7230802612206792681"
+      },
+      {
+        "file": "migrations/migrate-collaboration.ts",
+        "hash": "11920945356041522497"
+      },
+      {
+        "file": "migrations/cor/extract-occupations.js",
+        "hash": "15968069882048635729"
+      },
+      {
+        "file": ".npmrc",
+        "hash": "6893666027209111638"
+      },
+      {
+        "file": "accounting-drizzle.config.ts",
+        "hash": "4328149913544239751"
+      },
+      {
+        "file": "migrations/cor/extract-cor-csv.js",
+        "hash": "16650223223336883421"
+      },
+      {
+        "file": "migrations/cor/import-cor-all.js",
+        "hash": "10729681300756051954"
+      },
+      {
+        "file": "start-server.sh",
+        "hash": "15678777170297723762"
+      },
+      {
+        "file": "migrations/push-bpm-schema.ts",
+        "hash": "16275303598699252471"
+      },
+      {
+        "file": "package.json.backup-before-major-update",
+        "hash": "6926238877786970399"
+      },
+      {
+        "file": "migrations/create-financial-data-tables.ts",
+        "hash": "15853445747518209625"
+      },
+      {
+        "file": "migrations/cor/import-occupations-from-word-xml.js",
+        "hash": "17080430081605168790"
+      },
+      {
+        "file": "migrations/create-crm-tables.ts",
+        "hash": "9593583553274323669"
+      },
+      {
+        "file": "PNPM.md",
+        "hash": "6219584590830218987"
+      },
+      {
+        "file": "migrations/fix_missing_groups_and_accounts.sql",
+        "hash": "6047459409562581879"
+      },
+      {
+        "file": "migrations/cor/cor_import_pid.txt",
+        "hash": "13125157948214151960"
+      },
+      {
+        "file": "token.txt",
+        "hash": "7410506273438272391"
+      },
+      {
+        "file": "send-logs-fixed.sh",
+        "hash": "6006324813976929674"
+      },
+      {
+        "file": "migrations/cor/focused-cor-import.js",
+        "hash": "6866195794724878793"
+      },
+      {
+        "file": ".nxignore",
+        "hash": "1071299440840288629"
+      },
+      {
+        "file": "migrations/run-settings-migration.ts",
+        "hash": "13695408863146413123"
+      },
+      {
+        "file": "migrations/schema-updates/create-hr-settings-table.js",
+        "hash": "11330857075778968445"
+      },
+      {
+        "file": ".github/workflows/auto-close-issues.yml",
+        "hash": "5844208170528065750"
+      },
+      {
+        "file": ".eslintrc.json",
+        "hash": "10312024542810267567"
+      },
+      {
+        "file": "migrations/20251019_add_missing_columns_inventory_assessments.sql",
+        "hash": "13723298286174107005"
+      },
+      {
+        "file": "migrations/cor/execute-cor-sql.js",
+        "hash": "11673816242790645327"
+      },
+      {
+        "file": "migrations/data-population/populate-invoice-tables.js",
+        "hash": "16987015772999986143"
+      },
+      {
+        "file": "migrations/direct-crm-migration.ts",
+        "hash": "12833349195723667971"
+      },
+      {
+        "file": "migrations/add-name-column-to-inventory-assessments.ts",
+        "hash": "14748786912029160245"
+      },
+      {
+        "file": "migrations/cor/import-missing-occupations.js",
+        "hash": "15298819099996532435"
+      },
+      {
+        "file": "migrations/add-invoice-total-columns.sql",
+        "hash": "9323029580729871802"
+      },
+      {
+        "file": ".husky/pre-commit-pnpm-check",
+        "hash": "9827491100955653126"
+      },
+      {
+        "file": "migrations/create-inventory-assessment.ts",
+        "hash": "15885943599416494435"
+      },
+      {
+        "file": "migrations/data-population/create-sample-categories.ts",
+        "hash": "2717501309877644007"
+      },
+      {
+        "file": "theme.json",
+        "hash": "6566695290860262687"
+      },
+      {
+        "file": "migrations/schema-updates/update-predictive-tables.ts",
+        "hash": "2524365226340122818"
+      },
+      {
+        "file": "nx-graph.html",
+        "hash": "6183388263616623200"
+      },
+      {
+        "file": "migrations/run-analytics-migration.ts",
+        "hash": "8608735785423074203"
+      },
+      {
+        "file": "migrations/add_collaboration_features.sql",
+        "hash": "14515196760681645546"
+      },
+      {
+        "file": "workspace.json",
+        "hash": "13758832699223912910"
+      },
+      {
+        "file": "migrations/meta/0000_snapshot.json",
+        "hash": "2626721437835265137"
+      },
+      {
+        "file": "migrations/cor/Coduri COR - occupations.csv",
+        "hash": "12946588002043162873"
+      },
+      {
+        "file": ".cursor/rules/git-rules.mdc",
+        "hash": "9977818838785392159"
+      },
+      {
+        "file": "migrations/add-missing-columns-to-companies.ts",
+        "hash": "4082271724877765845"
+      },
+      {
+        "file": "migrations/meta/0001_snapshot.json",
+        "hash": "13471488603706161819"
+      },
+      {
+        "file": "migrations/cor/import-occupations-in-batches.js",
+        "hash": "15825603480429324571"
+      },
+      {
+        "file": "migrations/cor/run-missing-imports.js",
+        "hash": "10224940487028315961"
+      },
+      {
+        "file": "migrations/push-collaboration-schema.ts",
+        "hash": "7418590415195614626"
+      },
+      {
+        "file": "migrations/cor/complete-cor-import.js",
+        "hash": "9501297060244974136"
+      },
+      {
+        "file": "update-all-deps.sh",
+        "hash": "7041601446253741962"
+      },
+      {
+        "file": "migrations/cor/finish-cor-import.js",
+        "hash": "12699665719360450810"
+      },
+      {
+        "file": "migrations/schema-updates/update-schema.ts",
+        "hash": "6144705160511866827"
+      },
+      {
+        "file": "nx.json",
+        "hash": "12124539994595073338"
+      },
+      {
+        "file": "migrations/add_invoice_payments_table.sql",
+        "hash": "6883441029289284775"
+      },
+      {
+        "file": "docker-compose.yml",
+        "hash": "1956930632443756139"
+      },
+      {
+        "file": "migrations/db-push-direct.ts",
+        "hash": "7042911882086571354"
+      },
+      {
+        "file": "tsconfig.recommended.json",
+        "hash": "4273117205151743949"
+      },
+      {
+        "file": "jest.config.ts",
+        "hash": "10282790185360246113"
+      },
+      {
+        "file": "migrations/cor/monitor-cor-import.js",
+        "hash": "3914550815453310233"
+      },
+      {
+        "file": "migrations/fix_invoices_missing_columns.sql",
+        "hash": "12413237058630068460"
+      },
+      {
+        "file": ".nxrc.json",
+        "hash": "10052673949290900250"
+      },
+      {
+        "file": "migrations/20251014_add_accounting_settings_tables.sql",
+        "hash": "17798975444774772307"
+      },
+      {
+        "file": "docker-entrypoint.sh",
+        "hash": "879705893432100471"
+      },
+      {
+        "file": "migrations/complete_chart_of_accounts_missing.sql",
+        "hash": "9393608558329122212"
+      },
+      {
+        "file": "migrations/cor/verify-cor-import.js",
+        "hash": "5092373551818043178"
+      },
+      {
+        "file": "migrations/migrate-marketing.ts",
+        "hash": "12400320542788421411"
+      },
+      {
+        "file": ".dockerignore",
+        "hash": "1270526425827491408"
+      },
+      {
+        "file": "migrations/cor/process-cor-excel.js",
+        "hash": "12963805382894755228"
+      },
+      {
+        "file": "migrations/create-invoice-numbering.ts",
+        "hash": "10570653727388986794"
+      },
+      {
+        "file": "migrations/cor/update-missing-occupations.js",
+        "hash": "16665373993160199836"
+      },
+      {
+        "file": "migrations/schema-updates/update-hr-module.cjs",
+        "hash": "9137127782747180891"
+      },
+      {
+        "file": "migrations/add-parent-id-column-to-companies.ts",
+        "hash": "4497778509291327583"
+      },
+      {
+        "file": "migrations/add_ledger_posting_fields.sql",
+        "hash": "14933773854795461076"
+      },
+      {
+        "file": "Dockerfile.prod",
+        "hash": "15643643115114292950"
+      },
+      {
+        "file": ".env.template",
+        "hash": "17034787304841500978"
+      },
+      {
+        "file": "README.md",
+        "hash": "720166907429467546"
+      },
+      {
+        "file": "migrations/add-type-column-to-companies.ts",
+        "hash": "10312508379255552646"
+      },
+      {
+        "file": "migrations/fix_invoice_lines_missing_columns.sql",
+        "hash": "7689024334377865201"
+      },
+      {
+        "file": "migrations/cor/final-import-cor.js",
+        "hash": "16836200485951635640"
+      },
+      {
+        "file": "migrations/create-ecommerce-migration.ts",
+        "hash": "17526093313344115758"
+      },
+      {
+        "file": "migrations/create-accounting-migration.ts",
+        "hash": "17762187867791477887"
+      },
+      {
+        "file": "migrations/data-population/populate-collab-community-data.js",
+        "hash": "9331090457609856783"
+      },
+      {
+        "file": "migrations/create-ecommerce-carts-migration.ts",
+        "hash": "3771854540493669762"
+      },
+      {
+        "file": "migrations/20251015_add_vat_payable_recoverable_to_enum.sql",
+        "hash": "9325552978380142891"
+      },
+      {
+        "file": "migrations/add-social-capital.ts",
+        "hash": "12844332515012503571"
+      },
+      {
+        "file": "postcss.config.js",
+        "hash": "14886562286554270667"
+      },
+      {
+        "file": "docker-compose.prod.yml",
+        "hash": "18125411027576485741"
+      },
+      {
+        "file": "migrations/create-accounting-tables.js",
+        "hash": "1315131190858493677"
+      },
+      {
+        "file": "migrations/README.md",
+        "hash": "16936514253196831390"
+      },
+      {
+        "file": "pnpm-workspace.yaml",
+        "hash": "7763056701660843368"
+      },
+      {
+        "file": "migrations/add_missing_romanian_accounts.sql",
+        "hash": "330606226065475808"
+      },
+      {
+        "file": "migrations/cor/import-final.js",
+        "hash": "4451369896859308442"
+      },
+      {
+        "file": "Dockerfile.dev",
+        "hash": "3334813063124580345"
+      },
+      {
+        "file": "migrations/cor/import-occupations-with-progress.js",
+        "hash": "12160544033086509284"
+      },
+      {
+        "file": "migrations/0000_silly_magneto.sql",
+        "hash": "6307875436982180145"
+      },
+      {
+        "file": "migrations/cor/missing-occupations.json.bak",
+        "hash": "1514835853376757111"
+      },
+      {
+        "file": "tsconfig.base.json",
+        "hash": "5119864515832639563"
+      },
+      {
+        "file": "migrations/0002_daffy_earthquake.sql",
+        "hash": "5224290863831295436"
+      },
+      {
+        "file": "docker-dev.sh",
+        "hash": "8088005743568179314"
+      },
+      {
+        "file": "migrations/data-population/insert-company-test.js",
+        "hash": "8011703982735490015"
+      },
+      {
+        "file": "migrations/sync_fiscal_periods_and_companies.sql",
+        "hash": "8234646493174245601"
+      },
+      {
         "file": "migrations/cor/import-cor-continuously.js",
         "hash": "15938314364164164068"
       },
       {
-        "file": ".gitignore",
-        "hash": "8634695851558701662"
+        "file": "migrations/migrate-cor.ts",
+        "hash": "7632115559088418796"
+      },
+      {
+        "file": "migrations/migrate-admin-schema.ts",
+        "hash": "7750652609229551250"
+      },
+      {
+        "file": "migrations/add_vat_categories_and_cash_vat.sql",
+        "hash": "9082736169577678401"
+      },
+      {
+        "file": "migrations/update-company-schema.js",
+        "hash": "4929650243276654999"
+      },
+      {
+        "file": "migrations/add_audit_and_account_mappings.sql",
+        "hash": "7134792579370138718"
+      },
+      {
+        "file": "migrations/schema-updates/update-hr-module.js",
+        "hash": "9137127782747180891"
+      },
+      {
+        "file": "jest.preset.js",
+        "hash": "14256848549375763892"
+      },
+      {
+        "file": ".cursor/rules/projectrules.mdc",
+        "hash": "17333625274048045026"
+      },
+      {
+        "file": "migrations/create-crm-migration.ts",
+        "hash": "13038659082524724459"
+      },
+      {
+        "file": "migrations/complete_romanian_chart_of_accounts_part1.sql",
+        "hash": "16066547025730052856"
+      },
+      {
+        "file": "env.example.txt",
+        "hash": "10297499776199025027"
+      },
+      {
+        "file": "migrations/create-financial-tables.js",
+        "hash": "16633548264128154797"
+      },
+      {
+        "file": "migrations/cor/import-sample-cor-batch.js",
+        "hash": "2964884606437219913"
+      },
+      {
+        "file": "migrations/cor/import-cor-from-csv-direct.js",
+        "hash": "7886914645695885730"
+      },
+      {
+        "file": ".husky/preinstall",
+        "hash": "13845053738937915031"
+      },
+      {
+        "file": "drizzle.config.ts",
+        "hash": "5821457968997086548"
+      },
+      {
+        "file": ".github/copilot-instructions.md",
+        "hash": "1276240044253744769"
       },
       {
         "file": "ecosystem.config.cjs",
@@ -335,408 +715,28 @@
         "hash": "13959517771583461250"
       },
       {
-        "file": "migrations/complete_romanian_chart_of_accounts_part1.sql",
-        "hash": "16066547025730052856"
+        "file": "migrations/add_note_contabile_fields.sql",
+        "hash": "11180615758331793046"
       },
       {
-        "file": "migrations/cor/process-cor-excel.js",
-        "hash": "12963805382894755228"
+        "file": ".gitignore",
+        "hash": "8634695851558701662"
       },
       {
-        "file": "migrations/migrate-marketing.ts",
-        "hash": "12400320542788421411"
-      },
-      {
-        "file": "migrations/cor/final-import-cor.js",
-        "hash": "16836200485951635640"
-      },
-      {
-        "file": "migrations/create-analytics-module.ts",
-        "hash": "9348378957263149727"
-      },
-      {
-        "file": ".cursor/rules/projectrules.mdc",
-        "hash": "17333625274048045026"
-      },
-      {
-        "file": "migrations/cor/execute-cor-sql.js",
-        "hash": "11673816242790645327"
-      },
-      {
-        "file": "migrations/data-population/insert-sample-company.ts",
-        "hash": "1526289564352527479"
-      },
-      {
-        "file": "migrations/meta/0002_snapshot.json",
-        "hash": "142254623320037945"
-      },
-      {
-        "file": "migrations/create-accounting-tables.js",
-        "hash": "1315131190858493677"
-      },
-      {
-        "file": "migrations/cor/import-missing-occupations.js",
-        "hash": "15298819099996532435"
-      },
-      {
-        "file": "docker-compose.yml",
-        "hash": "1956930632443756139"
-      },
-      {
-        "file": "migrations/data-population/populate-invoice-tables.js",
-        "hash": "16987015772999986143"
-      },
-      {
-        "file": "migrations/meta/0001_snapshot.json",
-        "hash": "13471488603706161819"
-      },
-      {
-        "file": "migrations/migrate-integrations.ts",
-        "hash": "1187164045225201915"
-      },
-      {
-        "file": "migrations/0002_daffy_earthquake.sql",
-        "hash": "5224290863831295436"
-      },
-      {
-        "file": "migrations/direct-crm-migration.ts",
-        "hash": "12833349195723667971"
-      },
-      {
-        "file": "migrations/migrate-communications.ts",
-        "hash": "2447861907175246763"
-      },
-      {
-        "file": "migrations/schema-updates/update-hr-module.js",
-        "hash": "9137127782747180891"
-      },
-      {
-        "file": "migrations/complete_chart_of_accounts_missing.sql",
-        "hash": "9393608558329122212"
-      },
-      {
-        "file": "migrations/create-accounting-migration.ts",
-        "hash": "17762187867791477887"
-      },
-      {
-        "file": "migrations/cor/import-final.js",
-        "hash": "4451369896859308442"
-      },
-      {
-        "file": "migrations/schema-updates/update-hr-module.cjs",
-        "hash": "9137127782747180891"
-      },
-      {
-        "file": "migrations/cor/complete-cor-import.js",
-        "hash": "9501297060244974136"
-      },
-      {
-        "file": "send-logs-fixed.sh",
-        "hash": "6006324813976929674"
-      },
-      {
-        "file": "migrations/create-hr-migration.ts",
-        "hash": "11857534831648518647"
-      },
-      {
-        "file": "migrations/0001_create-documents.sql",
-        "hash": "13746640466253424923"
-      },
-      {
-        "file": "migrations/create-financial-tables-direct.js",
-        "hash": "13918178453721971769"
-      },
-      {
-        "file": ".eslintrc.json",
-        "hash": "10312024542810267567"
-      },
-      {
-        "file": "migrations/add-created-by-column-to-inventory-assessments.ts",
-        "hash": "8336825999626407563"
-      },
-      {
-        "file": ".replit",
-        "hash": "2351295864897168589"
-      },
-      {
-        "file": "migrations/cor/extract-cor-csv.js",
-        "hash": "16650223223336883421"
-      },
-      {
-        "file": "migrations/cor/cor-import-optimization.txt",
-        "hash": "2746099207980512297"
-      },
-      {
-        "file": "theme.json",
-        "hash": "6566695290860262687"
-      },
-      {
-        "file": "migrations/cor/import-occupations-in-batches.js",
-        "hash": "15825603480429324571"
-      },
-      {
-        "file": "migrations/0000_silly_magneto.sql",
-        "hash": "6307875436982180145"
-      },
-      {
-        "file": "migrations/cor/import-cor-all.js",
-        "hash": "10729681300756051954"
-      },
-      {
-        "file": "migrations/add_invoice_payments_table.sql",
-        "hash": "6883441029289284775"
-      },
-      {
-        "file": "migrations/cor/finish-cor-import.js",
-        "hash": "12699665719360450810"
-      },
-      {
-        "file": ".env.template",
-        "hash": "17034787304841500978"
-      },
-      {
-        "file": "accounting-drizzle.config.ts",
-        "hash": "4328149913544239751"
-      },
-      {
-        "file": "migrations/create-configurations-table.sql",
-        "hash": "15301518614296213717"
-      },
-      {
-        "file": "migrations/cor/Coduri COR - occupations.csv",
-        "hash": "12946588002043162873"
-      },
-      {
-        "file": ".nxignore",
-        "hash": "1071299440840288629"
-      },
-      {
-        "file": "token.txt",
-        "hash": "7410506273438272391"
-      },
-      {
-        "file": "PNPM.md",
-        "hash": "6219584590830218987"
-      },
-      {
-        "file": "migrations/add_audit_and_account_mappings.sql",
-        "hash": "7134792579370138718"
-      },
-      {
-        "file": "migrations/push-bpm-schema.ts",
-        "hash": "16275303598699252471"
-      },
-      {
-        "file": "migrations/meta/0000_snapshot.json",
-        "hash": "2626721437835265137"
-      },
-      {
-        "file": ".github/copilot-instructions.md",
-        "hash": "1276240044253744769"
-      },
-      {
-        "file": "tsconfig.json",
-        "hash": "12696543644374922193"
-      },
-      {
-        "file": "migrations/add-type-column-to-companies.ts",
-        "hash": "10312508379255552646"
-      },
-      {
-        "file": "migrations/create-inventory-migration.ts",
-        "hash": "17025937650577644470"
-      },
-      {
-        "file": "migrations/update-inventory-assessments-warehouse-ids.js",
-        "hash": "1522546905636155049"
-      },
-      {
-        "file": "migrations/create-ecommerce-carts-migration.ts",
-        "hash": "3771854540493669762"
-      },
-      {
-        "file": "tsconfig.recommended.json",
-        "hash": "4273117205151743949"
-      },
-      {
-        "file": "migrations/meta/_journal.json",
-        "hash": "11891409672637676830"
-      },
-      {
-        "file": "package.json",
-        "hash": "12073749821911793585"
-      },
-      {
-        "file": "migrations/create-analytics-migration.ts",
-        "hash": "15508351242629005372"
-      },
-      {
-        "file": "migrations/data-population/populate-collab-community-data.js",
-        "hash": "9331090457609856783"
-      },
-      {
-        "file": "migrations/schema-updates/update-predictive-tables.ts",
-        "hash": "2524365226340122818"
-      },
-      {
-        "file": "eslint.config.js",
-        "hash": "1726959496359336324"
-      },
-      {
-        "file": "update-all-deps.sh",
-        "hash": "7041601446253741962"
-      },
-      {
-        "file": "migrations/cor/import-occupations-from-word-xml.js",
-        "hash": "17080430081605168790"
-      },
-      {
-        "file": "docker-compose.prod.yml",
-        "hash": "18125411027576485741"
-      },
-      {
-        "file": "migrations/add-parent-id-column-to-companies.ts",
-        "hash": "4497778509291327583"
-      },
-      {
-        "file": "migrations/20251015_add_vat_payable_recoverable_to_enum.sql",
-        "hash": "9325552978380142891"
-      },
-      {
-        "file": "migrations/create-invoice-numbering.ts",
-        "hash": "10570653727388986794"
-      },
-      {
-        "file": "migrations/cor/import-cor-from-csv.js",
-        "hash": "10192294939503056018"
+        "file": "migrations/cor/complete-all-imports.js",
+        "hash": "2597015156191394639"
       },
       {
         "file": "pnpm-lock.yaml",
         "hash": "6062025871815329410"
       },
       {
-        "file": "migrations/add_note_contabile_fields.sql",
-        "hash": "11180615758331793046"
-      },
-      {
-        "file": "migrations/README.md",
-        "hash": "16936514253196831390"
-      },
-      {
-        "file": "migrations/cor/import-cor-from-csv-direct.js",
-        "hash": "7886914645695885730"
-      },
-      {
-        "file": ".npmrc",
-        "hash": "6893666027209111638"
-      },
-      {
-        "file": "nx-graph.html",
-        "hash": "6183388263616623200"
-      },
-      {
-        "file": "migrations/update-company-schema.js",
-        "hash": "4929650243276654999"
-      },
-      {
-        "file": "migrations/fix_missing_groups_and_accounts.sql",
-        "hash": "6047459409562581879"
-      },
-      {
-        "file": "drizzle.config.ts",
-        "hash": "5821457968997086548"
-      },
-      {
-        "file": "migrations/add_ledger_posting_fields.sql",
-        "hash": "14933773854795461076"
+        "file": "package.json",
+        "hash": "12073749821911793585"
       },
       {
         "file": "migrations/create-collaboration-tables.ts",
         "hash": "7195735548671126817"
-      },
-      {
-        "file": "migrations/data-population/create-sample-categories.ts",
-        "hash": "2717501309877644007"
-      },
-      {
-        "file": "migrations/cor/verify-cor-codes.js",
-        "hash": "11213778250292147981"
-      },
-      {
-        "file": "tsconfig.base.json",
-        "hash": "5119864515832639563"
-      },
-      {
-        "file": "migrations/sync_fiscal_periods_and_companies.sql",
-        "hash": "8234646493174245601"
-      },
-      {
-        "file": "migrations/cor/monitor-cor-import.js",
-        "hash": "3914550815453310233"
-      },
-      {
-        "file": "migrations/data-population/insert-company-test.js",
-        "hash": "8011703982735490015"
-      },
-      {
-        "file": "migrations/cor/update-missing-occupations.js",
-        "hash": "16665373993160199836"
-      },
-      {
-        "file": "migrations/cor/cor_import_pid.txt",
-        "hash": "13125157948214151960"
-      },
-      {
-        "file": "migrations/run-analytics-migration.ts",
-        "hash": "8608735785423074203"
-      },
-      {
-        "file": "migrations/migrate-bpm.ts",
-        "hash": "2893897604356502908"
-      },
-      {
-        "file": "migrations/create-missing-tables-recovery.sql",
-        "hash": "15528478678891426534"
-      },
-      {
-        "file": ".husky/preinstall",
-        "hash": "13845053738937915031"
-      },
-      {
-        "file": "migrations/20251019_add_missing_columns_inventory_assessments.sql",
-        "hash": "13723298286174107005"
-      },
-      {
-        "file": "docker-dev.sh",
-        "hash": "8088005743568179314"
-      },
-      {
-        "file": "migrations/add-invoice-total-columns.sql",
-        "hash": "9323029580729871802"
-      },
-      {
-        "file": "migrations/migrate-bpm-direct.ts",
-        "hash": "8512710767925716306"
-      },
-      {
-        "file": "migrations/db-push-direct.ts",
-        "hash": "7042911882086571354"
-      },
-      {
-        "file": "migrations/create-financial-tables.js",
-        "hash": "16633548264128154797"
-      },
-      {
-        "file": "migrations/fix_invoices_missing_columns.sql",
-        "hash": "12413237058630068460"
-      },
-      {
-        "file": "workspace.json",
-        "hash": "13758832699223912910"
-      },
-      {
-        "file": "migrations/cor/missing-occupations.json.bak",
-        "hash": "1514835853376757111"
       }
     ],
     "projectFileMap": {
@@ -4015,7 +4015,7 @@
         },
         {
           "file": "libs/accounting/src/routes/bank-journal.routes.ts",
-          "hash": "14436528116506025625"
+          "hash": "12530599571219572010"
         },
         {
           "file": "libs/accounting/src/routes/cash-register.routes.ts",
@@ -4313,7 +4313,7 @@
         },
         {
           "file": "libs/ai/src/routes/inbox-ai.routes.ts",
-          "hash": "11060848988354083429"
+          "hash": "13963490265467649354"
         },
         {
           "file": "libs/ai/src/routes/index.ts",
@@ -4321,11 +4321,11 @@
         },
         {
           "file": "libs/ai/src/routes/openai.routes.ts",
-          "hash": "13051932679672486372"
+          "hash": "12158444745939341755"
         },
         {
           "file": "libs/ai/src/routes/product-qa.routes.ts",
-          "hash": "6419964807041908218"
+          "hash": "10944645423728796463"
         },
         {
           "file": "libs/ai/src/routes/sales-ai.routes.ts",
@@ -4353,7 +4353,7 @@
         },
         {
           "file": "libs/ai/src/services/product-qa.service.ts",
-          "hash": "14476530700095543647"
+          "hash": "10083724107382819165"
         },
         {
           "file": "libs/ai/src/services/sales-ai.service.ts",
@@ -4717,7 +4717,7 @@
         },
         {
           "file": "libs/integrations/src/routes/public.routes.ts",
-          "hash": "1422140126967669532"
+          "hash": "9712306752202762451"
         },
         {
           "file": "libs/integrations/src/schema/integrations.schema.ts",
@@ -4991,7 +4991,7 @@
         },
         {
           "file": "libs/users/src/routes/user.routes.ts",
-          "hash": "2141122473872295535"
+          "hash": "7112061993082671646"
         },
         {
           "file": "libs/users/src/services/user.service.ts",
@@ -5017,7 +5017,7 @@
         },
         {
           "file": "libs/analytics/src/analytics.module.ts",
-          "hash": "315810121460580721"
+          "hash": "14196483148008598101"
         },
         {
           "file": "libs/analytics/src/analytics.roles.ts",

@@ -23,17 +23,18 @@ const inboxAiService = new InboxAiAssistantService(drizzle);
  * @desc Analyze an email message for sentiment, topics, and action items
  * @access Private (requires authentication)
  */
-router.post('/analyze', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
+router.post('/analyze', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res): Promise<void> => {
   try {
     const { messageId, messageContent } = req.body;
     const { userId } = req.user as { userId: string };
 
     // Validate required parameters
     if (!messageId || !messageContent) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Missing required parameters: messageId and messageContent are required'
       });
+      return;
     }
 
     const analysis = await inboxAiService.analyzeEmail(messageId, messageContent, userId);
@@ -57,17 +58,18 @@ router.post('/analyze', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res
  * @desc Generate response suggestions for an email message
  * @access Private (requires authentication)
  */
-router.post('/suggest-responses', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
+router.post('/suggest-responses', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res): Promise<void> => {
   try {
     const { messageId, messageContent, emailAnalysis } = req.body;
     const { userId } = req.user as { userId: string };
 
     // Validate required parameters
     if (!messageId || !messageContent) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Missing required parameters: messageId and messageContent are required'
       });
+      return;
     }
 
     const suggestions = await inboxAiService.generateResponseSuggestions(
@@ -96,17 +98,18 @@ router.post('/suggest-responses', AuthGuard.protect(JwtAuthMode.REQUIRED), async
  * @desc Generate a complete response to an email based on context and previous communications
  * @access Private (requires authentication)
  */
-router.post('/complete-response', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
+router.post('/complete-response', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res): Promise<void> => {
   try {
     const { messageId, messageContent, contextHistory } = req.body;
     const { userId } = req.user as { userId: string };
 
     // Validate required parameters
     if (!messageId || !messageContent) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Missing required parameters: messageId and messageContent are required'
       });
+      return;
     }
 
     // Ensure contextHistory is an array, defaulting to empty if not provided
@@ -138,17 +141,18 @@ router.post('/complete-response', AuthGuard.protect(JwtAuthMode.REQUIRED), async
  * @desc Set up automated follow-up reminders based on email content and action items
  * @access Private (requires authentication)
  */
-router.post('/create-reminders', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res) => {
+router.post('/create-reminders', AuthGuard.protect(JwtAuthMode.REQUIRED), async (req, res): Promise<void> => {
   try {
     const { messageId, emailAnalysis } = req.body;
     const { userId } = req.user as { userId: string };
 
     // Validate required parameters
     if (!messageId || !emailAnalysis) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Missing required parameters: messageId and emailAnalysis are required'
       });
+      return;
     }
 
     const reminders = await inboxAiService.createSmartFollowUpReminders(

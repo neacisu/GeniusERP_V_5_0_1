@@ -9,7 +9,6 @@
  * - Usage suggestions and best practices
  */
 
-import { DrizzleService } from "@common/drizzle";
 import AuditService from '../../../audit/src/services/audit.service';
 import { randomUUID } from 'crypto';
 
@@ -40,9 +39,7 @@ export interface ProductComparison {
 }
 
 export class ProductQaService {
-  constructor(
-    private drizzleService: DrizzleService
-  ) {
+  constructor() {
     console.log('Product QA Service initialized');
   }
 
@@ -303,8 +300,8 @@ export class ProductQaService {
     // to provide personalized suggestions and best practices
     
     // For now, we'll return sample suggestions based on the user's role and experience
-    const userRole = userContext?.role || 'accountant';
-    const userExperience = userContext?.experience || 'intermediate';
+    // const _userRole = userContext?.role || 'accountant';
+    // const _userExperience = userContext?.experience || 'intermediate';
     
     return {
       suggestions: [

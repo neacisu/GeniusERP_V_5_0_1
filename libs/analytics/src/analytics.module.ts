@@ -7,7 +7,6 @@
 
 import express from 'express';
 import { DrizzleService } from '@common/drizzle';
-import AuditService from '@geniuserp/audit';
 import { Logger } from '@common/logger';
 
 // Services
@@ -34,7 +33,6 @@ export function initAnalyticsModule(app: express.Application, drizzleService: Dr
   logger.info('Initializing Analytics module...');
   
   // Initialize services
-  const auditService = new AuditService();
   const analyticsService = new AnalyticsService(drizzleService);
   const predictiveService = new PredictiveService(drizzleService);
   const biService = new BusinessIntelligenceService(drizzleService);
@@ -46,7 +44,7 @@ export function initAnalyticsModule(app: express.Application, drizzleService: Dr
   
   // Legacy route support - can be removed after all clients are updated
   // This ensures backward compatibility with existing code
-  app.use((req: any, res, next) => {
+  app.use((req: any, _res, next) => {
     req.services = {
       ...req.services,
       analyticsService,
