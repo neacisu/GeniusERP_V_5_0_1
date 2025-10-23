@@ -423,7 +423,7 @@ SOLUȚII APLICATE:
 REZULTAT:
 - What was achieved
 
-Fixes: #issue or error codes"
+Fixes: [issue-number] or error codes"
 
 git push origin NXBranch
 ```
