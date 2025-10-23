@@ -5,10 +5,33 @@
 **GeniusERP** is a comprehensive ERP system for Romanian businesses with ANAF integration, built using a **modular monolith** architecture with TypeScript/Express backend and React/Vite frontend.
 
 ### Critical Context
+- **Package Manager: pnpm ONLY** - This project uses pnpm@10.19.0 (NOT npm or yarn). All commands must use `pnpm` prefix.
+- **Node.js: v22.21.0 LTS** - Minimum required: Node.js >=22.0.0
 - **Romanian accounting compliance** is paramount - VAT rates, chart of accounts (Class 1-8), and ANAF integrations follow Romanian standards
 - Database uses **PostgreSQL 17** (local Docker) with **Drizzle ORM**
 - **Redis Cloud** for caching and BullMQ job queues
 - Full monitoring stack: Prometheus, Grafana, Loki/Promtail, Sentry, Falco, Wazuh
+
+### Package Manager Enforcement
+
+⚠️ **IMPORTANT**: This project is configured to ONLY work with pnpm:
+- `package.json` has `"packageManager": "pnpm@10.19.0"`
+- npm/yarn are blocked via preinstall hook
+- VS Code is configured to use pnpm for all operations
+- See `PNPM.md` for detailed guide
+
+✅ **Correct commands:**
+```bash
+pnpm install           # Install dependencies
+pnpm add <package>     # Add package
+pnpm run dev           # Run dev server
+```
+
+❌ **Will fail:**
+```bash
+npm install   # ❌ Blocked
+yarn install  # ❌ Blocked
+```
 
 ## Architecture Patterns
 
@@ -221,10 +244,10 @@ pnpm run start           # Run production build
 pnpm run db:push
 
 # Generate migrations (manual)
-npx drizzle-kit generate
+pnpx drizzle-kit generate
 
 # Studio (GUI)
-npx drizzle-kit studio
+pnpx drizzle-kit studio
 ```
 
 **Migration philosophy**: This project uses `db:push` for rapid development. Manual migrations in `migrations/` for production.
@@ -402,7 +425,7 @@ REZULTAT:
 
 Fixes: #issue or error codes"
 
-git push origin main
+git push origin NXBranch
 ```
 
 ## Common Pitfalls
