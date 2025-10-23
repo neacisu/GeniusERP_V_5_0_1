@@ -14,5 +14,16 @@ const router = express.Router();
 router.use('/note-contabil', noteContabilRoutes);
 router.use('/fiscal-closure', fiscalClosureRoutes);
 
-// Export router
+// Export router as default
 export default router;
+
+// Re-export individual route setup functions
+export { setupAccountingRoutes } from './accounting.routes';
+export { setupOnboardingRoutes } from './onboarding.routes';
+export { setupAccountingSettingsRoutes } from './accounting-settings.routes';
+export { setupSalesJournalRoutes } from './sales-journal.routes';
+export { setupPurchaseJournalRoutes } from './purchase-journal.routes';
+export { setupBankJournalRoutes } from './bank-journal.routes';
+export { setupCashRegisterRoutes } from './cash-register.routes';
+export { setupLedgerRoutes } from './ledger.routes';
+export { setupFinancialReportsRoutes } from './financial-reports.routes';

@@ -1,6 +1,6 @@
 // Accounting library exports
-export * from './services';
-export * from './controllers';
 export * from './routes';
-export * from './schema';
-export * from './types';
+
+// Re-export default router from routes
+export { default } from './routes';
+

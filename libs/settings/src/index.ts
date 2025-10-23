@@ -7,6 +7,10 @@
 
 // Export the schema
 export * from './schema/settings.schema';
+
+// Export routes
+export * from './routes';
+
 import { SettingsModule } from './settings.module';
 
 // Initialize the module
@@ -16,4 +20,5 @@ export const initSettingsModule = (app: any) => {
 };
 
 // Export the module class
+
 export { SettingsModule };

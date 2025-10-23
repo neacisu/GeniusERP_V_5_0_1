@@ -12,5 +12,9 @@ export function initUserModule(app: Express): Router {
   return usersModule.initRoutes(app);
 }
 
+// Export routes
+export * from './routes';
+
 // Export singleton instance of UserService
+
 export const userService = UserService.getInstance();

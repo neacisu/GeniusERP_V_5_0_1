@@ -19,6 +19,9 @@
 // Export our module
 export * from './integrations.module';
 
+// Export routes
+export * from './routes';
+
 // Export our services
 export * from './services/exchange-rate.service';
 export * from './services/bnr-exchange-rate.service';
@@ -30,5 +33,6 @@ export * from './services/integrations.service';
 // Export integration clients
 export * from './clients';
 
-// Export HTTP client for other modules to use
-export { HttpClient, createHttpClient } from '../../shared/libs/http-client';
+// Export default router from routes
+export { default } from './routes';
+
