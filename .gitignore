@@ -21,6 +21,9 @@ build/
 .next/
 out/
 
+# Nx cache
+.nx/cache/
+
 # Logs
 logs
 *.log
