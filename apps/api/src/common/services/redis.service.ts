@@ -48,7 +48,7 @@ export class RedisService {
   async connect() {
     try {
       // Check if Redis credentials are available
-      if (!process.env.REDIS_HOST && !process.env.REDIS_PASSWORD) {
+      if (!process.env['REDIS_HOST'] && !process.env['REDIS_PASSWORD']) {
         console.warn('Redis credentials not provided, using in-memory fallback');
         this.client = null;
         return null;
@@ -56,14 +56,14 @@ export class RedisService {
       
       // Connect to Redis Cloud using credentials from environment variables
       this.client = new Redis({
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT || '6379', 10),
-        password: process.env.REDIS_PASSWORD,
-        username: process.env.REDIS_USERNAME,
+        host: process.env['REDIS_HOST'] || 'localhost',
+        port: parseInt(process.env['REDIS_PORT'] || '6379', 10),
+        password: process.env['REDIS_PASSWORD'],
+        username: process.env['REDIS_USERNAME'],
         // Always enable TLS for Redis Cloud connections
-        tls: process.env.REDIS_HOST?.endsWith('.upstash.io') || 
-             process.env.REDIS_HOST?.endsWith('.redis.cache.windows.net') || 
-             process.env.REDIS_HOST?.includes('redis.cloud.redislabs.com') ? 
+        tls: process.env['REDIS_HOST']?.endsWith('.upstash.io') || 
+             process.env['REDIS_HOST']?.endsWith('.redis.cache.windows.net') || 
+             process.env['REDIS_HOST']?.includes('redis.cloud.redislabs.com') ? 
              { rejectUnauthorized: false } : undefined,
         connectTimeout: 5000, // 5 seconds timeout
         maxRetriesPerRequest: 3, // Allow a few retries
@@ -500,7 +500,7 @@ export class RedisService {
         return;
       }
       
-      if (process.env.NODE_ENV === 'production') {
+      if (process.env['NODE_ENV'] === 'production') {
         throw new Error('flushDB is not allowed in production');
       }
       

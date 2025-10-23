@@ -57,13 +57,13 @@ function buildReportPrompt(
   }
   
   // Add time period if provided
-  if (parameters?.period) {
-    prompt += `for the period ${parameters.period} `;
+  if (parameters?.['period']) {
+    prompt += `for the period ${parameters['period']} `;
   }
   
   // Add specific focus areas if provided
-  if (parameters?.focusAreas && Array.isArray(parameters.focusAreas)) {
-    prompt += `with focus on ${parameters.focusAreas.join(', ')} `;
+  if (parameters?.['focusAreas'] && Array.isArray(parameters['focusAreas'])) {
+    prompt += `with focus on ${parameters['focusAreas'].join(', ')} `;
   }
   
   // Add format instructions
@@ -77,13 +77,13 @@ function buildReportPrompt(
 `;
   
   // Add specific metrics to include if provided
-  if (parameters?.metrics && Array.isArray(parameters.metrics)) {
-    prompt += `\nInclude analysis of these specific metrics: ${parameters.metrics.join(', ')}`;
+  if (parameters?.['metrics'] && Array.isArray(parameters['metrics'])) {
+    prompt += `\nInclude analysis of these specific metrics: ${parameters['metrics'].join(', ')}`;
   }
   
   // Add comparison request if provided
-  if (parameters?.compareWith) {
-    prompt += `\nCompare performance with ${parameters.compareWith}`;
+  if (parameters?.['compareWith']) {
+    prompt += `\nCompare performance with ${parameters['compareWith']}`;
   }
   
   return prompt;
@@ -98,7 +98,7 @@ router.post('/generate',
   AuthGuard.protect(JwtAuthMode.REQUIRED),
   AuthGuard.roleGuard(['ai_access']),
   AuthGuard.companyGuard(),
-  async (req, res) => {
+  async (req, res): Promise<void> => {
     try {
       const { 
         type, 
@@ -110,24 +110,26 @@ router.post('/generate',
       
       // Validation
       if (!type || !name) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'Report type and name are required'
         });
+        return;
       }
       
       const userId = req.user?.id;
       const companyId = req.user?.companyId;
       
       if (!userId || !companyId) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'User ID and Company ID are required'
         });
+        return;
       }
       
       // For development mode where database might not be fully available
-      if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test' || !aiService.drizzleService?.db) {
+      if (process.env['NODE_ENV'] === 'development' || process.env['NODE_ENV'] === 'test' || !aiService.drizzleService?.db) {
         console.log("Development mode: OpenAI is available but DB operations are stubbed");
         
         // We can still make OpenAI requests
@@ -160,7 +162,7 @@ router.post('/generate',
           }
         });
         
-        return res.status(200).json({
+        res.status(200).json({
           success: true,
           data: {
             id: 'report-' + Date.now(),
@@ -169,6 +171,7 @@ router.post('/generate',
           },
           message: 'Generated in development mode (DB operations skipped)'
         });
+        return;
       }
       
       // In production mode, try the full report generation with DB storage
@@ -188,6 +191,7 @@ router.post('/generate',
           success: true,
           data: result
         });
+        return;
       } catch (dbError) {
         console.error('Database error during report generation:', dbError);
         
@@ -209,7 +213,7 @@ router.post('/generate',
         
         const reportContent = completion.choices?.[0]?.message.content || 'No content generated';
         
-        return res.status(206).json({
+        res.status(206).json({
           success: true,
           data: {
             id: 'report-' + Date.now(),
@@ -219,6 +223,7 @@ router.post('/generate',
           warning: 'DB storage failed, returning AI content only',
           dbError: dbError instanceof Error ? dbError.message : String(dbError)
         });
+        return;
       }
     } catch (error) {
       console.error('Error generating AI report:', error);
@@ -239,25 +244,27 @@ router.post('/generate',
 router.get('/:id', 
   AuthGuard.protect(JwtAuthMode.REQUIRED),
   AuthGuard.companyGuard(),
-  async (req, res) => {
+  async (req, res): Promise<void> => {
     try {
-      const reportId = req.params.id;
+      const reportId = req.params['id'];
       const companyId = req.user?.companyId;
       
       if (!companyId) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'Company ID is required'
         });
+        return;
       }
       
       const report = await aiService.getReportById(reportId, companyId);
       
       if (!report) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           error: 'Report not found'
         });
+        return;
       }
       
       res.status(200).json({
@@ -283,17 +290,18 @@ router.get('/:id',
 router.get('/', 
   AuthGuard.protect(JwtAuthMode.REQUIRED),
   AuthGuard.companyGuard(),
-  async (req, res) => {
+  async (req, res): Promise<void> => {
     try {
       const companyId = req.user?.companyId;
-      const type = req.query.type as string;
-      const limit = parseInt(req.query.limit as string) || 10;
+      const type = req.query['type'] as string;
+      const limit = parseInt(req.query['limit'] as string) || 10;
       
       if (!companyId) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'Company ID is required'
         });
+        return;
       }
       
       const reports = await aiService.listReports(companyId, type, limit);
