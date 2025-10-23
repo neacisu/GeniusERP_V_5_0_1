@@ -6,10 +6,16 @@
  * role-based access controls and multi-tenant company guards.
  */
 
-import express, { Request, Response } from 'express';
+import express, { Router, Request as ExpressRequest, Response } from 'express';
 import { SetupService } from '../services/setup.service';
 import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
+import { JwtUserData } from '../../../auth/src/types';
+
+// Extend Express Request with user
+interface AuthenticatedRequest extends ExpressRequest {
+  user?: JwtUserData;
+}
 
 const router = express.Router();
 const setupService = new SetupService();
@@ -27,7 +33,7 @@ const adminRouteGuard = [
  * Get all setup steps for a company
  * GET /api/settings/setup
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user?.companyId) {
       return res.status(400).json({ error: 'Company ID is required' });
@@ -50,7 +56,7 @@ router.get('/', async (req: Request, res: Response) => {
  * Get setup progress percentage
  * GET /api/settings/setup/progress
  */
-router.get('/progress', async (req: Request, res: Response) => {
+router.get('/progress', async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user?.companyId) {
       return res.status(400).json({ error: 'Company ID is required' });
@@ -76,7 +82,7 @@ router.get('/progress', async (req: Request, res: Response) => {
  * This endpoint is protected with role-based access control
  * and requires hq_admin or ADMIN role.
  */
-router.post('/step', ...adminRouteGuard, async (req: Request, res: Response) => {
+router.post('/step', ...adminRouteGuard, async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user?.companyId) {
       return res.status(400).json({ error: 'Company ID is required' });
@@ -109,7 +115,7 @@ router.post('/step', ...adminRouteGuard, async (req: Request, res: Response) => 
  * Check if a specific step is completed
  * GET /api/settings/setup/check/:step
  */
-router.get('/check/:step', async (req: Request, res: Response) => {
+router.get('/check/:step', async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user?.companyId) {
       return res.status(400).json({ error: 'Company ID is required' });
@@ -139,7 +145,7 @@ router.get('/check/:step', async (req: Request, res: Response) => {
  * Get onboarding setup details for UI
  * GET /api/settings/setup/onboarding
  */
-router.get('/onboarding', async (req: Request, res: Response) => {
+router.get('/onboarding', async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user?.companyId) {
       return res.status(400).json({ error: 'Company ID is required' });

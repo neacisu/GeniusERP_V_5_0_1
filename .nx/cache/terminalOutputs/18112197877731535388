@@ -1,0 +1,71 @@
+
+Linting "ai"...
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/ai.module.ts[24m[0m
+[0m  [2m18:8[22m   [33mwarning[39m  'AuditService' is defined but never used. Allowed unused vars must match /^_/u  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m62:17[22m  [33mwarning[39m  Unexpected any. Specify a different type                                        [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/config/openai.config.ts[24m[0m
+[0m  [2m105:3[22m  [33mwarning[39m  Unexpected console statement. Only these console methods are allowed: warn, error  [2mno-console[22m[0m
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/controllers/ai.controller.ts[24m[0m
+[0m  [2m32:49[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/controllers/inbox-ai.controller.ts[24m[0m
+[0m  [2m68:54[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/controllers/openai.controller.ts[24m[0m
+[0m  [2m46:53[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m67:21[22m  [33mwarning[39m  Forbidden non-null assertion              [2m@typescript-eslint/no-non-null-assertion[22m[0m
+[0m  [2m68:24[22m  [33mwarning[39m  Forbidden non-null assertion              [2m@typescript-eslint/no-non-null-assertion[22m[0m
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/controllers/product-qa.controller.ts[24m[0m
+[0m  [2m55:56[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/controllers/sales-ai.controller.ts[24m[0m
+[0m  [2m41:54[22m  [33mwarning[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/init.ts[24m[0m
+[0m  [2m23:3[22m  [33mwarning[39m  Unexpected console statement. Only these console methods are allowed: warn, error  [2mno-console[22m[0m
+[0m  [2m31:3[22m  [33mwarning[39m  Unexpected console statement. Only these console methods are allowed: warn, error  [2mno-console[22m[0m
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/routes/ai-reports.routes.ts[24m[0m
+[0m   [2m47:31[22m  [33mwarning[39m  Unexpected any. Specify a different type                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m131:9[22m   [33mwarning[39m  Unexpected console statement. Only these console methods are allowed: warn, error  [2mno-console[22m[0m
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/routes/sales-ai.routes.ts[24m[0m
+[0m  [2m11:8[22m  [33mwarning[39m  'AuditService' is defined but never used. Allowed unused vars must match /^_/u  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/services/ai.service.ts[24m[0m
+[0m   [2m25:31[22m  [33mwarning[39m  Unexpected any. Specify a different type                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m35:28[22m  [33mwarning[39m  Unexpected any. Specify a different type                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m58:5[22m   [33mwarning[39m  Unexpected console statement. Only these console methods are allowed: warn, error  [2mno-console[22m[0m
+[0m  [2m122:9[22m   [33mwarning[39m  Unexpected console statement. Only these console methods are allowed: warn, error  [2mno-console[22m[0m
+[0m  [2m156:25[22m  [33mwarning[39m  Unexpected any. Specify a different type                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m307:33[22m  [33mwarning[39m  Unexpected any. Specify a different type                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m358:69[22m  [33mwarning[39m  Unexpected any. Specify a different type                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m361:7[22m   [33mwarning[39m  Unexpected console statement. Only these console methods are allowed: warn, error  [2mno-console[22m[0m
+[0m  [2m385:84[22m  [33mwarning[39m  Unexpected any. Specify a different type                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m388:7[22m   [33mwarning[39m  Unexpected console statement. Only these console methods are allowed: warn, error  [2mno-console[22m[0m
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/services/inbox-ai-assistant.service.ts[24m[0m
+[0m   [2m39:5[22m   [33mwarning[39m  Unexpected console statement. Only these console methods are allowed: warn, error    [2mno-console[22m[0m
+[0m  [2m114:11[22m  [33mwarning[39m  'analysis' is assigned a value but never used. Allowed unused vars must match /^_/u  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/services/openai.service.ts[24m[0m
+[0m   [2m79:7[22m   [33mwarning[39m  Unexpected console statement. Only these console methods are allowed: warn, error  [2mno-console[22m[0m
+[0m  [2m108:72[22m  [33mwarning[39m  Unexpected any. Specify a different type                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m130:9[22m   [33mwarning[39m  Unexpected console statement. Only these console methods are allowed: warn, error  [2mno-console[22m[0m
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/services/product-qa.service.ts[24m[0m
+[0m   [2m46:5[22m   [33mwarning[39m  Unexpected console statement. Only these console methods are allowed: warn, error          [2mno-console[22m[0m
+[0m  [2m306:11[22m  [33mwarning[39m  'userRole' is assigned a value but never used. Allowed unused vars must match /^_/u        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m307:11[22m  [33mwarning[39m  'userExperience' is assigned a value but never used. Allowed unused vars must match /^_/u  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/var/www/GeniusERP/libs/ai/src/services/sales-ai.service.ts[24m[0m
+[0m  [2m42:5[22m  [33mwarning[39m  Unexpected console statement. Only these console methods are allowed: warn, error  [2mno-console[22m[0m
+[0m[0m
+[0m[33m[1m✖ 34 problems (0 errors, 34 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[0m
+✖ 34 problems (0 errors, 34 warnings)
+

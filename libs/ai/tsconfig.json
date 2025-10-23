@@ -6,8 +6,7 @@
     "types": ["node"],
     "declaration": true,
     "declarationMap": true,
-    "outDir": "../../dist/libs/ai",
-    "rootDir": "src"
+    "outDir": "../../dist/libs/ai"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]

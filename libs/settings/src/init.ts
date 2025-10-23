@@ -8,7 +8,7 @@
 import { Express } from 'express';
 import { SettingsModule } from './settings.module';
 import { settingsRouter } from './routes';
-import { log } from '../../vite';
+import { log } from '../../../apps/api/src/vite';
 
 /**
  * Initialize the Settings module

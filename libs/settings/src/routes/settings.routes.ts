@@ -7,7 +7,7 @@
 
 import { Router, Request, Response } from 'express';
 import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 
 // Import services directly
 import { 

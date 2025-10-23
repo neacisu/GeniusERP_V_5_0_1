@@ -8,9 +8,9 @@
 
 import { DrizzleService } from "@common/drizzle";
 import { OpenAiService } from './openai.service';
-import AuditService from '../../audit/services/audit.service';
+import AuditService from '../../../audit/src/services/audit.service';
 import { createId } from '../../../shared/src/utils/id';
-import { analyticsReports, reportExecutionHistory } from '../../analytics/schema/analytics.schema';
+import { analyticsReports, reportExecutionHistory } from '../../../analytics/src/schema/analytics.schema';
 import { sql } from 'drizzle-orm';
 
 /**
@@ -317,13 +317,13 @@ export class AIService {
     }
     
     // Add time period if provided
-    if (parameters?.period) {
-      prompt += `for the period ${parameters.period} `;
+    if (parameters?.['period']) {
+      prompt += `for the period ${parameters['period']} `;
     }
     
     // Add specific focus areas if provided
-    if (parameters?.focusAreas && Array.isArray(parameters.focusAreas)) {
-      prompt += `with focus on ${parameters.focusAreas.join(', ')} `;
+    if (parameters?.['focusAreas'] && Array.isArray(parameters['focusAreas'])) {
+      prompt += `with focus on ${parameters['focusAreas'].join(', ')} `;
     }
     
     // Add format instructions
@@ -337,13 +337,13 @@ export class AIService {
 `;
     
     // Add specific metrics to include if provided
-    if (parameters?.metrics && Array.isArray(parameters.metrics)) {
-      prompt += `\nInclude analysis of these specific metrics: ${parameters.metrics.join(', ')}`;
+    if (parameters?.['metrics'] && Array.isArray(parameters['metrics'])) {
+      prompt += `\nInclude analysis of these specific metrics: ${parameters['metrics'].join(', ')}`;
     }
     
     // Add comparison request if provided
-    if (parameters?.compareWith) {
-      prompt += `\nCompare performance with ${parameters.compareWith}`;
+    if (parameters?.['compareWith']) {
+      prompt += `\nCompare performance with ${parameters['compareWith']}`;
     }
     
     return prompt;
