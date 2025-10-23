@@ -8,7 +8,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as dotenv from 'dotenv';
-import { collaborationActivities, collaborationNotifications } from './shared/schema/collaboration.schema';
+import { collaborationActivities, collaborationNotifications } from '../libs/shared/src/schema/collaboration.schema';
 import { sql } from 'drizzle-orm';
 
 // Load environment variables

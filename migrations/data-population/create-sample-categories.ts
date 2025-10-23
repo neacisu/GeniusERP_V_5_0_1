@@ -6,7 +6,7 @@
  */
 
 import { DrizzleService } from './server/common/drizzle';
-import { inventoryCategories } from './shared/schema';
+import { inventoryCategories } from '../../libs/shared/src/schema';
 import { v4 as uuidv4 } from 'uuid';
 import { eq, sql } from 'drizzle-orm';
 

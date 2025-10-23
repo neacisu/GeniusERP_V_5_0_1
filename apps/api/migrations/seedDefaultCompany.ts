@@ -1,5 +1,5 @@
 import { DrizzleService } from '../common/drizzle';
-import { companies } from '../../shared/schema';
+import { companies } from '../../libs/shared/src/schema';
 import { v4 as uuidv4 } from 'uuid';
 
 /**

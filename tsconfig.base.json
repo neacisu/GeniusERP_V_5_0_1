@@ -59,8 +59,8 @@
       "@geniuserp/comms": ["libs/comms/src/index.ts"],
       "@geniuserp/company": ["libs/company/src/index.ts"],
       "@common/*": ["apps/api/src/common/*"],
-      "@/*": ["client/src/*"],
-      "@shared/*": ["shared/*"]
+      "@/*": ["apps/web/src/*"],
+      "@shared/*": ["libs/shared/src/*"]
     }
   },
   "exclude": ["node_modules", "tmp", "dist", "build"]

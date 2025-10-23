@@ -8,7 +8,7 @@
 import postgres from 'postgres';
 import * as dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import * as schema from './shared/schema/communications.schema';
+import * as schema from '../libs/shared/src/schema/communications.schema';
 
 // Load environment variables
 dotenv.config();

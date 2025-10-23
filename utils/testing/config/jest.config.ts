@@ -19,18 +19,18 @@ const config: Config.InitialOptions = {
   
   // Module paths
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/$1',
-    '^@server/(.*)$': '<rootDir>/server/$1',
-    '^@shared/(.*)$': '<rootDir>/shared/$1',
+    '^@/(.*)$': '<rootDir>/apps/web/src/$1',
+    '^@server/(.*)$': '<rootDir>/apps/api/src/$1',
+    '^@shared/(.*)$': '<rootDir>/libs/shared/src/$1',
     '^@testing/(.*)$': '<rootDir>/utils/testing/$1',
   },
   
   // Coverage
   collectCoverageFrom: [
-    'server/**/*.ts',
-    '!server/**/*.d.ts',
-    '!server/**/*.test.ts',
-    '!server/**/*.spec.ts',
+    'apps/api/src/**/*.ts',
+    '!apps/api/src/**/*.d.ts',
+    '!apps/api/src/**/*.test.ts',
+    '!apps/api/src/**/*.spec.ts',
   ],
   
   coverageDirectory: '<rootDir>/utils/testing/coverage/jest',

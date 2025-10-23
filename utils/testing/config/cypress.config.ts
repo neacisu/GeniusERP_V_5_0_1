@@ -79,7 +79,7 @@ export default defineConfig({
       framework: 'react',
       bundler: 'vite',
     },
-    specPattern: 'client/src/**/*.cy.{js,jsx,ts,tsx}',
+    specPattern: 'apps/web/src/**/*.cy.{js,jsx,ts,tsx}',
   },
   
   // Environment variables

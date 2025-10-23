@@ -31,7 +31,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './utils/testing/coverage/vitest',
-      include: ['server/**/*.ts'],
+      include: ['apps/api/src/**/*.ts'],
       exclude: [
         '**/*.test.ts',
         '**/*.spec.ts',
@@ -81,9 +81,9 @@ export default defineConfig({
   // Resolve aliases
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, '../../../'),
-      '@server': path.resolve(__dirname, '../../../server'),
-      '@shared': path.resolve(__dirname, '../../../shared'),
+      '@': path.resolve(__dirname, '../../../apps/web/src'),
+      '@server': path.resolve(__dirname, '../../../apps/api/src'),
+      '@shared': path.resolve(__dirname, '../../../libs/shared/src'),
       '@testing': path.resolve(__dirname, '../../../utils/testing'),
     },
   },
