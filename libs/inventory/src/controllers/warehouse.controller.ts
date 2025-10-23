@@ -6,8 +6,8 @@
  */
 
 import { Router, Request, Response, NextFunction } from 'express';
-import { AuthGuard } from '../../../modules/auth/guards/auth.guard';
-import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 import { WarehouseService } from '../services/warehouse.service';
 import { insertWarehouseSchema, warehouseTypeEnum } from '../../../../shared/schema/warehouse';
 import { validateRequest } from "@common/middleware/validate-request";

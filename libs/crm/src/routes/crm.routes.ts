@@ -1,8 +1,8 @@
 
 import { Router } from 'express';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/types';
-import { UserRole } from '../../auth/types';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/types';
+import { UserRole } from '../../../auth/src/types';
 import { CustomerController } from '../controllers/customer.controller';
 import { DealController } from '../controllers/deal.controller';
 import { anafController } from '../controllers/anaf.controller';

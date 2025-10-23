@@ -10,7 +10,7 @@
  */
 
 import { DrizzleService } from "@common/drizzle";
-import AuditService from '../../audit/services/audit.service';
+import AuditService from '../../../audit/src/services/audit.service';
 import { randomUUID } from 'crypto';
 
 export interface ProductAnswer {

@@ -6,10 +6,10 @@
 
 import express from 'express';
 import { PandaDocClient } from '../clients';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 import { IntegrationsService } from '../services/integrations.service';
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '../../../audit/src/services/audit.service';
 import { IntegrationProvider } from '../schema/integrations.schema';
 
 // Create router

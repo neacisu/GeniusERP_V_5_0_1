@@ -11,8 +11,8 @@ import inboxAiRoutes from './inbox-ai.routes';
 import productQaRoutes from './product-qa.routes';
 import openAiRoutes from './openai.routes';
 import aiReportsRoutes from './ai-reports.routes';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 import { DrizzleService } from "@common/drizzle";
 import { AIService } from '../services/ai.service';
 

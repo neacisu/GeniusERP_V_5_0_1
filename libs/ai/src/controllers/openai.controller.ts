@@ -10,7 +10,7 @@ import { OpenAiService } from '../services/openai.service';
 import { Logger } from "@common/logger";
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import AuditService from '../../audit/services/audit.service';
+import AuditService from '../../audit/src/services/audit.service';
 import { z } from 'zod';
 
 // Create validation schema for chat completion

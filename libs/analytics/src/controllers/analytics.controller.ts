@@ -9,7 +9,7 @@ import { Request, Response } from 'express';
 import { AnalyticsService } from '../services/analytics.service';
 import { Logger } from "@common/logger";
 import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 import { hasAnalyticsAccess } from '../analytics.roles';
 import { z } from 'zod';
 

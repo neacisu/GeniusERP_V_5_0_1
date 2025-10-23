@@ -1,8 +1,8 @@
 {
   "run": {
     "command": "nx run-many --target=serve --projects=api,web --parallel=2",
-    "startTime": "2025-10-23T09:59:08.437Z",
-    "endTime": "2025-10-23T10:01:04.301Z",
+    "startTime": "2025-10-23T10:17:04.576Z",
+    "endTime": "2025-10-23T10:28:33.190Z",
     "inner": false
   },
   "tasks": [
@@ -11,8 +11,8 @@
       "target": "serve",
       "projectName": "api",
       "hash": "3000716987880876867",
-      "startTime": "2025-10-23T09:59:08.459Z",
-      "endTime": "2025-10-23T10:01:04.101Z",
+      "startTime": "2025-10-23T10:17:04.595Z",
+      "endTime": "2025-10-23T10:28:33.026Z",
       "params": "",
       "cacheStatus": "cache-miss",
       "status": 1

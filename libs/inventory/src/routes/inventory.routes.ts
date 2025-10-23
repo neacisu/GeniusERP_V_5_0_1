@@ -7,11 +7,11 @@
  */
 
 import { Router } from 'express';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { UserRole } from '../../auth/types';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
+import { UserRole } from '../../../auth/src/types';
 import { validateRequest } from "@common/middleware/validate-request";
-import { validateCompanyAccess, ensureCompanyId, addCompanyFilter } from '../../auth/middleware/company-access.middleware';
+import { validateCompanyAccess, ensureCompanyId, addCompanyFilter } from '../../../auth/src/middleware/company-access.middleware';
 import { z } from 'zod';
 
 // Import controllers

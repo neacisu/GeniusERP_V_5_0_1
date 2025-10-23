@@ -8,8 +8,8 @@
 import { Request, Response, Router } from 'express';
 import { z } from 'zod';
 import { CategoriesService } from '../services/categories.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 import { log } from '../../../../apps/api/src/vite';
 
 // Validation schema for creating a category

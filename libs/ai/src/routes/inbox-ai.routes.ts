@@ -8,8 +8,8 @@
 import express from 'express';
 import { InboxAiAssistantService } from '../services/inbox-ai-assistant.service';
 import { DrizzleService } from "@common/drizzle";
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 
 // Create router instance
 const router = express.Router();

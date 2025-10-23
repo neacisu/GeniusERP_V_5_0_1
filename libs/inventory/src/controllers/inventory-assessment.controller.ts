@@ -6,9 +6,9 @@
  */
 
 import { Router, Request, Response, NextFunction } from 'express';
-import { AuthGuard } from '../../../modules/auth/guards/auth.guard';
-import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
-import { UserRole } from '../../../modules/auth/types';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
+import { UserRole } from '../../../auth/src/types';
 import { z } from 'zod';
 import { InventoryAssessmentService } from '../services/inventory-assessment.service';
 import { InventoryValuationService } from '../services/inventory-valuation.service';

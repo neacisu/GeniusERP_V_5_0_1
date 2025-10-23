@@ -8,9 +8,9 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { transferStockService } from '../services/transfer-stock.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { UserRole } from '../../auth/types';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
+import { UserRole } from '../../../auth/src/types';
 import { Logger } from "@common/logger";
 import { z } from 'zod';
 

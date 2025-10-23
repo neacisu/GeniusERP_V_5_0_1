@@ -6,8 +6,8 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { AuthGuard } from '../../../modules/auth/guards/auth.guard';
-import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 import { z } from 'zod';
 import { ProductsService } from '../services/products.service';
 import { log } from '../../../../apps/api/src/vite';

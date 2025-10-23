@@ -7,14 +7,14 @@
  */
 
 import { Router, Request, Response, NextFunction } from 'express';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 import { ManageWarehouseService, manageWarehouseService } from '../services/manage-warehouse.service';
 import { TransferStockService, transferStockService } from '../services/transfer-stock.service';
 import { checkStockLevelsService } from '../services/check-stock-levels.service';
 import { validateRequest } from "@common/middleware/validate-request";
 import { z } from 'zod';
-import { UserRole } from '../../auth/types';
+import { UserRole } from '../../../auth/src/types';
 
 // JwtUserData interface definition
 interface JwtUserData {

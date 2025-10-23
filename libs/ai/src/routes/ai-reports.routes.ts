@@ -10,9 +10,9 @@
 import express from 'express';
 import { AIService } from '../services/ai.service';
 import { DrizzleService } from "@common/drizzle";
-import AuditService from '../../audit/services/audit.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import AuditService from '../../../audit/src/services/audit.service';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
 
 // Create router instance
 const router = express.Router();
