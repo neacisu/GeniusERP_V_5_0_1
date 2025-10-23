@@ -36,7 +36,7 @@ import {
 } from '../types/sales-journal-data-types';
 import { accountingCacheService } from './accounting-cache.service';
 import { accountingQueueService } from './accounting-queue.service';
-import { log } from '../../../vite';
+import { log } from '../../../../apps/api/src/vite';
 
 /**
  * Sales journal entry interface

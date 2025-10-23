@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import AuditService from '../services/audit.service';
 import { getDrizzle } from "@common/drizzle";
 import { auditLogs } from '../schema/audit.schema';
-import { storage } from '../../../storage';
+import { storage } from '../../../../apps/api/src/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { JwtAuthMode } from '../../auth';
 import { AuthGuard } from '../../auth/guards/auth.guard';

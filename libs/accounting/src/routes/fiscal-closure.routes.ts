@@ -10,7 +10,7 @@ import { AuthGuard } from '../../auth/guards/auth.guard';
 import { 
   fiscalClosureRateLimiter,
   accountingReadRateLimiter
-} from '../../../middlewares/rate-limit.middleware';
+} from '../../../../apps/api/src/middlewares/rate-limit.middleware';
 
 const router = Router();
 

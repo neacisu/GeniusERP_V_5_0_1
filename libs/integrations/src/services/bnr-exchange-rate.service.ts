@@ -5,11 +5,11 @@
  * by fetching RSS feeds for specific currencies (with historical data) and using XML as a fallback.
  */
 
-import { createHttpClient, HttpClient } from '../../../shared/libs/http-client';
-import { log } from '../../../vite';
+import { createHttpClient, HttpClient } from '../../../shared/src/libs/http-client';
+import { log } from '../../../../apps/api/src/vite';
 import { parseStringPromise } from 'xml2js';
 import { Services } from "@common/services/registry";
-import { fx_rates } from '../../../../shared/schema';
+import { fx_rates } from '../../../shared/src/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import cron from 'node-cron';
 

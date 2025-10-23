@@ -12,7 +12,7 @@ import { exchangeRateService } from '../../integrations/services/exchange-rate.s
 import { InvoiceStatus } from '../types/invoice-status.enum';
 import { AuditService } from '../../audit/services/audit.service';
 import { AuditActionType } from "@common/enums/audit-action.enum";
-import { log } from '../../../vite';
+import { log } from '../../../../apps/api/src/vite';
 import { InvoiceService } from './invoice.service';
 import { ENTITY_NAME } from '../index';
 

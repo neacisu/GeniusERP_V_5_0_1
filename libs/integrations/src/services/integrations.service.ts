@@ -14,7 +14,7 @@ import {
   IntegrationStatus,
   UpdateIntegration 
 } from '../schema/integrations.schema';
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '../../../audit/src/services/audit.service';
 import { Logger } from "@common/logger";
 
 // For audit logging

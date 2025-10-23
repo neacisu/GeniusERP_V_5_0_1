@@ -9,7 +9,7 @@
 import { DrizzleService } from "@common/drizzle";
 import { OpenAiService } from './openai.service';
 import AuditService from '../../audit/services/audit.service';
-import { createId } from '../../../utils/id';
+import { createId } from '../../../shared/src/utils/id';
 import { analyticsReports, reportExecutionHistory } from '../../analytics/schema/analytics.schema';
 import { sql } from 'drizzle-orm';
 

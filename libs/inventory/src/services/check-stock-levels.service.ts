@@ -10,7 +10,7 @@
 import { getDrizzle, DrizzleService } from "@common/drizzle";
 import { Queue } from 'bullmq';
 import { randomUUID } from 'crypto';
-import { log } from '../../../vite';
+import { log } from '../../../../apps/api/src/vite';
 // Import the queue from the centralized BullMQ module
 import { inventoryQueue } from "@common/bullmq";
 // Keep QueueService import for backward compatibility

@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { CategoriesService } from '../services/categories.service';
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { log } from '../../../vite';
+import { log } from '../../../../apps/api/src/vite';
 
 // Validation schema for creating a category
 const createCategorySchema = z.object({

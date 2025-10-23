@@ -10,7 +10,7 @@ import { Logger } from "@common/logger";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { auditLogs } from '@geniuserp/shared';
 import { and, desc, eq, like, or } from 'drizzle-orm';
-import { storage } from '../../../storage';
+import { storage } from '../../../../apps/api/src/storage';
 import { v4 as uuidv4 } from 'uuid';
 
 export class AuditController {

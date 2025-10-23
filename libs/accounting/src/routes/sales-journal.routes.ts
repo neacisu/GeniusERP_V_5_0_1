@@ -11,7 +11,7 @@ import {
   accountingHeavyRateLimiter,
   exportRateLimiter,
   accountingReadRateLimiter
-} from "../../../middlewares/rate-limit.middleware";
+} from '../../../../apps/api/src/middlewares/rate-limit.middleware';
 
 /**
  * Setup routes for the Romanian Sales Journal

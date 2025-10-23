@@ -9,7 +9,7 @@
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { setupSteps } from '../schema/settings.schema'; // using the setup steps from settings schema
 import { eq, and } from 'drizzle-orm';
-import { createId } from '../../../utils/id';
+import { createId } from '../../../shared/src/utils/id';
 import { Logger } from "@common/logger";
 
 // Define setup step status types

@@ -10,7 +10,7 @@ import { AuthGuard } from '../../../modules/auth/guards/auth.guard';
 import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
 import { z } from 'zod';
 import { ProductsService } from '../services/products.service';
-import { log } from '../../../vite';
+import { log } from '../../../../apps/api/src/vite';
 import { importValidatorService } from '../services/import-validator.service.instance';
 import { ImportOptions } from '../types/import-validation';
 

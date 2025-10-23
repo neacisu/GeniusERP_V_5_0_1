@@ -8,7 +8,7 @@
 
 import express, { Request, Response } from 'express';
 import { SetupService } from '../services/setup.service';
-import { AuthGuard } from '../../../modules/auth/guards/auth.guard';
+import { AuthGuard } from '../../../auth/src/guards/auth.guard';
 import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
 
 const router = express.Router();

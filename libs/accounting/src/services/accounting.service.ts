@@ -1,4 +1,4 @@
-import { IStorage } from "../../../storage";
+import { IStorage } from "../../../../apps/api/src/storage";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { and, eq } from "drizzle-orm";
 import {

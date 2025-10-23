@@ -18,7 +18,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AuditLogService } from './audit-log.service';
 import { accountingQueueService } from './accounting-queue.service';
 import { RedisService } from '../../../services/redis.service';
-import { log } from '../../../vite';
+import { log } from '../../../../apps/api/src/vite';
 import {
   CashRegisterWithClosing,
   CreateCashRegisterData,

@@ -5,7 +5,7 @@ import { JwtAuthMode } from "../../auth/constants/auth-mode.enum";
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { Response } from "express";
 import { JournalController } from "../controllers/journal.controller";
-import { accountingReadRateLimiter, accountingHeavyRateLimiter } from "../../../middlewares/rate-limit.middleware";
+import { accountingReadRateLimiter, accountingHeavyRateLimiter } from '../../../../apps/api/src/middlewares/rate-limit.middleware';
 
 /**
  * Setup ledger routes for direct transaction recording and management

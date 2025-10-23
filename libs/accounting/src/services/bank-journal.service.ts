@@ -16,7 +16,7 @@ import { bankAccounts, bankTransactions, BankAccount, BankTransaction } from '..
 import { v4 as uuidv4 } from 'uuid';
 import { accountingQueueService } from './accounting-queue.service';
 import { RedisService } from '../../../services/redis.service';
-import { log } from '../../../vite';
+import { log } from '../../../../apps/api/src/vite';
 
 /**
  * Bank transaction type enum

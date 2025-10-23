@@ -13,7 +13,7 @@ import { AccountingSettingsService } from '../services/accounting-settings.servi
 import { 
   accountingReadRateLimiter,
   accountingHeavyRateLimiter
-} from '../../../middlewares/rate-limit.middleware';
+} from '../../../../apps/api/src/middlewares/rate-limit.middleware';
 
 // Initialize service and controller
 const settingsService = new AccountingSettingsService();

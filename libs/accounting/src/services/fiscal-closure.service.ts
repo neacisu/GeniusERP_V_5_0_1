@@ -17,7 +17,7 @@ import { VATClosureService } from './vat-closure.service';
 import { YearEndClosureService, ProfitTaxAdjustments, ProfitDistribution } from './year-end-closure.service';
 import { AuditLogService } from './audit-log.service';
 import { accountingQueueService } from './accounting-queue.service';
-import { log } from '../../../vite';
+import { log } from '../../../../apps/api/src/vite';
 
 export interface MonthEndClosureRequest {
   companyId: string;

@@ -20,7 +20,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { accountingCacheService } from './accounting-cache.service';
 import { accountingQueueService } from './accounting-queue.service';
-import { log } from '../../../vite';
+import { log } from '../../../../apps/api/src/vite';
 import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Import all type definitions

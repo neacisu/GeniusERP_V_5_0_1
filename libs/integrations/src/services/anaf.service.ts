@@ -9,8 +9,8 @@
  * Reference: https://www.anaf.ro/anaf/internet/ANAF/servicii_online/servicii_web_anaf
  */
 
-import { createHttpClient, HttpClient } from '../../../shared/libs/http-client';
-import { log } from '../../../vite';
+import { createHttpClient, HttpClient } from '../../../shared/src/libs/http-client';
+import { log } from '../../../../apps/api/src/vite';
 
 export interface AnafConfig {
   apiBaseUrl?: string;

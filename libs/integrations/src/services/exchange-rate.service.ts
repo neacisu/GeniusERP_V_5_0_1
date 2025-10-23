@@ -5,8 +5,8 @@
  * Used for converting between currencies in invoices, reports, and financial statements.
  */
 
-import { createHttpClient, HttpClient } from '../../../shared/libs/http-client';
-import { log } from '../../../vite';
+import { createHttpClient, HttpClient } from '../../../shared/src/libs/http-client';
+import { log } from '../../../../apps/api/src/vite';
 
 interface ExchangeRateResponse {
   result: string;

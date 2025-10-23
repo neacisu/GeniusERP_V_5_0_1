@@ -13,7 +13,7 @@ import { OnboardingService } from '../services/onboarding.service';
 import { 
   accountingHeavyRateLimiter,
   accountingReadRateLimiter
-} from '../../../middlewares/rate-limit.middleware';
+} from '../../../../apps/api/src/middlewares/rate-limit.middleware';
 
 // Initialize service and controller
 const onboardingService = new OnboardingService();

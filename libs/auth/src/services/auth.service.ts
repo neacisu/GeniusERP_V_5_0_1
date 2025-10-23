@@ -2,11 +2,11 @@ import jwt, { SignOptions, Secret } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { User as SelectUser } from "../../../shared/src/schema";
 import { JwtPayload } from "../../../shared/src/types";
-import { storage } from "../../../storage";
+import { storage } from "../../../../apps/api/src/storage";
 import { DrizzleService, getDrizzle } from "@common/drizzle";
 import { users } from "../../../shared/src/schema";
 import { eq } from "drizzle-orm";
-import { log } from "../../../vite";
+import { log } from "../../../../apps/api/src/vite";
 
 // JWT Settings
 // Pentru mediul de dezvoltare, folosim o valoare prestabilită dacă JWT_SECRET nu este setat

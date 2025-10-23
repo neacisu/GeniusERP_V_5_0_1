@@ -8,8 +8,8 @@ import { AuthGuard } from "../guards/auth.guard";
 import { JwtAuthMode, UserRole } from "../types";
 import { DrizzleService } from "@common/drizzle";
 import { users, User as SelectUser } from "../../../shared/src/schema";
-import { authRateLimiter } from "../../../middlewares/rate-limit.middleware";
-import { log } from "../../../vite";
+import { authRateLimiter } from '../../../../apps/api/src/middlewares/rate-limit.middleware';
+import { log } from "../../../../apps/api/src/vite";
 
 export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
   const router = Router();

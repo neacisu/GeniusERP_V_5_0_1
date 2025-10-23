@@ -18,7 +18,7 @@ import { JournalNumberingService } from './journal-numbering.service';
 import { AccountingPeriodsService } from './accounting-periods.service';
 import { accountingQueueService } from './accounting-queue.service';
 import { RedisService } from '../../../services/redis.service';
-import { log } from '../../../vite';
+import { log } from '../../../../apps/api/src/vite';
 
 /**
  * Ledger entry type

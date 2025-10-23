@@ -9,7 +9,7 @@ import { AuthGuard } from '../../auth/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/types';
 import { UserRole } from '../../auth/types';
 import { InvoiceService } from '../services/invoice.service';
-import { storage } from '../../../storage';
+import { storage } from '../../../../apps/api/src/storage';
 
 const router = Router();
 

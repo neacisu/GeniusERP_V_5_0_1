@@ -7,7 +7,7 @@
 import { Router } from 'express';
 import { ManualEntriesController } from '../controllers/manual-entries.controller';
 import { AuthGuard } from '../../auth/guards/auth.guard';
-import { accountingReadRateLimiter, accountingHeavyRateLimiter } from '../../../middlewares/rate-limit.middleware';
+import { accountingReadRateLimiter, accountingHeavyRateLimiter } from '../../../../apps/api/src/middlewares/rate-limit.middleware';
 
 const router = Router();
 const controller = new ManualEntriesController();

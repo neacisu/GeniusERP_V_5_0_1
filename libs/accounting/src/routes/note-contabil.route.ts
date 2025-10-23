@@ -17,7 +17,7 @@ import {
   accountingReadRateLimiter,
   exportRateLimiter,
   accountingHeavyRateLimiter
-} from '../../../middlewares/rate-limit.middleware';
+} from '../../../../apps/api/src/middlewares/rate-limit.middleware';
 import { accountingQueueService } from '../services/accounting-queue.service';
 
 const router = express.Router();

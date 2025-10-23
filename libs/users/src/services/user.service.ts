@@ -7,7 +7,7 @@
 
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { User, InsertUser, Role, Permission } from "../../../shared/src/schema";
-import { authService } from "../../auth/services/auth.service";
+import { authService } from "../../../auth/src/services/auth.service";
 import { users, roles, permissions, userRoles, rolePermissions } from "../../../shared/src/schema";
 import { eq, and } from "drizzle-orm";
 import { Logger } from "@common/logger";

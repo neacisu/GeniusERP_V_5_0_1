@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { AccountingService } from "../services/accounting.service";
-import { storage } from "../../../storage";
+import { storage } from "../../../../apps/api/src/storage";
 import { AuthGuard } from "../../auth/guards/auth.guard";
 import { JwtAuthMode } from "../../auth/constants/auth-mode.enum";
 import { setupSalesJournalRoutes } from "./sales-journal.routes";
@@ -13,7 +13,7 @@ import { AccountingController } from "../controllers/accounting.controller";
 import { MetricsController } from "../controllers/metrics.controller";
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { Response } from "express";
-import { accountingReadRateLimiter, accountingHeavyRateLimiter } from "../../../middlewares/rate-limit.middleware";
+import { accountingReadRateLimiter, accountingHeavyRateLimiter } from '../../../../apps/api/src/middlewares/rate-limit.middleware';
 import { accountingQueueService } from "../services/accounting-queue.service";
 
 /**
