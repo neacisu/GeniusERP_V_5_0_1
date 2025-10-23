@@ -10,7 +10,7 @@ import { Logger } from '../logger';
 import { JwtUserData } from '@geniuserp/shared';
 
 // Import JWT_SECRET from auth service for consistency
-import { JWT_SECRET } from '@geniuserp/auth/services/auth.service';
+import { JWT_SECRET } from '../../../../../libs/auth/src/services/auth.service';
 
 // Create logger for AuthGuard
 const logger = new Logger('AuthGuard');
@@ -32,7 +32,7 @@ export class AuthGuard {
         const decoded = jwt.verify(token, JWT_SECRET) as JwtUserData;
         req.user = decoded;
         
-        next();
+        return next();
       } catch (error) {
         logger.error('Invalid token', error);
         return res.status(401).json({ success: false, message: 'Invalid or expired token' });
@@ -45,7 +45,7 @@ export class AuthGuard {
    * Will continue processing even without a valid token
    */
   static optionalAuth() {
-    return (req: Request, res: Response, next: NextFunction) => {
+    return (req: Request, _res: Response, next: NextFunction) => {
       const token = AuthGuard.getTokenFromRequest(req);
       
       if (!token) {
@@ -56,10 +56,10 @@ export class AuthGuard {
         const decoded = jwt.verify(token, JWT_SECRET) as JwtUserData;
         req.user = decoded;
         
-        next();
+        return next();
       } catch (error) {
         logger.debug('Invalid optional token', error);
-        next();
+        return next();
       }
     };
   }
@@ -105,7 +105,7 @@ export class AuthGuard {
           return res.status(401).json({ success: false, message: 'Authentication required' });
         }
         
-        const userCompanyId = req.user.companyId;
+        const userCompanyId = (req.user as JwtUserData).companyId;
         const targetCompanyId = req.params[paramName] || req.body[paramName];
         
         // Special case for admin role - they can access any company

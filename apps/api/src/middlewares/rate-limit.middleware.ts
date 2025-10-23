@@ -8,26 +8,25 @@
  */
 
 import rateLimit from 'express-rate-limit';
-import type { Options } from 'express-rate-limit';
 import { createModuleLogger } from '../common/logger/loki-logger';
 
 const logger = createModuleLogger('rate-limit');
 
 // Verifică dacă Redis este disponibil
-const hasRedis = !!process.env.REDIS_URL;
+const hasRedis = !!process.env['REDIS_URL'];
 
 // Configurare store - Redis în producție, memory în development
 let store: any;
 
-if (hasRedis && process.env.NODE_ENV === 'production') {
+if (hasRedis && process.env['NODE_ENV'] === 'production') {
   try {
     // Doar dacă Redis este disponibil, importăm și configurăm
     const RedisStore = require('rate-limit-redis');
     const { createClient } = require('redis');
     
     const redisClient = createClient({
-      url: process.env.REDIS_URL,
-      password: process.env.REDIS_PASSWORD
+      url: process.env['REDIS_URL'],
+      password: process.env['REDIS_PASSWORD']
     });
     
     redisClient.connect().catch((err: Error) => {
@@ -55,7 +54,7 @@ if (hasRedis && process.env.NODE_ENV === 'production') {
     store = undefined; // Will use default memory store
   }
 } else {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env['NODE_ENV'] === 'production') {
     logger.warn('⚠ Redis not configured - using memory store for rate limiting (not recommended for production)');
   } else {
     logger.info('✓ Rate limiting using memory store (development mode)');
