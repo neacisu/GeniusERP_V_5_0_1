@@ -8,7 +8,7 @@
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { configurations } from '../../../../shared/schema/admin.schema';
 import { and, eq, isNull, sql, like } from 'drizzle-orm';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -26,7 +26,7 @@ export enum ConfigScope {
  */
 export class ConfigService {
   private db: PostgresJsDatabase<any>;
-  private logger = new Logger('ConfigService');
+  private logger = createModuleLogger('ConfigService');
   private cache: Map<string, any> = new Map();
   private cacheTTL: number = 5 * 60 * 1000; // 5 minutes
   private cacheTimestamps: Map<string, number> = new Map();

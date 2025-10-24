@@ -7,17 +7,17 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { DevalidateInvoiceService } from '../services/devalidate-invoice.service';
-import { Logger } from "@common/logger";
-import { AuditService } from '../../../audit/src/services/audit.service';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuditService } from '@geniuserp/audit';
 import { ENTITY_NAME } from '../invoices.module';
 import { invoices } from '@geniuserp/shared';
 import { eq, and } from 'drizzle-orm';
 
 export class DevalidateInvoiceController {
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
 
   constructor() {
-    this.logger = new Logger('DevalidateInvoiceController');
+    this.logger = createModuleLogger('DevalidateInvoiceController');
   }
 
   /**

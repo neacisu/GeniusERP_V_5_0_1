@@ -12,7 +12,7 @@
 import { getDrizzle } from "@common/drizzle";
 import { absences } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '@geniuserp/audit';
 import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";
 
 // Absence types according to Romanian labor law

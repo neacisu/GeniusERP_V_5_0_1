@@ -6,7 +6,7 @@ import {
   createStepTemplateSchema, 
   updateStepTemplateSchema 
 } from '../schema/bpm.schema.js';
-import { AuditService, AuditAction } from '../../audit/services/audit.service';
+import { AuditService, AuditAction } from '@geniuserp/audit';
 
 /**
  * Step Template Controller

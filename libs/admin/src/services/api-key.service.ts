@@ -9,10 +9,10 @@ import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { api_keys } from '../../../../shared/schema/admin.schema';
 import { and, eq } from 'drizzle-orm';
 import { Express, Request, Response, Router } from 'express';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from "@common/logger";
-import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuditService, AuditAction } from '@geniuserp/audit';
 import { v4 as uuidv4 } from 'uuid';
 import * as crypto from 'crypto';
 
@@ -21,7 +21,7 @@ import * as crypto from 'crypto';
  */
 export class ApiKeyService {
   private db: PostgresJsDatabase<any>;
-  private logger = new Logger('ApiKeyService');
+  private logger = createModuleLogger('ApiKeyService');
 
   /**
    * Constructor for ApiKeyService

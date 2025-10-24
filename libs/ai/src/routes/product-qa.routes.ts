@@ -8,8 +8,8 @@
 import express from 'express';
 import { ProductQaService } from '../services/product-qa.service';
 import { DrizzleService } from "@common/drizzle";
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 
 // Create router instance
 const router = express.Router();

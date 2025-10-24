@@ -6,7 +6,7 @@
 
 import { Request, Response, Router } from 'express';
 import { ActivityService } from '../services/activity.service';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { AuthGuard } from '../../../modules/auth/guards/auth.guard';
 import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
 
@@ -16,7 +16,7 @@ import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
  * Handles API requests for collaboration activity data.
  */
 export class ActivityController {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   
   /**
    * Constructor
@@ -24,7 +24,7 @@ export class ActivityController {
    * @param activityService Activity service
    */
   constructor(private activityService: ActivityService) {
-    this._logger = new Logger('ActivityController');
+    this._logger = createModuleLogger('ActivityController');
   }
   
   /**

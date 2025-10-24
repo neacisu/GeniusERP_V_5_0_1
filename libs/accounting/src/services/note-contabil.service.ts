@@ -11,11 +11,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { getDrizzle } from "@common/drizzle";
 import { eq, desc } from 'drizzle-orm';
 import { ledgerEntries } from '../schema/accounting.schema';
-import { AuditService } from '../../../audit/src/services/audit.service';
+import { AuditService } from '@geniuserp/audit';
 import { RedisService } from '@common/services/redis.service';
 import { warehouses, companies } from '@geniuserp/shared';
 import { createModuleLogger } from "@common/logger/loki-logger";
-import { Service } from '../../../shared/src/types';
+import { Service } from '@geniuserp/shared';
 import type {
   NoteContabilData,
   CreatedNote,

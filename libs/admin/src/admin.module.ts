@@ -7,7 +7,7 @@
  */
 
 import { Express } from 'express';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { BaseModule } from '../../types/module';
 import { DrizzleService } from '../../common/drizzle';
 import { UserService } from './services/user.service';
@@ -20,7 +20,7 @@ import { LicenseService } from './services/license.service';
 
 export class AdminModule implements BaseModule {
   private static instance: AdminModule;
-  private logger = new Logger('AdminModule');
+  private logger = createModuleLogger('AdminModule');
   private db!: DrizzleService;
   private initialized = false;
 

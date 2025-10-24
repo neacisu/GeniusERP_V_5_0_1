@@ -15,12 +15,12 @@ import {
   MessageStatus,
   SentimentType
 } from '../../../../shared/schema/communications.schema';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { ThreadsService } from './threads.service';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 
 // Create a logger for message operations
-const logger = new Logger('MessagesService');
+const logger = createModuleLogger('MessagesService');
 
 /**
  * Service for managing communication messages

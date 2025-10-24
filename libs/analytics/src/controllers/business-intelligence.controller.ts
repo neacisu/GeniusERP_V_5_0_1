@@ -7,13 +7,13 @@
 
 import { Response } from 'express';
 import { BusinessIntelligenceService } from '../services/business-intelligence.service';
-import { Logger } from "@common/logger";
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { hasBusinessIntelligenceAccess } from '../analytics.roles';
 
 // Create logger instance
-const logger = new Logger('BusinessIntelligenceController');
+const logger = createModuleLogger('BusinessIntelligenceController');
 
 /**
  * Authentication middleware with role check for business intelligence

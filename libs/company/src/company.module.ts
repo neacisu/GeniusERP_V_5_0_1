@@ -9,11 +9,11 @@ import { DrizzleService } from '../../common/drizzle/drizzle.service';
 import { CompanyService } from './services/company.service';
 import { CompanyRouter, createCompanyRouter } from './routes';
 import { createCompanyController } from './controllers';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { registerModule } from '../../common/services/registry';
 
 // Create a logger for the module
-const logger = new Logger('CompanyModule');
+const logger = createModuleLogger('CompanyModule');
 
 /**
  * Company Module configuration object

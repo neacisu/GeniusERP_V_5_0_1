@@ -7,7 +7,7 @@
  * 2. Importul efectiv (inserare/actualizare în baza de date)
  */
 
-import { auditService } from '../../../modules/audit/services/audit.service.instance';
+import { auditService } from '@geniuserp/audit.instance';
 import { v4 as uuidv4 } from 'uuid';
 import { 
   ProductImportRow, 
@@ -17,7 +17,7 @@ import {
   ImportResult
 } from '../types/import-validation';
 import { generateUniqueEAN13 } from '../utils/barcode-generator';
-import { inventoryProducts } from '../../../../shared/schema';
+import { inventoryProducts } from '@geniuserp/shared';
 import { eq } from 'drizzle-orm';
 
 export class ImportValidatorService {

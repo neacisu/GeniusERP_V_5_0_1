@@ -5,18 +5,18 @@
  */
 
 import { Response } from 'express';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { MessagesService } from '../services/messages.service';
 import { MessageDirection, MessageStatus } from '../../../../shared/schema/communications.schema';
 import { AuthenticatedRequest } from '../../../types/express';
 
 export class MessagesController {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   
   constructor(
     private messagesService: MessagesService
   ) {
-    this._logger = new Logger('MessagesController');
+    this._logger = createModuleLogger('MessagesController');
   }
   
   /**

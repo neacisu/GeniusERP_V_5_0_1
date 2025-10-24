@@ -9,10 +9,10 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '@geniuserp/audit';
 import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";
 import { eq, sql } from 'drizzle-orm';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import * as fs from 'fs';
 import * as path from 'path';
@@ -21,7 +21,7 @@ import { hrDocuments, hrEmployeeDrafts } from '../schema/documents.schema';
 export class HrDocumentService {
   private drizzle: DrizzleService;
   private auditService: AuditService;
-  private logger = new Logger('HrDocumentService');
+  private logger = createModuleLogger('HrDocumentService');
 
   constructor() {
     this.drizzle = new DrizzleService();

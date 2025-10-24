@@ -12,10 +12,10 @@ import {
   channelConfigurations,
   CommunicationChannel
 } from '../../../../shared/schema/communications.schema';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger for channel operations
-const logger = new Logger('ChannelConfigsService');
+const logger = createModuleLogger('ChannelConfigsService');
 
 /**
  * Service for managing communication channel configurations

@@ -9,7 +9,7 @@
 import { DrizzleService } from "@common/drizzle";
 import { randomUUID } from 'crypto';
 import { Services, logAction } from "@common/services/registry";
-import { AuditAction } from '../../../modules/audit/services/audit.service';
+import { AuditAction } from '@geniuserp/audit';
 import { eq, and } from 'drizzle-orm';
 
 /**

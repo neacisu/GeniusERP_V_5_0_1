@@ -8,8 +8,8 @@
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
-import type { BankAccount, BankTransaction } from '../../../../shared/schema/bank-journal.schema';
-import { RedisService } from '../../../services/redis.service';
+import type { BankAccount, BankTransaction } from '@geniuserp/shared/schema/bank-journal.schema';
+import { RedisService } from '@common/services/redis.service';
 
 /**
  * RECOMANDARE 1: Serviciu COMPLET de generare PDF pentru Jurnalul de Bancă

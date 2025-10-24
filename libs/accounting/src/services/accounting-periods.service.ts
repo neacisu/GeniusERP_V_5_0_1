@@ -11,7 +11,7 @@ import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import { fiscalPeriods, FiscalPeriod, InsertFiscalPeriod } from '../schema/accounting.schema';
 import { AuditLogService } from './audit-log.service';
 import { PeriodLockService } from './period-lock.service';
-import { RedisService } from '../../../services/redis.service';
+import { RedisService } from '@common/services/redis.service';
 
 export type PeriodStatus = 'open' | 'soft_close' | 'hard_close';
 

@@ -7,9 +7,9 @@
 import express from 'express';
 import { z } from 'zod';
 import { IntegrationsService } from '../services/integrations.service';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode, UserRole } from '../../../auth/src/types';
-import { AuditService, AuditAction } from '../../../audit/src/services/audit.service';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode, UserRole } from '@geniuserp/auth';
+import { AuditService, AuditAction } from '@geniuserp/audit';
 import { IntegrationProvider, IntegrationStatus } from '../schema/integrations.schema';
 import { getIntegrationClient } from '../clients';
 

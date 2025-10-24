@@ -5,7 +5,7 @@
  */
 import { eq, and, like, or, desc, sql, not, isNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { 
   bpmProcesses, 
   BpmProcess,
@@ -69,11 +69,11 @@ export interface StartProcessDto {
  * Responsible for managing business process workflows
  */
 export class ProcessService {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   private _processInstanceService: ProcessInstanceService;
 
   constructor(private drizzleService: DrizzleService) {
-    this._logger = new Logger('ProcessService');
+    this._logger = createModuleLogger('ProcessService');
     this._processInstanceService = new ProcessInstanceService(drizzleService);
   }
 

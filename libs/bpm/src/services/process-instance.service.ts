@@ -5,7 +5,7 @@
  */
 import { eq, and, like, or, desc, sql, not, isNull, asc, inArray } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { 
   bpmProcessInstances, 
@@ -69,10 +69,10 @@ export interface ProcessHistoryEntry {
  * Responsible for managing process instances (running workflows)
  */
 export class ProcessInstanceService {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
 
   constructor(private drizzleService: DrizzleService) {
-    this._logger = new Logger('ProcessInstanceService');
+    this._logger = createModuleLogger('ProcessInstanceService');
   }
 
   /**

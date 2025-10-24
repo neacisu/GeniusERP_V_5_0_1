@@ -8,9 +8,9 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { CampaignService } from '../services/campaign.service';
-import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
+import { AuditService, AuditAction } from '@geniuserp/audit';
 import { 
   CampaignType, 
   CampaignStatus, 
@@ -22,7 +22,7 @@ import {
  * Campaign Controller Class
  */
 export class CampaignController {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   private _campaignService: CampaignService;
   private _auditService: AuditService;
 
@@ -30,7 +30,7 @@ export class CampaignController {
    * Constructor
    */
   constructor() {
-    this._logger = new Logger('CampaignController');
+    this._logger = createModuleLogger('CampaignController');
     this._campaignService = new CampaignService();
     this._auditService = new AuditService();
   }

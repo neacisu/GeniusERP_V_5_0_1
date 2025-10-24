@@ -5,14 +5,14 @@
  */
 import { Request, Response, Router } from 'express';
 import { z } from 'zod';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from "@common/logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { NoteService } from '../services/note.service';
 import { insertCollaborationNoteSchema } from '../../../../shared/schema/collaboration.schema';
 
 // Create module logger
-const logger = new Logger('CollabNoteController');
+const logger = createModuleLogger('CollabNoteController');
 
 export class NoteController {
   constructor(private readonly noteService: NoteService) {}

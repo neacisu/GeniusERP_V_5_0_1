@@ -9,13 +9,13 @@
 
 import { Router, Response } from 'express';
 import { RevisalService } from '../services/revisal.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { AuthenticatedRequest } from '../../../types/express';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Initialize logger
-const logger = new Logger('RevisalController');
+const logger = createModuleLogger('RevisalController');
 
 export class RevisalController {
   constructor(private readonly revisalService: RevisalService) {}

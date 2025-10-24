@@ -12,10 +12,10 @@
 import { getDrizzle, DrizzleService } from "@common/drizzle";
 import { randomUUID } from 'crypto';
 import { gestiuneTypeEnum } from '../schema/inventory.schema';
-import { AccountingService } from '../../accounting/services/accounting.service';
-import { IStorage, storage } from '../../../../apps/api/src/storage';
+import { AccountingService } from '@geniuserp/accounting';
+import { IStorage, storage } from "@api/storage";
 import { eq } from 'drizzle-orm';
-import { analyticAccounts } from '../../../../shared/schema';
+import { analyticAccounts } from '@geniuserp/shared';
 
 /**
  * Input type for warehouse creation

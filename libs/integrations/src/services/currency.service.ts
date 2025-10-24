@@ -8,7 +8,7 @@
 import { eq, and, desc } from 'drizzle-orm';
 import { fx_rates } from '@geniuserp/shared';
 import { getDrizzle } from "@common/drizzle";
-import { log } from '../../../../apps/api/src/vite';
+import { log } from "@api/vite";
 
 export class CurrencyService {
   /**

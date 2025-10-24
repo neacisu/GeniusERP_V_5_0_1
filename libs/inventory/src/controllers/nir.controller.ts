@@ -8,10 +8,10 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { nirService } from '../services/nir.service';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
-import { UserRole } from '../../../auth/src/types';
-import { Logger } from "@common/logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { UserRole } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { z } from 'zod';
 import { nirStatusEnum } from '../schema/inventory.schema';
 
@@ -19,10 +19,10 @@ import { nirStatusEnum } from '../schema/inventory.schema';
 const INVENTORY_ROLES = [UserRole.INVENTORY_MANAGER, UserRole.ADMIN];
 
 export class NirController {
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
 
   constructor() {
-    this.logger = new Logger('NirController');
+    this.logger = createModuleLogger('NirController');
   }
 
   /**

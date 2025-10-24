@@ -25,9 +25,9 @@ import type {
   InsertDocumentVersion,
   InsertTaggedDocumentVersion
 } from '../../../../shared/schema';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
-const logger = new Logger('DocumentService');
+const logger = createModuleLogger('DocumentService');
 
 /**
  * Custom error classes for better error handling

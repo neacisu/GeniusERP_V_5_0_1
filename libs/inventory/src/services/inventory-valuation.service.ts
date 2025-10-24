@@ -14,15 +14,15 @@
 
 import { desc, eq, and, sql, asc, lt, gte } from 'drizzle-orm';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
+import { AuditService, AuditAction } from '@geniuserp/audit';
 import { 
   insertBatchSchema,
   insertValuationSchema,
   inventoryBatches,
   inventoryValuations,
   inventoryValuationMethodEnum
-} from '../../../../shared/schema/inventory-assessment';
-import { generateDateBasedCode } from '../../../utils/code-generator';
+} from '@geniuserp/shared/schema/inventory-assessment';
+import { generateDateBasedCode } from '../utils/code-generator';
 import { z } from 'zod';
 
 export class InventoryValuationService {

@@ -8,8 +8,8 @@ import axios from 'axios';
 import { BaseDrizzleService } from "@common/drizzle/modules/core/base-drizzle.service";
 import { financialData, financialDataErrors, financialDataJobs, FinancialDataInsert, FinancialDataErrorInsert, FinancialDataJobInsert } from '../schema/financial-data.schema';
 import { eq, and, sql } from 'drizzle-orm';
-import { AuditService } from '../../audit/services/audit.service';
-import { Logger } from "@common/logger";
+import { AuditService } from '@geniuserp/audit';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 const ANAF_BILANT_URL = 'https://webservicesp.anaf.ro/bilant';
 const MAX_RETRY_COUNT = 3;
@@ -19,7 +19,7 @@ const CURRENT_YEAR = new Date().getFullYear();
  * Serviciu pentru gestionarea datelor financiare
  */
 export class FinancialDataService extends BaseDrizzleService {
-  private logger = new Logger('FinancialDataService');
+  private logger = createModuleLogger('FinancialDataService');
   
   constructor(
     private readonly auditService: AuditService

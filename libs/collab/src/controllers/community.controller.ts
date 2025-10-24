@@ -9,13 +9,13 @@
 import { Request, Response, Router } from 'express';
 import { z } from 'zod';
 import { CommunityService, CommunityCategory } from '../services/community.service';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { insertCollaborationThreadSchema } from '../../../../shared/schema/collaboration.schema';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 
 // Create a logger for the community controller
-const logger = new Logger('CommunityController');
+const logger = createModuleLogger('CommunityController');
 
 /**
  * Community controller request validation schemas

@@ -7,8 +7,8 @@
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { invoices } from '@geniuserp/shared';
 import { eq, and, isNull } from 'drizzle-orm';
-import { JournalService } from '../../accounting/services/journal.service';
-import { AuditService, AuditAction } from '../../audit/services/audit.service';
+import { JournalService } from '@geniuserp/accounting';
+import { AuditService, AuditAction } from '@geniuserp/audit';
 
 /**
  * Devalidation result interface

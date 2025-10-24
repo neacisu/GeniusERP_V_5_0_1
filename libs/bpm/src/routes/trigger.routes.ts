@@ -7,11 +7,11 @@
 import { Router, Express } from 'express';
 import { TriggerService } from '../services/trigger.service';
 import { TriggerController } from '../controllers/trigger.controller';
-import { Logger } from "@common/logger";
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 
-const logger = new Logger('TriggerRoutes');
+const logger = createModuleLogger('TriggerRoutes');
 
 /**
  * Register trigger routes with the Express app

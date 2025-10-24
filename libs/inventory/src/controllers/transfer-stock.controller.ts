@@ -8,10 +8,10 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { transferStockService } from '../services/transfer-stock.service';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
-import { UserRole } from '../../../auth/src/types';
-import { Logger } from "@common/logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { UserRole } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { z } from 'zod';
 
 // Role constants for inventory operations
@@ -27,10 +27,10 @@ const transferStockSchema = z.object({
 });
 
 export class TransferStockController {
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
 
   constructor() {
-    this.logger = new Logger('TransferStockController');
+    this.logger = createModuleLogger('TransferStockController');
   }
 
   /**

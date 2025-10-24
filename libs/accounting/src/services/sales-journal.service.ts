@@ -14,7 +14,7 @@ import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.serv
 import { v4 as uuidv4 } from 'uuid';
 import { getDrizzle } from "@common/drizzle";
 import { and, desc, eq, gte, lte, isNotNull } from 'drizzle-orm';
-import { invoices, invoiceItems, invoiceDetails, invoicePayments, users, companies, type InvoicePayment, type InvoiceDetail } from '../../../../shared/schema';
+import { invoices, invoiceItems, invoiceDetails, invoicePayments, users, companies, type InvoicePayment, type InvoiceDetail } from '@geniuserp/shared';
 import { accountingLedgerEntries, accountingLedgerLines } from '../schema/accounting.schema';
 import { VATCategory, determineVATCategory } from '../types/vat-categories';
 import { 
@@ -36,7 +36,7 @@ import {
 } from '../types/sales-journal-data-types';
 import { accountingCacheService } from './accounting-cache.service';
 import { accountingQueueService } from './accounting-queue.service';
-import { log } from '../../../../apps/api/src/vite';
+import { log } from "@api/vite";
 
 /**
  * Sales journal entry interface

@@ -6,14 +6,14 @@
 import { Request, Response, Router } from 'express';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from "@common/logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { ThreadDrizzleService } from "@common/drizzle/modules/collab/thread-service";
 import { insertCollaborationThreadSchema } from '../../../../shared/schema/collaboration.schema';
 
 // Create module logger
-const logger = new Logger('CollabThreadController');
+const logger = createModuleLogger('CollabThreadController');
 
 export class ThreadController {
   constructor(private readonly threadService: ThreadDrizzleService) {}

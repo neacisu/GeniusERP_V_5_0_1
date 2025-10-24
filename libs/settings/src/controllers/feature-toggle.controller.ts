@@ -7,14 +7,14 @@
 
 import { Request, Response } from 'express';
 import { FeatureToggleService } from '../services/feature-toggle.service';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 export class FeatureToggleController {
   private service: FeatureToggleService;
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
   
   constructor(featureToggleService?: FeatureToggleService) {
-    this.logger = new Logger('FeatureToggleController');
+    this.logger = createModuleLogger('FeatureToggleController');
     this.service = featureToggleService || FeatureToggleService.getInstance();
   }
   

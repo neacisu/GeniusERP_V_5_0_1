@@ -7,14 +7,14 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { SegmentService } from '../services/segment.service';
-import { Logger } from "@common/logger";
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { insertCampaignSegmentSchema } from '../../../../shared/schema/marketing.schema';
 
 export const segmentRoutes = Router();
 const segmentService = new SegmentService();
-const logger = new Logger('SegmentRoutes');
+const logger = createModuleLogger('SegmentRoutes');
 
 // Validation schemas
 const segmentQuerySchema = z.object({

@@ -6,15 +6,15 @@
  */
 
 import { Router, Request, Response, NextFunction } from 'express';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
-import { UserRole } from '../../../auth/src/types';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { UserRole } from '@geniuserp/auth';
 import { z } from 'zod';
 import { InventoryAssessmentService } from '../services/inventory-assessment.service';
 import { InventoryValuationService } from '../services/inventory-valuation.service';
-import { log } from '../../../../apps/api/src/vite';
+import { log } from "@api/vite";
 import { validateRequest } from "@common/middleware/validate-request";
-import { pool } from '../../../../apps/api/src/db';
+import { pool } from "@api/db";
 
 // Constants for role-based access
 const INVENTORY_MANAGER_ROLES = [UserRole.ADMIN, UserRole.INVENTORY_MANAGER];

@@ -9,7 +9,7 @@
  */
 
 import { Express } from 'express';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from '../../common/drizzle/drizzle.service';
 import { ThreadsService } from './services/threads.service';
 import { MessagesService } from './services/messages.service';
@@ -28,7 +28,7 @@ import { registerModule } from '../../common/services/registry';
 import { getDrizzleInstance } from '../../common/drizzle/db';
 
 // Create a logger for the module
-const logger = new Logger('CommsModule');
+const logger = createModuleLogger('CommsModule');
 
 /**
  * Communications Module configuration object

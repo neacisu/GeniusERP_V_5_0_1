@@ -5,14 +5,14 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { Logger } from "@common/logger";
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { PaymentService, PaymentResultStatus } from '../services/payment.service';
 import { v4 as uuidv4 } from 'uuid';
 
 // Create a logger
-const logger = new Logger('ECommerceController');
+const logger = createModuleLogger('ECommerceController');
 
 export class ECommerceController {
   private router: Router;

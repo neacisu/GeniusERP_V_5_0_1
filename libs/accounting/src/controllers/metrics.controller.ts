@@ -1,11 +1,11 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
-import { db } from '../../../db';
-import { Logger } from '../../../utils/logger';
+import { db } from '@api/db';
+import { createModuleLogger } from '@common/logger/loki-logger';
 import { accountingLedgerEntries, accountingLedgerLines } from '../schema/accounting.schema';
 import { eq, and, desc } from 'drizzle-orm';
 
-const logger = new Logger('MetricsController');
+const logger = createModuleLogger('MetricsController');
 
 interface Transaction {
   id: string;

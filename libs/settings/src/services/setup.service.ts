@@ -9,19 +9,19 @@
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { setupSteps } from '../schema/settings.schema'; // using the setup steps from settings schema
 import { eq, and } from 'drizzle-orm';
-import { createId } from '../../../shared/src/utils/id';
-import { Logger } from "@common/logger";
+import { createId } from '@geniuserp/shared/utils/id';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Define setup step status types
 export type SetupStepStatus = 'completed' | 'in_progress' | 'not_started' | 'skipped' | 'pending';
 
 export class SetupService {
   private drizzle: DrizzleService;
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
   private static instance: SetupService;
   
   constructor(drizzleService?: DrizzleService) {
-    this.logger = new Logger('SetupService');
+    this.logger = createModuleLogger('SetupService');
     this.drizzle = drizzleService || new DrizzleService();
   }
   

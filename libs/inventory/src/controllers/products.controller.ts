@@ -6,11 +6,11 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { z } from 'zod';
 import { ProductsService } from '../services/products.service';
-import { log } from '../../../../apps/api/src/vite';
+import { log } from "@api/vite";
 import { importValidatorService } from '../services/import-validator.service.instance';
 import { ImportOptions } from '../types/import-validation';
 

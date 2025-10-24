@@ -6,7 +6,7 @@
 
 import { eq, and, desc, or, SQL, sql } from 'drizzle-orm';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { collaborationNotifications } from '../../../../shared/schema/collaboration.schema';
 
 /**
@@ -35,7 +35,7 @@ export interface NotificationQueryOptions {
  * Manages notification operations
  */
 export class NotificationService {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   
   /**
    * Constructor
@@ -43,7 +43,7 @@ export class NotificationService {
    * @param drizzleService Drizzle ORM service
    */
   constructor(private drizzleService: DrizzleService) {
-    this._logger = new Logger('NotificationService');
+    this._logger = createModuleLogger('NotificationService');
   }
   
   /**

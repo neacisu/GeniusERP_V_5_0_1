@@ -8,7 +8,7 @@
 
 import { Request, Response } from 'express';
 import { validateCui } from '../utils';
-import AuditService from '../../../modules/audit/services/audit.service';
+import AuditService from '@geniuserp/audit';
 import { anafService } from '../services/anaf.service';
 import { anafQueueService } from '../services/anaf-queue_services';
 

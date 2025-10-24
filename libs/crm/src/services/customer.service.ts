@@ -5,7 +5,7 @@
  */
 import { BaseDrizzleService } from "@common/drizzle/modules/core/base-drizzle.service";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '@geniuserp/audit';
 import { customers, Customer, InsertCustomer } from '../schema/crm.schema';
 import { eq, and, sql, desc, asc } from 'drizzle-orm';
 import { randomUUID } from 'crypto';

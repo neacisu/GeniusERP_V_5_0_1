@@ -5,8 +5,8 @@
  * following Romanian accounting standards for stock and warehouse management.
  */
 
-import { IStorage } from "../../../../apps/api/src/storage";
-import { CurrencyService } from "../../integrations/services/currency.service";
+import { IStorage } from "@api/storage";
+import { CurrencyService } from '@geniuserp/integrations/services/currency.service';
 import { DrizzleService } from "@common/drizzle";
 import { randomUUID } from "crypto";
 

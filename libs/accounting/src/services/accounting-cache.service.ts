@@ -9,7 +9,7 @@
  * - Cache warming pentru date critice
  */
 
-import { RedisService } from '../../../services/redis.service';
+import { RedisService } from '@common/services/redis.service';
 
 /**
  * Cache TTL constants (în secunde)

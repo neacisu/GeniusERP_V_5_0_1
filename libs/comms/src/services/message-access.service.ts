@@ -11,10 +11,10 @@ import { eq, and } from 'drizzle-orm';
 import { 
   messageAccess
 } from '../../../../shared/schema/communications.schema';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger for message access operations
-const logger = new Logger('MessageAccessService');
+const logger = createModuleLogger('MessageAccessService');
 
 /**
  * Service for managing message access permissions

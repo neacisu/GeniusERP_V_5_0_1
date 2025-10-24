@@ -17,7 +17,7 @@ import {
   TaskPriority
 } from '../../../../shared/schema/collaboration.schema';
 import { randomUUID } from 'crypto';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 
 /**
@@ -27,7 +27,7 @@ import { DrizzleService } from "@common/drizzle/drizzle.service";
  * status changes, and tracking.
  */
 export class TaskService {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   
   /**
    * Constructor
@@ -35,7 +35,7 @@ export class TaskService {
    * @param drizzleService Drizzle service for database operations
    */
   constructor(private drizzleService: DrizzleService) {
-    this._logger = new Logger('TaskService');
+    this._logger = createModuleLogger('TaskService');
   }
   
   /**

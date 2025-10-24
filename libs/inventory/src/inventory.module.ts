@@ -12,9 +12,9 @@ import { ManageWarehouseService } from './services/manage-warehouse.service';
 import { TransferStockService } from './services/transfer-stock.service';
 import { CheckStockLevelsService } from './services/check-stock-levels.service';
 import { NirService } from './services/nir.service';
-import { ExchangeRateService } from '../integrations/services/exchange-rate.service';
+import { ExchangeRateService } from '@geniuserp/integrations/services/exchange-rate.service';
 import { setupInventoryRoutes } from './routes/inventory.routes';
-import { log } from '../../../apps/api/src/vite';
+import { log } from "@api/vite";
 
 // Controllers
 import { nirController } from './controllers/nir.controller';

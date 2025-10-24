@@ -5,12 +5,12 @@
  * la adăugarea unei noi companii/CUI în baza de date
  */
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { FinancialQueueService } from '../services/financial-queue.service';
 import { FinancialDataService } from '../services/financial-data.service';
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '@geniuserp/audit';
 
-const logger = new Logger('CompanyFinancialDataHook');
+const logger = createModuleLogger('CompanyFinancialDataHook');
 
 /**
  * Hook pentru datele financiare ale companiilor

@@ -8,8 +8,8 @@
 
 import { DrizzleService } from "@common/drizzle";
 import { OpenAiService } from './openai.service';
-import AuditService from '../../../audit/src/services/audit.service';
-import { createId } from '../../../shared/src/utils/id';
+import AuditService from '@geniuserp/audit';
+import { createId } from '@geniuserp/shared/utils/id';
 import { analyticsReports, reportExecutionHistory } from '../../../analytics/src/schema/analytics.schema';
 import { sql } from 'drizzle-orm';
 

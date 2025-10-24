@@ -6,10 +6,9 @@
  */
 
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
-import { inventoryCategories } from '../../../../shared/schema';
+import { inventoryCategories, InventoryCategory } from '@geniuserp/shared';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { AuditService } from '../../../modules/audit/services/audit.service';
-import { InventoryCategory } from '../../../../shared/schema';
+import { AuditService } from '@geniuserp/audit';
 import { ENTITY_NAME } from '../inventory.module';
 
 export class CategoriesService {

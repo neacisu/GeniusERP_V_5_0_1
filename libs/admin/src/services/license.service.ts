@@ -8,10 +8,10 @@
 import { licenses } from '../../../../shared/schema/admin.schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { Express, Request, Response, Router } from 'express';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from "@common/logger";
-import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuditService, AuditAction } from '@geniuserp/audit';
 import { v4 as uuidv4 } from 'uuid';
 import * as crypto from 'crypto';
 import * as os from 'os';
@@ -41,7 +41,7 @@ enum LicenseEdition {
  * License service for the Admin module
  */
 export class LicenseService {
-  private logger = new Logger('LicenseService');
+  private logger = createModuleLogger('LicenseService');
   private activeLicense: any = null;
   private features: Map<string, boolean> = new Map();
   private maxUsers: number = 0;

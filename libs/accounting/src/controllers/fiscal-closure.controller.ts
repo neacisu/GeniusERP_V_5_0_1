@@ -12,7 +12,7 @@ import { AuthenticatedRequest } from '../../../types/express';
 import FiscalClosureService from '../services/fiscal-closure.service';
 import AccountingPeriodsService from '../services/accounting-periods.service';
 import VATClosureService from '../services/vat-closure.service';
-import { log } from '../../../../apps/api/src/vite';
+import { log } from "@api/vite";
 
 export class FiscalClosureController {
   private closureService: FiscalClosureService;

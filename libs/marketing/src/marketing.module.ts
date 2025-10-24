@@ -8,7 +8,7 @@
 import { Router, Request, Response } from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { initialize } from './init';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { JwtAuthMode } from '../auth/constants/auth-mode.enum';
@@ -33,14 +33,14 @@ export class MarketingModule {
   private _segmentService!: SegmentService;
   private _templateService!: TemplateService;
   private _router: Router;
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   private _initialized: boolean = false;
 
   /**
    * Private constructor to enforce singleton pattern
    */
   private constructor() {
-    this._logger = new Logger('MarketingModule');
+    this._logger = createModuleLogger('MarketingModule');
     this._router = Router();
   }
 
@@ -131,7 +131,7 @@ export class MarketingModule {
     app.use(basePath, instance.getRouter());
     
     // Add explicit route for campaign-placeholder to fix the validation issue
-    const logger = new Logger('MarketingModule');
+    const logger = createModuleLogger('MarketingModule');
     
     app.post('/api/marketing/campaign-placeholder', AuthGuard.protect(JwtAuthMode.REQUIRED), (req: any, res: any) => {
       try {

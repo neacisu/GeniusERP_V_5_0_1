@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { JournalService } from "../services/journal.service";
-import { AuthGuard } from "../../../auth/src/guards/auth.guard";
-import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
+import { AuthGuard } from "@geniuserp/auth";
+import { JwtAuthMode } from "@geniuserp/auth";
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { JournalController } from "../controllers/journal.controller";
-import { accountingReadRateLimiter, accountingHeavyRateLimiter } from '../../../../apps/api/src/middlewares/rate-limit.middleware';
+import { accountingReadRateLimiter, accountingHeavyRateLimiter } from "@api/middlewares/rate-limit.middleware";
 
 /**
  * Setup ledger routes for direct transaction recording and management

@@ -9,7 +9,7 @@
  * - Follow-up reminders
  */
 
-import AuditService from '../../../audit/src/services/audit.service';
+import AuditService from '@geniuserp/audit';
 import { randomUUID } from 'crypto';
 
 export interface EmailAnalysis {

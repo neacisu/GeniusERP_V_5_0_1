@@ -6,10 +6,10 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { UserService } from '../services/user.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { RolesGuard } from "@common/guards";
 import { Roles } from "@common/decorators";
 import { Reflector } from "@common/reflector/reflector";
@@ -26,7 +26,7 @@ const createUserSchema = z.object({
 });
 
 // Create logger instance
-const logger = new Logger('UserController');
+const logger = createModuleLogger('UserController');
 
 /**
  * User Controller class that uses @Roles() decorator

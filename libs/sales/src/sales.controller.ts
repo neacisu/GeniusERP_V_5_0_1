@@ -9,11 +9,11 @@ import { Router, Request, Response } from 'express';
 import { CustomerService } from './customer.service';
 import { AuthGuard } from '@geniuserp/auth/guards/auth.guard';
 import { JwtAuthMode } from '@geniuserp/auth/constants/auth-mode.enum';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from '../../common/drizzle/drizzle.service';
 
 // Initialize logger
-const logger = new Logger('SalesController');
+const logger = createModuleLogger('SalesController');
 
 // Create router instance
 const router = Router();

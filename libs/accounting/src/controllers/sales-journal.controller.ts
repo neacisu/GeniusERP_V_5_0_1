@@ -3,7 +3,7 @@ import { SalesJournalService } from '../services/sales-journal.service';
 import { SalesJournalExportService } from '../services/sales-journal-export.service';
 import { BaseController } from './base.controller';
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
-import { trackJournalEntry } from '../../../../apps/api/src/middlewares/business-metrics.middleware';
+import { trackJournalEntry } from "@api/middlewares/business-metrics.middleware";
 import { bulkOperationsService } from '../services/bulk-operations.service';
 import { accountingQueueService } from '../services/accounting-queue.service';
 

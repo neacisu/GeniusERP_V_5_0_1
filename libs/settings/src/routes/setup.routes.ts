@@ -8,9 +8,9 @@
 
 import express, { Request as ExpressRequest, Response } from 'express';
 import { SetupService } from '../services/setup.service';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
-import { JwtUserData } from '../../../auth/src/types';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { JwtUserData } from '@geniuserp/auth';
 
 // Extend Express Request with user
 interface AuthenticatedRequest extends ExpressRequest {

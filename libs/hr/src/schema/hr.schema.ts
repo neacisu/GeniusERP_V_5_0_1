@@ -26,7 +26,7 @@ import {
   unique
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { users, companies } from "../../../../shared/schema";
+import { users, companies } from '@geniuserp/shared';
 
 /**
  * Employee table - Core HR data 

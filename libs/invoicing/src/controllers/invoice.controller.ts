@@ -7,16 +7,16 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { InvoiceService } from '../services/invoice.service';
-import { Logger } from "@common/logger";
-import { AuditService } from '../../../audit/src/services/audit.service';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuditService } from '@geniuserp/audit';
 import { ENTITY_NAME } from '../invoices.module';
-import { trackInvoiceCreation } from '../../../../apps/api/src/middlewares/business-metrics.middleware';
+import { trackInvoiceCreation } from "@api/middlewares/business-metrics.middleware";
 
 export class InvoiceController {
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
 
   constructor() {
-    this.logger = new Logger('InvoiceController');
+    this.logger = createModuleLogger('InvoiceController');
   }
 
   /**

@@ -7,7 +7,7 @@
 
 import { Express } from 'express';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { ProcessService } from './services/process.service';
 import { TriggerService } from './services/trigger.service';
 import { ProcessInstanceService } from './services/process-instance.service';
@@ -17,7 +17,7 @@ import { ScheduledJobService } from './services/scheduled-job.service';
 import { initBpmServices } from './init';
 
 // Create logger instance
-const logger = new Logger('BpmModule');
+const logger = createModuleLogger('BpmModule');
 
 // Import routes
 import { registerProcessRoutes } from './routes/process.routes';

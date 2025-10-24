@@ -6,8 +6,8 @@
 
 import { Router, Request, Response } from 'express';
 import { DevalidateInvoiceService } from '../services/devalidate-invoice.service';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode, UserRole, AuthenticatedRequest } from '../../../auth/src/types';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode, UserRole, AuthenticatedRequest } from '@geniuserp/auth';
 
 // Create router
 const router = Router();

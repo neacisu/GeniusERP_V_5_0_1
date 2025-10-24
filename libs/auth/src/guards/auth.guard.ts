@@ -20,13 +20,13 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { Service, JwtUserData } from '../../../shared/src/types';
+import { Service, JwtUserData } from '@geniuserp/shared';
 import { JwtAuthMode } from '../constants/auth-mode.enum';
 import { JWT_SECRET } from '../services/auth.service';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create logger for AuthGuard
-const logger = new Logger('AuthGuard');
+const logger = createModuleLogger('AuthGuard');
 
 // Type alias for Request for better readability in our code
 export type AuthenticatedRequest = Request;

@@ -12,7 +12,7 @@ import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq, and, isNull, asc, desc, sql } from 'drizzle-orm';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { users, roles, userRoles } from '../../../../shared/schema/admin.schema';
 
 /**
@@ -43,7 +43,7 @@ export interface UpdateUserParams {
  */
 export class UserService {
   private db: PostgresJsDatabase<any>;
-  private logger = new Logger('UserService');
+  private logger = createModuleLogger('UserService');
   private readonly SALT_ROUNDS = 10;
 
   /**

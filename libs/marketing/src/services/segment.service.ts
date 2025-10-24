@@ -7,7 +7,7 @@
 
 import { eq, and, desc, sql, like, not, isNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService, getDrizzle } from "@common/drizzle";
 import { 
   campaignSegments, 
@@ -19,11 +19,11 @@ import {
  * Service for managing marketing campaign segments
  */
 export class SegmentService {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   private drizzle: DrizzleService;
   
   constructor() {
-    this._logger = new Logger('SegmentService');
+    this._logger = createModuleLogger('SegmentService');
     this.drizzle = new DrizzleService();
   }
   

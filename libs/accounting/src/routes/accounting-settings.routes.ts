@@ -6,14 +6,14 @@
  */
 
 import { Router } from 'express';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { AccountingSettingsController } from '../controllers/accounting-settings.controller';
 import { AccountingSettingsService } from '../services/accounting-settings.service';
 import { 
   accountingReadRateLimiter,
   accountingHeavyRateLimiter
-} from '../../../../apps/api/src/middlewares/rate-limit.middleware';
+} from "@api/middlewares/rate-limit.middleware";
 
 // Initialize service and controller
 const settingsService = new AccountingSettingsService();

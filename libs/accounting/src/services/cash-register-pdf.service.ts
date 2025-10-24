@@ -9,8 +9,8 @@
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
-import type { CashRegister, CashTransaction } from '../../../../shared/schema/cash-register.schema';
-import { RedisService } from '../../../services/redis.service';
+import type { CashRegister, CashTransaction } from '@geniuserp/shared/schema/cash-register.schema';
+import { RedisService } from '@common/services/redis.service';
 
 /**
  * RECOMANDARE 1: Serviciu COMPLET de generare PDF pentru Registrul de Casă

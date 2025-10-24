@@ -12,7 +12,7 @@ import { GeneralJournalExcelService } from '../services/general-journal-excel.se
 import { AccountingPeriodsService } from '../services/accounting-periods.service';
 import { BaseController } from './base.controller';
 import { z } from 'zod';
-import { log } from '../../../../apps/api/src/vite';
+import { log } from "@api/vite";
 
 /**
  * Validare schema pentru cereri

@@ -6,7 +6,7 @@
  */
 
 import { Request, Response, Router } from 'express';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { TaskService } from '../services/task.service';
 import { TaskStatus, TaskPriority } from '../../../../shared/schema/collaboration.schema';
 
@@ -36,12 +36,12 @@ export function createTaskController(taskService: TaskService): LegacyTaskContro
 }
 
 export class TaskController {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   
   constructor(
     private taskService: TaskService
   ) {
-    this._logger = new Logger('TaskController');
+    this._logger = createModuleLogger('TaskController');
   }
   
   /**

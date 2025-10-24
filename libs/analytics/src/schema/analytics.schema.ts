@@ -16,7 +16,7 @@ import {
   pgEnum, 
   integer
 } from 'drizzle-orm/pg-core';
-import { createId } from '../../../shared/src/utils/id';
+import { createId } from '@geniuserp/shared/utils/id';
 
 /**
  * Report types enum

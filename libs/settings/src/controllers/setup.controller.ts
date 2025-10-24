@@ -7,14 +7,14 @@
 
 import { Request, Response } from 'express';
 import { SetupService, SetupStepStatus } from '../services/setup.service';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 export class SetupController {
   private service: SetupService;
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
   
   constructor(setupService?: SetupService) {
-    this.logger = new Logger('SetupController');
+    this.logger = createModuleLogger('SetupController');
     this.service = setupService || SetupService.getInstance();
   }
   

@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { AuthGuard } from "../../../auth/src/guards/auth.guard";
-import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
-import { salesJournalService } from "..";
+import { AuthGuard } from "@geniuserp/auth";
+import { JwtAuthMode } from "@geniuserp/auth";
+import { SalesJournalService } from "../services";
 import { SalesJournalController } from "../controllers/sales-journal.controller";
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { Response } from "express";
@@ -11,7 +11,7 @@ import {
   accountingHeavyRateLimiter,
   exportRateLimiter,
   accountingReadRateLimiter
-} from '../../../../apps/api/src/middlewares/rate-limit.middleware';
+} from "@api/middlewares/rate-limit.middleware";
 
 /**
  * Setup routes for the Romanian Sales Journal
@@ -20,7 +20,8 @@ import {
 export function setupSalesJournalRoutes() {
   const router = Router();
   
-  // Create controller instance
+  // Create service and controller instances
+  const salesJournalService = new SalesJournalService();
   const salesJournalController = new SalesJournalController(salesJournalService);
   
   // Apply authentication middleware to all sales journal routes

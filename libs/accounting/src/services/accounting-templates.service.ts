@@ -10,7 +10,7 @@ import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { eq, and, sql } from 'drizzle-orm';
 import { JournalService, LedgerEntryType } from './journal.service';
 import { AuditLogService } from './audit-log.service';
-import { RedisService } from '../../../services/redis.service';
+import { RedisService } from '@common/services/redis.service';
 
 /**
  * Interface pentru șablonul de notă contabilă

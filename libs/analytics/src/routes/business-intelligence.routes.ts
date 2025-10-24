@@ -7,7 +7,7 @@
  */
 
 import express, { Response, NextFunction } from 'express';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '../../auth';
 import { BusinessIntelligenceService } from '../services/business-intelligence.service';
 import { hasBusinessIntelligenceAccess } from '../analytics.roles';

@@ -8,15 +8,15 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { SegmentService } from '../services/segment.service';
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '@geniuserp/audit';
 
 /**
  * Segment Controller Class
  */
 export class SegmentController {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   private _segmentService: SegmentService;
   private _auditService: AuditService;
 
@@ -24,7 +24,7 @@ export class SegmentController {
    * Constructor
    */
   constructor() {
-    this._logger = new Logger('SegmentController');
+    this._logger = createModuleLogger('SegmentController');
     this._segmentService = new SegmentService();
     this._auditService = new AuditService();
   }

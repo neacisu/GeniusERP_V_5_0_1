@@ -10,10 +10,10 @@
 
 import { employees, employmentContracts, departments } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
-import { AuditService } from '../../../audit/src/services/audit.service';
+import { AuditService } from '@geniuserp/audit';
 import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";
 import { sql, desc } from 'drizzle-orm';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 
 // We won't use an alias for the parent department here, we'll handle it in each query individually
@@ -37,7 +37,7 @@ export enum EmploymentContractStatus {
 
 export class EmployeeService {
   private drizzle: DrizzleService;
-  private logger = new Logger('EmployeeService');
+  private logger = createModuleLogger('EmployeeService');
 
   constructor() {
     this.drizzle = new DrizzleService();

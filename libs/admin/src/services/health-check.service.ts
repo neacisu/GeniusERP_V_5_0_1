@@ -8,10 +8,10 @@
 import { DrizzleService } from "@common/drizzle";
 import { sql } from 'drizzle-orm';
 import { Express, Request, Response, Router } from 'express';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from "@common/logger";
-import { AuditService } from '../../../modules/audit/services/audit.service';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuditService } from '@geniuserp/audit';
 import * as os from 'os';
 import * as fs from 'fs';
 import { ConfigService } from './config.service';
@@ -64,7 +64,7 @@ interface HealthCheckResult {
  */
 export class HealthCheckService {
   private db: DrizzleService;
-  private logger = new Logger('HealthCheckService');
+  private logger = createModuleLogger('HealthCheckService');
   private components: Map<string, HealthComponent> = new Map();
   private configService?: ConfigService;
   private startTime: Date = new Date();

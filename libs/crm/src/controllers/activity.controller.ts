@@ -6,9 +6,9 @@
 import { Express, Request, Response } from 'express';
 import { ActivityService } from '../services/activity.service';
 import { JwtService } from '../../auth/services/jwt.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/types';
-import { UserRole } from '../../auth/types';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { UserRole } from '@geniuserp/auth';
 
 export class ActivityController {
   private activityService: ActivityService;

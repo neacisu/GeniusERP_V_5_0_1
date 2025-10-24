@@ -1,14 +1,14 @@
 import { Router } from "express";
 import { BankJournalService } from "../services";
-import { AuthGuard } from "../../../auth/src/guards/auth.guard";
-import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
+import { AuthGuard } from "@geniuserp/auth";
+import { JwtAuthMode } from "@geniuserp/auth";
 import { BankJournalController } from "../controllers/bank-journal.controller";
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { 
   accountingReadRateLimiter,
   accountingHeavyRateLimiter,
   reconciliationRateLimiter
-} from '../../../../apps/api/src/middlewares/rate-limit.middleware';
+} from "@api/middlewares/rate-limit.middleware";
 
 /**
  * Setup routes for the Romanian Bank Journal

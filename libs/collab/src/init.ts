@@ -7,7 +7,7 @@
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { DrizzleService } from '../../common/drizzle/drizzle.service';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { TaskService } from './services/task.service';
 import { NoteService } from './services/note.service';
 import { CommunityService } from './services/community.service';
@@ -15,7 +15,7 @@ import { ActivityService } from './services/activity.service';
 import { NotificationService } from './services/notification.service';
 
 // Create a logger for the initialization process
-const logger = new Logger('CollabServicesInit');
+const logger = createModuleLogger('CollabServicesInit');
 
 /**
  * Initialize all Collaboration module services

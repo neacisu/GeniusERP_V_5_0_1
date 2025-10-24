@@ -8,7 +8,7 @@
 import { pgTable, text, uuid, boolean, timestamp, pgEnum, numeric, date, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
-import { inventoryProducts } from '../../../../shared/schema';
+import { inventoryProducts } from '@geniuserp/shared';
 
 // Define enums for database
 export const assessmentTypeEnum = pgEnum("inventory_assessment_type", ["annual", "monthly", "unscheduled", "special"]);

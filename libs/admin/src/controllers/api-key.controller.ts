@@ -6,10 +6,10 @@
  */
 
 import { Request, Response } from 'express';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { ApiKeyService } from '../services/api-key.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { z } from 'zod';
 
 // Create validation schema for API key creation
@@ -28,7 +28,7 @@ const updateApiKeySchema = z.object({
 });
 
 // Create logger instance
-const logger = new Logger('ApiKeyController');
+const logger = createModuleLogger('ApiKeyController');
 
 /**
  * Register the API key controller routes with the Express application

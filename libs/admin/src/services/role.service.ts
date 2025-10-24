@@ -9,10 +9,10 @@ import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { roles, permissions, rolePermissions, userRoles } from '../../../../shared/schema';
 import { and, eq } from 'drizzle-orm';
 import { Express, Request, Response, Router } from 'express';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from "@common/logger";
-import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuditService, AuditAction } from '@geniuserp/audit';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -20,7 +20,7 @@ import { v4 as uuidv4 } from 'uuid';
  */
 export class RoleService {
   private db: PostgresJsDatabase<any>;
-  private logger = new Logger('RoleService');
+  private logger = createModuleLogger('RoleService');
 
   /**
    * Constructor for RoleService

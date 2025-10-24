@@ -20,7 +20,7 @@ import {
   gestiuneTypeEnum,
   nirStatusEnum
 } from "../schema/inventory.schema";
-import NoteContabilService from "../../accounting/services/note-contabil.service";
+import { NoteContabilService } from '@geniuserp/accounting';
 
 // Define simplified types for use in this service
 type NirDocument = {

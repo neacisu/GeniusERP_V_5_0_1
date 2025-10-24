@@ -4,7 +4,7 @@
  * Tipuri pentru operațiuni de casă conform OMFP 2634/2015 și Legea 70/2015
  */
 
-import { CashTransaction, CashRegister, cashTransactionPurposeValues } from '../../../shared/src/schema/cash-register.schema';
+import { CashTransaction, CashRegister, cashTransactionPurposeValues } from '@geniuserp/shared/schema/cash-register.schema';
 
 // Type for transaction purpose
 export type CashTransactionPurpose = typeof cashTransactionPurposeValues[number];

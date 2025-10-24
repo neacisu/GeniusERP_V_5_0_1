@@ -6,19 +6,19 @@
 
 import { Request, Response, NextFunction } from 'express';
 import AuditService from '../services/audit.service';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { auditLogs } from '@geniuserp/shared';
 import { and, desc, eq, like, or } from 'drizzle-orm';
-import { storage } from '../../../../apps/api/src/storage';
+import { storage } from "@api/storage";
 import { v4 as uuidv4 } from 'uuid';
 
 export class AuditController {
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
   private drizzle: DrizzleService;
 
   constructor() {
-    this.logger = new Logger('AuditController');
+    this.logger = createModuleLogger('AuditController');
     this.drizzle = new DrizzleService();
   }
 

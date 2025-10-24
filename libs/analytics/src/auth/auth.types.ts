@@ -5,7 +5,7 @@
  * It re-exports the main auth types from the auth module to maintain compatibility.
  */
 
-import { JwtAuthMode, UserRole, JwtUserData } from '../../../auth/src/types';
+import { JwtAuthMode, UserRole, JwtUserData } from '@geniuserp/auth';
 
 // Re-export the auth types for convenience
 export { JwtAuthMode, UserRole, JwtUserData };

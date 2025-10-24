@@ -6,11 +6,11 @@
  */
 
 import { Request, Response, NextFunction, Router } from 'express';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
-import { UserRole } from '../../../auth/src/types';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { UserRole } from '@geniuserp/auth';
 import DB from "@common/drizzle/db";
-import { inventoryUnits, inventoryProducts } from '../../../../shared/schema';
+import { inventoryUnits, inventoryProducts } from '@geniuserp/shared';
 import { eq } from 'drizzle-orm';
 import { ENTITY_NAME } from '../inventory.module';
 

@@ -8,15 +8,15 @@
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { uiThemes } from '../schema/settings.schema';
 import { eq, and, not } from 'drizzle-orm';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 export class UiThemeService {
   private drizzle: DrizzleService;
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
   private static instance: UiThemeService;
 
   constructor(drizzleService?: DrizzleService) {
-    this.logger = new Logger('UiThemeService');
+    this.logger = createModuleLogger('UiThemeService');
     this.drizzle = drizzleService || new DrizzleService();
   }
 

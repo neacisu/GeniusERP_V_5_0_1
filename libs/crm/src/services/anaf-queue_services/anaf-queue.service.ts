@@ -16,7 +16,7 @@ import { anafService } from '../anaf.service';
 import { v4 as uuidv4 } from 'uuid';
 import { getRedisConfig } from '../../../../config/redis';
 import * as dotenv from 'dotenv';
-import { RedisService } from '../../../../services/redis.service';
+import { RedisService } from '../@common/services/redis.service';
 
 export class AnafQueueService {
   private queue!: Queue;

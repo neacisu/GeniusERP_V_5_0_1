@@ -4,7 +4,7 @@
  */
 
 import { PurchaseJournalReport } from '../types/purchase-journal-types';
-import { RedisService } from '../../../services/redis.service';
+import { RedisService } from '@common/services/redis.service';
 
 export class PurchaseJournalExportService {
   private redisService: RedisService;

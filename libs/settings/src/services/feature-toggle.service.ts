@@ -8,18 +8,18 @@
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { featureToggles } from '../schema/settings.schema';
 import { eq, and, isNull } from 'drizzle-orm';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 export class FeatureToggleService {
   private drizzle: DrizzleService;
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
   private static instance: FeatureToggleService;
   // In-memory cache for commonly accessed toggles
   private cache: Map<string, { value: boolean; expiry: number }> = new Map();
   private readonly CACHE_TTL = 60 * 1000; // 1 minute in milliseconds
 
   constructor(drizzleService?: DrizzleService) {
-    this.logger = new Logger('FeatureToggleService');
+    this.logger = createModuleLogger('FeatureToggleService');
     this.drizzle = drizzleService || new DrizzleService();
   }
 

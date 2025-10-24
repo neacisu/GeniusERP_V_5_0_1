@@ -7,9 +7,9 @@ import { authService, JWT_SECRET } from "../services/auth.service";
 import { AuthGuard } from "../guards/auth.guard";
 import { JwtAuthMode, UserRole } from "../types";
 import { DrizzleService } from "@common/drizzle";
-import { users, User as SelectUser } from "../../../shared/src/schema";
-import { authRateLimiter } from '../../../../apps/api/src/middlewares/rate-limit.middleware';
-import { log } from "../../../../apps/api/src/vite";
+import { users, User as SelectUser } from '@geniuserp/shared';
+import { authRateLimiter } from "@api/middlewares/rate-limit.middleware";
+import { log } from "@api/vite";
 
 export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
   const router = Router();

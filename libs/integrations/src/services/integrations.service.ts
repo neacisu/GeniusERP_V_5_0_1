@@ -14,10 +14,10 @@ import {
   IntegrationStatus,
   UpdateIntegration 
 } from '../schema/integrations.schema';
-import { AuditService } from '../../../audit/src/services/audit.service';
-import { Logger } from "@common/logger";
+import { AuditService } from '@geniuserp/audit';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
-const logger = new Logger('IntegrationsService');
+const logger = createModuleLogger('IntegrationsService');
 
 /**
  * Service for managing external integrations

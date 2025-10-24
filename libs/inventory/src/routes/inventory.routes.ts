@@ -7,9 +7,9 @@
  */
 
 import { Router } from 'express';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
-import { UserRole } from '../../../auth/src/types';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { UserRole } from '@geniuserp/auth';
 import { validateRequest } from "@common/middleware/validate-request";
 import { addCompanyFilter } from '../../../auth/src/middleware/company-access.middleware';
 import { z } from 'zod';

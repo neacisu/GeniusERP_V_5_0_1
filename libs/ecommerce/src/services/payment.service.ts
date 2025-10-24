@@ -8,12 +8,12 @@
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { v4 as uuidv4 } from 'uuid';
 import Stripe from 'stripe';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { IntegrationService, IntegrationProvider } from "@common/services/integration.service";
 import { PaymentMethod, mapPaymentMethodToGateway } from '../utils/payment-methods.util';
 
 // Initialize logger
-const logger = new Logger('PaymentService');
+const logger = createModuleLogger('PaymentService');
 
 // Define types for Stripe client
 type StripeClient = Stripe;

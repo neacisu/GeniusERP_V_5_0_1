@@ -5,7 +5,7 @@
  * including database connection setup and service registration.
  */
 
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from '../../common/drizzle/drizzle.service';
 import { 
   campaigns, 
@@ -20,7 +20,7 @@ import {
   channelConfigurations 
 } from '../../../shared/schema/communications.schema';
 
-const logger = new Logger('MarketingInit');
+const logger = createModuleLogger('MarketingInit');
 
 /**
  * Initialize the Marketing module services

@@ -4,13 +4,13 @@
  * Handles HTTP requests related to CRM sales operations
  */
 import { Request, Response } from 'express';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { JwtService } from '../../auth/services/jwt.service';
-import { UserRole } from '../../auth/types';
-import { Logger } from "@common/logger";
+import { UserRole } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
-const logger = new Logger('SalesController');
+const logger = createModuleLogger('SalesController');
 
 export class SalesController {
   private jwtService: JwtService | null = null;

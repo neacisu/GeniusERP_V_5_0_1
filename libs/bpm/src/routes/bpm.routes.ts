@@ -5,12 +5,12 @@
  */
 
 import { Router, Express } from 'express';
-import { Logger } from "@common/logger";
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { BpmController } from '../controllers/bpm.controller';
 
-const logger = new Logger('BpmRoutes');
+const logger = createModuleLogger('BpmRoutes');
 
 /**
  * Register general BPM routes with the Express app

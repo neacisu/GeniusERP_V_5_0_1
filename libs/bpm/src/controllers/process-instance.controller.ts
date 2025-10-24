@@ -5,17 +5,17 @@
  */
 
 import { Request, Response } from 'express';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { ProcessInstanceService, ProcessInstanceFilter } from '../services/process-instance.service';
 import { BpmProcessInstanceStatus, ProcessInstance, ProcessInstanceHistory } from '../schema/bpm.schema';
 
 export class ProcessInstanceController {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   
   constructor(
     private processInstanceService: ProcessInstanceService
   ) {
-    this._logger = new Logger('ProcessInstanceController');
+    this._logger = createModuleLogger('ProcessInstanceController');
   }
   
   /**

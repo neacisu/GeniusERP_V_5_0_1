@@ -28,11 +28,11 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { JwtAuthMode } from '../auth/types';
 import { UserRole } from '../auth/types';
 import { CustomerService } from './services/customer.service';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { AuditService } from '../audit/services/audit.service';
 import { CompanyFinancialDataHook } from './hooks/company-financial-data.hook';
 
-const logger = new Logger('CrmModule');
+const logger = createModuleLogger('CrmModule');
 
 /**
  * CRM Module class that initializes and registers all CRM components

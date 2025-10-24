@@ -6,11 +6,11 @@
 
 import { Router } from 'express';
 import fiscalClosureController from '../controllers/fiscal-closure.controller';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { AuthGuard } from '@geniuserp/auth';
 import { 
   fiscalClosureRateLimiter,
   accountingReadRateLimiter
-} from '../../../../apps/api/src/middlewares/rate-limit.middleware';
+} from "@api/middlewares/rate-limit.middleware";
 
 const router = Router();
 

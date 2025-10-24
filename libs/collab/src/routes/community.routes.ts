@@ -7,10 +7,10 @@
 import { Express, Router } from 'express';
 import { CommunityService } from '../services/community.service';
 import { CommunityController } from '../controllers/community.controller';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger instance for the community routes
-const logger = new Logger('CommunityRoutes');
+const logger = createModuleLogger('CommunityRoutes');
 
 /**
  * Register community routes with Express app

@@ -6,7 +6,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import type postgres from 'postgres';
-import { log } from '../../../../apps/api/src/vite';
+import { log } from "@api/vite";
 import type {
   CreateAssessmentData,
   InventoryAssessment,

@@ -7,17 +7,17 @@
  */
 
 import express from 'express';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
-import { UserRole } from '../../../auth/src/types';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { UserRole } from '@geniuserp/auth';
 import NoteContabilService from '../services/note-contabil.service';
 import { DocumentType } from '../services/validate-document';
-import AuditService, { AuditAction } from '../../../audit/src/services/audit.service';
+import AuditService, { AuditAction } from '@geniuserp/audit';
 import { 
   accountingReadRateLimiter,
   exportRateLimiter,
   accountingHeavyRateLimiter
-} from '../../../../apps/api/src/middlewares/rate-limit.middleware';
+} from "@api/middlewares/rate-limit.middleware";
 import { accountingQueueService } from '../services/accounting-queue.service';
 
 const router = express.Router();
@@ -296,7 +296,7 @@ router.get(
       }
       
       // Check cache first
-      const { RedisService } = await import('../../../../apps/api/src/common/services/redis.service');
+      const { RedisService } = await import('@common/services/redis.service');
       const redisService = new RedisService();
       await redisService.connect();
       
