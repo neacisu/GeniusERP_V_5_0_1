@@ -114,6 +114,9 @@ app.use(loggingMiddleware);
 // Serve static files from public directory
 app.use('/templates', express.static('public/templates'));
 
+// TypeScript Errors Monitor - serve static files
+app.use('/tserrors', express.static('/var/www/html/TypeScriptErrors'));
+
 // Basic health check endpoint
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });

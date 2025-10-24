@@ -13,6 +13,7 @@ export { JwtAuthMode, UserRole };
 export type { JwtUserData };
 export type { AuthenticatedRequest } from '@geniuserp/auth';
 
+
 // Additional analytics-specific roles
 export const AnalyticsRoles = {
   DATA_ANALYST: 'data_analyst',

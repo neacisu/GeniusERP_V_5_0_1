@@ -1,4 +1,4 @@
-import { DrizzleService } from '../common/drizzle';
+import { DrizzleService } from '../src/common/drizzle';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
