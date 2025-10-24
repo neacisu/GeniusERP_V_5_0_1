@@ -4,7 +4,7 @@
  * Database schema for the accounting module.
  */
 
-import { pgTable, uuid, text, timestamp, numeric, jsonb, boolean, unique, integer, varchar, date } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, numeric, jsonb, boolean, integer, varchar, date } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 
 /**
@@ -225,27 +225,6 @@ export const fiscalPeriods = pgTable('fiscal_periods', {
 });
 
 /**
- * Document counters table
- * Sequential numbering for journals and documents
- */
-export const documentCounters = pgTable('document_counters', {
-  id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
-  companyId: uuid('company_id').notNull(), // Nu facem foreign key - poate să nu existe în companies
-  counterType: text('counter_type').notNull(), // 'JOURNAL', 'INVOICE', 'RECEIPT'
-  series: text('series').notNull(), // 'JV', 'SA', 'PU', 'CA', 'BA'
-  year: numeric('year').notNull(),
-  lastNumber: numeric('last_number').notNull().default('0'),
-  
-  // Metadata
-  createdAt: timestamp('created_at').notNull().default(sql`now()`),
-  updatedAt: timestamp('updated_at').notNull().default(sql`now()`)
-}, (table) => {
-  return {
-    uniqueCounter: unique().on(table.companyId, table.counterType, table.series, table.year)
-  };
-});
-
-/**
  * Chart of accounts table
  */
 export const chartOfAccounts = pgTable('chart_of_accounts', {
@@ -333,9 +312,6 @@ export type InsertAccountBalance = typeof accountBalances.$inferInsert;
 export type FiscalPeriod = typeof fiscalPeriods.$inferSelect;
 export type InsertFiscalPeriod = typeof fiscalPeriods.$inferInsert;
 
-export type DocumentCounter = typeof documentCounters.$inferSelect;
-export type InsertDocumentCounter = typeof documentCounters.$inferInsert;
-
 export type ChartOfAccount = typeof chartOfAccounts.$inferSelect;
 export type InsertChartOfAccount = typeof chartOfAccounts.$inferInsert;
 
@@ -354,7 +330,6 @@ export default {
   journalTypes,
   accountBalances,
   fiscalPeriods,
-  documentCounters,
   chartOfAccounts,
   chartOfAccountsRelations
 };
