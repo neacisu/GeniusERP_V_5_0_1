@@ -10,7 +10,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { CorService } from '../services/cor.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
+import { AuthGuard } from '@geniuserp/auth';
 // import { RoleGuard } from '../../auth/guards/role.guard'; // TODO: Verify path
 // import { CompanyGuard } from '../../auth/guards/company.guard'; // TODO: Verify path
 import { z } from 'zod';

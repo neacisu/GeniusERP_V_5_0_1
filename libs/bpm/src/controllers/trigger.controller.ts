@@ -7,9 +7,9 @@
 
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { TriggerService } from '../services/trigger.service';
-import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
+import { AuditService, AuditAction } from '@geniuserp/audit';
 
 // Validation schemas
 const createTriggerSchema = z.object({
@@ -33,14 +33,14 @@ const updateTriggerSchema = z.object({
  * Trigger Controller Class
  */
 export class TriggerController {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   private _triggerService: TriggerService;
 
   /**
    * Constructor
    */
   constructor(triggerService: TriggerService) {
-    this._logger = new Logger('TriggerController');
+    this._logger = createModuleLogger('TriggerController');
     this._triggerService = triggerService;
     // AuditService used as static class - no instance needed
   }

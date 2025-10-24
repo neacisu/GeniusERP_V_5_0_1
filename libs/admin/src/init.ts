@@ -8,9 +8,9 @@
 import { Express } from 'express';
 import { DrizzleService } from '../../common/drizzle';
 import { AdminModule } from './admin.module';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
-const logger = new Logger('AdminModuleInit');
+const logger = createModuleLogger('AdminModuleInit');
 
 /**
  * Initialize the Admin module

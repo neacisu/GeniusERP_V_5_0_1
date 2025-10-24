@@ -13,7 +13,7 @@
 
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { eq, and, desc, sql, like, or } from 'drizzle-orm';
-import { RedisService } from '../../../services/redis.service';
+import { RedisService } from '@common/services/redis.service';
 import {
   accountingSettings,
   vatSettings,

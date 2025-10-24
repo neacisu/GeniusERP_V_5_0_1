@@ -14,8 +14,8 @@ import { eq } from 'drizzle-orm';
 import { documents } from '@geniuserp/shared';
 import { pandaDocService } from './pandadoc.service';
 import { Services, logAction } from "@common/services";
-import { AuditAction } from '../../audit/services/audit.service';
-import { Logger } from "@common/logger";
+import { AuditAction } from '@geniuserp/audit';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Entity type for audit logs
 export const DOCUMENT_ENTITY = 'document';
@@ -26,10 +26,10 @@ export const DOCUMENT_ENTITY = 'document';
 export class SignDocumentService {
   private db: ReturnType<typeof drizzle>;
   private queryClient: ReturnType<typeof postgres>;
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
 
   constructor() {
-    this.logger = new Logger('SignDocumentService');
+    this.logger = createModuleLogger('SignDocumentService');
     this.logger.info('Service initialized');
     
     // Set up database connection

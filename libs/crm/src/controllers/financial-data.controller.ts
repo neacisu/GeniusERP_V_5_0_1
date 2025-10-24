@@ -5,17 +5,17 @@
  * Oferă endpoint-uri pentru interogare, administrare și raportare a datelor financiare
  */
 import { Request, Response } from 'express';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode, UserRole } from '../../auth/types';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode, UserRole } from '@geniuserp/auth';
 import { FinancialDataService } from '../services/financial-data.service';
 import { FinancialQueueService } from '../services/financial-queue.service';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { AuditService } from '../../audit/services/audit.service';
-import { Logger } from "@common/logger";
+import { AuditService } from '@geniuserp/audit';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { createFinancialDataJobSchema } from '../schema/financial-data.schema';
 import { z } from 'zod';
 
-const logger = new Logger('FinancialDataController');
+const logger = createModuleLogger('FinancialDataController');
 
 const CURRENT_YEAR = new Date().getFullYear();
 

@@ -5,9 +5,9 @@
  */
 import { Request, Response } from 'express';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { JwtAuthMode } from '../../auth/types';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { UserRole } from '../../auth/types';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { AuthGuard } from '@geniuserp/auth';
+import { UserRole } from '@geniuserp/auth';
 import { v4 as uuidv4 } from 'uuid';
 import { crm_companies } from '../schema/crm.schema';
 import { eq, like, or, sql } from 'drizzle-orm';

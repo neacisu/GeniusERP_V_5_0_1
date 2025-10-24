@@ -6,12 +6,12 @@
 
 import { Router, Request, Response } from 'express';
 import { CartService } from '../services/cart.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from "@common/logger.js";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger
-const logger = new Logger('CartRouter');
+const logger = createModuleLogger('CartRouter');
 
 export class CartRouter {
   private router: Router;

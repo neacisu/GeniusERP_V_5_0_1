@@ -7,7 +7,7 @@
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq, and, like, or, desc, SQL, gte, lte, count } from 'drizzle-orm';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { ProcessService } from './process.service';
 import { ProcessInstanceService } from './process-instance.service';
 import { 
@@ -17,7 +17,7 @@ import {
   ScheduledJobUpdate
 } from '../schema/bpm.schema';
 
-const logger = new Logger('ScheduledJobService');
+const logger = createModuleLogger('ScheduledJobService');
 
 export class ScheduledJobService {
   constructor(

@@ -6,8 +6,8 @@
 
 import { Router } from 'express';
 import { InvoiceNumberingController } from '../controllers/invoice-numbering.controller';
-import { AuthMiddleware } from '../../../../apps/api/src/middlewares/auth.middleware';
-import { UserRole } from '../../../shared/src/types';
+import { AuthMiddleware } from "@api/middlewares/auth.middleware";
+import { UserRole } from '@geniuserp/shared';
 
 export class InvoiceNumberingRoutes {
   private router: Router;

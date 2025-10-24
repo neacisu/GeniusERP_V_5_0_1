@@ -13,12 +13,12 @@
 import { getDrizzle } from "@common/drizzle";
 import { accountingLedgerEntries, accountingLedgerLines } from '../schema/accounting.schema';
 import { eq } from 'drizzle-orm';
-import { AuditService, AuditAction } from '../../../audit/src/services/audit.service';
+import { AuditService, AuditAction } from '@geniuserp/audit';
 import { JournalNumberingService } from './journal-numbering.service';
 import { AccountingPeriodsService } from './accounting-periods.service';
 import { accountingQueueService } from './accounting-queue.service';
 import { RedisService } from '@common/services/redis.service';
-import { log } from '../../../../apps/api/src/vite';
+import { log } from "@api/vite";
 
 /**
  * Ledger entry type

@@ -11,10 +11,10 @@ import { eq, and, or, like, desc } from 'drizzle-orm';
 import { 
   contacts
 } from '../../../../shared/schema/communications.schema';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger for contact operations
-const logger = new Logger('ContactsService');
+const logger = createModuleLogger('ContactsService');
 
 /**
  * Service for managing communication contacts

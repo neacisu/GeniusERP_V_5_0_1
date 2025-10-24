@@ -17,8 +17,8 @@
  */
 
 import { accountingQueueService } from './accounting-queue.service';
-import { RedisService } from '../../../services/redis.service';
-import { log } from '../../../../apps/api/src/vite';
+import { RedisService } from '@common/services/redis.service';
+import { log } from "@api/vite";
 
 /**
  * Rezultat operațiune bulk

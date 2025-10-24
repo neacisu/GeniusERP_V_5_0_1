@@ -6,11 +6,11 @@
 
 import { Router } from 'express';
 import { GeneralJournalController } from '../controllers/general-journal.controller';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
+import { AuthGuard } from '@geniuserp/auth';
 import { 
   accountingReadRateLimiter,
   exportRateLimiter
-} from '../../../../apps/api/src/middlewares/rate-limit.middleware';
+} from "@api/middlewares/rate-limit.middleware";
 
 const router = Router();
 const controller = new GeneralJournalController();

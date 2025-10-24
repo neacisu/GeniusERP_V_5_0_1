@@ -12,10 +12,10 @@ import {
   CollaborationThread
 } from '../../../../shared/schema/collaboration.schema';
 import { randomUUID } from 'crypto';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger instance for the thread service
-const logger = new Logger('ThreadService');
+const logger = createModuleLogger('ThreadService');
 
 /**
  * Thread Service Class

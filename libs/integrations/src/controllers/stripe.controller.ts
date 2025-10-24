@@ -8,7 +8,7 @@ import { Request, Response } from 'express';
 import { StripeClient } from '../clients';
 import { IntegrationsService } from '../services/integrations.service';
 import { IntegrationProvider } from '../schema/integrations.schema';
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '@geniuserp/audit';
 
 // Resource type for audit logs
 const RESOURCE_TYPE = IntegrationProvider.STRIPE;

@@ -8,16 +8,16 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { TemplateService } from '../services/template.service';
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '@geniuserp/audit';
 import { CampaignType } from '../../../../shared/schema/marketing.schema';
 
 /**
  * Template Controller Class
  */
 export class TemplateController {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   private _templateService: TemplateService;
   private _auditService: AuditService;
 
@@ -25,7 +25,7 @@ export class TemplateController {
    * Constructor
    */
   constructor() {
-    this._logger = new Logger('TemplateController');
+    this._logger = createModuleLogger('TemplateController');
     this._templateService = new TemplateService();
     this._auditService = new AuditService();
   }

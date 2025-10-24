@@ -5,10 +5,10 @@
  * mapping customers from CRM to a format suitable for invoicing.
  */
 import { Request, Response, NextFunction } from 'express';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { eq, and } from 'drizzle-orm';
-import { JwtUserData } from '../../../shared/src/types';
+import { JwtUserData } from '@geniuserp/shared';
 
 // Extindere Request pentru a suporta ambele formate de token
 declare global {
@@ -20,11 +20,11 @@ declare global {
 }
 
 export class CustomerController {
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
   private drizzle: DrizzleService;
 
   constructor() {
-    this.logger = new Logger('CustomerController');
+    this.logger = createModuleLogger('CustomerController');
     this.drizzle = new DrizzleService();
   }
 

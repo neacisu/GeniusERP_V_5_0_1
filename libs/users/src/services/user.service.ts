@@ -6,19 +6,19 @@
  */
 
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { User, InsertUser, Role, Permission } from "../../../shared/src/schema";
+import { User, InsertUser, Role, Permission } from '@geniuserp/shared';
 import { authService } from "../../../auth/src/services/auth.service";
-import { users, roles, permissions, userRoles, rolePermissions } from "../../../shared/src/schema";
+import { users, roles, permissions, userRoles, rolePermissions } from '@geniuserp/shared';
 import { eq, and } from "drizzle-orm";
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 export class UserService {
   private drizzle: DrizzleService;
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
   private static instance: UserService;
 
   constructor(drizzleService?: DrizzleService) {
-    this.logger = new Logger("UserService");
+    this.logger = createModuleLogger("UserService");
     this.drizzle = drizzleService || new DrizzleService();
   }
 

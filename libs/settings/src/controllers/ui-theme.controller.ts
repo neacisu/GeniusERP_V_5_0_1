@@ -7,14 +7,14 @@
 
 import { Request, Response } from 'express';
 import { UiThemeService } from '../services/ui-theme.service';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 export class UiThemeController {
   private service: UiThemeService;
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
   
   constructor(uiThemeService?: UiThemeService) {
-    this.logger = new Logger('UiThemeController');
+    this.logger = createModuleLogger('UiThemeController');
     this.service = uiThemeService || UiThemeService.getInstance();
   }
   

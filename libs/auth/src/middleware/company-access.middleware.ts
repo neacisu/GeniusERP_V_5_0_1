@@ -7,9 +7,9 @@
 
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../../types/express';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
-const logger = new Logger('CompanyAccessMiddleware');
+const logger = createModuleLogger('CompanyAccessMiddleware');
 
 /**
  * Extended authenticated request with company filter

@@ -7,9 +7,9 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { TemplateService } from '../services/template.service';
-import { Logger } from "@common/logger";
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { 
   CampaignType,
   insertCampaignTemplateSchema 
@@ -17,7 +17,7 @@ import {
 
 export const templateRoutes = Router();
 const templateService = new TemplateService();
-const logger = new Logger('TemplateRoutes');
+const logger = createModuleLogger('TemplateRoutes');
 
 // Validation schemas
 const templateQuerySchema = z.object({

@@ -5,12 +5,12 @@
  */
 
 import Stripe from 'stripe';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { IntegrationProvider, IntegrationStatus } from '../schema/integrations.schema';
 import { BaseIntegrationClient } from './base-integration.client';
 
 // Create a logger
-const logger = new Logger('StripeClient');
+const logger = createModuleLogger('StripeClient');
 
 /**
  * Payment method type enum

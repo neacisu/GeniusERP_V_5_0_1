@@ -10,10 +10,10 @@ import {
   taskWatchers
 } from '../../../../shared/schema/collaboration.schema';
 import { randomUUID } from 'crypto';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger instance for the watcher service
-const logger = new Logger('WatcherService');
+const logger = createModuleLogger('WatcherService');
 
 /**
  * TaskWatcher type for the API

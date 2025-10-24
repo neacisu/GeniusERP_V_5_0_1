@@ -6,7 +6,7 @@
  */
 
 import { getPostgresClient } from "@common/drizzle/db";
-import { RedisService } from '../../../services/redis.service';
+import { RedisService } from '@common/services/redis.service';
 
 /**
  * Financial report interface

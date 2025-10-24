@@ -1,11 +1,11 @@
 import { Express } from 'express';
 import { CustomerService } from "./customer.service";
 import { JwtService } from '../auth/services/jwt.service';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from '../../common/drizzle/drizzle.service';
 import salesRoutes from './sales.controller';
 
-const logger = new Logger('SalesModule');
+const logger = createModuleLogger('SalesModule');
 
 /**
  * Sales Module class that initializes and registers all Sales components

@@ -8,18 +8,18 @@
 
 import { Request, Response } from 'express';
 import { signDocumentService } from '../services/sign-document.service';
-import { AuditService, AuditAction } from '../../audit/services/audit.service';
-import { Logger } from "@common/logger";
+import { AuditService, AuditAction } from '@geniuserp/audit';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Define entity name for audit logs
 export const ENTITY_NAME = 'document';
 
 export class SignDocumentController {
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
   private auditService: AuditService;
 
   constructor() {
-    this.logger = new Logger('SignDocumentController');
+    this.logger = createModuleLogger('SignDocumentController');
     this.auditService = new AuditService();
   }
 

@@ -8,7 +8,7 @@
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq, and, like, or, desc, SQL, count } from 'drizzle-orm';
 import axios, { AxiosRequestConfig, Method } from 'axios';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { 
   bpmApiConnections,
   ApiConnection,
@@ -17,7 +17,7 @@ import {
   BpmApiConnectionType
 } from '../schema/bpm.schema';
 
-const logger = new Logger('ApiConnectionService');
+const logger = createModuleLogger('ApiConnectionService');
 
 export class ApiConnectionService {
   constructor(private db: PostgresJsDatabase<any>) {}

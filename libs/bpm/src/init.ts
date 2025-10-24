@@ -5,7 +5,7 @@
  */
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { getDrizzle } from '../../common/drizzle';
 import { DrizzleService } from '../../common/drizzle/drizzle.service'; 
 import { ProcessService } from './services/process.service';
@@ -16,7 +16,7 @@ import { StepExecutionService } from './services/step-execution.service';
 import { ApiConnectionService } from './services/api-connection.service';
 import { ScheduledJobService } from './services/scheduled-job.service';
 
-const logger = new Logger('BPM Init');
+const logger = createModuleLogger('BPM Init');
 
 /**
  * Initialize BPM services

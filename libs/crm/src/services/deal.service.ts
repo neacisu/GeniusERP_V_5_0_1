@@ -15,7 +15,7 @@ import {
   DealStageHistory
 } from "../schema/crm.schema";
 import { randomUUID } from "crypto";
-import { AuditService } from "../../audit/services/audit.service";
+import { AuditService } from "@geniuserp/audit";
 import { PipelineService } from "./pipeline.service";
 
 export class DealService {

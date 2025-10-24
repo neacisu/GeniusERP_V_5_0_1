@@ -7,21 +7,21 @@
 
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from "@common/logger";
-import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuditService, AuditAction } from '@geniuserp/audit';
 
 /**
  * BPM Controller Class
  */
 export class BpmController {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   private _auditService: AuditService;
 
   /**
    * Constructor
    */
   constructor() {
-    this._logger = new Logger('BpmController');
+    this._logger = createModuleLogger('BpmController');
     this._auditService = new AuditService();
   }
 

@@ -8,10 +8,10 @@
 import { Request, Response } from 'express';
 import { ChannelConfigsService } from '../services/channel-configs.service';
 import { CommunicationChannel } from '../../../../shared/schema/communications.schema';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger for the channel configs controller
-const logger = new Logger('ChannelConfigsController');
+const logger = createModuleLogger('ChannelConfigsController');
 
 /**
  * Controller for channel configurations

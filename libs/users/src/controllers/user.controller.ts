@@ -7,15 +7,15 @@
 
 import { Request, Response, NextFunction } from "express";
 import { UserService } from "../services/user.service";
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 export class UserController {
   private userService: UserService;
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
 
   constructor() {
     this.userService = UserService.getInstance();
-    this.logger = new Logger("UserController");
+    this.logger = createModuleLogger("UserController");
   }
 
   /**

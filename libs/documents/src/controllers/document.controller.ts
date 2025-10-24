@@ -11,9 +11,9 @@ import { AuthGuard } from '../../../modules/auth/guards/auth.guard';
 import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
 import { DocumentService } from '../services/document.service';
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
-const logger = new Logger('DocumentController');
+const logger = createModuleLogger('DocumentController');
 
 export class DocumentController {
   constructor(private readonly documentService: DocumentService) {}

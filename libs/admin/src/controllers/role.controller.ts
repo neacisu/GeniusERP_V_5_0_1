@@ -7,10 +7,10 @@
  */
 
 import { Request, Response } from 'express';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { RoleService } from '../services/role.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { z } from 'zod';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
@@ -30,7 +30,7 @@ const updateRoleSchema = z.object({
 });
 
 // Create logger instance
-const logger = new Logger('RoleController');
+const logger = createModuleLogger('RoleController');
 
 /**
  * Register the role controller routes with the Express application

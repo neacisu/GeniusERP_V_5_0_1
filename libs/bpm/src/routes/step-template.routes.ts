@@ -1,8 +1,8 @@
 import express from 'express';
 import { StepTemplateController } from '../controllers/step-template.controller.js';
 import { StepTemplateService } from '../services/step-template.service.js';
-import { AuditService } from '../../audit/services/audit.service.js';
-import { AuthGuard } from '../../auth/guards/auth.guard.js';
+import { AuditService } from '@geniuserp/audit.js';
+import { AuthGuard } from '@geniuserp/auth.js';
 
 /**
  * Initialize step template routes

@@ -7,7 +7,7 @@
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq, and } from 'drizzle-orm';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { 
   bpmStepExecutions,
   BpmStepExecutionStatus,
@@ -16,7 +16,7 @@ import {
   StepExecutionUpdate
 } from '../schema/bpm.schema';
 
-const logger = new Logger('StepExecutionService');
+const logger = createModuleLogger('StepExecutionService');
 
 export class StepExecutionService {
   constructor(private db: PostgresJsDatabase<any>) {}

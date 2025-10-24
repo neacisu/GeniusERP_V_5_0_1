@@ -1,11 +1,15 @@
-import { IStorage } from "../../../../apps/api/src/storage";
+import { IStorage } from "@api/storage";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { and, eq } from "drizzle-orm";
 import {
-  AccountClass, AccountGroup, SyntheticAccount, AnalyticAccount,
+  AccountClass,
+  AccountGroup,
+  SyntheticAccount,
+  AnalyticAccount,
   JournalEntry,
-  InsertJournalEntry, InsertJournalLine
-} from "../../../shared/src/schema";
+  InsertJournalEntry,
+  InsertJournalLine
+} from '@geniuserp/shared';
 import { RedisService } from "@common/services/redis.service";
 
 /**

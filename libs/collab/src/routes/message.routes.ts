@@ -9,10 +9,10 @@ import { MessageService } from '../services/message.service';
 import { AuthGuard } from "@common/middleware/auth-guard";
 import { z } from 'zod';
 import { insertCollaborationMessageSchema } from '../../../../shared/schema/collaboration.schema';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger instance for the message routes
-const logger = new Logger('MessageRoutes');
+const logger = createModuleLogger('MessageRoutes');
 
 const BASE_PATH = '/api/collaboration/messages';
 

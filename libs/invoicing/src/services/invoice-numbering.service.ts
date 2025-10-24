@@ -7,7 +7,7 @@
 
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { eq, and, isNull, sql } from 'drizzle-orm';
-import { invoiceNumberingSettings } from '../../../shared/src/schema/invoice-numbering.schema';
+import { invoiceNumberingSettings } from '@geniuserp/shared/schema/invoice-numbering.schema';
 import { AppError } from "@common/errors/app-error";
 
 export class InvoiceNumberingService {

@@ -7,10 +7,10 @@
 
 import { Request, Response } from 'express';
 import { ContactsService } from '../services/contacts.service';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger for the contacts controller
-const logger = new Logger('ContactsController');
+const logger = createModuleLogger('ContactsController');
 
 /**
  * Controller for communications contacts

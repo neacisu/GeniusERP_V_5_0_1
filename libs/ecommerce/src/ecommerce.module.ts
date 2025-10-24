@@ -8,7 +8,7 @@
 import { Express } from 'express';
 import { DrizzleService } from '../../common/drizzle/drizzle.service';
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { OrdersService } from './services/orders.service';
 import { TransactionsService } from './services/transactions.service';
 import { ShopifyRouter } from './routes/shopify.routes';
@@ -34,7 +34,7 @@ import { registerModule } from '../../common/services/registry';
 import { getDrizzleInstance } from '../../common/drizzle/db';
 
 // Create a logger for the module
-const logger = new Logger('ECommerceModule');
+const logger = createModuleLogger('ECommerceModule');
 
 /**
  * Initialize the E-Commerce module

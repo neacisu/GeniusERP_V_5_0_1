@@ -13,7 +13,7 @@
  */
 
 import express from 'express';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from '../../common/drizzle';
 import AuditService from '../audit/services/audit.service';
 
@@ -32,7 +32,7 @@ import { registerInboxAIControllerRoutes } from './controllers/inbox-ai.controll
 import { registerProductQAControllerRoutes } from './controllers/product-qa.controller';
 
 // Create logger instance
-const logger = new Logger('AIModule');
+const logger = createModuleLogger('AIModule');
 
 /**
  * Initialize the AI module

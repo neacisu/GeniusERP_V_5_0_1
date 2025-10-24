@@ -7,14 +7,14 @@
 
 import { Request, Response } from 'express';
 import { GlobalSettingsService } from '../services/global-settings.service';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 export class GlobalSettingsController {
   private service: GlobalSettingsService;
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
   
   constructor(globalSettingsService?: GlobalSettingsService) {
-    this.logger = new Logger('GlobalSettingsController');
+    this.logger = createModuleLogger('GlobalSettingsController');
     this.service = globalSettingsService || GlobalSettingsService.getInstance();
   }
   

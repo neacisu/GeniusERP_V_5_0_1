@@ -10,9 +10,9 @@ import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { invoices } from '@geniuserp/shared';
 import { exchangeRateService } from '../../integrations/services/exchange-rate.service';
 import { InvoiceStatus } from '../types/invoice-status.enum';
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '@geniuserp/audit';
 import { AuditActionType } from "@common/enums/audit-action.enum";
-import { log } from '../../../../apps/api/src/vite';
+import { log } from "@api/vite";
 import { InvoiceService } from './invoice.service';
 import { ENTITY_NAME } from '../index';
 

@@ -4,8 +4,8 @@
  * Gestionează interacțiunile cu baza de date pentru datele companiilor obținute de la ANAF
  */
 
-import { getDrizzleInstance } from '../../../../common/drizzle/db';
-import { anafCompanyData as anaf_company_data } from '../../../crm/schema/crm.schema';
+import { getDrizzleInstance } from '@common/drizzle/db';
+import { anafCompanyData as anaf_company_data } from '@geniuserp/crm/schema/crm.schema';
 import { AnafCompanyData } from '../anaf.service';
 import { SQL, and, eq, sql } from 'drizzle-orm';
 

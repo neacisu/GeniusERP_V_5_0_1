@@ -6,7 +6,7 @@
 
 import { Request, Response, Router } from 'express';
 import { NotificationService, NotificationStatus } from '../services/notification.service';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { AuthGuard } from '../../../modules/auth/guards/auth.guard';
 import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
 
@@ -16,7 +16,7 @@ import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
  * Handles API requests for collaboration notifications.
  */
 export class NotificationController {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   
   /**
    * Constructor
@@ -24,7 +24,7 @@ export class NotificationController {
    * @param notificationService Notification service
    */
   constructor(private notificationService: NotificationService) {
-    this._logger = new Logger('NotificationController');
+    this._logger = createModuleLogger('NotificationController');
   }
   
   /**

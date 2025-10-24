@@ -8,8 +8,8 @@
 
 import { getDrizzle } from "@common/drizzle";
 import { eq, and } from 'drizzle-orm';
-import { accountMappings } from '../../../../shared/schema/account-mappings.schema';
-import { RedisService } from '../../../services/redis.service';
+import { accountMappings } from '@geniuserp/shared/schema/account-mappings.schema';
+import { RedisService } from '@common/services/redis.service';
 
 export class AccountMappingService {
   private redisService: RedisService;

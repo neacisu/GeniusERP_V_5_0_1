@@ -5,7 +5,7 @@
 import { Router, Request, Response } from 'express';
 import { bnrExchangeRateService } from '../services/bnr-exchange-rate.service';
 import { CurrencyService } from '../services/currency.service';
-import { log } from '../../../../apps/api/src/vite';
+import { log } from "@api/vite";
 import { Services } from "@common/services/registry";
 import { fx_rates } from '@geniuserp/shared';
 import { and, eq, gte, lte, inArray, asc } from 'drizzle-orm';

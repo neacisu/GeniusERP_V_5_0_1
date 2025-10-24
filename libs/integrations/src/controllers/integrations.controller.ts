@@ -6,7 +6,7 @@
 
 import { Request, Response } from 'express';
 import { IntegrationsService } from '../services/integrations.service';
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '@geniuserp/audit';
 import { Integration, IntegrationProvider, IntegrationStatus } from '../schema/integrations.schema';
 
 // For audit logging

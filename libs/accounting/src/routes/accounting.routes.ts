@@ -1,14 +1,14 @@
 import { Router } from "express";
 import { AccountingService } from "../services/accounting.service";
-import { storage } from "../../../../apps/api/src/storage";
-import { AuthGuard } from "../../../auth/src/guards/auth.guard";
-import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
+import { storage } from "@api/storage";
+import { AuthGuard } from "@geniuserp/auth";
+import { JwtAuthMode } from "@geniuserp/auth";
 // Note Contabil routes moved to routes/index.ts (note-contabil.route.ts)
 import { AccountingController } from "../controllers/accounting.controller";
 import { MetricsController } from "../controllers/metrics.controller";
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { Response } from "express";
-import { accountingReadRateLimiter, accountingHeavyRateLimiter } from '../../../../apps/api/src/middlewares/rate-limit.middleware';
+import { accountingReadRateLimiter, accountingHeavyRateLimiter } from "@api/middlewares/rate-limit.middleware";
 import { accountingQueueService } from "../services/accounting-queue.service";
 
 /**

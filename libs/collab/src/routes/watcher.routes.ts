@@ -6,13 +6,13 @@
 
 import { Express, Request, Response } from 'express';
 import { WatcherService } from '../services/watcher.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { z } from 'zod';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create logger instance
-const logger = new Logger('WatcherRoutes');
+const logger = createModuleLogger('WatcherRoutes');
 
 const BASE_PATH = '/api/collaboration/watchers';
 

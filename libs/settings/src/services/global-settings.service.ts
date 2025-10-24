@@ -8,15 +8,15 @@
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { globalSettings } from '../schema/settings.schema';
 import { eq, and, sql } from 'drizzle-orm';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 export class GlobalSettingsService {
   private drizzle: DrizzleService;
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
   private static instance: GlobalSettingsService;
 
   constructor(drizzleService?: DrizzleService) {
-    this.logger = new Logger('GlobalSettingsService');
+    this.logger = createModuleLogger('GlobalSettingsService');
     this.drizzle = drizzleService || new DrizzleService();
   }
 

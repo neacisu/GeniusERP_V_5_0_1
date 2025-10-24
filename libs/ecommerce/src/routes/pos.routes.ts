@@ -6,12 +6,12 @@
 
 import { Router, Request, Response } from 'express';
 import { POSIntegrationService } from '../services/pos-integration.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from "@common/logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger
-const logger = new Logger('POSRouter');
+const logger = createModuleLogger('POSRouter');
 
 export class POSRouter {
   private router: Router;

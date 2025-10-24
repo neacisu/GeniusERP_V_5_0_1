@@ -5,14 +5,14 @@
  */
 import { Request, Response, Router } from 'express';
 import { z } from 'zod';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from "@common/logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { WatcherDrizzleService } from "@common/drizzle/modules/collab/watcher-service";
 import { insertTaskWatcherSchema } from '../../../../shared/schema/collaboration.schema';
 
 // Create module logger
-const logger = new Logger('CollabWatcherController');
+const logger = createModuleLogger('CollabWatcherController');
 
 export class WatcherController {
   constructor(private readonly watcherService: WatcherDrizzleService) {}

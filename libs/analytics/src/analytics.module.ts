@@ -7,7 +7,7 @@
 
 import express from 'express';
 import { DrizzleService } from '@common/drizzle';
-import { Logger } from '@common/logger';
+import { createModuleLogger } from '@common/logger/loki-logger';
 
 // Services
 import { AnalyticsService } from './services/analytics.service';
@@ -20,7 +20,7 @@ import { registerPredictiveControllerRoutes } from './controllers/predictive.con
 import { registerBusinessIntelligenceControllerRoutes } from './controllers/business-intelligence.controller';
 
 // Create logger instance
-const logger = new Logger('AnalyticsModule');
+const logger = createModuleLogger('AnalyticsModule');
 
 /**
  * Initialize the Analytics module

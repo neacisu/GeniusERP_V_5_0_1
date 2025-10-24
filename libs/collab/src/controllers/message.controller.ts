@@ -5,14 +5,14 @@
  */
 import { Request, Response, Router } from 'express';
 import { z } from 'zod';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from "@common/logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { MessageDrizzleService } from "@common/drizzle/modules/collab/message-service";
 import { insertCollaborationMessageSchema } from '../../../../shared/schema/collaboration.schema';
 
 // Create module logger
-const logger = new Logger('CollabMessageController');
+const logger = createModuleLogger('CollabMessageController');
 
 export class MessageController {
   constructor(private readonly messageService: MessageDrizzleService) {}

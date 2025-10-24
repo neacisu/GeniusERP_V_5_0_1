@@ -9,7 +9,7 @@
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { employees, employmentContracts, revisalExportLogs } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '@geniuserp/audit';
 import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";
 
 export enum RevisalExportType {

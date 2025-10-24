@@ -10,9 +10,9 @@
 import express from 'express';
 import { OpenAiService } from '../services/openai.service';
 import { DrizzleService } from "@common/drizzle";
-import AuditService from '../../../audit/src/services/audit.service';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
+import AuditService from '@geniuserp/audit';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 
 // Create router instance
 const router = express.Router();

@@ -7,10 +7,10 @@
 
 import { Request, Response } from 'express';
 import { MessageAccessService } from '../services/message-access.service';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger for the message access controller
-const logger = new Logger('MessageAccessController');
+const logger = createModuleLogger('MessageAccessController');
 
 /**
  * Controller for message access permissions

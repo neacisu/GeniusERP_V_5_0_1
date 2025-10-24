@@ -6,7 +6,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { OrdersService } from './orders.service';
 import { TransactionsService } from './transactions.service';
@@ -16,7 +16,7 @@ import { CartStatus, PaymentStatus, OrderStatus, TransactionType, PaymentMethod 
 import { mapPaymentMethodToGateway } from '../utils/payment-methods.util';
 
 // Create a logger
-const logger = new Logger('CheckoutService');
+const logger = createModuleLogger('CheckoutService');
 
 export class CheckoutService {
   private db: DrizzleService;

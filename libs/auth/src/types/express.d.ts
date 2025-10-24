@@ -2,7 +2,7 @@
  * Express augmentation to add user property to Request
  */
 
-import { JwtPayload } from '../../../shared/src/types';
+import { JwtPayload } from '@geniuserp/shared';
 
 declare global {
   namespace Express {

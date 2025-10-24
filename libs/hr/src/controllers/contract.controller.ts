@@ -8,13 +8,13 @@
 
 import { Router, Response } from 'express';
 import { ContractService } from '../services/contract.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { AuthenticatedRequest } from '../../../types/express';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Initialize logger
-const logger = new Logger('ContractController');
+const logger = createModuleLogger('ContractController');
 
 export class ContractController {
   constructor(private readonly contractService: ContractService) {}

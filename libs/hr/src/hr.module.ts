@@ -22,7 +22,7 @@ import { DepartmentService } from './services/department.service';
 import { CorService } from './services/cor.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { JwtAuthMode } from '../auth/constants/auth-mode.enum';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { AuditService } from '../../common/services/audit.service';
 import { AuthenticatedRequest } from '@common/middleware/auth-types';
 
@@ -47,7 +47,7 @@ import {
 } from './controllers';
 
 // Initialize logger
-const logger = new Logger('HrModule');
+const logger = createModuleLogger('HrModule');
 
 /**
  * HR Module implementation using the AuthGuard for protecting routes

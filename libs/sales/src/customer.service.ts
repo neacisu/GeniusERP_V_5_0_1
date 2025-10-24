@@ -1,14 +1,14 @@
 import { DrizzleService } from "../../common/drizzle/drizzle.service";
 import { customers } from "../crm/schema/crm.schema";
 import { eq } from "drizzle-orm";
-import { Logger } from "../../common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 export class CustomerService {
   private drizzle: DrizzleService;
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
 
   constructor(drizzleService?: DrizzleService) {
-    this.logger = new Logger('CustomerService');
+    this.logger = createModuleLogger('CustomerService');
     this.drizzle = drizzleService || new DrizzleService();
   }
 

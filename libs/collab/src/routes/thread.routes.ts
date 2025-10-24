@@ -9,12 +9,12 @@ import { ThreadService } from '../services/thread.service';
 import { AuthGuard } from "@common/middleware/auth-guard";
 import { z } from 'zod';
 import { insertCollaborationThreadSchema } from '../../../../shared/schema/collaboration.schema';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 const BASE_PATH = '/api/collaboration/threads';
 
 // Create a logger instance for the thread routes
-const logger = new Logger('ThreadRoutes');
+const logger = createModuleLogger('ThreadRoutes');
 
 /**
  * Register thread routes with the Express app

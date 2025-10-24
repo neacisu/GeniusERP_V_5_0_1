@@ -6,9 +6,9 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
-import { UserRole, AuthenticatedRequest } from '../../../auth/src/types';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { UserRole, AuthenticatedRequest } from '@geniuserp/auth';
 import { CompanyController } from '../controllers/company.controller';
 
 export class CompanyRouter {

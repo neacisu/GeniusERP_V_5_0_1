@@ -9,10 +9,10 @@ import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { v4 as uuidv4 } from 'uuid';
 import { eq, and } from 'drizzle-orm';
 import { carts, cartItems, CartStatus } from '../../../../shared/schema/ecommerce.schema';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger
-const logger = new Logger('CartService');
+const logger = createModuleLogger('CartService');
 
 export class CartService {
   private db: DrizzleService;

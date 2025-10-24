@@ -5,7 +5,7 @@
  * for different document types based on Romanian accounting standards.
  */
 
-import { AuditService, AuditAction } from '../../audit/services/audit.service';
+import { AuditService, AuditAction } from '@geniuserp/audit';
 import { JournalService, LedgerEntryType } from './journal.service';
 import { SalesJournalService } from './sales-journal.service';
 import { DrizzleService } from "@common/drizzle";

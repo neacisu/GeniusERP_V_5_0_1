@@ -7,21 +7,21 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
-import { UserRole } from '../../../auth/src/types';
-import { Logger } from "@common/logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { UserRole } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from "@common/drizzle";
 
 // Role constants for inventory operations
 const INVENTORY_ROLES = [UserRole.INVENTORY_MANAGER, UserRole.ADMIN];
 
 export class StockItemsController {
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
   private drizzle: DrizzleService;
 
   constructor() {
-    this.logger = new Logger('StockItemsController');
+    this.logger = createModuleLogger('StockItemsController');
     this.drizzle = new DrizzleService();
   }
 

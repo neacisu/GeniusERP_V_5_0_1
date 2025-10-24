@@ -7,9 +7,9 @@
 
 import { Request, Response } from 'express';
 import { InboxAiAssistantService, EmailAnalysis } from '../services/inbox-ai-assistant.service';
-import { Logger } from "@common/logger";
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { z } from 'zod';
 
 // Create validation schemas
@@ -58,7 +58,7 @@ const followUpSchema = z.object({
 });
 
 // Create logger instance
-const logger = new Logger('InboxAIController');
+const logger = createModuleLogger('InboxAIController');
 
 /**
  * Register the Inbox AI controller routes with the Express application

@@ -6,13 +6,13 @@
 
 import { Router, Request, Response } from 'express';
 import { TransactionsService } from '../services/transactions.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { PaymentStatus } from '../../../../shared/schema/ecommerce.schema';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger
-const logger = new Logger('TransactionsController');
+const logger = createModuleLogger('TransactionsController');
 
 export class TransactionsController {
   private router: Router;

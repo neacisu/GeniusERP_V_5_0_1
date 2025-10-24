@@ -7,9 +7,9 @@
 
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { StepExecutionService } from '../services/step-execution.service';
-import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
+import { AuditService, AuditAction } from '@geniuserp/audit';
 import { BpmStepExecutionStatus } from '../schema/bpm.schema';
 
 // Validation schemas
@@ -23,14 +23,14 @@ const updateExecutionSchema = z.object({
  * Step Execution Controller Class
  */
 export class StepExecutionController {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   private _stepExecutionService: StepExecutionService;
 
   /**
    * Constructor
    */
   constructor(stepExecutionService: StepExecutionService) {
-    this._logger = new Logger('StepExecutionController');
+    this._logger = createModuleLogger('StepExecutionController');
     this._stepExecutionService = stepExecutionService;
   }
 

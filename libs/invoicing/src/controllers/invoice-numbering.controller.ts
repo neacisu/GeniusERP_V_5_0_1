@@ -6,7 +6,7 @@
 
 import { Request, Response } from 'express';
 import { InvoiceNumberingService } from '../services/invoice-numbering.service';
-import { insertInvoiceNumberingSettingsSchema, updateInvoiceNumberingSettingsSchema } from '../../../shared/src/schema/invoice-numbering.schema';
+import { insertInvoiceNumberingSettingsSchema, updateInvoiceNumberingSettingsSchema } from '@geniuserp/shared/schema/invoice-numbering.schema';
 import { zodValidate } from "@common/validators/zod-validator";
 import { getUserCompanyId } from "@common/utils/company-utils";
 import { getUserId } from "@common/utils/auth-utils";

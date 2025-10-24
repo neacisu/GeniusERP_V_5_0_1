@@ -6,10 +6,10 @@
  */
 
 import { Request, Response } from 'express';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { UserService } from '../services/user.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum'; //Import updated for consistency.  Further updates may be necessary based on the full authentication strategy.
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth'; //Import updated for consistency.  Further updates may be necessary based on the full authentication strategy.
 import { z } from 'zod';
 
 // Create validation schema for user creation
@@ -23,7 +23,7 @@ const createUserSchema = z.object({
 });
 
 // Create logger instance
-const logger = new Logger('AdminController');
+const logger = createModuleLogger('AdminController');
 
 /**
  * Register the admin controller routes with the Express application

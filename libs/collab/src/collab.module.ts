@@ -7,7 +7,7 @@
 
 import { Express, Request, Response, Router } from 'express';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from '../../common/drizzle/drizzle.service';
 import { initCollabServices } from './init';
 import { initCollabControllers } from './controllers/init';
@@ -33,7 +33,7 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { JwtAuthMode } from '../auth/constants/auth-mode.enum';
 
 // Create a logger instance for the collaboration module
-const logger = new Logger('CollabModule');
+const logger = createModuleLogger('CollabModule');
 
 /**
  * Collaboration Module Class

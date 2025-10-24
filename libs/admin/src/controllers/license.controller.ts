@@ -6,14 +6,14 @@
  */
 
 import { Request, Response } from 'express';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { LicenseService } from '../services/license.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { z } from 'zod';
 
 // Create logger instance
-const logger = new Logger('LicenseController');
+const logger = createModuleLogger('LicenseController');
 
 // Create validation schema for license activation
 const activateLicenseSchema = z.object({

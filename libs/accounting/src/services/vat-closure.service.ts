@@ -16,7 +16,7 @@ import { AuditLogService } from './audit-log.service';
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import { accountingQueueService } from './accounting-queue.service';
 import { accountingCacheService } from './accounting-cache.service';
-import { log } from '../../../../apps/api/src/vite';
+import { log } from "@api/vite";
 
 export interface VATClosureRequest {
   companyId: string;

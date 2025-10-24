@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { AuthGuard } from "../../../auth/src/guards/auth.guard";
-import { JwtAuthMode } from "../../../auth/src/constants/auth-mode.enum";
+import { AuthGuard } from "@geniuserp/auth";
+import { JwtAuthMode } from "@geniuserp/auth";
 import { PurchaseJournalService } from "../services";
 import { PurchaseJournalController } from "../controllers/purchase-journal.controller";
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
@@ -9,7 +9,7 @@ import {
   paymentRecordRateLimiter,
   accountingHeavyRateLimiter,
   accountingReadRateLimiter
-} from '../../../../apps/api/src/middlewares/rate-limit.middleware';
+} from "@api/middlewares/rate-limit.middleware";
 
 /**
  * Setup routes for the Romanian Purchase Journal

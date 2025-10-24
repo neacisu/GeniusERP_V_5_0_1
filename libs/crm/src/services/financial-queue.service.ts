@@ -8,8 +8,8 @@ import { Queue, Worker, Job } from 'bullmq';
 import IORedis from 'ioredis';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { FinancialDataService } from './financial-data.service';
-import { AuditService } from '../../audit/services/audit.service';
-import { Logger } from "@common/logger";
+import { AuditService } from '@geniuserp/audit';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { financialDataJobs } from '../schema/financial-data.schema';
 import { eq } from 'drizzle-orm';
 import { getBullMQRedisConfig } from '../../../config/redis';
@@ -44,7 +44,7 @@ export class FinancialQueueService extends BaseDrizzleService {
   private dataWorker: Worker;
   private retryWorker: Worker;
   private redisClient: IORedis;
-  private logger = new Logger('FinancialQueueService');
+  private logger = createModuleLogger('FinancialQueueService');
   
   constructor(
     private readonly db: DrizzleService,

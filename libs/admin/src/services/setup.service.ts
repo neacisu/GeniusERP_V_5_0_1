@@ -9,16 +9,16 @@
 import { setup_steps } from '../../../../shared/schema/admin.schema';
 import { eq, and } from 'drizzle-orm';
 import { Express, Request, Response, NextFunction, Router } from 'express';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from "@common/logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Define setup step status types
 export type SetupStepStatus = 'completed' | 'in_progress' | 'not_started' | 'skipped';
 
 export class SetupService {
   private db: any;
-  private logger = new Logger('SetupService');
+  private logger = createModuleLogger('SetupService');
   
   constructor(db: any) {
     this.db = db;

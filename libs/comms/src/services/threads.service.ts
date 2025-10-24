@@ -14,10 +14,10 @@ import {
   CommunicationChannel,
   MessageStatus
 } from '../../../../shared/schema/communications.schema';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger for thread operations
-const logger = new Logger('ThreadsService');
+const logger = createModuleLogger('ThreadsService');
 
 /**
  * Service for managing communication threads

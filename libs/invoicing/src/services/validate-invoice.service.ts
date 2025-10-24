@@ -9,9 +9,8 @@ import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { invoices } from '@geniuserp/shared';
 import { invoiceItems } from '../schema/invoice.schema';
 import { eq, and } from 'drizzle-orm';
-import { JournalService } from '../../accounting/services/journal.service';
-import { SalesJournalService } from '../../accounting/services/sales-journal.service';
-import { AuditService, AuditAction } from '../../audit/services/audit.service';
+import { JournalService, SalesJournalService } from '@geniuserp/accounting';
+import { AuditService, AuditAction } from '@geniuserp/audit';
 
 /**
  * Invoice data interface for type safety

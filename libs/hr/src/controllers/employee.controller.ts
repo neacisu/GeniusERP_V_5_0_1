@@ -9,13 +9,13 @@
 
 import { Router, Response } from 'express';
 import { EmployeeService } from '../services/employee.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { AuthenticatedRequest } from '../../../types/express';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Initialize logger
-const logger = new Logger('EmployeeController');
+const logger = createModuleLogger('EmployeeController');
 
 export class EmployeeController {
   constructor(private readonly employeeService: EmployeeService) {}

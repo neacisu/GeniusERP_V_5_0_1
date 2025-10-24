@@ -12,13 +12,13 @@
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
 import { getDrizzle } from "@common/drizzle";
 import { and, desc, eq, gte, lte, SQL, sql } from 'drizzle-orm';
-import { cashRegisters, cashTransactions, CashRegister, CashTransaction } from '../../../../shared/schema/cash-register.schema';
-import { documentCounters } from '../../../../shared/schema/document-counters.schema';
+import { cashRegisters, cashTransactions, CashRegister, CashTransaction } from '@geniuserp/shared/schema/cash-register.schema';
+import { documentCounters } from '@geniuserp/shared/schema/document-counters.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditLogService } from './audit-log.service';
 import { accountingQueueService } from './accounting-queue.service';
-import { RedisService } from '../../../services/redis.service';
-import { log } from '../../../../apps/api/src/vite';
+import { RedisService } from '@common/services/redis.service';
+import { log } from "@api/vite";
 import {
   CashRegisterWithClosing,
   CreateCashRegisterData,

@@ -8,7 +8,7 @@
 
 import { getDrizzle } from "@common/drizzle";
 import { eq, and, gte, lte } from 'drizzle-orm';
-import { RedisService } from '../../../services/redis.service';
+import { RedisService } from '@common/services/redis.service';
 import { fiscalPeriods } from '../schema/accounting.schema';
 import { createModuleLogger } from "@common/logger/loki-logger";
 

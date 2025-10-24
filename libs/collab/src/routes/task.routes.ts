@@ -12,12 +12,12 @@
 import { Express, Request, Response } from 'express';
 import { TaskService } from '../services/task.service';
 import { TaskController } from '../controllers/task.controller';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from "@common/logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger instance for task routes
-const logger = new Logger('TaskRoutes');
+const logger = createModuleLogger('TaskRoutes');
 
 /**
  * Register all task routes with the Express application

@@ -19,7 +19,7 @@ import { CustomerController } from './controllers/customer.controller';
 import { AuthGuard } from '../../auth/src/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/src/constants/auth-mode.enum';
 import { UserRole } from '../../auth/src/types';
-import { Logger } from '@common/logger';
+import { createModuleLogger } from '@common/logger/loki-logger';
 
 // Entity name used for audit logging
 export const ENTITY_NAME = 'invoice';
@@ -31,7 +31,7 @@ export class InvoicesModule {
   private validateInvoiceController: ValidateInvoiceController;
   private devalidateInvoiceController: DevalidateInvoiceController;
   private customerController: CustomerController;
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
 
   constructor() {
     this.router = Router();
@@ -40,7 +40,7 @@ export class InvoicesModule {
     this.validateInvoiceController = new ValidateInvoiceController();
     this.devalidateInvoiceController = new DevalidateInvoiceController();
     this.customerController = new CustomerController();
-    this.logger = new Logger('InvoicesModule');
+    this.logger = createModuleLogger('InvoicesModule');
   }
 
   /**

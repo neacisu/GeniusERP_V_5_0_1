@@ -8,9 +8,9 @@
 import { Express } from 'express';
 import { DrizzleService } from '../../common/drizzle/drizzle.service';
 import { CrmModule } from './crm.module';
-import { Logger } from '../../common/logger';
+import { createModuleLogger } from "@common/logger/loki-logger";
 
-const logger = new Logger('CrmModuleInit');
+const logger = createModuleLogger('CrmModuleInit');
 
 /**
  * Initialize the CRM module

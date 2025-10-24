@@ -7,7 +7,7 @@
  */
 
 import { SalesJournalReport } from '../types/sales-journal-types';
-import { RedisService } from '../../../services/redis.service';
+import { RedisService } from '@common/services/redis.service';
 
 /**
  * Service pentru export rapoarte jurnal vânzări

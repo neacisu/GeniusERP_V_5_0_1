@@ -6,15 +6,15 @@
  */
 
 import { Router, Request, Response, NextFunction } from 'express';
-import { AuthGuard } from '../../../auth/src/guards/auth.guard';
-import { JwtAuthMode } from '../../../auth/src/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { WarehouseService } from '../services/warehouse.service';
 import { insertWarehouseSchema } from '@geniuserp/shared';
 import { validateRequest } from "@common/middleware/validate-request";
 import { z } from 'zod';
 
 // Import warehouse type enum from shared schema
-import { warehouseTypeEnum } from '../../../shared/src/schema/warehouse';
+import { warehouseTypeEnum } from '@geniuserp/shared/schema/warehouse';
 
 // Define user roles that can manage warehouses
 const WAREHOUSE_MANAGER_ROLES = ['admin', 'inventory_manager', 'warehouse_manager'];

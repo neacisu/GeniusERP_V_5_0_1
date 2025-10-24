@@ -7,14 +7,14 @@
 
 import { Request, Response } from 'express';
 import { UserPreferencesService } from '../services/user-preferences.service';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 export class UserPreferencesController {
   private service: UserPreferencesService;
-  private logger: Logger;
+  private logger: ReturnType<typeof createModuleLogger>;
   
   constructor(userPreferencesService?: UserPreferencesService) {
-    this.logger = new Logger('UserPreferencesController');
+    this.logger = createModuleLogger('UserPreferencesController');
     this.service = userPreferencesService || UserPreferencesService.getInstance();
   }
   

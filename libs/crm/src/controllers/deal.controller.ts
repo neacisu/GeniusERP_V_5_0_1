@@ -5,10 +5,10 @@
  */
 import { Request, Response } from 'express';
 import { DealService } from '../services/deal.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/types';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { JwtService } from '../../auth/services/jwt.service';
-import { UserRole } from '../../auth/types';
+import { UserRole } from '@geniuserp/auth';
 
 export class DealController {
   private dealService: DealService;

@@ -7,13 +7,13 @@
 
 import { Response } from 'express';
 import { CompanyService } from '../services/company.service';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { insertCompanySchema } from '../schema/company.schema';
 import { z } from 'zod';
-import { JwtUserData, AuthenticatedRequest } from '../../auth/types';
+import { JwtUserData, AuthenticatedRequest } from '@geniuserp/auth';
 
 // Create a logger for the controller
-const logger = new Logger('CompanyController');
+const logger = createModuleLogger('CompanyController');
 
 export class CompanyController {
   /**

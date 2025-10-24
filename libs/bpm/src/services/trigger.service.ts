@@ -6,7 +6,7 @@
 import { eq, and, like, or, desc, sql, not, isNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { 
   bpmTriggers, 
   Trigger,
@@ -69,14 +69,14 @@ export interface TriggerExecutionContext {
  * Manages process triggers that can initiate workflow processes
  */
 export class TriggerService {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   private _processService: ProcessService;
   private get db() {
     return this.drizzleService.getDbInstance();
   }
 
   constructor(private drizzleService: DrizzleService) {
-    this._logger = new Logger('TriggerService');
+    this._logger = createModuleLogger('TriggerService');
     this._processService = new ProcessService(drizzleService);
   }
 

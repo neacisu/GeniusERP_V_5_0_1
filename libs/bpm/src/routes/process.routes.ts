@@ -8,11 +8,11 @@ import { Router, Express } from 'express';
 import { ProcessService } from '../services/process.service';
 import { ProcessInstanceService } from '../services/process-instance.service';
 import { ProcessController } from '../controllers/process.controller';
-import { Logger } from "@common/logger";
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 
-const logger = new Logger('ProcessRoutes');
+const logger = createModuleLogger('ProcessRoutes');
 
 /**
  * Register process routes with the Express app

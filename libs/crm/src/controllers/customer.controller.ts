@@ -5,10 +5,9 @@
  */
 import { Request, Response } from 'express';
 import { CustomerService } from '../services/customer.service';
-import { JwtAuthMode } from '../../auth/types';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { UserRole } from '../../auth/types';
+import { JwtAuthMode, UserRole, AuthGuard } from '@geniuserp/auth';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { AuditService } from '@geniuserp/audit';
 
 export class CustomerController {
   private customerService: CustomerService;
@@ -17,8 +16,7 @@ export class CustomerController {
   constructor(customerService?: CustomerService) {
     if (!customerService) {
       const drizzleService = new DrizzleService();
-      const { AuditService } = require('../../audit/services/audit.service');
-      const auditService = new AuditService(drizzleService);
+      const auditService = new AuditService();
       this.customerService = new CustomerService(drizzleService, auditService);
     } else {
       this.customerService = customerService;

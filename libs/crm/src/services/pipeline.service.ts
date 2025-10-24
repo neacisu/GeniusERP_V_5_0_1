@@ -14,7 +14,7 @@ import {
   PipelineStage 
 } from "../schema/crm.schema";
 import { randomUUID } from "crypto";
-import AuditService, { AuditAction } from "../../audit/services/audit.service";
+import AuditService, { AuditAction } from "@geniuserp/audit";
 
 export class PipelineService {
   private db: DrizzleService;

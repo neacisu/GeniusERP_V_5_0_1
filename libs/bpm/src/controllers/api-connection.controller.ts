@@ -7,9 +7,9 @@
 
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { ApiConnectionService } from '../services/api-connection.service';
-import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
+import { AuditService, AuditAction } from '@geniuserp/audit';
 import { BpmApiConnectionType } from '../schema/bpm.schema';
 
 // Validation schemas
@@ -33,14 +33,14 @@ const updateConnectionSchema = z.object({
  * API Connection Controller Class
  */
 export class ApiConnectionController {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   private _apiConnectionService: ApiConnectionService;
 
   /**
    * Constructor
    */
   constructor(apiConnectionService: ApiConnectionService) {
-    this._logger = new Logger('ApiConnectionController');
+    this._logger = createModuleLogger('ApiConnectionController');
     this._apiConnectionService = apiConnectionService;
   }
 

@@ -12,7 +12,7 @@ import { getDrizzle } from "@common/drizzle";
 import { JournalService, LedgerEntryType } from './journal.service';
 import { AuditLogService } from './audit-log.service';
 import { eq, and, sql, ne, isNull } from 'drizzle-orm';
-import { RedisService } from '../../../services/redis.service';
+import { RedisService } from '@common/services/redis.service';
 
 export interface FXRevaluationRequest {
   companyId: string;

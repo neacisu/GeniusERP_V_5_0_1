@@ -7,10 +7,10 @@
  */
 
 import { Request, Response } from 'express';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { SetupService } from '../services/setup.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 import { z } from 'zod';
 
 // Create validation schema for initial setup
@@ -33,7 +33,7 @@ const initialSetupSchema = z.object({
 });
 
 // Create logger instance
-const logger = new Logger('SetupController');
+const logger = createModuleLogger('SetupController');
 
 /**
  * Register the setup controller routes with the Express application

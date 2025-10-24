@@ -7,8 +7,8 @@
  * Reference: https://mfinante.gov.ro/ro/web/efactura/
  */
 
-import { createHttpClient, HttpClient } from '../../../shared/src/libs/http-client';
-import { log } from '../../../../apps/api/src/vite';
+import { createHttpClient, HttpClient } from '@geniuserp/shared/libs/http-client';
+import { log } from "@api/vite";
 
 // Types for e-Factura requests and responses
 export interface EFacturaConfig {

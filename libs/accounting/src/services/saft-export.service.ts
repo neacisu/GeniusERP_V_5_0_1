@@ -10,10 +10,10 @@
 
 import { getDrizzle } from "@common/drizzle";
 import { and, eq, gte, lte } from 'drizzle-orm';
-import { cashTransactions } from '../../../../shared/schema/cash-register.schema';
-import { bankTransactions } from '../../../../shared/schema/bank-journal.schema';
-import { companies } from '../../../../shared/schema';
-import { RedisService } from '../../../services/redis.service';
+import { cashTransactions } from '@geniuserp/shared/schema/cash-register.schema';
+import { bankTransactions } from '@geniuserp/shared/schema/bank-journal.schema';
+import { companies } from '@geniuserp/shared';
+import { RedisService } from '@common/services/redis.service';
 
 /**
  * Payment method mapping pentru SAF-T

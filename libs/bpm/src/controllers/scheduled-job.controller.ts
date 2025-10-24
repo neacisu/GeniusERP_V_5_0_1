@@ -7,9 +7,9 @@
 
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { ScheduledJobService } from '../services/scheduled-job.service';
-import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
+import { AuditService, AuditAction } from '@geniuserp/audit';
 
 // Validation schemas
 const createJobSchema = z.object({
@@ -34,14 +34,14 @@ const updateJobSchema = z.object({
  * Scheduled Job Controller Class
  */
 export class ScheduledJobController {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   private _scheduledJobService: ScheduledJobService;
 
   /**
    * Constructor
    */
   constructor(scheduledJobService: ScheduledJobService) {
-    this._logger = new Logger('ScheduledJobController');
+    this._logger = createModuleLogger('ScheduledJobController');
     this._scheduledJobService = scheduledJobService;
   }
 

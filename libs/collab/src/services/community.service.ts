@@ -8,7 +8,7 @@
 import { eq, and, sql, desc, asc, like, isNull, inArray } from "drizzle-orm";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { getDrizzleInstance } from "@common/drizzle/db";
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { 
   collaborationThreads, 
   collaborationMessages,
@@ -18,7 +18,7 @@ import {
 import { ThreadService } from './thread.service';
 
 // Create a logger instance for the community service
-const logger = new Logger('CommunityService');
+const logger = createModuleLogger('CommunityService');
 
 /**
  * Community categories enum

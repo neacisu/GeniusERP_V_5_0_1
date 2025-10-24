@@ -12,11 +12,11 @@
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
 import { getDrizzle } from "@common/drizzle";
 import { and, desc, eq, gte, lte } from 'drizzle-orm';
-import { bankAccounts, bankTransactions, BankAccount, BankTransaction } from '../../../../shared/schema';
+import { bankAccounts, bankTransactions, BankAccount, BankTransaction } from '@geniuserp/shared';
 import { v4 as uuidv4 } from 'uuid';
 import { accountingQueueService } from './accounting-queue.service';
-import { RedisService } from '../../../services/redis.service';
-import { log } from '../../../../apps/api/src/vite';
+import { RedisService } from '@common/services/redis.service';
+import { log } from "@api/vite";
 
 /**
  * Bank transaction type enum

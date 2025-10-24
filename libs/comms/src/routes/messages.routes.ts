@@ -7,13 +7,13 @@
 
 import express, { Router } from 'express';
 import { MessagesService } from '../services/messages.service';
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import { Logger } from "@common/logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { createMessagesController } from '../controllers/messages.controller';
 
 // Create a logger for the messages routes
-const logger = new Logger('MessagesRouter');
+const logger = createModuleLogger('MessagesRouter');
 
 /**
  * Router for messages endpoints

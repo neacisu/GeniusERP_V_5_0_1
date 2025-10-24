@@ -12,7 +12,7 @@
  * - Usage tracking and monitoring
  */
 
-import AuditService from '../../../audit/src/services/audit.service';
+import AuditService from '@geniuserp/audit';
 import { 
   OpenAiConfig, 
   defaultOpenAiConfig,

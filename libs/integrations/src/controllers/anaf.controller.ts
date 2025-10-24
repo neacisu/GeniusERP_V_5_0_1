@@ -7,7 +7,7 @@
 import { Request, Response } from 'express';
 import { anafService } from '../services/anaf.service';
 import { eFacturaService } from '../services/e-factura.service';
-import { AuditService } from '../../audit/services/audit.service';
+import { AuditService } from '@geniuserp/audit';
 
 // For audit logging
 const RESOURCE_TYPE = 'anaf';

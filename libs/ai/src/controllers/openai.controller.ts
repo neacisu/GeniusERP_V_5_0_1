@@ -7,10 +7,10 @@
 
 import { Request, Response } from 'express';
 import { OpenAiService } from '../services/openai.service';
-import { Logger } from "@common/logger";
-import { AuthGuard } from '../../auth/guards/auth.guard';
-import { JwtAuthMode } from '../../auth/constants/auth-mode.enum';
-import AuditService from '../../audit/src/services/audit.service';
+import { createModuleLogger } from "@common/logger/loki-logger";
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
+import AuditService from '@geniuserp/audit';
 import { z } from 'zod';
 
 // Create validation schema for chat completion
@@ -36,7 +36,7 @@ const analyzeSchema = z.object({
 });
 
 // Create logger instance
-const logger = new Logger('OpenAIController');
+const logger = createModuleLogger('OpenAIController');
 
 /**
  * Register the OpenAI controller routes with the Express application

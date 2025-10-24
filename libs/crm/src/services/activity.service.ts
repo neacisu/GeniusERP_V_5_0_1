@@ -7,7 +7,7 @@ import { DrizzleService } from "@common/drizzle";
 import { sql, eq, and, or, like, desc, asc, gte, lte } from "drizzle-orm";
 import { activities, InsertActivity, Activity } from "../schema/crm.schema";
 import { randomUUID } from "crypto";
-import { AuditService } from "../../audit/services/audit.service";
+import { AuditService } from "@geniuserp/audit";
 import { ContactService } from "./contact.service";
 
 export class ActivityService {

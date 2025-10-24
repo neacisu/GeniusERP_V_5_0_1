@@ -6,7 +6,7 @@
 
 import { eq, and, desc, sql, SQL, count } from 'drizzle-orm';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 import { collaborationActivities } from '../../../../shared/schema/collaboration.schema';
 
 /**
@@ -39,7 +39,7 @@ export interface ActivityQueryOptions {
  * Handles activity stream operations.
  */
 export class ActivityService {
-  private _logger: Logger;
+  private _logger: ReturnType<typeof createModuleLogger>;
   
   /**
    * Constructor
@@ -47,7 +47,7 @@ export class ActivityService {
    * @param drizzleService Drizzle ORM service
    */
   constructor(private drizzleService: DrizzleService) {
-    this._logger = new Logger('ActivityService');
+    this._logger = createModuleLogger('ActivityService');
   }
   
   /**

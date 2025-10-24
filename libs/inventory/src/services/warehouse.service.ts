@@ -8,16 +8,16 @@
 
 import { eq, desc, ilike, and, or, isNull, sql } from 'drizzle-orm';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { AuditService, AuditAction } from '../../../modules/audit/services/audit.service';
-// Note: pool is now a postgres-js Sql instance from server/db.ts
-import { pool } from '../../../db';
+import { AuditService, AuditAction } from '@geniuserp/audit';
+// Postgres pool for raw queries
+import { pool } from '@api/db';
 import {
   InsertWarehouse,
   Warehouse,
   warehouses,
   warehouseTypeEnum
-} from '../../../../shared/schema/warehouse';
-import { generateRandomCode } from '../../../../server/utils/code-generator';
+} from '@geniuserp/shared/schema/warehouse';
+import { generateRandomCode } from '../utils/code-generator';
 
 export class WarehouseService {
   constructor(

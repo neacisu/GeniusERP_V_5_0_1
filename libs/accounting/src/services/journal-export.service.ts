@@ -11,7 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import { getDrizzle } from "@common/drizzle";
 import { and, eq, gte, lte, asc } from 'drizzle-orm';
-import { RedisService } from '../../../services/redis.service';
+import { RedisService } from '@common/services/redis.service';
 
 // Dynamic import pentru xlsx (evităm erori de tip)
 let XLSX: any;

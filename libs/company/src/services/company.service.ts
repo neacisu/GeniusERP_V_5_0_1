@@ -8,10 +8,10 @@
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { companies, Company, InsertCompany } from '../schema/company.schema';
 import { eq, and, isNull } from 'drizzle-orm';
-import { Logger } from "@common/logger";
+import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger for the service
-const logger = new Logger('CompanyService');
+const logger = createModuleLogger('CompanyService');
 
 export class CompanyService {
   /**
