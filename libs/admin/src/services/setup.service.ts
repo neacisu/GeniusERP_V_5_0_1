@@ -6,9 +6,9 @@
  */
 
 // Import database related dependencies
-import { setup_steps } from '../../../../shared/schema/admin.schema';
+import { setup_steps } from '@geniuserp/shared';
 import { eq, and } from 'drizzle-orm';
-import { Express, Request, Response, NextFunction, Router } from 'express';
+import { Express, Request, Response, Router } from 'express';
 import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
 import { createModuleLogger } from "@common/logger/loki-logger";
@@ -159,7 +159,7 @@ export class SetupService {
     router.get('/steps/:companyId', requireAuth, async (req: Request, res: Response) => {
       try {
         const { companyId } = req.params;
-        const franchiseId = req.query.franchiseId as string | undefined;
+        const franchiseId = req.query['franchiseId'] as string | undefined;
         
         const steps = await this.getCompanySetupSteps(companyId, franchiseId);
         res.json({ success: true, data: steps });
@@ -187,13 +187,14 @@ export class SetupService {
         this.logger.error('Error recording setup step:', error);
         res.status(500).json({ success: false, message: 'Failed to record setup step' });
       }
+      return;
     });
 
     // GET /api/admin/setup/progress/:companyId - Get setup progress percentage
     router.get('/progress/:companyId', requireAuth, async (req: Request, res: Response) => {
       try {
         const { companyId } = req.params;
-        const franchiseId = req.query.franchiseId as string | undefined;
+        const franchiseId = req.query['franchiseId'] as string | undefined;
         
         const progress = await this.getSetupProgress(companyId, franchiseId);
         res.json({ success: true, data: { progress } });
@@ -207,7 +208,7 @@ export class SetupService {
     router.get('/completed/:companyId/:step', requireAuth, async (req: Request, res: Response) => {
       try {
         const { companyId, step } = req.params;
-        const franchiseId = req.query.franchiseId as string | undefined;
+        const franchiseId = req.query['franchiseId'] as string | undefined;
         
         const isCompleted = await this.isStepComplete(companyId, step, franchiseId);
         res.json({ success: true, data: { completed: isCompleted } });
@@ -466,7 +467,7 @@ export class SetupService {
         const { drizzle } = require('drizzle-orm/postgres-js');
         
         // Get DATABASE_URL from env
-        const databaseUrl = process.env.DATABASE_URL;
+        const databaseUrl = process.env['DATABASE_URL'];
         if (!databaseUrl) {
           throw new Error('DATABASE_URL is not set');
         }

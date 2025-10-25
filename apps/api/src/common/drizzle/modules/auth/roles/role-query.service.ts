@@ -8,7 +8,7 @@
 import { Logger } from '../../../../../common/logger';
 import { BaseDrizzleService } from '../../core/base-drizzle.service';
 import { eq, and } from 'drizzle-orm';
-import { roles, userRoles } from '../../../../../../../../libs/shared/src/schema/admin.schema';
+import { roles, userRoles } from '@geniuserp/shared';
 
 // Create a logger for role query operations
 const logger = new Logger('RoleQueryService');
@@ -33,7 +33,7 @@ export class RoleQueryService extends BaseDrizzleService {
         
         // Build query directly to avoid Drizzle type mismatch
         const result = companyId
-          ? await db.select().from(roles).where(eq(roles.company_id, companyId))
+          ? await db.select().from(roles).where(eq(roles.companyId, companyId))
           : await db.select().from(roles);
         
         logger.debug(`[${context}] Retrieved ${result.length} roles`);
@@ -115,7 +115,7 @@ export class RoleQueryService extends BaseDrizzleService {
           .where(
             and(
               eq(roles.name, name),
-              eq(roles.company_id, companyId)
+              eq(roles.companyId, companyId)
             )
           )
           .limit(1);
@@ -161,14 +161,13 @@ export class RoleQueryService extends BaseDrizzleService {
             id: roles.id,
             name: roles.name,
             description: roles.description,
-            company_id: roles.company_id,
-            is_system: roles.is_system,
-            created_at: roles.created_at,
-            updated_at: roles.updated_at
+            companyId: roles.companyId,
+            createdAt: roles.createdAt,
+            updatedAt: roles.updatedAt
           })
           .from(userRoles)
-          .innerJoin(roles, eq(userRoles.role_id, roles.id))
-          .where(eq(userRoles.user_id, userId));
+          .innerJoin(roles, eq(userRoles.roleId, roles.id))
+          .where(eq(userRoles.userId, userId));
         
         logger.debug(`[${context}] Retrieved ${result.length} roles for user ${userId}`);
         return result;

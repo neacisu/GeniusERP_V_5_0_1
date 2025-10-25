@@ -6,7 +6,7 @@
  */
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { api_keys } from '../../../../shared/schema/admin.schema';
+import { api_keys } from '@geniuserp/shared';
 import { and, eq } from 'drizzle-orm';
 import { Express, Request, Response, Router } from 'express';
 import { AuthGuard } from '@geniuserp/auth';
@@ -407,6 +407,7 @@ export class ApiKeyService {
         this.logger.error('Error fetching API key details:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch API key details' });
       }
+      return;
     });
 
     // POST /api/admin/api-keys - Create a new API key
@@ -438,6 +439,7 @@ export class ApiKeyService {
         this.logger.error('Error creating API key:', error);
         res.status(500).json({ success: false, message: 'Failed to create API key' });
       }
+      return;
     });
 
     // PUT /api/admin/api-keys/:keyId - Update an API key
@@ -473,6 +475,7 @@ export class ApiKeyService {
         this.logger.error('Error updating API key:', error);
         res.status(500).json({ success: false, message: 'Failed to update API key' });
       }
+      return;
     });
 
     // POST /api/admin/api-keys/:keyId/rotate - Rotate an API key

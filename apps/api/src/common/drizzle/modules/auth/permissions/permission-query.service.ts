@@ -8,7 +8,7 @@
 import { Logger } from '../../../../../common/logger';
 import { BaseDrizzleService } from '../../core/base-drizzle.service';
 import { eq, and } from 'drizzle-orm';
-import { permissions, rolePermissions } from '../../../../../../../../libs/shared/src/schema/admin.schema';
+import { permissions } from '@geniuserp/shared';
 
 // Create a logger for permission query operations
 const logger = new Logger('PermissionQueryService');

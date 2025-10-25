@@ -1,7 +1,7 @@
 import { DrizzleService } from '../src/common/drizzle';
 import { users, roles, userRoles } from "@geniuserp/shared";
 import { v4 as uuidv4 } from 'uuid';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { seedDefaultCompany } from './seedDefaultCompany';
 import { scrypt, randomBytes } from 'crypto';
 import { promisify } from 'util';

@@ -8,7 +8,7 @@
 import { Logger } from '../../../../../common/logger';
 import { BaseDrizzleService } from '../../core/base-drizzle.service';
 import { eq } from 'drizzle-orm';
-import { users, User } from '../../../../../../../../libs/shared/src/schema/admin.schema';
+import { users, User } from '@geniuserp/shared';
 import { UserQueryService } from './user-query.service';
 
 // Create a logger for user mutation operations
@@ -31,7 +31,7 @@ export class UserMutationService extends BaseDrizzleService {
    * @param userData User data to insert with hashed password
    * @returns Created user object
    */
-  async createUser(userData: Partial<User>): Promise<User> {
+  async createUser(userData: any): Promise<any> {
     const context = 'createUser';
     try {
       // Validate input
@@ -67,10 +67,10 @@ export class UserMutationService extends BaseDrizzleService {
             username: userData.username!,  // Validated above
             email: userData.email!,        // Validated above
             password: userData.password!,  // Validated above
-            first_name: userData.first_name,
-            last_name: userData.last_name,
+            firstName: userData.first_name,
+            lastName: userData.last_name,
             role: userData.role || 'user',
-            company_id: userData.company_id
+            companyId: userData.company_id
           })
           .returning();
         
@@ -99,7 +99,7 @@ export class UserMutationService extends BaseDrizzleService {
    * @param userData User data to update (partial)
    * @returns Updated user object
    */
-  async updateUser(userId: string, userData: Partial<User>): Promise<User> {
+  async updateUser(userId: string, userData: any): Promise<any> {
     const context = 'updateUser';
     try {
       logger.debug(`[${context}] Updating user with ID: ${userId}`);
@@ -119,7 +119,7 @@ export class UserMutationService extends BaseDrizzleService {
           .update(users)
           .set({
             ...userData,
-            updated_at: new Date()
+            updatedAt: new Date()
           })
           .where(eq(users.id, userId))
           .returning();

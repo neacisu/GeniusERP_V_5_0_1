@@ -7,8 +7,8 @@
 
 import { Logger } from '../../../../../common/logger';
 import { BaseDrizzleService } from '../../core/base-drizzle.service';
-import { eq, and, or, sql } from 'drizzle-orm';
-import { rolePermissions, permissions, userRoles } from '../../../../../../../../libs/shared/src/schema/admin.schema';
+import { eq, and, sql } from 'drizzle-orm';
+import { rolePermissions, permissions, userRoles } from '@geniuserp/shared';
 import { RoleQueryService } from '../roles/role-query.service';
 import { PermissionQueryService } from './permission-query.service';
 
@@ -57,12 +57,12 @@ export class RolePermissionService extends BaseDrizzleService {
             description: permissions.description,
             resource: permissions.resource,
             action: permissions.action,
-            created_at: permissions.created_at,
-            updated_at: permissions.updated_at
+            createdAt: permissions.createdAt,
+            updatedAt: permissions.updatedAt
           })
           .from(rolePermissions)
-          .innerJoin(permissions, eq(rolePermissions.permission_id, permissions.id))
-          .where(eq(rolePermissions.role_id, roleId));
+          .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
+          .where(eq(rolePermissions.roleId, roleId));
         
         logger.debug(`[${context}] Retrieved ${result.length} permissions for role ${roleId}`);
         return result;
@@ -113,8 +113,8 @@ export class RolePermissionService extends BaseDrizzleService {
           .from(rolePermissions)
           .where(
             and(
-              eq(rolePermissions.role_id, roleId),
-              eq(rolePermissions.permission_id, permissionId)
+              eq(rolePermissions.roleId, roleId),
+              eq(rolePermissions.permissionId, permissionId)
             )
           )
           .limit(1);
@@ -133,8 +133,8 @@ export class RolePermissionService extends BaseDrizzleService {
         await db
           .insert(rolePermissions)
           .values({
-            role_id: roleId,
-            permission_id: permissionId
+            roleId: roleId,
+            permissionId: permissionId
           });
         
         logger.info(`[${context}] Permission ${permissionId} assigned to role ${roleId}`);
@@ -161,15 +161,15 @@ export class RolePermissionService extends BaseDrizzleService {
     try {
       logger.debug(`[${context}] Removing permission ${permissionId} from role ${roleId}`);
       
-      // Verify the assignment exists
+      // Check if assignment exists
       const hasPermission = await this.query(async (db) => {
         const result = await db
           .select()
           .from(rolePermissions)
           .where(
             and(
-              eq(rolePermissions.role_id, roleId),
-              eq(rolePermissions.permission_id, permissionId)
+              eq(rolePermissions.roleId, roleId),
+              eq(rolePermissions.permissionId, permissionId)
             )
           )
           .limit(1);
@@ -189,8 +189,8 @@ export class RolePermissionService extends BaseDrizzleService {
           .delete(rolePermissions)
           .where(
             and(
-              eq(rolePermissions.role_id, roleId),
-              eq(rolePermissions.permission_id, permissionId)
+              eq(rolePermissions.roleId, roleId),
+              eq(rolePermissions.permissionId, permissionId)
             )
           );
         
@@ -225,11 +225,11 @@ export class RolePermissionService extends BaseDrizzleService {
         const result = await db
           .select({ count: sql<number>`count(*)` })
           .from(userRoles)
-          .innerJoin(rolePermissions, eq(userRoles.role_id, rolePermissions.role_id))
-          .innerJoin(permissions, eq(rolePermissions.permission_id, permissions.id))
+          .innerJoin(rolePermissions, eq(userRoles.roleId, rolePermissions.roleId))
+          .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
           .where(
             and(
-              eq(userRoles.user_id, userId),
+              eq(userRoles.userId, userId),
               eq(permissions.resource, resource),
               eq(permissions.action, action)
             )
