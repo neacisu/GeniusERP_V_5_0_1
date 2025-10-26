@@ -11,7 +11,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import { schema } from '@geniuserp/shared';
 import { log } from './vite';
 
-if (!process.env.DATABASE_URL) {
+if (!process.env['DATABASE_URL']) {
   throw new Error(
     "DATABASE_URL must be set. Did you forget to configure the .env file?",
   );
@@ -19,7 +19,7 @@ if (!process.env.DATABASE_URL) {
 
 // Create PostgreSQL connection using postgres-js
 // Note: This replaces the previous @neondatabase/serverless implementation
-const queryClient = postgres(process.env.DATABASE_URL, {
+const queryClient = postgres(process.env['DATABASE_URL'], {
   max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
