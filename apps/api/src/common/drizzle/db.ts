@@ -8,8 +8,8 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { Logger } from '../logger';
-// NX Monorepo: Import schema from shared lib
-import * as schema from '@geniuserp/shared';
+// NX Monorepo: Import ONLY schema namespace, not the entire @geniuserp/shared package
+import { schema } from '@geniuserp/shared';
 
 // Create a logger for database operations
 const logger = new Logger('DrizzleDB');

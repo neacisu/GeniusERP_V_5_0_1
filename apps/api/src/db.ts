@@ -7,7 +7,8 @@
 
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import * as schema from '@geniuserp/shared';
+// Import ONLY schema namespace, not the entire @geniuserp/shared package
+import { schema } from '@geniuserp/shared';
 import { log } from './vite';
 
 if (!process.env.DATABASE_URL) {
