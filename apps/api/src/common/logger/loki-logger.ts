@@ -16,8 +16,8 @@ import LokiTransport from 'winston-loki';
 const isDevelopment = process.env.NODE_ENV === 'development';
 const LOG_LEVEL = process.env.LOG_LEVEL || (isDevelopment ? 'debug' : 'info');
 
-// Loki configuration
-const LOKI_HOST = process.env.LOKI_HOST || (process.env.NODE_ENV === 'development' ? 'http://loki:3100' : 'http://localhost:3100');
+// Loki configuration - all from .env, no hardcoded fallbacks
+const LOKI_HOST = process.env.LOKI_HOST!;
 const APP_NAME = 'geniuserp-app';
 const HOSTNAME = process.env.HOSTNAME || require('os').hostname();
 
