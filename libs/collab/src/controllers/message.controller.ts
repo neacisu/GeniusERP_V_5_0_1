@@ -41,11 +41,11 @@ export class MessageController {
       }
       
       const { threadId } = req.params;
-      // const companyId = req.user.companyId;  // Unused variable
+      const companyId = req.user.companyId;
       
       // Parse query parameters
-      // const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 20;  // Unused variable
-      // const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;  // Unused variable
+      const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 20;
+      const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;
       
       const messages = await this.messageService.getMessagesByThreadId(threadId, companyId, { limit, offset });
       
@@ -67,7 +67,7 @@ export class MessageController {
       }
       
       const { id } = req.params;
-      // const companyId = req.user.companyId;  // Unused variable
+      const companyId = req.user.companyId;
       
       const message = await this.messageService.getMessageById(id, companyId);
       
@@ -93,8 +93,8 @@ export class MessageController {
         return;
       }
       
-      // const userId = req.user.id;  // Unused variable
-      // const companyId = req.user.companyId;  // Unused variable
+      const userId = req.user.id;
+      const companyId = req.user.companyId;
       
       // Validate request body
       const messageSchema = insertCollaborationMessageSchema.extend({
@@ -133,8 +133,8 @@ export class MessageController {
       }
       
       const { id } = req.params;
-      // const userId = req.user.id;  // Unused variable
-      // const companyId = req.user.companyId;  // Unused variable
+      const userId = req.user.id;
+      const companyId = req.user.companyId;
       
       // Validate request body (partial updates allowed)
       const updateMessageSchema = insertCollaborationMessageSchema.partial();
@@ -170,8 +170,8 @@ export class MessageController {
       }
       
       const { id } = req.params;
-      // const userId = req.user.id;  // Unused variable
-      // const companyId = req.user.companyId;  // Unused variable
+      const userId = req.user.id;
+      const companyId = req.user.companyId;
       
       const success = await this.messageService.deleteMessage(id, companyId);
       

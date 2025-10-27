@@ -41,11 +41,11 @@ export class ThreadController {
         return;
       }
       
-      // const companyId = req.user.companyId;  // Unused variable
+      const companyId = req.user.companyId;
       
       // Parse query parameters
-      // const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 20;  // Unused variable
-      // const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;  // Unused variable
+      const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 20;
+      const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;
       
       const { threads } = await this.threadService.getThreads(companyId, { limit, offset });
       
@@ -67,11 +67,11 @@ export class ThreadController {
       }
       
       const { taskId } = req.params;
-      // const companyId = req.user.companyId;  // Unused variable
+      const companyId = req.user.companyId;
       
       // Parse query parameters
-      // const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 20;  // Unused variable
-      // const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;  // Unused variable
+      const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 20;
+      const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;
       
       // Since we don't have a direct task-thread relationship in the service,
       // we need to implement this. For now, we'll return a placeholder response.
@@ -96,7 +96,7 @@ export class ThreadController {
       }
       
       const { id } = req.params;
-      // const companyId = req.user.companyId;  // Unused variable
+      const companyId = req.user.companyId;
       
       const thread = await this.threadService.getThreadById(id, companyId);
       
@@ -122,8 +122,8 @@ export class ThreadController {
         return;
       }
       
-      // const userId = req.user.id;  // Unused variable
-      // const companyId = req.user.companyId;  // Unused variable
+      const userId = req.user.id;
+      const companyId = req.user.companyId;
       
       // Validate request body
       const threadSchema = insertCollaborationThreadSchema.extend({
@@ -162,8 +162,8 @@ export class ThreadController {
       }
       
       const { id } = req.params;
-      // const userId = req.user.id;  // Unused variable
-      // const companyId = req.user.companyId;  // Unused variable
+      const userId = req.user.id;
+      const companyId = req.user.companyId;
       
       // Validate request body (partial updates allowed)
       const updateThreadSchema = insertCollaborationThreadSchema.partial();
@@ -199,8 +199,8 @@ export class ThreadController {
       }
       
       const { id } = req.params;
-      // const userId = req.user.id;  // Unused variable
-      // const companyId = req.user.companyId;  // Unused variable
+      const userId = req.user.id;
+      const companyId = req.user.companyId;
       
       const success = await this.threadService.deleteThread(id, companyId);
       

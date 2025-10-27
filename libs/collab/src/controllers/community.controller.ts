@@ -96,8 +96,8 @@ export class CommunityController {
    */
   async getCommunityThreads(req: Request, res: Response): Promise<Response> {
     try {
-      // const userId = req.user?.id;  // Unused variable
-      // const companyId = req.user?.companyId;  // Unused variable
+      const userId = req.user?.id;
+      const companyId = req.user?.companyId;
 
       if (!userId || !companyId) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -137,8 +137,8 @@ export class CommunityController {
    */
   async getCommunityThreadById(req: Request, res: Response): Promise<Response> {
     try {
-      // const userId = req.user?.id;  // Unused variable
-      // const companyId = req.user?.companyId;  // Unused variable
+      const userId = req.user?.id;
+      const companyId = req.user?.companyId;
       const threadId = req.params['id'];
 
       if (!userId || !companyId) {
@@ -167,8 +167,8 @@ export class CommunityController {
    */
   async createCommunityThread(req: Request, res: Response): Promise<Response> {
     try {
-      // const userId = req.user?.id;  // Unused variable
-      // const companyId = req.user?.companyId;  // Unused variable
+      const userId = req.user?.id;
+      const companyId = req.user?.companyId;
 
       if (!userId || !companyId) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -205,8 +205,8 @@ export class CommunityController {
    */
   async updateCommunityThread(req: Request, res: Response): Promise<Response> {
     try {
-      // const userId = req.user?.id;  // Unused variable
-      // const companyId = req.user?.companyId;  // Unused variable
+      const userId = req.user?.id;
+      const companyId = req.user?.companyId;
       const threadId = req.params['id'];
 
       if (!userId || !companyId) {
@@ -252,8 +252,8 @@ export class CommunityController {
    */
   async deleteCommunityThread(req: Request, res: Response): Promise<Response> {
     try {
-      // const userId = req.user?.id;  // Unused variable
-      // const companyId = req.user?.companyId;  // Unused variable
+      const userId = req.user?.id;
+      const companyId = req.user?.companyId;
       const threadId = req.params['id'];
 
       if (!userId || !companyId) {

@@ -157,7 +157,7 @@ export class TaskController {
   async getTaskById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      // const companyId = req.user?.companyId;  // Unused variable
+      const companyId = req.user?.companyId;
       
       if (!companyId) {
         res.status(401).json({ error: 'Company ID not found' });
@@ -183,8 +183,8 @@ export class TaskController {
    */
   async createTask(req: Request, res: Response): Promise<void> {
     try {
-      // const companyId = req.user?.companyId;  // Unused variable
-      // const userId = req.user?.id;  // Unused variable
+      const companyId = req.user?.companyId;
+      const userId = req.user?.id;
       
       if (!companyId || !userId) {
         res.status(401).json({ error: 'User ID or company ID not found' });
@@ -212,8 +212,8 @@ export class TaskController {
   async updateTask(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      // const companyId = req.user?.companyId;  // Unused variable
-      // const userId = req.user?.id;  // Unused variable
+      const companyId = req.user?.companyId;
+      const userId = req.user?.id;
       
       if (!companyId || !userId) {
         res.status(401).json({ error: 'User ID or company ID not found' });
@@ -249,7 +249,7 @@ export class TaskController {
   async deleteTask(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      // const companyId = req.user?.companyId;  // Unused variable
+      const companyId = req.user?.companyId;
       
       if (!companyId) {
         res.status(401).json({ error: 'Company ID not found' });
@@ -276,7 +276,7 @@ export class TaskController {
   async getTaskAssignmentHistory(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      // const companyId = req.user?.companyId;  // Unused variable
+      const companyId = req.user?.companyId;
       
       if (!companyId) {
         res.status(401).json({ error: 'Company ID not found' });
@@ -306,7 +306,7 @@ export class TaskController {
   async getTaskStatusHistory(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      // const companyId = req.user?.companyId;  // Unused variable
+      const companyId = req.user?.companyId;
       
       if (!companyId) {
         res.status(401).json({ error: 'Company ID not found' });
@@ -336,7 +336,7 @@ export class TaskController {
   async assignTask(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      // const companyId = req.user?.companyId;  // Unused variable
+      const companyId = req.user?.companyId;
       const assignerId = req.user?.id;
       
       if (!companyId || !assignerId) {
@@ -374,8 +374,8 @@ export class TaskController {
   async updateTaskStatus(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      // const companyId = req.user?.companyId;  // Unused variable
-      // const userId = req.user?.id;  // Unused variable
+      const companyId = req.user?.companyId;
+      const userId = req.user?.id;
       
       if (!companyId || !userId) {
         res.status(401).json({ error: 'User ID or company ID not found' });

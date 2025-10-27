@@ -39,7 +39,7 @@ export class WatcherController {
       }
       
       const { taskId } = req.params;
-      // const companyId = req.user.companyId;  // Unused variable
+      const companyId = req.user.companyId;
       
       const watchers = await this.watcherService.getWatchersByTaskId(taskId, companyId);
       
@@ -61,7 +61,7 @@ export class WatcherController {
       }
       
       const createdBy = req.user.id;
-      // const companyId = req.user.companyId;  // Unused variable
+      const companyId = req.user.companyId;
       
       // Validate request body
       const watcherSchema = insertTaskWatcherSchema.extend({
@@ -105,8 +105,8 @@ export class WatcherController {
       }
       
       const { id: taskId } = req.params;
-      // const companyId = req.user.companyId;  // Unused variable
-      // const userId = req.user.id;  // Unused variable
+      const companyId = req.user.companyId;
+      const userId = req.user.id;
       
       const success = await this.watcherService.removeWatcher(taskId, companyId, userId);
       

@@ -41,11 +41,11 @@ export class NoteController {
         return;
       }
       
-      // const companyId = req.user.companyId;  // Unused variable
+      const companyId = req.user.companyId;
       
       // Parse query parameters
-      // const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 50;  // Unused variable
-      // const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;  // Unused variable
+      const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 50;
+      const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;
       const sortOrder = req.query['sortOrder'] === 'asc' ? 'asc' : 'desc';
       const isPinned = req.query['isPinned'] ? req.query['isPinned'] === 'true' : undefined;
       
@@ -75,7 +75,7 @@ export class NoteController {
       }
       
       const { taskId } = req.params;
-      // const companyId = req.user.companyId;  // Unused variable
+      const companyId = req.user.companyId;
       
       const notes = await this.noteService.getNotesByTaskId(taskId, companyId);
       
@@ -97,7 +97,7 @@ export class NoteController {
       }
       
       const { id } = req.params;
-      // const companyId = req.user.companyId;  // Unused variable
+      const companyId = req.user.companyId;
       
       const note = await this.noteService.getNoteById(id, companyId);
       
@@ -123,8 +123,8 @@ export class NoteController {
         return;
       }
       
-      // const userId = req.user.id;  // Unused variable
-      // const companyId = req.user.companyId;  // Unused variable
+      const userId = req.user.id;
+      const companyId = req.user.companyId;
       
       // Validate request body
       const noteSchema = insertCollaborationNoteSchema.extend({
@@ -163,8 +163,8 @@ export class NoteController {
       }
       
       const { id } = req.params;
-      // const userId = req.user.id;  // Unused variable
-      // const companyId = req.user.companyId;  // Unused variable
+      const userId = req.user.id;
+      const companyId = req.user.companyId;
       
       // Validate request body (partial updates allowed)
       const updateNoteSchema = insertCollaborationNoteSchema.partial();
@@ -200,8 +200,8 @@ export class NoteController {
       }
       
       const { id } = req.params;
-      // const userId = req.user.id;  // Unused variable
-      // const companyId = req.user.companyId;  // Unused variable
+      const userId = req.user.id;
+      const companyId = req.user.companyId;
       
       const success = await this.noteService.deleteNote(id, companyId);
       
