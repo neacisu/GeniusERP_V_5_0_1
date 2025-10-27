@@ -5,7 +5,7 @@
  * notes, internal discussions, assignment tracking, and status monitoring.
  */
 
-import { Express, Request, Response, Router } from 'express';
+import { Express, Router } from 'express';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from '@common/drizzle/drizzle.service';
@@ -188,7 +188,7 @@ export class CollabModule {
         });
       } catch (error) {
         logger.error(`Error in POST /api/collab/task: ${error instanceof Error ? error.message : String(error)}`);
-        res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ message: 'Internal server error' });
       }
     });
     
