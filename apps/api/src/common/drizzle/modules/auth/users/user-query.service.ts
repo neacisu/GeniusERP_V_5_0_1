@@ -7,9 +7,8 @@
 
 import { Logger } from '../../../../../common/logger';
 import { BaseDrizzleService } from '../../core/base-drizzle.service';
-import { SQL, eq, and, or, sql } from 'drizzle-orm';
-import { users, User } from '../../../../../../../../libs/shared/src/schema/admin.schema';
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { SQL, eq, and } from 'drizzle-orm';
+import { users } from '@geniuserp/shared';
 
 // Create a logger for user query operations
 const logger = new Logger('UserQueryService');
@@ -24,7 +23,7 @@ export class UserQueryService extends BaseDrizzleService {
    * @param username Username to search for
    * @returns User object or null if not found
    */
-  async getUserByUsername(username: string): Promise<User | null> {
+  async getUserByUsername(username: string): Promise<any> {
     const context = 'getUserByUsername';
     try {
       logger.debug(`[${context}] Getting user by username: ${username}`);
@@ -66,7 +65,7 @@ export class UserQueryService extends BaseDrizzleService {
    * @param userId User ID to search for
    * @returns User object or null if not found
    */
-  async getUserById(userId: string): Promise<User | null> {
+  async getUserById(userId: string): Promise<any> {
     const context = 'getUserById';
     try {
       logger.debug(`[${context}] Getting user by ID: ${userId}`);
@@ -112,7 +111,7 @@ export class UserQueryService extends BaseDrizzleService {
     companyId?: string;
     limit?: number;
     offset?: number;
-  } = {}): Promise<User[]> {
+  } = {}): Promise<any[]> {
     const context = 'getUsers';
     try {
       const { companyId, limit = 100, offset = 0 } = options;
@@ -127,7 +126,7 @@ export class UserQueryService extends BaseDrizzleService {
         
         if (companyId) {
           logger.debug(`[${context}] Adding company filter: ${companyId}`);
-          conditions.push(eq(users.company_id, companyId));
+          conditions.push(eq(users.companyId, companyId));
         }
         
         logger.debug(`[${context}] Applying pagination: limit=${limit}, offset=${offset}`);

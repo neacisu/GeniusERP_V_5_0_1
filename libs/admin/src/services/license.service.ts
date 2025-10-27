@@ -5,7 +5,7 @@
  * features like license validation, activation/deactivation, and usage tracking.
  */
 
-import { licenses } from '../../../../shared/schema/admin.schema';
+import { licenses } from '@geniuserp/shared';
 import { and, eq, sql } from 'drizzle-orm';
 import { Express, Request, Response, Router } from 'express';
 import { AuthGuard } from '@geniuserp/auth';
@@ -14,7 +14,6 @@ import { createModuleLogger } from "@common/logger/loki-logger";
 import { AuditService, AuditAction } from '@geniuserp/audit';
 import { v4 as uuidv4 } from 'uuid';
 import * as crypto from 'crypto';
-import * as os from 'os';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 
 /**
@@ -589,16 +588,21 @@ export class LicenseService {
    * @param licenseKey Full license key
    * @returns Partial key identifier
    */
+  /* 
+  // Reserved for future implementation - key masking for display
   private generateKeyIdentifier(licenseKey: string): string {
     // Use the first 5 characters and last 5 characters with asterisks in between
     const parts = licenseKey.split('-');
     return `${parts[0]}-****-****-${parts[3]}`;
   }
+  */
 
   /**
    * Generate a hardware identifier for the current system
    * @returns Hardware identifier string
    */
+  /*
+  // Reserved for future implementation - hardware fingerprinting
   private generateHardwareId(): string {
     try {
       const networkInterfaces = os.networkInterfaces();
@@ -629,6 +633,7 @@ export class LicenseService {
       return crypto.randomBytes(32).toString('hex');
     }
   }
+  */
 
   /**
    * Get license edition from key
@@ -676,6 +681,8 @@ export class LicenseService {
    * @param edition License edition
    * @returns Maximum number of companies
    */
+  /*
+  // Reserved for future implementation - company limits per edition
   private getMaxCompaniesForEdition(edition: LicenseEdition): number {
     switch (edition) {
       case LicenseEdition.ENTERPRISE:
@@ -689,6 +696,7 @@ export class LicenseService {
         return 1;
     }
   }
+  */
 
   /**
    * Get features for a license edition
@@ -758,7 +766,7 @@ export class LicenseService {
     const requireAdmin = AuthGuard.roleGuard(['admin']);
     
     // GET /api/admin/licenses - Get all licenses
-    router.get('/licenses', requireAdmin, async (req: Request, res: Response) => {
+    router.get('/licenses', requireAdmin, async (_req: Request, res: Response) => {
       try {
         const licenses = await this.getAllLicenses();
         
@@ -770,7 +778,7 @@ export class LicenseService {
     });
 
     // GET /api/admin/licenses/active - Get the active license
-    router.get('/licenses/active', requireAuth, async (req: Request, res: Response) => {
+    router.get('/licenses/active', requireAuth, async (_req: Request, res: Response) => {
       try {
         const license = await this.getActiveLicense();
         
@@ -806,6 +814,7 @@ export class LicenseService {
         this.logger.error('Error getting active license:', error);
         res.status(500).json({ success: false, message: 'Failed to get active license' });
       }
+      return;
     });
 
     // POST /api/admin/licenses/register - Register a new license
@@ -834,6 +843,7 @@ export class LicenseService {
           message: `Failed to register license: ${(error as Error).message}`
         });
       }
+      return;
     });
 
     // POST /api/admin/licenses/:licenseId/activate - Activate a license
@@ -855,6 +865,7 @@ export class LicenseService {
           message: `Failed to activate license: ${(error as Error).message}`
         });
       }
+      return;
     });
 
     // POST /api/admin/licenses/:licenseId/deactivate - Deactivate a license
@@ -904,6 +915,7 @@ export class LicenseService {
         this.logger.error('Error checking features:', error);
         res.status(500).json({ success: false, message: 'Failed to check features' });
       }
+      return;
     });
 
     // Mount routes

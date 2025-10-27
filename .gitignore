@@ -21,8 +21,8 @@ build/
 .next/
 out/
 
-# Nx cache
-.nx/cache/
+# Nx cache and workspace data
+.nx/
 
 # Logs
 logs

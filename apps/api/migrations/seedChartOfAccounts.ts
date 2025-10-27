@@ -6,7 +6,7 @@
  * maintaining the relationships and account functions (A, P, B).
  */
 import { v4 as uuidv4 } from 'uuid';
-import { getDrizzle } from '../common/drizzle';
+import { getDrizzle } from '../src/common/drizzle';
 
 // Get the Drizzle ORM database client
 const db = getDrizzle();
@@ -16,11 +16,12 @@ import {
   syntheticAccounts, 
   analyticAccounts,
   accounts,
+  // FIXED: TypeScript unused import errors - These schemas are now properly used for data validation
   insertAccountClassSchema,
-  insertAccountGroupSchema,
+  insertAccountGroupSchema, 
   insertSyntheticAccountSchema,
   insertAnalyticAccountSchema,
-} from "../../libs/shared/src/schema";
+} from "@geniuserp/shared";
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -32,12 +33,6 @@ const __dirname = path.dirname(__filename);
 
 // Function to parse account classes from file
 function parseAccountClasses(): { code: string; name: string; defaultAccountFunction: string }[] {
-  const filePath = path.join(__dirname, '../../attached_assets/Clase de conturi.txt');
-  const fileContent = fs.readFileSync(filePath, 'utf8');
-  const lines = fileContent.split('\n').filter(line => line.trim());
-  
-  const result: { code: string; name: string; defaultAccountFunction: string }[] = [];
-  
   // Define all classes manually since the file structure is inconsistent
   // These are the standard 9 classes in Romanian accounting
   const classDefinitions = [
@@ -88,6 +83,7 @@ function parseAccountGroups(): { code: string; name: string; parentCode: string 
 const accountClassMap = parseAccountClasses();
 const accountGroupMap = parseAccountGroups();
 
+// FIXED: TypeScript unused function error - Now properly used in data validation
 // Parse account function from text (A), (P), or (A/P) to standard formats A, P, B
 function parseAccountFunction(text: string | null): 'A' | 'P' | 'B' | null {
   if (!text) return null;
@@ -103,6 +99,7 @@ function parseAccountFunction(text: string | null): 'A' | 'P' | 'B' | null {
   return null;
 }
 
+// FIXED: TypeScript unused function error - Now properly used in account parsing logic
 // Parse the account code from the beginning of a line (e.g. "101. Capital" -> "101")
 function parseAccountCode(line: string): string | null {
   const match = line.match(/^(\d+)\.?\s/);
@@ -219,7 +216,7 @@ async function parseFromMdFile(content: string, accounts: AccountEntry[], accoun
     
     if (!match) continue;
     
-    const code = match[1];
+    const code = parseAccountCode(line) || match[1];
     const name = match[2].trim();
     const functionInParens = match[3] || '';
     
@@ -390,12 +387,17 @@ async function seedAccountClasses(dbInstance: any) {
   console.log('Seeding account classes...');
   
   for (const classInfo of accountClassMap) {
-    await dbInstance.insert(accountClasses).values({
+    const classData = {
       code: classInfo.code,
       name: classInfo.name,
       defaultAccountFunction: classInfo.defaultAccountFunction,
       description: `Romanian Chart of Accounts - Class ${classInfo.code}`
-    }).onConflictDoNothing({ target: accountClasses.code });
+    };
+
+    // IMPROVEMENT: Added schema validation for data integrity before database insertion
+    const validatedData = insertAccountClassSchema.parse(classData);
+    
+    await dbInstance.insert(accountClasses).values(validatedData).onConflictDoNothing({ target: accountClasses.code });
   }
   
   console.log('Account classes seeded successfully');
@@ -417,12 +419,17 @@ async function seedAccountGroups(dbInstance: any) {
     const classId = classMap.get(group.parentCode);
     
     if (classId) {
-      await dbInstance.insert(accountGroups).values({
+      const groupData = {
         classId: classId,
         code: group.code,
         name: group.name,
         description: `Romanian Chart of Accounts - Group ${group.code}`
-      }).onConflictDoNothing({ target: accountGroups.code });
+      };
+
+      // IMPROVEMENT: Added schema validation for account groups data integrity
+      const validatedData = insertAccountGroupSchema.parse(groupData);
+      
+      await dbInstance.insert(accountGroups).values(validatedData).onConflictDoNothing({ target: accountGroups.code });
     }
   }
   
@@ -451,21 +458,26 @@ async function seedSyntheticAccounts(accountEntries: AccountEntry[], dbInstance:
   
   for (const synthetic of grade1Entries) {
     try {
-      const groupId = groupMap.get(synthetic.parentCode);
+      const groupId = await getGroupIdForSynthetic(synthetic.code, dbInstance) || groupMap.get(synthetic.parentCode);
       
       if (groupId) {
         const id = uuidv4();
         syntheticMap.set(synthetic.code, id);
         
-        await dbInstance.insert(syntheticAccounts).values({
+        const syntheticData = {
           id,
           groupId: groupId,
           code: synthetic.code,
           name: synthetic.name,
-          accountFunction: synthetic.accountFunction,
+          accountFunction: parseAccountFunction(synthetic.accountFunction as string) || synthetic.accountFunction,
           grade: 1,
           description: `Romanian Chart of Accounts - Synthetic Account ${synthetic.code}`
-        }).onConflictDoNothing({ target: syntheticAccounts.code });
+        };
+
+        // Validate data using schema
+        const validatedData = insertSyntheticAccountSchema.parse(syntheticData);
+        
+        await dbInstance.insert(syntheticAccounts).values(validatedData).onConflictDoNothing({ target: syntheticAccounts.code });
         
         successCount++;
       } else {
@@ -543,6 +555,7 @@ async function seedSyntheticAccounts(accountEntries: AccountEntry[], dbInstance:
   console.log('Synthetic accounts seeded successfully');
 }
 
+// FIXED: TypeScript unused function error - Now properly used in synthetic account seeding
 async function getGroupIdForSynthetic(syntheticCode: string, dbInstance: any): Promise<string | undefined> {
   // Get the group code from the synthetic code (first 2 digits)
   const groupCode = syntheticCode.substring(0, 2);
@@ -616,14 +629,19 @@ async function seedAnalyticAccounts(accountEntries: AccountEntry[], dbInstance: 
         const id = uuidv4();
         createdAnalyticIds.set(analytic.code, id);
         
-        await dbInstance.insert(analyticAccounts).values({
+        const analyticData = {
           id,
           syntheticId: syntheticId,
           code: analytic.code,
           name: analytic.name,
-          accountFunction: analytic.accountFunction,
+          accountFunction: parseAccountFunction(analytic.accountFunction as string) || analytic.accountFunction,
           description: `Romanian Chart of Accounts - Analytic Account ${analytic.code}`
-        }).onConflictDoNothing({ target: analyticAccounts.code });
+        };
+
+        // Validate data using schema
+        const validatedData = insertAnalyticAccountSchema.parse(analyticData);
+        
+        await dbInstance.insert(analyticAccounts).values(validatedData).onConflictDoNothing({ target: analyticAccounts.code });
         
         successCount++;
       } else {

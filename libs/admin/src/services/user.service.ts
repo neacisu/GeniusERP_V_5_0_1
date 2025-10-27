@@ -11,9 +11,9 @@
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq, and, isNull, asc, desc, sql } from 'drizzle-orm';
 import * as bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
+
 import { createModuleLogger } from "@common/logger/loki-logger";
-import { users, roles, userRoles } from '../../../../shared/schema/admin.schema';
+import { users, roles, userRoles } from '@geniuserp/shared';
 
 /**
  * User creation interface
@@ -74,17 +74,13 @@ export class UserService {
       const hashedPassword = await this.hashPassword(params.password);
       
       // Create the user
-      const now = new Date();
-      
       const [newUser] = await this.db.insert(users).values({
         username: params.email.toLowerCase(), // Using email as username
         email: params.email.toLowerCase(),
-        first_name: params.firstName || null,
-        last_name: params.lastName || null,
+        firstName: params.firstName || '',
+        lastName: params.lastName || '',
         password: hashedPassword,
-        company_id: params.companyId || null,
-        created_at: now,
-        updated_at: now
+        companyId: params.companyId || null
       }).returning();
       
       // Assign roles if provided
@@ -206,7 +202,7 @@ export class UserService {
     sortDirection?: 'asc' | 'desc';
   } = {}) {
     try {
-      this.logger.debug('Getting users with options:', options);
+      this.logger.debug('Getting users', { options });
       
       const page = options.page || 1;
       const limit = options.limit || 10;
@@ -217,9 +213,9 @@ export class UserService {
       
       if (options.companyId !== undefined) {
         if (options.companyId === null) {
-          conditions.push(isNull(users.company_id));
+          conditions.push(isNull(users.companyId));
         } else {
-          conditions.push(eq(users.company_id, options.companyId));
+          conditions.push(eq(users.companyId, options.companyId));
         }
       }
       
@@ -236,12 +232,12 @@ export class UserService {
         id: users.id,
         username: users.username,
         email: users.email,
-        first_name: users.first_name,
-        last_name: users.last_name,
+        firstName: users.firstName,
+        lastName: users.lastName,
         role: users.role,
-        company_id: users.company_id,
-        created_at: users.created_at,
-        updated_at: users.updated_at,
+        companyId: users.companyId,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
       };
       
       if (options.sortBy && validSortColumns[options.sortBy]) {
@@ -288,7 +284,7 @@ export class UserService {
       this.logger.debug(`Deleting user with ID: ${userId}`);
       
       // First delete related user roles
-      await this.db.delete(userRoles).where(eq(userRoles.user_id, userId));
+      await this.db.delete(userRoles).where(eq(userRoles.userId, userId));
       
       // Then delete the user
       const [deletedUser] = await this.db.delete(users)
@@ -346,16 +342,13 @@ export class UserService {
       }
       
       // Delete existing role assignments
-      await this.db.delete(userRoles).where(eq(userRoles.user_id, userId));
+      await this.db.delete(userRoles).where(eq(userRoles.userId, userId));
       
       // Create new role assignments
       if (roleIds.length > 0) {
         const values = roleIds.map(roleId => ({
-          id: uuidv4(),
-          user_id: userId,
-          role_id: roleId,
-          assigned_at: new Date(),
-          assigned_by: userId // Using the same user ID as assigned_by for simplicity
+          userId: userId,
+          roleId: roleId
         }));
         
         await this.db.insert(userRoles).values(values);
@@ -381,8 +374,8 @@ export class UserService {
       const userRolesResult = await this.db.select({
         role: roles
       }).from(userRoles)
-        .leftJoin(roles, eq(userRoles.role_id, roles.id))
-        .where(eq(userRoles.user_id, userId));
+        .leftJoin(roles, eq(userRoles.roleId, roles.id))
+        .where(eq(userRoles.userId, userId));
       
       return userRolesResult.map(item => item.role);
     } catch (error) {
@@ -405,8 +398,8 @@ export class UserService {
       const userRoleRecord = await this.db.select()
         .from(userRoles)
         .where(and(
-          eq(userRoles.user_id, userId),
-          eq(userRoles.role_id, roleIdOrCode)
+          eq(userRoles.userId, userId),
+          eq(userRoles.roleId, roleIdOrCode)
         ))
         .limit(1);
       
@@ -459,7 +452,7 @@ export class UserService {
       const [updatedUser] = await this.db.update(users)
         .set({ 
           password: hashedPassword, 
-          updated_at: new Date() 
+          updatedAt: new Date() 
         })
         .where(eq(users.id, userId))
         .returning();
@@ -484,9 +477,4 @@ export class UserService {
   private async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, this.SALT_ROUNDS);
   }
-}
-
-// Add aggregation function for SQL count
-function count() {
-  return sql<number>`count(*)`;
 }

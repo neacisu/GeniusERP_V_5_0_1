@@ -7,8 +7,8 @@
 
 import { Logger } from '../../../../../common/logger';
 import { BaseDrizzleService } from '../../core/base-drizzle.service';
-import { eq, and } from 'drizzle-orm';
-import { roles, userRoles } from '../../../../../../../../libs/shared/src/schema/admin.schema';
+import { eq } from 'drizzle-orm';
+import { roles, userRoles } from '@geniuserp/shared';
 import { RoleQueryService } from './role-query.service';
 
 // Create a logger for role mutation operations
@@ -35,18 +35,18 @@ export class RoleMutationService extends BaseDrizzleService {
     const context = 'createRole';
     try {
       // Validate input
-      if (!roleData.name || !roleData.company_id) {
-        const errorMessage = 'Role name and company_id are required';
+      if (!roleData.name || !roleData.companyId) {
+        const errorMessage = 'Role name and companyId are required';
         logger.error(`[${context}] Validation error: ${errorMessage}`);
         throw new Error(errorMessage);
       }
       
-      logger.debug(`[${context}] Creating new role: ${roleData.name} for company: ${roleData.company_id}`);
+      logger.debug(`[${context}] Creating new role: ${roleData.name} for company: ${roleData.companyId}`);
       
       // Verify that a role with the same name doesn't exist for this company
-      const existingRole = await this.roleQueryService.getRoleByName(roleData.name, roleData.company_id);
+      const existingRole = await this.roleQueryService.getRoleByName(roleData.name, roleData.companyId);
       if (existingRole) {
-        const errorMessage = `Role with name ${roleData.name} already exists for company ${roleData.company_id}`;
+        const errorMessage = `Role with name ${roleData.name} already exists for company ${roleData.companyId}`;
         logger.warn(`[${context}] ${errorMessage}`);
         throw new Error(errorMessage);
       }
@@ -64,7 +64,7 @@ export class RoleMutationService extends BaseDrizzleService {
           .returning();
         
         logger.info(`[${context}] Role created successfully with ID: ${newRole.id}`);
-        logger.debug(`[${context}] Created role details: name=${newRole.name}, company=${newRole.company_id}`);
+        logger.debug(`[${context}] Created role details: name=${newRole.name}, company=${newRole.companyId}`);
         return newRole;
       }, context);
     } catch (error) {
@@ -106,7 +106,7 @@ export class RoleMutationService extends BaseDrizzleService {
         logger.debug(`[${context}] Checking for duplicate role name: ${roleData.name}`);
         const duplicateRole = await this.roleQueryService.getRoleByName(
           roleData.name, 
-          roleData.company_id || existingRole.company_id
+          roleData.companyId || existingRole.companyId
         );
         
         if (duplicateRole && duplicateRole.id !== roleId) {
@@ -171,7 +171,7 @@ export class RoleMutationService extends BaseDrizzleService {
         logger.debug(`[${context}] Removing all user associations for role: ${roleId}`);
         await tx
           .delete(userRoles)
-          .where(eq(userRoles.role_id, roleId));
+          .where(eq(userRoles.roleId, roleId));
         
         // Then delete the role itself
         logger.debug(`[${context}] Deleting role from database: ${roleId}`);

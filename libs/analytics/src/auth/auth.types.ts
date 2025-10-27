@@ -5,11 +5,14 @@
  * It re-exports the main auth types from the auth module to maintain compatibility.
  */
 
-import { JwtAuthMode, UserRole, JwtUserData } from '@geniuserp/auth';
+import { JwtAuthMode, UserRole } from '@geniuserp/auth';
+import type { JwtUserData } from '@geniuserp/auth';
 
 // Re-export the auth types for convenience
-export { JwtAuthMode, UserRole, JwtUserData };
-export type { AuthenticatedRequest } from '../../../types/express';
+export { JwtAuthMode, UserRole };
+export type { JwtUserData };
+export type { AuthenticatedRequest } from '@geniuserp/auth';
+
 
 // Additional analytics-specific roles
 export const AnalyticsRoles = {

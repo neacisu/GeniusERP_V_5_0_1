@@ -8,7 +8,7 @@
 import { Logger } from '../../../../../common/logger';
 import { BaseDrizzleService } from '../../core/base-drizzle.service';
 import { eq, and } from 'drizzle-orm';
-import { userRoles } from '../../../../../../../../libs/shared/src/schema/admin.schema';
+import { userRoles } from '@geniuserp/shared';
 import { UserQueryService } from '../users/user-query.service';
 import { RoleQueryService } from './role-query.service';
 
@@ -64,8 +64,8 @@ export class UserRoleService extends BaseDrizzleService {
           .from(userRoles)
           .where(
             and(
-              eq(userRoles.user_id, userId),
-              eq(userRoles.role_id, roleId)
+              eq(userRoles.userId, userId),
+              eq(userRoles.roleId, roleId)
             )
           )
           .limit(1);
@@ -84,9 +84,8 @@ export class UserRoleService extends BaseDrizzleService {
         await db
           .insert(userRoles)
           .values({
-            user_id: userId,
-            role_id: roleId,
-            assigned_by: assignedBy
+            userId: userId,
+            roleId: roleId
           });
         
         logger.info(`[${context}] Role ${roleId} assigned to user ${userId} by ${assignedBy}`);
@@ -115,15 +114,15 @@ export class UserRoleService extends BaseDrizzleService {
     try {
       logger.debug(`[${context}] Removing role ${roleId} from user ${userId}`);
       
-      // Verify the assignment exists
+      // Check if assignment exists
       const hasRole = await this.query(async (db) => {
         const result = await db
           .select()
           .from(userRoles)
           .where(
             and(
-              eq(userRoles.user_id, userId),
-              eq(userRoles.role_id, roleId)
+              eq(userRoles.userId, userId),
+              eq(userRoles.roleId, roleId)
             )
           )
           .limit(1);
@@ -136,15 +135,15 @@ export class UserRoleService extends BaseDrizzleService {
         return;
       }
       
-      // Delete the assignment
+      // Remove the assignment
       logger.debug(`[${context}] Removing role assignment from database`);
       await this.query(async (db) => {
         await db
           .delete(userRoles)
           .where(
             and(
-              eq(userRoles.user_id, userId),
-              eq(userRoles.role_id, roleId)
+              eq(userRoles.userId, userId),
+              eq(userRoles.roleId, roleId)
             )
           );
         
@@ -185,11 +184,11 @@ export class UserRoleService extends BaseDrizzleService {
       // Get user IDs
       return await this.query(async (db) => {
         const result = await db
-          .select({ user_id: userRoles.user_id })
+          .select({ userId: userRoles.userId })
           .from(userRoles)
-          .where(eq(userRoles.role_id, roleId));
+          .where(eq(userRoles.roleId, roleId));
         
-        const userIds = result.map(r => r.user_id);
+        const userIds = result.map(r => r.userId);
         logger.debug(`[${context}] Retrieved ${userIds.length} users for role ${roleId}`);
         return userIds;
       }, context);

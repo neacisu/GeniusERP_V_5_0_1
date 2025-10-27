@@ -5,17 +5,25 @@
     "default": {
       "runner": "nx/tasks-runners/default",
       "options": {
-        "cacheableOperations": ["build", "lint", "test", "e2e"]
+        "cacheableOperations": [
+          "build",
+          "lint",
+          "test",
+          "e2e"
+        ]
       }
     }
   },
   "targetDefaults": {
     "build": {
-      "dependsOn": ["^build"]
+      "dependsOn": [
+        "^build"
+      ]
     }
   },
   "affected": {
     "defaultBase": "main"
   },
-  "defaultProject": "api"
+  "defaultProject": "api",
+  "nxCloudId": "68fb3427e6f18f63af51b119"
 }

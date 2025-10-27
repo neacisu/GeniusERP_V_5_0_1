@@ -11,6 +11,7 @@ import BankJournalService from './bank-journal.service';
 import CashRegisterService from './cash-register.service';
 import NoteContabilService from './note-contabil.service';
 import ValidateDocumentService from './validate-document';
+import { AccountingService } from './accounting.service';
 
 // Fiscal Closure Services
 import FiscalClosureService from './fiscal-closure.service';
@@ -30,6 +31,7 @@ export {
   CashRegisterService,
   NoteContabilService,
   ValidateDocumentService,
+  AccountingService,
   FiscalClosureService,
   DepreciationCalculationService,
   FXRevaluationService,
@@ -48,6 +50,7 @@ export default {
   CashRegisterService,
   NoteContabilService,
   ValidateDocumentService,
+  AccountingService,
   FiscalClosureService,
   DepreciationCalculationService,
   FXRevaluationService,

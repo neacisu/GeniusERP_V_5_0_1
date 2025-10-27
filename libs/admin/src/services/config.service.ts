@@ -6,7 +6,7 @@
  */
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { configurations } from '../../../../shared/schema/admin.schema';
+import { configurations } from '@geniuserp/shared';
 import { and, eq, isNull, sql, like } from 'drizzle-orm';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import { v4 as uuidv4 } from 'uuid';
@@ -327,8 +327,7 @@ export class ConfigService {
       companyId?: string;
       userId?: string;
       moduleId?: string;
-    },
-    actorId: string
+    }
   ): Promise<boolean> {
     try {
       const { scope, companyId, userId, moduleId } = options;

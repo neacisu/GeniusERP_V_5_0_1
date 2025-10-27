@@ -15,7 +15,7 @@ export * from "./schema/cor.schema";
 export * from "./schema/settings.schema";
 
 // Export Accounting models for shared usage across the application
-
+export * from "./schema/accounting.schema";
 // Export Analytics models for shared usage across the application
 export * from "./schema/analytics.schema";
 export * from "./schema/predictive.schema";

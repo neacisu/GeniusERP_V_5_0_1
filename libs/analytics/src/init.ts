@@ -9,9 +9,6 @@ import { Express } from 'express';
 import { setupAnalyticsRoutes } from './routes/analytics.routes';
 import { setupBusinessIntelligenceRoutes } from './routes/business-intelligence.routes';
 import { setupPredictiveRoutes } from './routes/predictive.routes';
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { randomUUID } from 'crypto';
-import * as schema from '@geniuserp/shared';
 
 /**
  * Initialize the Analytics module

@@ -7,8 +7,9 @@
 
 import { Express } from 'express';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import * as schema from '@geniuserp/shared';
-import { DrizzleService } from '../../common/drizzle';
+// Import ONLY schema namespace, not the entire @geniuserp/shared package
+import { schema } from '@geniuserp/shared';
+import { DrizzleService } from '../../../apps/api/src/common/drizzle';
 
 // Import the AI module function to initialize services and routes
 import { initAiModule } from './ai.module';
