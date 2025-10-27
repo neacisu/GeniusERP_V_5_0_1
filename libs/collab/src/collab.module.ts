@@ -5,10 +5,10 @@
  * notes, internal discussions, assignment tracking, and status monitoring.
  */
 
-import { Express, Request, Response, Router } from 'express';
+import { Express, Router } from 'express';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { createModuleLogger } from "@common/logger/loki-logger";
-import { DrizzleService } from '../../common/drizzle/drizzle.service';
+import { DrizzleService } from '@common/drizzle/drizzle.service';
 import { initCollabServices } from './init';
 import { initCollabControllers } from './controllers/init';
 import { TaskService } from './services/task.service';
@@ -16,9 +16,9 @@ import { NoteService } from './services/note.service';
 import { CommunityService } from './services/community.service';
 import { ActivityService } from './services/activity.service';
 import { NotificationService } from './services/notification.service';
-import { ThreadDrizzleService } from '../../common/drizzle/modules/collab/thread-service';
-import { MessageDrizzleService } from '../../common/drizzle/modules/collab/message-service';
-import { WatcherDrizzleService } from '../../common/drizzle/modules/collab/watcher-service';
+import { ThreadDrizzleService } from '@common/drizzle/modules/collab/thread-service';
+import { MessageDrizzleService } from '@common/drizzle/modules/collab/message-service';
+import { WatcherDrizzleService } from '@common/drizzle/modules/collab/watcher-service';
 import { TaskController } from './controllers/task.controller';
 import { NoteController } from './controllers/note.controller';
 import { ThreadController } from './controllers/thread.controller';
@@ -29,8 +29,8 @@ import { ActivityController } from './controllers/activity.controller';
 import { NotificationController } from './controllers/notification.controller';
 import { registerTaskRoutes } from './routes/task.routes';
 import { registerNoteRoutes } from './routes/note.routes';
-import { AuthGuard } from '../auth/guards/auth.guard';
-import { JwtAuthMode } from '../auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 
 // Create a logger instance for the collaboration module
 const logger = createModuleLogger('CollabModule');
@@ -188,7 +188,7 @@ export class CollabModule {
         });
       } catch (error) {
         logger.error(`Error in POST /api/collab/task: ${error instanceof Error ? error.message : String(error)}`);
-        res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ message: 'Internal server error' });
       }
     });
     

@@ -9,7 +9,7 @@ import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import { NoteService } from '../services/note.service';
-import { insertCollaborationNoteSchema } from '../../../../shared/schema/collaboration.schema';
+import { insertCollaborationNoteSchema } from '@geniuserp/shared/schema/collaboration.schema';
 
 // Create module logger
 const logger = createModuleLogger('CollabNoteController');
@@ -44,10 +44,10 @@ export class NoteController {
       const companyId = req.user.companyId;
       
       // Parse query parameters
-      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 50;
-      const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
-      const sortOrder = req.query.sortOrder === 'asc' ? 'asc' : 'desc';
-      const isPinned = req.query.isPinned ? req.query.isPinned === 'true' : undefined;
+      const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 50;
+      const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;
+      const sortOrder = req.query['sortOrder'] === 'asc' ? 'asc' : 'desc';
+      const isPinned = req.query['isPinned'] ? req.query['isPinned'] === 'true' : undefined;
       
       // Get all notes for the company with pagination
       const result = await this.noteService.getAllNotesByCompany(companyId, {
@@ -81,7 +81,7 @@ export class NoteController {
       
       res.status(200).json(notes);
     } catch (error) {
-      logger.error(`Error in GET /notes/task/:taskId - TaskId: ${req.params.taskId}`, error);
+      logger.error(`Error in GET /notes/task/:taskId - TaskId: ${req.params['taskId']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
@@ -108,7 +108,7 @@ export class NoteController {
       
       res.status(200).json(note);
     } catch (error) {
-      logger.error(`Error in GET /notes/:id - NoteId: ${req.params.id}`, error);
+      logger.error(`Error in GET /notes/:id - NoteId: ${req.params['id']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
@@ -184,7 +184,7 @@ export class NoteController {
         return;
       }
       
-      logger.error(`Error in PATCH /notes/:id - NoteId: ${req.params.id}`, error);
+      logger.error(`Error in PATCH /notes/:id - NoteId: ${req.params['id']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
@@ -212,7 +212,7 @@ export class NoteController {
       
       res.status(204).send();
     } catch (error) {
-      logger.error(`Error in DELETE /notes/:id - NoteId: ${req.params.id}`, error);
+      logger.error(`Error in DELETE /notes/:id - NoteId: ${req.params['id']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }

@@ -25,6 +25,9 @@ import { settingsRouter } from '../../../../libs/settings/src/index';
 // Import Integrations routes
 import integrationsRouter from '../../../../libs/integrations/src/index';
 
+// Import Collaboration module
+import { CollabModule } from '../../../../libs/collab/src/index';
+
 // Import AI routes (individual routers)
 import {
   aiRouter,
@@ -131,6 +134,14 @@ export async function initializeModules(app: Express): Promise<void> {
   // ===== SETTINGS ROUTES =====
   app.use('/api/settings', settingsRouter);
   console.log('✅ Settings routes registered at /api/settings');
+  
+  // ===== COLLABORATION ROUTES =====
+  // Initialize and register the Collaboration module
+  const collabModule = CollabModule.getInstance();
+  collabModule.initialize();
+  collabModule.registerRoutes(app);
+  collabModule.start();
+  console.log('✅ Collaboration routes registered at /api/collaboration');
   
   console.log('🎉 All modules initialized successfully');
 }

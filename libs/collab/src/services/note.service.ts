@@ -9,7 +9,7 @@ import {
   collaborationNotes,
   NewCollaborationNote,
   CollaborationNote
-} from '../../../../shared/schema/collaboration.schema';
+} from '@geniuserp/shared/schema/collaboration.schema';
 import { randomUUID } from 'crypto';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import { DrizzleService } from "@common/drizzle/drizzle.service";

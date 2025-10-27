@@ -7,8 +7,8 @@
 import { Request, Response, Router } from 'express';
 import { ActivityService } from '../services/activity.service';
 import { createModuleLogger } from "@common/logger/loki-logger";
-import { AuthGuard } from '../../../modules/auth/guards/auth.guard';
-import { JwtAuthMode } from '../../../modules/auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 
 /**
  * Activity Controller Class

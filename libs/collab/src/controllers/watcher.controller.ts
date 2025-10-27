@@ -9,7 +9,7 @@ import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import { WatcherDrizzleService } from "@common/drizzle/modules/collab/watcher-service";
-import { insertTaskWatcherSchema } from '../../../../shared/schema/collaboration.schema';
+import { insertTaskWatcherSchema } from '@geniuserp/shared/schema/collaboration.schema';
 
 // Create module logger
 const logger = createModuleLogger('CollabWatcherController');
@@ -45,7 +45,7 @@ export class WatcherController {
       
       res.status(200).json(watchers);
     } catch (error) {
-      logger.error(`Error in GET /watchers/task/:taskId - TaskId: ${req.params.taskId}`, error);
+      logger.error(`Error in GET /watchers/task/:taskId - TaskId: ${req.params['taskId']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
@@ -117,7 +117,7 @@ export class WatcherController {
       
       res.status(204).send();
     } catch (error) {
-      logger.error(`Error in DELETE /watchers/:id - TaskId: ${req.params.id}`, error);
+      logger.error(`Error in DELETE /watchers/:id - TaskId: ${req.params['id']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }

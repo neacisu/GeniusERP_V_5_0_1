@@ -9,7 +9,7 @@ import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import { MessageDrizzleService } from "@common/drizzle/modules/collab/message-service";
-import { insertCollaborationMessageSchema } from '../../../../shared/schema/collaboration.schema';
+import { insertCollaborationMessageSchema } from '@geniuserp/shared/schema/collaboration.schema';
 
 // Create module logger
 const logger = createModuleLogger('CollabMessageController');
@@ -44,14 +44,14 @@ export class MessageController {
       const companyId = req.user.companyId;
       
       // Parse query parameters
-      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 20;
-      const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
+      const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 20;
+      const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;
       
       const messages = await this.messageService.getMessagesByThreadId(threadId, companyId, { limit, offset });
       
       res.status(200).json(messages);
     } catch (error) {
-      logger.error(`Error in GET /messages/thread/:threadId - ThreadId: ${req.params.threadId}`, error);
+      logger.error(`Error in GET /messages/thread/:threadId - ThreadId: ${req.params['threadId']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
@@ -78,7 +78,7 @@ export class MessageController {
       
       res.status(200).json(message);
     } catch (error) {
-      logger.error(`Error in GET /messages/:id - MessageId: ${req.params.id}`, error);
+      logger.error(`Error in GET /messages/:id - MessageId: ${req.params['id']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
@@ -154,7 +154,7 @@ export class MessageController {
         return;
       }
       
-      logger.error(`Error in PATCH /messages/:id - MessageId: ${req.params.id}`, error);
+      logger.error(`Error in PATCH /messages/:id - MessageId: ${req.params['id']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
@@ -182,7 +182,7 @@ export class MessageController {
       
       res.status(204).send();
     } catch (error) {
-      logger.error(`Error in DELETE /messages/:id - MessageId: ${req.params.id}`, error);
+      logger.error(`Error in DELETE /messages/:id - MessageId: ${req.params['id']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }

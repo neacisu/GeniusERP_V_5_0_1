@@ -5,7 +5,7 @@
  * including threads categorized for different purposes like resources, events, ideas, etc.
  */
 
-import { eq, and, sql, desc, asc, like, isNull, inArray } from "drizzle-orm";
+import { eq, and, sql, desc, asc, like } from "drizzle-orm";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { getDrizzleInstance } from "@common/drizzle/db";
 import { createModuleLogger } from "@common/logger/loki-logger";
@@ -14,7 +14,7 @@ import {
   collaborationMessages,
   CollaborationThread,
   NewCollaborationThread
-} from '../../../../shared/schema/collaboration.schema';
+} from '@geniuserp/shared/schema/collaboration.schema';
 import { ThreadService } from './thread.service';
 
 // Create a logger instance for the community service

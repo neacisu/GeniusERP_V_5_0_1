@@ -10,7 +10,7 @@ import { Request, Response, Router } from 'express';
 import { z } from 'zod';
 import { CommunityService, CommunityCategory } from '../services/community.service';
 import { createModuleLogger } from "@common/logger/loki-logger";
-import { insertCollaborationThreadSchema } from '../../../../shared/schema/collaboration.schema';
+import { insertCollaborationThreadSchema } from '@geniuserp/shared/schema/collaboration.schema';
 import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
 
@@ -139,7 +139,7 @@ export class CommunityController {
     try {
       const userId = req.user?.id;
       const companyId = req.user?.companyId;
-      const threadId = req.params.id;
+      const threadId = req.params['id'];
 
       if (!userId || !companyId) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -207,7 +207,7 @@ export class CommunityController {
     try {
       const userId = req.user?.id;
       const companyId = req.user?.companyId;
-      const threadId = req.params.id;
+      const threadId = req.params['id'];
 
       if (!userId || !companyId) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -254,7 +254,7 @@ export class CommunityController {
     try {
       const userId = req.user?.id;
       const companyId = req.user?.companyId;
-      const threadId = req.params.id;
+      const threadId = req.params['id'];
 
       if (!userId || !companyId) {
         return res.status(401).json({ message: 'Unauthorized' });

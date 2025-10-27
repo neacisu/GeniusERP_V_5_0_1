@@ -4,13 +4,12 @@
  * Handles HTTP requests related to threads in the Collaboration module.
  */
 import { Request, Response, Router } from 'express';
-import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import { ThreadDrizzleService } from "@common/drizzle/modules/collab/thread-service";
-import { insertCollaborationThreadSchema } from '../../../../shared/schema/collaboration.schema';
+import { insertCollaborationThreadSchema } from '@geniuserp/shared/schema/collaboration.schema';
 
 // Create module logger
 const logger = createModuleLogger('CollabThreadController');
@@ -45,8 +44,8 @@ export class ThreadController {
       const companyId = req.user.companyId;
       
       // Parse query parameters
-      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 20;
-      const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
+      const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 20;
+      const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;
       
       const { threads } = await this.threadService.getThreads(companyId, { limit, offset });
       
@@ -71,8 +70,8 @@ export class ThreadController {
       const companyId = req.user.companyId;
       
       // Parse query parameters
-      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 20;
-      const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
+      const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 20;
+      const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;
       
       // Since we don't have a direct task-thread relationship in the service,
       // we need to implement this. For now, we'll return a placeholder response.
@@ -81,7 +80,7 @@ export class ThreadController {
       });
       return;
     } catch (error) {
-      logger.error(`Error in GET /threads/task/:taskId - TaskId: ${req.params.taskId}`, error);
+      logger.error(`Error in GET /threads/task/:taskId - TaskId: ${req.params['taskId']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
@@ -108,7 +107,7 @@ export class ThreadController {
       
       res.status(200).json(thread);
     } catch (error) {
-      logger.error(`Error in GET /threads/:id - ThreadId: ${req.params.id}`, error);
+      logger.error(`Error in GET /threads/:id - ThreadId: ${req.params['id']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
@@ -184,7 +183,7 @@ export class ThreadController {
         return;
       }
       
-      logger.error(`Error in PATCH /threads/:id - ThreadId: ${req.params.id}`, error);
+      logger.error(`Error in PATCH /threads/:id - ThreadId: ${req.params['id']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
@@ -212,7 +211,7 @@ export class ThreadController {
       
       res.status(204).send();
     } catch (error) {
-      logger.error(`Error in DELETE /threads/:id - ThreadId: ${req.params.id}`, error);
+      logger.error(`Error in DELETE /threads/:id - ThreadId: ${req.params['id']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }

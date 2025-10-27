@@ -8,7 +8,7 @@ import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq, and } from 'drizzle-orm';
 import {
   taskWatchers
-} from '../../../../shared/schema/collaboration.schema';
+} from '@geniuserp/shared/schema/collaboration.schema';
 import { randomUUID } from 'crypto';
 import { createModuleLogger } from "@common/logger/loki-logger";
 

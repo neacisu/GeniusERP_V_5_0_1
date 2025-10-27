@@ -8,7 +8,7 @@
 import { Request, Response, Router } from 'express';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import { TaskService } from '../services/task.service';
-import { TaskStatus, TaskPriority } from '../../../../shared/schema/collaboration.schema';
+import { TaskStatus, TaskPriority } from '@geniuserp/shared/schema/collaboration.schema';
 
 /**
  * Interface for legacy task controller
@@ -25,7 +25,7 @@ export interface LegacyTaskController {
  * @returns A task controller instance with legacy interface
  */
 export function createTaskController(taskService: TaskService): LegacyTaskController {
-  const controller = new TaskController(taskService);
+  // const controller = new TaskController(taskService);  // Unused variable
   
   return {
     registerRoutes: (router) => {
