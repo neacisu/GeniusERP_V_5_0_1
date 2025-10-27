@@ -73,14 +73,23 @@ export async function setupVite(app: Express, server: Server) {
     appType: "custom",
   });
 
-  app.use(vite.middlewares);
+  // CRITICAL: Wrap Vite middlewares with API route check FIRST
+  // If we don't do this, vite.middlewares will intercept /api/ routes before they reach our handlers!
+  app.use((req, res, next) => {
+    // Skip Vite middleware entirely for API routes - let them pass to our API handlers
+    if (req.originalUrl.startsWith('/api/')) {
+      return next();
+    }
+    
+    // For non-API routes, delegate to Vite middleware
+    vite.middlewares(req, res, next);
+  });
   
-  // Catch-all route for SPA - ONLY serve HTML if Vite didn't handle the request
-  // IMPORTANT: This must NOT intercept API routes!
+  // Catch-all route for SPA - serve HTML for non-API routes that Vite didn't handle
   app.use((req, res, next) => {
     const url = req.originalUrl;
 
-    // Skip for API routes - let them pass through to registered API handlers
+    // Skip for API routes (should not reach here, but double-check)
     if (url.startsWith('/api/')) {
       return next();
     }
@@ -111,7 +120,7 @@ export async function setupVite(app: Express, server: Server) {
         let template = await fs.promises.readFile(clientTemplate, "utf-8");
         template = template.replace(
           `src="/src/main.tsx"`,
-          `src="/src/main.tsx?v=${Date.now()}`,
+          `src="/src/main.tsx?v=${Date.now()}"`,
         );
         const page = await vite.transformIndexHtml(url, template);
         res.status(200).set({ "Content-Type": "text/html" }).end(page);

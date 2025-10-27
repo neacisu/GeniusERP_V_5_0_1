@@ -12,7 +12,7 @@
   },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "dev": "nx run-many --target=serve --projects=api,web --parallel=2",
+    "dev": "nx serve api",
     "dev:api": "nx serve api",
     "dev:web": "nx serve web",
     "build": "nx run-many --target=build --all",

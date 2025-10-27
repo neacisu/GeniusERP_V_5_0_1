@@ -117,18 +117,18 @@ app.use('/templates', express.static('public/templates'));
 // TypeScript Errors Monitor - serve static files
 app.use('/tserrors', express.static('/var/www/html/TypeScriptErrors'));
 
-// Basic health check endpoint
-app.get('/health', (_req, res) => {
+// Basic health check endpoint - MUST be under /api/ prefix to avoid Vite interference
+app.get('/api/health', (_req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// SENTRY TEST - Simple error route
-app.get('/test-error', () => {
+// SENTRY TEST - Simple error route - MUST be under /api/ to avoid Vite interference
+app.get('/api/test-error', () => {
   throw new Error('🧪 TEST: This is a test error for Sentry!');
 });
 
-// Prometheus metrics endpoint
-app.get('/metrics', metricsHandler);
+// Prometheus metrics endpoint - MUST be under /api/ to avoid Vite interference
+app.get('/api/metrics', metricsHandler);
 
 // Sentry test routes (DOAR în development!)
 if (process.env['NODE_ENV'] === 'development') {

@@ -10,8 +10,7 @@ services:
       - ./libs:/app/libs
       - node_modules_volume:/app/node_modules
     ports:
-      - "${APP_PORT_FRONTEND}:${APP_PORT_FRONTEND}" # Frontend Vite
-      - "${APP_PORT_BACKEND}:${APP_PORT_BACKEND}" # API Backend
+      - "${APP_PORT_FRONTEND}:${APP_PORT_FRONTEND}" # Single port for both frontend (Vite) and backend (Express middleware mode)
     labels:
       - logging=promtail
       - logging_jobname=geniuserp-app
