@@ -6,7 +6,7 @@
  */
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { DrizzleService } from '../../common/drizzle/drizzle.service';
+import { DrizzleService } from '@common/drizzle/drizzle.service';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import { TaskService } from './services/task.service';
 import { NoteService } from './services/note.service';
