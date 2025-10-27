@@ -4,7 +4,7 @@
  * Service for managing collaboration notifications.
  */
 
-import { eq, and, desc, or, SQL, sql } from 'drizzle-orm';
+import { eq, and, desc, or, sql } from 'drizzle-orm';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { createModuleLogger } from "@common/logger/loki-logger";
 import { collaborationNotifications } from '@geniuserp/shared/schema/collaboration.schema';
@@ -154,9 +154,9 @@ export class NotificationService {
         const targetType = notification.sourceType?.toLowerCase() || 'task';
 
         // Extract sender info from metadata safely
-        const senderId = metadata.senderId || null;
-        const senderName = metadata.senderName || 'Unknown User';
-        const senderAvatar = metadata.senderAvatar || null;
+        const senderId = metadata['senderId'] || null;
+        const senderName = metadata['senderName'] || 'Unknown User';
+        const senderAvatar = metadata['senderAvatar'] || null;
 
         return {
           id: notification.id,

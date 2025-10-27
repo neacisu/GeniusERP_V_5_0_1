@@ -5,7 +5,7 @@
  * including threads categorized for different purposes like resources, events, ideas, etc.
  */
 
-import { eq, and, sql, desc, asc, like, isNull, inArray } from "drizzle-orm";
+import { eq, and, sql, desc, asc, like } from "drizzle-orm";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { getDrizzleInstance } from "@common/drizzle/db";
 import { createModuleLogger } from "@common/logger/loki-logger";
@@ -81,8 +81,8 @@ export class CommunityService {
     try {
       logger.info(`Getting community threads for company ${companyId} with options: ${JSON.stringify(options)}`);
       
-      const limit = options?.limit || 20;
-      const offset = options?.offset || 0;
+      // const limit = options?.limit || 20;  // Unused variable
+      // const offset = options?.offset || 0;  // Unused variable
       const category = options?.category;
       const search = options?.search;
       const sort = options?.sort || 'newest';

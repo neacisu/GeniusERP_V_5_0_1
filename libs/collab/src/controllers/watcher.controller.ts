@@ -39,13 +39,13 @@ export class WatcherController {
       }
       
       const { taskId } = req.params;
-      const companyId = req.user.companyId;
+      // const companyId = req.user.companyId;  // Unused variable
       
       const watchers = await this.watcherService.getWatchersByTaskId(taskId, companyId);
       
       res.status(200).json(watchers);
     } catch (error) {
-      logger.error(`Error in GET /watchers/task/:taskId - TaskId: ${req.params.taskId}`, error);
+      logger.error(`Error in GET /watchers/task/:taskId - TaskId: ${req.params['taskId']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
@@ -61,7 +61,7 @@ export class WatcherController {
       }
       
       const createdBy = req.user.id;
-      const companyId = req.user.companyId;
+      // const companyId = req.user.companyId;  // Unused variable
       
       // Validate request body
       const watcherSchema = insertTaskWatcherSchema.extend({
@@ -105,8 +105,8 @@ export class WatcherController {
       }
       
       const { id: taskId } = req.params;
-      const companyId = req.user.companyId;
-      const userId = req.user.id;
+      // const companyId = req.user.companyId;  // Unused variable
+      // const userId = req.user.id;  // Unused variable
       
       const success = await this.watcherService.removeWatcher(taskId, companyId, userId);
       
@@ -117,7 +117,7 @@ export class WatcherController {
       
       res.status(204).send();
     } catch (error) {
-      logger.error(`Error in DELETE /watchers/:id - TaskId: ${req.params.id}`, error);
+      logger.error(`Error in DELETE /watchers/:id - TaskId: ${req.params['id']}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }

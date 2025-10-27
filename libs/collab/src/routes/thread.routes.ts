@@ -31,22 +31,22 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
   app.get(BASE_PATH, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
-      const companyId = req.user.companyId;
+      // const companyId = req.user.companyId;  // Unused variable
       
       // Extract query parameters
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
-      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
-      const category = req.query.category as string | undefined;
-      const search = req.query.search as string | undefined;
-      const createdBy = req.query.createdBy as string | undefined;
-      const isPrivate = req.query.isPrivate !== undefined ? 
-        req.query.isPrivate === 'true' : undefined;
-      const isClosed = req.query.isClosed !== undefined ? 
-        req.query.isClosed === 'true' : undefined;
-      const sortBy = (req.query.sortBy as string) || 'lastMessageAt';
-      const sortOrder = (req.query.sortOrder as 'asc' | 'desc') || 'desc';
+      // const limit = req.query['limit'] ? parseInt(req.query['limit'] as string) : 20;  // Unused variable
+      // const offset = req.query['offset'] ? parseInt(req.query['offset'] as string) : 0;  // Unused variable
+      const category = req.query['category'] as string | undefined;
+      const search = req.query['search'] as string | undefined;
+      const createdBy = req.query['createdBy'] as string | undefined;
+      const isPrivate = req.query['isPrivate'] !== undefined ? 
+        req.query['isPrivate'] === 'true' : undefined;
+      const isClosed = req.query['isClosed'] !== undefined ? 
+        req.query['isClosed'] === 'true' : undefined;
+      const sortBy = (req.query['sortBy'] as string) || 'lastMessageAt';
+      const sortOrder = (req.query['sortOrder'] as 'asc' | 'desc') || 'desc';
       
       const result = await threadService.getThreads(companyId, {
         limit,
@@ -60,10 +60,10 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
         sortOrder
       });
       
-      res.status(200).json(result);
+      return res.status(200).json(result);
     } catch (error) {
       logger.error('Error in GET /api/collaboration/threads', { error });
-      res.status(500).json({ message: 'Internal server error' });
+      return res.status(500).json({ message: 'Internal server error' });
     }
   });
   
@@ -75,21 +75,21 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
   app.get(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       const { id } = req.params;
-      const companyId = req.user.companyId;
+      // const companyId = req.user.companyId;  // Unused variable
       
       const thread = await threadService.getThreadById(id, companyId);
       
       if (!thread) {
-        return res.status(404).json({ message: 'Thread not found' });
+        return return res.status(404).json({ message: 'Thread not found' });
       }
       
-      res.status(200).json(thread);
+      return res.status(200).json(thread);
     } catch (error) {
-      logger.error('Error in GET /api/collaboration/threads/:id', { error, threadId: req.params.id });
-      res.status(500).json({ message: 'Internal server error' });
+      logger.error('Error in GET /api/collaboration/threads/:id', { error, threadId: req.params['id'] });
+      return res.status(500).json({ message: 'Internal server error' });
     }
   });
   
@@ -101,10 +101,10 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
   app.post(BASE_PATH, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
-      const userId = req.user.id;
-      const companyId = req.user.companyId;
+      // const userId = req.user.id;  // Unused variable
+      // const companyId = req.user.companyId;  // Unused variable
       
       // Validate request body
       const threadSchema = insertCollaborationThreadSchema.extend({
@@ -120,14 +120,14 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
       
       const thread = await threadService.createThread(validatedData, userId);
       
-      res.status(201).json(thread);
+      return res.status(201).json(thread);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: 'Invalid thread data', errors: error.format() });
       }
       
       logger.error('Error in POST /api/collaboration/threads', { error });
-      res.status(500).json({ message: 'Internal server error' });
+      return res.status(500).json({ message: 'Internal server error' });
     }
   });
   
@@ -139,11 +139,11 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
   app.patch(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       const { id } = req.params;
-      const userId = req.user.id;
-      const companyId = req.user.companyId;
+      // const userId = req.user.id;  // Unused variable
+      // const companyId = req.user.companyId;  // Unused variable
       
       // Validate request body (partial updates allowed)
       const updateThreadSchema = insertCollaborationThreadSchema.partial();
@@ -151,14 +151,14 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
       
       const thread = await threadService.updateThread(id, companyId, validatedData, userId);
       
-      res.status(200).json(thread);
+      return res.status(200).json(thread);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: 'Invalid thread data', errors: error.format() });
       }
       
-      logger.error('Error in PATCH /api/collaboration/threads/:id', { error, threadId: req.params.id });
-      res.status(500).json({ message: 'Internal server error' });
+      logger.error('Error in PATCH /api/collaboration/threads/:id', { error, threadId: req.params['id'] });
+      return res.status(500).json({ message: 'Internal server error' });
     }
   });
   
@@ -170,21 +170,21 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
   app.delete(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       const { id } = req.params;
-      const companyId = req.user.companyId;
+      // const companyId = req.user.companyId;  // Unused variable
       
       const success = await threadService.deleteThread(id, companyId);
       
       if (!success) {
-        return res.status(404).json({ message: 'Thread not found' });
+        return return res.status(404).json({ message: 'Thread not found' });
       }
       
-      res.status(204).send();
+      return res.status(204).send();
     } catch (error) {
-      logger.error('Error in DELETE /api/collaboration/threads/:id', { error, threadId: req.params.id });
-      res.status(500).json({ message: 'Internal server error' });
+      logger.error('Error in DELETE /api/collaboration/threads/:id', { error, threadId: req.params['id'] });
+      return res.status(500).json({ message: 'Internal server error' });
     }
   });
 }

@@ -31,19 +31,19 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
   app.get(BASE_PATH, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
-      const companyId = req.user.companyId;
-      const threadId = req.query.threadId as string;
+      // const companyId = req.user.companyId;  // Unused variable
+      const threadId = req.query['threadId'] as string;
       
       if (!threadId) {
-        return res.status(400).json({ message: 'threadId query parameter is required' });
+        return return res.status(400).json({ message: 'threadId query parameter is required' });
       }
       
       // Extract query parameters
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
-      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
-      const sortOrder = (req.query.sortOrder as 'asc' | 'desc') || 'asc';
+      // const limit = req.query['limit'] ? parseInt(req.query['limit'] as string) : 50;  // Unused variable
+      // const offset = req.query['offset'] ? parseInt(req.query['offset'] as string) : 0;  // Unused variable
+      const sortOrder = (req.query['sortOrder'] as 'asc' | 'desc') || 'asc';
       
       const result = await messageService.getMessagesByThreadId(threadId, companyId, {
         limit,
@@ -51,10 +51,10 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
         sortOrder
       });
       
-      res.status(200).json(result);
+      return res.status(200).json(result);
     } catch (error) {
       logger.error('Error in GET /api/collaboration/messages', { error });
-      res.status(500).json({ message: 'Internal server error' });
+      return res.status(500).json({ message: 'Internal server error' });
     }
   });
   
@@ -66,17 +66,17 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
   app.get(`${BASE_PATH}/:id/replies`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       const { id } = req.params;
-      const companyId = req.user.companyId;
+      // const companyId = req.user.companyId;  // Unused variable
       
       const replies = await messageService.getReplies(id, companyId);
       
-      res.status(200).json(replies);
+      return res.status(200).json(replies);
     } catch (error) {
-      logger.error('Error in GET /api/collaboration/messages/:id/replies', { error, messageId: req.params.id });
-      res.status(500).json({ message: 'Internal server error' });
+      logger.error('Error in GET /api/collaboration/messages/:id/replies', { error, messageId: req.params['id'] });
+      return res.status(500).json({ message: 'Internal server error' });
     }
   });
   
@@ -88,21 +88,21 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
   app.get(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       const { id } = req.params;
-      const companyId = req.user.companyId;
+      // const companyId = req.user.companyId;  // Unused variable
       
       const message = await messageService.getMessageById(id, companyId);
       
       if (!message) {
-        return res.status(404).json({ message: 'Message not found' });
+        return return res.status(404).json({ message: 'Message not found' });
       }
       
-      res.status(200).json(message);
+      return res.status(200).json(message);
     } catch (error) {
-      logger.error('Error in GET /api/collaboration/messages/:id', { error, messageId: req.params.id });
-      res.status(500).json({ message: 'Internal server error' });
+      logger.error('Error in GET /api/collaboration/messages/:id', { error, messageId: req.params['id'] });
+      return res.status(500).json({ message: 'Internal server error' });
     }
   });
   
@@ -114,10 +114,10 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
   app.post(BASE_PATH, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
-      const userId = req.user.id;
-      const companyId = req.user.companyId;
+      // const userId = req.user.id;  // Unused variable
+      // const companyId = req.user.companyId;  // Unused variable
       
       // Validate request body
       const messageSchema = insertCollaborationMessageSchema.extend({
@@ -133,14 +133,14 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
       
       const message = await messageService.createMessage(validatedData, userId);
       
-      res.status(201).json(message);
+      return res.status(201).json(message);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: 'Invalid message data', errors: error.format() });
       }
       
       logger.error('Error in POST /api/collaboration/messages', { error });
-      res.status(500).json({ message: 'Internal server error' });
+      return res.status(500).json({ message: 'Internal server error' });
     }
   });
   
@@ -152,11 +152,11 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
   app.patch(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       const { id } = req.params;
-      const userId = req.user.id;
-      const companyId = req.user.companyId;
+      // const userId = req.user.id;  // Unused variable
+      // const companyId = req.user.companyId;  // Unused variable
       
       // Validate request body (partial updates allowed)
       const updateMessageSchema = insertCollaborationMessageSchema.partial();
@@ -164,14 +164,14 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
       
       const message = await messageService.updateMessage(id, companyId, validatedData, userId);
       
-      res.status(200).json(message);
+      return res.status(200).json(message);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: 'Invalid message data', errors: error.format() });
       }
       
-      logger.error('Error in PATCH /api/collaboration/messages/:id', { error, messageId: req.params.id });
-      res.status(500).json({ message: 'Internal server error' });
+      logger.error('Error in PATCH /api/collaboration/messages/:id', { error, messageId: req.params['id'] });
+      return res.status(500).json({ message: 'Internal server error' });
     }
   });
   
@@ -183,21 +183,21 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
   app.delete(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       const { id } = req.params;
-      const companyId = req.user.companyId;
+      // const companyId = req.user.companyId;  // Unused variable
       
       const success = await messageService.deleteMessage(id, companyId);
       
       if (!success) {
-        return res.status(404).json({ message: 'Message not found' });
+        return return res.status(404).json({ message: 'Message not found' });
       }
       
-      res.status(204).send();
+      return res.status(204).send();
     } catch (error) {
-      logger.error('Error in DELETE /api/collaboration/messages/:id', { error, messageId: req.params.id });
-      res.status(500).json({ message: 'Internal server error' });
+      logger.error('Error in DELETE /api/collaboration/messages/:id', { error, messageId: req.params['id'] });
+      return res.status(500).json({ message: 'Internal server error' });
     }
   });
 }
