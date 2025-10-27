@@ -170,6 +170,28 @@ app.use((req, res, next) => {
 // Create HTTP server
 const httpServer = createServer(app);
 
+// Graceful shutdown handler for tsx watch hot reload
+let isShuttingDown = false;
+const gracefulShutdown = (signal: string) => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  
+  appLogger.info(`Received ${signal}, shutting down gracefully...`);
+  httpServer.close(() => {
+    appLogger.info('HTTP server closed');
+    process.exit(0);
+  });
+  
+  // Force close after 10s
+  setTimeout(() => {
+    appLogger.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
 (async () => {
   try {
     // Simplified startup for debugging purposes
@@ -194,16 +216,6 @@ const httpServer = createServer(app);
       Sentry.setupExpressErrorHandler(app);
     }
 
-    // Error handling middleware for API routes
-    // This catches API errors BEFORE Vite's catch-all handler
-    app.use('/api/*', (err: any, _req: Request, res: Response, _next: NextFunction) => {
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-
-      appLogger.error('API Error handler', err, { status, message });
-      res.status(status).json({ message });
-    });
-
     // Setup Vite for frontend serving (dev & prod)
     // This MUST come AFTER API routes registration
     if (app.get("env") === "development") {
@@ -221,13 +233,22 @@ const httpServer = createServer(app);
       res.status(status).json({ message });
     });
 
-    // Start HTTP server on port 5000 (un singur port pentru tot)
-    const port = 5000;
-    httpServer.listen({
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    }, () => {
+    // Start HTTP server on configured port (from .env: APP_PORT_BACKEND)
+    const port = parseInt(process.env['APP_PORT_BACKEND'] || '5000');
+    
+    // Handle EADDRINUSE error gracefully (happens with tsx watch hot reload)
+    httpServer.on('error', (error: NodeJS.ErrnoException) => {
+      if (error.code === 'EADDRINUSE') {
+        appLogger.warn(`Port ${port} is already in use. This is normal with tsx watch hot reload. Skipping server start.`);
+        // Don't exit, just skip - the old server is still running
+        return;
+      }
+      // For other errors, log and exit
+      appLogger.error('Server error', error);
+      process.exit(1);
+    });
+    
+    httpServer.listen(port, "0.0.0.0", () => {
       appLogger.info(`Server is running on port ${port}`);
       log(`Server is running on port ${port}`); // Keep vite log too
     });
