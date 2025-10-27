@@ -81,8 +81,8 @@ export class CommunityService {
     try {
       logger.info(`Getting community threads for company ${companyId} with options: ${JSON.stringify(options)}`);
       
-      // const limit = options?.limit || 20;  // Unused variable
-      // const offset = options?.offset || 0;  // Unused variable
+      const limit = options?.limit || 20;
+      const offset = options?.offset || 0;
       const category = options?.category;
       const search = options?.search;
       const sort = options?.sort || 'newest';
