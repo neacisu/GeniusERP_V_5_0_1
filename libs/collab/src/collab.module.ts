@@ -29,8 +29,8 @@ import { ActivityController } from './controllers/activity.controller';
 import { NotificationController } from './controllers/notification.controller';
 import { registerTaskRoutes } from './routes/task.routes';
 import { registerNoteRoutes } from './routes/note.routes';
-import { AuthGuard } from '../auth/guards/auth.guard';
-import { JwtAuthMode } from '../auth/constants/auth-mode.enum';
+import { AuthGuard } from '@geniuserp/auth';
+import { JwtAuthMode } from '@geniuserp/auth';
 
 // Create a logger instance for the collaboration module
 const logger = createModuleLogger('CollabModule');
