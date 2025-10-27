@@ -233,8 +233,9 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
       res.status(status).json({ message });
     });
 
-    // Start HTTP server on configured port (from .env: APP_PORT_BACKEND)
-    const port = parseInt(process.env['APP_PORT_BACKEND'] || '5000');
+    // Start HTTP server on configured port (from .env)
+    // Single port for both frontend (Vite middleware) and backend API
+    const port = parseInt(process.env['APP_PORT_FRONTEND']!);
     
     // Handle EADDRINUSE error gracefully (happens with tsx watch hot reload)
     httpServer.on('error', (error: NodeJS.ErrnoException) => {
