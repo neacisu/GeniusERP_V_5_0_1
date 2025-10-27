@@ -9,7 +9,7 @@ import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import { NoteService } from '../services/note.service';
-import { insertCollaborationNoteSchema } from '../../../../shared/schema/collaboration.schema';
+import { insertCollaborationNoteSchema } from '@geniuserp/shared/schema/collaboration.schema';
 
 // Create module logger
 const logger = createModuleLogger('CollabNoteController');

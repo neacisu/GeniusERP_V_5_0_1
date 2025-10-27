@@ -9,7 +9,7 @@ import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import { MessageDrizzleService } from "@common/drizzle/modules/collab/message-service";
-import { insertCollaborationMessageSchema } from '../../../../shared/schema/collaboration.schema';
+import { insertCollaborationMessageSchema } from '@geniuserp/shared/schema/collaboration.schema';
 
 // Create module logger
 const logger = createModuleLogger('CollabMessageController');

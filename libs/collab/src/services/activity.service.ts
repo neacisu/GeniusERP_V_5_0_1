@@ -7,7 +7,7 @@
 import { eq, and, desc, sql, SQL, count } from 'drizzle-orm';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { createModuleLogger } from "@common/logger/loki-logger";
-import { collaborationActivities } from '../../../../shared/schema/collaboration.schema';
+import { collaborationActivities } from '@geniuserp/shared/schema/collaboration.schema';
 
 /**
  * Activity item type enum

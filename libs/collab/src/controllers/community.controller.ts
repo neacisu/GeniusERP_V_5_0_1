@@ -10,7 +10,7 @@ import { Request, Response, Router } from 'express';
 import { z } from 'zod';
 import { CommunityService, CommunityCategory } from '../services/community.service';
 import { createModuleLogger } from "@common/logger/loki-logger";
-import { insertCollaborationThreadSchema } from '../../../../shared/schema/collaboration.schema';
+import { insertCollaborationThreadSchema } from '@geniuserp/shared/schema/collaboration.schema';
 import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
 

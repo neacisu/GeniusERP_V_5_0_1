@@ -9,7 +9,7 @@ import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import { WatcherDrizzleService } from "@common/drizzle/modules/collab/watcher-service";
-import { insertTaskWatcherSchema } from '../../../../shared/schema/collaboration.schema';
+import { insertTaskWatcherSchema } from '@geniuserp/shared/schema/collaboration.schema';
 
 // Create module logger
 const logger = createModuleLogger('CollabWatcherController');

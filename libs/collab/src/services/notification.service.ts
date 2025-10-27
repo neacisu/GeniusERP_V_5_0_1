@@ -7,7 +7,7 @@
 import { eq, and, desc, or, SQL, sql } from 'drizzle-orm';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { createModuleLogger } from "@common/logger/loki-logger";
-import { collaborationNotifications } from '../../../../shared/schema/collaboration.schema';
+import { collaborationNotifications } from '@geniuserp/shared/schema/collaboration.schema';
 
 /**
  * Notification status types

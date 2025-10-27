@@ -10,7 +10,7 @@ import {
   collaborationThreads,
   NewCollaborationThread,
   CollaborationThread
-} from '../../../../shared/schema/collaboration.schema';
+} from '@geniuserp/shared/schema/collaboration.schema';
 import { randomUUID } from 'crypto';
 import { createModuleLogger } from "@common/logger/loki-logger";
 

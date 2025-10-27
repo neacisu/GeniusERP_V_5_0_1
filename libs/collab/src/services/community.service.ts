@@ -14,7 +14,7 @@ import {
   collaborationMessages,
   CollaborationThread,
   NewCollaborationThread
-} from '../../../../shared/schema/collaboration.schema';
+} from '@geniuserp/shared/schema/collaboration.schema';
 import { ThreadService } from './thread.service';
 
 // Create a logger instance for the community service

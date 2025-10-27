@@ -10,7 +10,7 @@ import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import { ThreadDrizzleService } from "@common/drizzle/modules/collab/thread-service";
-import { insertCollaborationThreadSchema } from '../../../../shared/schema/collaboration.schema';
+import { insertCollaborationThreadSchema } from '@geniuserp/shared/schema/collaboration.schema';
 
 // Create module logger
 const logger = createModuleLogger('CollabThreadController');

@@ -8,7 +8,7 @@ import { Express, Request, Response } from 'express';
 import { MessageService } from '../services/message.service';
 import { AuthGuard } from "@common/middleware/auth-guard";
 import { z } from 'zod';
-import { insertCollaborationMessageSchema } from '../../../../shared/schema/collaboration.schema';
+import { insertCollaborationMessageSchema } from '@geniuserp/shared/schema/collaboration.schema';
 import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Create a logger instance for the message routes
