@@ -13,13 +13,13 @@ import winston from 'winston';
 import LokiTransport from 'winston-loki';
 
 // Determine environment
-const isDevelopment = process.env.NODE_ENV === 'development';
-const LOG_LEVEL = process.env.LOG_LEVEL || (isDevelopment ? 'debug' : 'info');
+const isDevelopment = process.env['NODE_ENV'] === 'development';
+const LOG_LEVEL = process.env['LOG_LEVEL'] || (isDevelopment ? 'debug' : 'info');
 
 // Loki configuration - all from .env, no hardcoded fallbacks
-const LOKI_HOST = process.env.LOKI_HOST!;
+const LOKI_HOST = process.env['LOKI_HOST']!;
 const APP_NAME = 'geniuserp-app';
-const HOSTNAME = process.env.HOSTNAME || require('os').hostname();
+const HOSTNAME = process.env['HOSTNAME'] || require('os').hostname();
 
 // Custom format for console output
 const consoleFormat = winston.format.combine(
@@ -59,7 +59,7 @@ try {
       labels: {
         job: APP_NAME,
         hostname: HOSTNAME,
-        environment: process.env.NODE_ENV || 'development',
+        environment: process.env['NODE_ENV'] || 'development',
       },
       json: true,
       format: lokiFormat,
