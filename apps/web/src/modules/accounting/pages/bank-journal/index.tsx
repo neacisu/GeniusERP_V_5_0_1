@@ -394,7 +394,7 @@ export default function BankJournalPage() {
 
   // Fetch transaction journal entry
   const { data: journalEntry, isLoading: isLoadingJournal } = useQuery<TransactionJournalEntry[]>({
-    queryKey: ['/api/accounting/bank-transactions', selectedTransaction?.id, 'journal'],
+    queryKey: ['/api/accounting/bank-journal/bank-transactions', selectedTransaction?.id, 'journal'],
     enabled: !!selectedTransaction && isJournalDialogOpen && selectedTransaction.posted,
     // This is just for structure - we'll use actual API data in production
     placeholderData: [
@@ -1254,7 +1254,7 @@ export default function BankJournalPage() {
           
           try {
             // Update transaction with invoice reference
-            const response = await fetch(`/api/accounting/bank-transactions/${selectedForReconciliation.id}/reconcile`, {
+            const response = await fetch(`/api/accounting/bank-journal/bank-transactions/${selectedForReconciliation.id}/reconcile`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               credentials: 'include',
@@ -1310,7 +1310,7 @@ export default function BankJournalPage() {
               setIsSubmittingTransaction(true);
               
               try {
-                const response = await fetch('/api/accounting/bank-transactions', {
+                const response = await fetch('/api/accounting/bank-journal/bank-transactions', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   credentials: 'include',
@@ -1518,7 +1518,7 @@ export default function BankJournalPage() {
               setIsSubmittingTransaction(true);
               
               try {
-                const response = await fetch('/api/accounting/bank-transactions/transfer', {
+                const response = await fetch('/api/accounting/bank-journal/bank-transactions/transfer', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   credentials: 'include',
