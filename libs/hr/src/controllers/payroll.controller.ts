@@ -11,7 +11,7 @@ import { Router, Response } from 'express';
 import { PayrollService } from '../services/payroll.service';
 import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
-import { AuthenticatedRequest } from '../../../types/express';
+import { AuthenticatedRequest } from '@geniuserp/auth';
 import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Initialize logger
@@ -32,16 +32,18 @@ export class PayrollController {
   /**
    * Calculate payroll for a single employee
    */
-  async calculateEmployeePayroll(req: AuthenticatedRequest, res: Response) {
+  async calculateEmployeePayroll(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
       
       const { employeeId, year, month } = req.body;
       
       if (!req.user.companyId) {
-        return res.status(400).json({ error: 'Company ID is required' });
+        res.status(400).json({ error: 'Company ID is required' });
+        return;
       }
       
       const result = await this.payrollService.calculateEmployeePayroll(
@@ -62,16 +64,18 @@ export class PayrollController {
   /**
    * Process payroll for an entire company
    */
-  async processCompanyPayroll(req: AuthenticatedRequest, res: Response) {
+  async processCompanyPayroll(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
       
       const { year, month } = req.body;
       
       if (!req.user.companyId) {
-        return res.status(400).json({ error: 'Company ID is required' });
+        res.status(400).json({ error: 'Company ID is required' });
+        return;
       }
       
       const result = await this.payrollService.processCompanyPayroll(
@@ -91,16 +95,18 @@ export class PayrollController {
   /**
    * Get a payroll report for a specific month
    */
-  async getPayrollReport(req: AuthenticatedRequest, res: Response) {
+  async getPayrollReport(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
       
       const { year, month } = req.params;
       
       if (!req.user.companyId) {
-        return res.status(400).json({ error: 'Company ID is required' });
+        res.status(400).json({ error: 'Company ID is required' });
+        return;
       }
       
       const report = await this.payrollService.getPayrollReport(
@@ -119,15 +125,16 @@ export class PayrollController {
   /**
    * Get payroll history for a specific employee
    */
-  async getEmployeePayrollHistory(req: AuthenticatedRequest, res: Response) {
+  async getEmployeePayrollHistory(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
       
-      const employeeId = req.params.id;
-      const year = req.query.year ? parseInt(req.query.year as string) : undefined;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 12;
+      const employeeId = req.params['id'];
+      const year = req.query['year'] ? parseInt(req.query['year'] as string) : undefined;
+      const limit = req.query['limit'] ? parseInt(req.query['limit'] as string) : 12;
       
       const history = await this.payrollService.getEmployeePayrollHistory(
         employeeId,
@@ -145,16 +152,18 @@ export class PayrollController {
   /**
    * Export payroll data in various formats
    */
-  async exportPayroll(req: AuthenticatedRequest, res: Response) {
+  async exportPayroll(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
       
       const { year, month, format } = req.body;
       
       if (!req.user.companyId) {
-        return res.status(400).json({ error: 'Company ID is required' });
+        res.status(400).json({ error: 'Company ID is required' });
+        return;
       }
       
       const exportData = await this.payrollService.exportPayroll(
