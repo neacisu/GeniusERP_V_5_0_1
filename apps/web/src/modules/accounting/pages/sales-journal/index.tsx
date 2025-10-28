@@ -212,7 +212,7 @@ export default function SalesJournalPage() {
       });
       
       // Folosim apiRequest pentru a include automat token-ul de autentificare
-      const response = await apiRequest(`/api/accounting/sales/journal?${params}`);
+      const response = await apiRequest(`/api/accounting/sales-journal/journal?${params}`);
       return response.data || response;
     },
     enabled: mainSection === 'journal-report' && !!reportPeriodStart && !!reportPeriodEnd
@@ -220,7 +220,7 @@ export default function SalesJournalPage() {
 
   // Fetch sales invoices
   const { data: invoicesResponse, isLoading: isLoadingInvoices } = useQuery<{ data: SalesInvoice[]; total: number; page: number; limit: number }>({
-    queryKey: ['/api/accounting/sales/invoices', dateRange],
+    queryKey: ['/api/accounting/sales-journal/invoices', dateRange],
     // This is just for structure - we'll use actual API data in production
     placeholderData: { data: [
       { 
@@ -395,7 +395,7 @@ export default function SalesJournalPage() {
   
   // Legacy query kept for reference - not used anymore since lines come with invoice
   const { data: _legacyInvoiceItems } = useQuery<InvoiceItem[]>({
-    queryKey: ['/api/accounting/sales/invoices', selectedInvoice?.id, 'items'],
+    queryKey: ['/api/accounting/sales-journal/invoices', selectedInvoice?.id, 'items'],
     enabled: false, // Disabled - we use invoice.lines instead
     // This is just for structure - we'll use actual API data in production
     placeholderData: [
@@ -430,7 +430,7 @@ export default function SalesJournalPage() {
 
   // Fetch invoice journal entry
   const { data: journalEntry, isLoading: isLoadingJournal } = useQuery<InvoiceJournalEntry[]>({
-    queryKey: ['/api/accounting/sales/invoices', selectedInvoice?.id, 'journal'],
+    queryKey: ['/api/accounting/sales-journal/invoices', selectedInvoice?.id, 'journal'],
     enabled: !!selectedInvoice && isJournalDialogOpen && selectedInvoice.posted,
     // This is just for structure - we'll use actual API data in production
     placeholderData: [
@@ -1283,7 +1283,7 @@ export default function SalesJournalPage() {
                         periodStart: format(reportPeriodStart, 'yyyy-MM-dd'),
                         periodEnd: format(reportPeriodEnd, 'yyyy-MM-dd')
                       });
-                      window.open(`/api/accounting/sales/journal/export/excel?${params}`, '_blank');
+                      window.open(`/api/accounting/sales-journal/export/excel?${params}`, '_blank');
                     }}
                   >
                     <FileSpreadsheet className="h-4 w-4 mr-2" />
@@ -1297,7 +1297,7 @@ export default function SalesJournalPage() {
                         periodStart: format(reportPeriodStart, 'yyyy-MM-dd'),
                         periodEnd: format(reportPeriodEnd, 'yyyy-MM-dd')
                       });
-                      window.open(`/api/accounting/sales/journal/export/pdf?${params}`, '_blank');
+                      window.open(`/api/accounting/sales-journal/export/pdf?${params}`, '_blank');
                     }}
                   >
                     <FileText className="h-4 w-4 mr-2" />
