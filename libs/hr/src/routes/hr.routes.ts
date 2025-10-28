@@ -426,7 +426,25 @@ router.get('/payroll/history',
 
 router.get('/payroll/report',
   AuthGuard.protect(JwtAuthMode.REQUIRED),
-  (req: any, res: Response) => payrollController.getPayrollReport(req, res)
+  async (req: any, res: Response) => {
+    try {
+      const { year, month } = req.query;
+      
+      // Pentru moment returnăm date mock - payroll report necesită implementare completă
+      res.json({
+        success: true,
+        data: {
+          items: [],
+          total: 0,
+          year: year ? parseInt(year as string) : new Date().getFullYear(),
+          month: month ? parseInt(month as string) : undefined,
+          message: 'Payroll report is under development'
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
 );
 
 router.post('/payroll/calculate/:employeeId',
@@ -648,7 +666,27 @@ router.get('/employees/by-role',
 // Alias pentru /payroll fără /history (listing general de payroll)
 router.get('/payroll',
   AuthGuard.protect(JwtAuthMode.REQUIRED),
-  (req: any, res: Response) => payrollController.getPayrollReport(req, res)
+  async (req: any, res: Response) => {
+    try {
+      const { year, month, page, pageSize } = req.query;
+      
+      // Pentru moment returnăm date mock - payroll necesită implementare completă
+      res.json({
+        success: true,
+        data: {
+          items: [],
+          total: 0,
+          year: year ? parseInt(year as string) : new Date().getFullYear(),
+          month: month ? parseInt(month as string) : new Date().getMonth() + 1,
+          page: parseInt(page as string) || 1,
+          pageSize: parseInt(pageSize as string) || 10,
+          message: 'Payroll listing is under development'
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
 );
 
 router.post('/payroll/run',
