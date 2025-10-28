@@ -5,12 +5,13 @@
  * It supports Romanian-specific commission structures and integrates with invoicing.
  */
 
-import { commissionStructures, employeeCommissions } from '../schema';
+import { commissionStructures, employeeCommissions, employees } from '@geniuserp/shared/schema/hr.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditService } from '@geniuserp/audit';
 import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";
-import { sql } from 'drizzle-orm';
+import { sql, eq, and, gte, lte, desc, count, sum } from 'drizzle-orm';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { getDrizzle } from "@common/drizzle";
 
 export enum CommissionType {
   FIXED = 'fixed',                   // Fixed amount per sale
@@ -31,15 +32,12 @@ export enum CommissionStatus {
 export class CommissionService {
   private drizzle: DrizzleService;
   private auditService: AuditService;
+  private db: any;
 
   constructor() {
     this.drizzle = new DrizzleService();
     this.auditService = new AuditService();
-  }
-  
-  // Backward compatibility getter
-  private get db() {
-    return this.drizzle.db;
+    this.db = getDrizzle();
   }
   
   /**
@@ -92,46 +90,52 @@ export class CommissionService {
     status?: string | null
   ) {
     try {
-      let query = `
-        SELECT 
-          c.*,
-          e.first_name as employee_first_name,
-          e.last_name as employee_last_name,
-          s.name as structure_name,
-          s.type as structure_type
-        FROM hr_employee_commissions c
-        LEFT JOIN hr_employees e ON c.employee_id = e.id
-        LEFT JOIN hr_commission_structures s ON c.structure_id = s.id
-        WHERE c.company_id = $1
-      `;
+      // Build WHERE conditions dynamically
+      const conditions = [eq(employeeCommissions.companyId, companyId)];
       
-      const params: any[] = [companyId];
-      let paramIndex = 2;
-      
-      // Add year filter if provided
       if (year) {
-        query += ` AND EXTRACT(YEAR FROM c.created_at) = $${paramIndex++}`;
-        params.push(year);
+        conditions.push(sql`EXTRACT(YEAR FROM ${employeeCommissions.createdAt}) = ${year}`);
       }
       
-      // Add month filter if provided
       if (month) {
-        query += ` AND EXTRACT(MONTH FROM c.created_at) = $${paramIndex++}`;
-        params.push(month);
+        conditions.push(sql`EXTRACT(MONTH FROM ${employeeCommissions.createdAt}) = ${month}`);
       }
       
-      // Add status filter if provided and not 'all'
       if (status && status.toLowerCase() !== 'all') {
-        query += ` AND c.status = $${paramIndex++}`;
-        params.push(status);
+        conditions.push(eq(employeeCommissions.status, status));
       }
       
-      // Order by newest first
-      query += ` ORDER BY c.created_at DESC`;
+      // Query using Drizzle ORM with JOINs
+      const commissions = await this.db
+        .select({
+          // Commission fields
+          id: employeeCommissions.id,
+          companyId: employeeCommissions.companyId,
+          employeeId: employeeCommissions.employeeId,
+          commissionStructureId: employeeCommissions.commissionStructureId,
+          year: employeeCommissions.year,
+          month: employeeCommissions.month,
+          targetAmount: employeeCommissions.targetAmount,
+          achievedAmount: employeeCommissions.achievedAmount,
+          calculatedCommission: employeeCommissions.calculatedCommission,
+          finalCommissionAmount: employeeCommissions.finalCommissionAmount,
+          status: employeeCommissions.status,
+          createdAt: employeeCommissions.createdAt,
+          updatedAt: employeeCommissions.updatedAt,
+          // Employee fields
+          employeeFirstName: employees.firstName,
+          employeeLastName: employees.lastName,
+          // Structure fields
+          structureName: commissionStructures.name,
+          structureType: commissionStructures.structureType
+        })
+        .from(employeeCommissions)
+        .leftJoin(employees, eq(employeeCommissions.employeeId, employees.id))
+        .leftJoin(commissionStructures, eq(employeeCommissions.commissionStructureId, commissionStructures.id))
+        .where(and(...conditions))
+        .orderBy(desc(employeeCommissions.createdAt));
       
-      const commissions = await this.drizzle.executeQuery(query, params);
-      
-      return commissions.rows || [];
+      return commissions || [];
     } catch (error: any) {
       console.error('Error retrieving company commissions:', error);
       throw new Error(`Failed to retrieve commissions: ${error.message}`);
@@ -785,32 +789,28 @@ export class CommissionService {
    */
   async getCommissionSummary(companyId: string, year: number, month?: number) {
     try {
-      let dateFilter: string;
-      const params: any[] = [companyId];
+      // Build WHERE conditions
+      const conditions = [
+        eq(employeeCommissions.companyId, companyId),
+        sql`EXTRACT(YEAR FROM ${employeeCommissions.createdAt}) = ${year}`
+      ];
       
       if (month) {
-        dateFilter = `
-          EXTRACT(YEAR FROM created_at) = $2 AND 
-          EXTRACT(MONTH FROM created_at) = $3
-        `;
-        params.push(year, month);
-      } else {
-        dateFilter = `EXTRACT(YEAR FROM created_at) = $2`;
-        params.push(year);
+        conditions.push(sql`EXTRACT(MONTH FROM ${employeeCommissions.createdAt}) = ${month}`);
       }
       
-      const summary = await this.db.execute(
-        `SELECT 
-          status,
-          COUNT(*) as count,
-          SUM(commission_amount) as total_amount
-         FROM hr_employee_commissions
-         WHERE company_id = $1 AND ${dateFilter}
-         GROUP BY status`,
-        params
-      );
+      // Query using Drizzle ORM with GROUP BY
+      const summary = await this.db
+        .select({
+          status: employeeCommissions.status,
+          count: count(employeeCommissions.id),
+          totalAmount: sql<number>`COALESCE(SUM(CAST(${employeeCommissions.finalCommissionAmount} AS numeric)), 0)`
+        })
+        .from(employeeCommissions)
+        .where(and(...conditions))
+        .groupBy(employeeCommissions.status);
       
-      return summary.rows || [];
+      return summary || [];
     } catch (error: any) {
       console.error('Error retrieving commission summary:', error);
       throw new Error(`Failed to retrieve commission summary: ${error.message}`);
