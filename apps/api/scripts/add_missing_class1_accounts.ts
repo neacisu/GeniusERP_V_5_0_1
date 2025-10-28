@@ -1,12 +1,23 @@
 import { db } from '../db';
-import { syntheticAccounts } from '../../shared/schema';
+import { syntheticAccounts, accountGroups } from '../../shared/schema';
 import { v4 as uuidv4 } from 'uuid';
 import { eq } from 'drizzle-orm';
 
 /**
  * Script to add missing synthetic accounts from Class 1
  * Based on the provided file in attached_assets
+ * 
+ * SECURITATE: UUID-uri grupuri sunt obținute dinamic din DB, NU hardcodate
  */
+
+// Mapare grupuri după cod (fără UUID hardcodat)
+const accountGroupMapping: Record<string, string> = {
+  '10': 'Group 10',
+  '14': 'Group 14',
+  '15': 'Group 15',
+  '16': 'Group 16',
+  '12': 'Group 12'
+};
 
 const missingAccounts = [
   {
@@ -14,112 +25,112 @@ const missingAccounts = [
     name: 'Capital subscris nevărsat',
     accountFunction: 'P',
     grade: 2,
-    groupId: '870ec668-7432-408e-bf49-8b1fd3555045', // Group 10
+    groupCode: '10', // Va fi rezolvat la group ID din DB
   },
   {
     code: '1015',
     name: 'Patrimoniul regiei',
     accountFunction: 'P',
     grade: 2,
-    groupId: '870ec668-7432-408e-bf49-8b1fd3555045', // Group 10
+    groupCode: '10',
   },
   {
     code: '1031',
     name: 'Beneficii acordate angajaţilor sub forma instrumentelor de capitaluri proprii',
     accountFunction: 'P',
     grade: 2,
-    groupId: '870ec668-7432-408e-bf49-8b1fd3555045', // Group 10
+    groupCode: '10',
   },
   {
     code: '1044',
     name: 'Prime de conversie a obligaţiunilor în acţiuni',
     accountFunction: 'P',
     grade: 2,
-    groupId: '870ec668-7432-408e-bf49-8b1fd3555045', // Group 10
+    groupCode: '10',
   },
   {
     code: '1495',
     name: 'Pierderi rezultate din reorganizări',
     accountFunction: 'A',
     grade: 2,
-    groupId: 'cb712ed6-202a-4310-a70f-f24802cc8623', // Group 14
+    groupCode: '14',
   },
   {
     code: '1496',
     name: 'Pierderi rezultate din reorganizări de societăţi',
     accountFunction: 'A',
     grade: 2,
-    groupId: 'cb712ed6-202a-4310-a70f-f24802cc8623', // Group 14
+    groupCode: '14',
   },
   {
     code: '1498',
     name: 'Alte pierderi legate de instrumentele de capitaluri proprii',
     accountFunction: 'A',
     grade: 2,
-    groupId: 'cb712ed6-202a-4310-a70f-f24802cc8623', // Group 14
+    groupCode: '14',
   },
   {
     code: '1512',
     name: 'Provizioane pentru garanţii acordate clienţilor',
     accountFunction: 'P',
     grade: 2,
-    groupId: '7a989227-9a51-4012-8b36-ccaaafe27784', // Group 15
+    groupCode: '15',
   },
   {
     code: '1514',
     name: 'Provizioane pentru restructurare',
     accountFunction: 'P',
     grade: 2,
-    groupId: '7a989227-9a51-4012-8b36-ccaaafe27784', // Group 15
+    groupCode: '15',
   },
   {
     code: '1515',
     name: 'Provizioane pentru pensii şi obligaţii similare',
     accountFunction: 'P',
     grade: 2,
-    groupId: '7a989227-9a51-4012-8b36-ccaaafe27784', // Group 15
+    groupCode: '15',
   },
   {
     code: '1516',
     name: 'Provizioane pentru impozite',
     accountFunction: 'P',
     grade: 2,
-    groupId: '7a989227-9a51-4012-8b36-ccaaafe27784', // Group 15
+    groupCode: '15',
   },
   {
     code: '1685',
     name: 'Dobânzi aferente datoriilor faţă de entităţile afiliate',
     accountFunction: 'P',
     grade: 2,
-    groupId: '278bf79d-081d-4bc8-bdda-1a4df58c1c55', // Group 16
+    groupCode: '16',
   },
   {
     code: '1686',
     name: 'Dobânzi aferente datoriilor faţă de entităţile asociate şi entităţile controlate în comun',
     accountFunction: 'P',
     grade: 2,
-    groupId: '278bf79d-081d-4bc8-bdda-1a4df58c1c55', // Group 16
+    groupCode: '16',
   },
   {
     code: '1687',
     name: 'Dobânzi aferente altor împrumuturi şi datorii asimilate',
     accountFunction: 'P',
     grade: 2,
-    groupId: '278bf79d-081d-4bc8-bdda-1a4df58c1c55', // Group 16
+    groupCode: '16',
   },
   {
     code: '1691',
     name: 'Prime privind rambursarea obligaţiunilor',
     accountFunction: 'A',
     grade: 2,
-    groupId: '278bf79d-081d-4bc8-bdda-1a4df58c1c55', // Group 16
+    groupCode: '16',
   },
   {
     code: '1692',
     name: 'Prime privind rambursarea altor datorii',
     accountFunction: 'A',
     grade: 2,
-    groupId: '278bf79d-081d-4bc8-bdda-1a4df58c1c55', // Group 16
+    groupCode: '16',
   },
   // Additional accounts not mentioned in the data we extracted
   {
@@ -127,33 +138,48 @@ const missingAccounts = [
     name: 'Rezerve din reevaluare',
     accountFunction: 'P',
     grade: 2,
-    groupId: '870ec668-7432-408e-bf49-8b1fd3555045', // Group 10
+    groupCode: '10',
   },
   {
     code: '1671',
     name: 'Alte împrumuturi şi datorii asimilate',
     accountFunction: 'P',
     grade: 2,
-    groupId: '278bf79d-081d-4bc8-bdda-1a4df58c1c55', // Group 16
+    groupCode: '16',
   },
   {
     code: '1211',
     name: 'Profit sau pierdere',
     accountFunction: 'B',
     grade: 2,
-    groupId: '105da8d9-f558-45b3-babe-b2df6db97e87', // Group 12
+    groupCode: '12',
   },
   {
     code: '1291',
     name: 'Repartizarea profitului',
     accountFunction: 'A',
     grade: 2,
-    groupId: '105da8d9-f558-45b3-babe-b2df6db97e87', // Group 12
+    groupCode: '12',
   }
 ];
 
 async function addMissingClass1Accounts() {
   console.log('Starting to add missing Class 1 accounts...');
+  console.log('SECURITATE: Obțin UUID-uri grupuri din DB, NU hardcodate\n');
+  
+  // Obține toate grupurile din DB pentru mapping
+  const groups = await db.select().from(accountGroups);
+  const groupCodeToId: Record<string, string> = {};
+  
+  for (const group of groups) {
+    // Extrage codul grupului din nume (ex: "Group 10" -> "10")
+    const match = group.name?.match(/Group (\d+)/);
+    if (match) {
+      groupCodeToId[match[1]] = group.id;
+    }
+  }
+  
+  console.log(`✓ Mapare grupuri găsite: ${Object.keys(groupCodeToId).length} grupuri\n`);
   
   let successCount = 0;
   let errorCount = 0;
@@ -171,6 +197,14 @@ async function addMissingClass1Accounts() {
         continue;
       }
       
+      // Rezolvă groupCode la groupId din DB
+      const groupId = groupCodeToId[account.groupCode];
+      if (!groupId) {
+        console.error(`❌ Group ${account.groupCode} nu a fost găsit în DB pentru account ${account.code}`);
+        errorCount++;
+        continue;
+      }
+      
       // Insert the account
       await db.insert(syntheticAccounts).values({
         id: uuidv4(),
@@ -178,7 +212,7 @@ async function addMissingClass1Accounts() {
         name: account.name,
         accountFunction: account.accountFunction,
         grade: account.grade,
-        groupId: account.groupId,
+        groupId: groupId, // Rezolvat dinamic din DB, NU hardcodat
         description: `Romanian Chart of Accounts - Synthetic Account ${account.code}`
       });
       

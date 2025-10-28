@@ -679,7 +679,7 @@ export default function ShopifyIntegrationPage() {
                       </AccordionTrigger>
                       <AccordionContent>
                         <div className="rounded-md bg-muted p-2 font-mono text-sm">
-                          https://api.erp.ro/webhook/shopify/products
+                          {import.meta.env['VITE_APP_URL'] || window.location.origin}/webhook/shopify/products
                         </div>
                         <p className="text-xs text-muted-foreground mt-2">
                           Evenimentele acceptate: product/create, product/update, product/delete
@@ -697,7 +697,7 @@ export default function ShopifyIntegrationPage() {
                       </AccordionTrigger>
                       <AccordionContent>
                         <div className="rounded-md bg-muted p-2 font-mono text-sm">
-                          https://api.erp.ro/webhook/shopify/orders
+                          {import.meta.env['VITE_APP_URL'] || window.location.origin}/webhook/shopify/orders
                         </div>
                         <p className="text-xs text-muted-foreground mt-2">
                           Evenimentele acceptate: order/create, order/update, order/cancelled, order/fulfilled
@@ -715,7 +715,7 @@ export default function ShopifyIntegrationPage() {
                       </AccordionTrigger>
                       <AccordionContent>
                         <div className="rounded-md bg-muted p-2 font-mono text-sm">
-                          https://api.erp.ro/webhook/shopify/customers
+                          {import.meta.env['VITE_APP_URL'] || window.location.origin}/webhook/shopify/customers
                         </div>
                         <p className="text-xs text-muted-foreground mt-2">
                           Evenimentele acceptate: customer/create, customer/update, customer/delete

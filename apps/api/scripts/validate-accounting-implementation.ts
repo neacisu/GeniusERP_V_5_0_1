@@ -12,6 +12,7 @@ import { JournalNumberingService } from '../modules/accounting/services/journal-
 import { GeneralJournalPDFService } from '../modules/accounting/services/general-journal-pdf.service';
 import { GeneralJournalExcelService } from '../modules/accounting/services/general-journal-excel.service';
 import { AccountingTemplatesService } from '../modules/accounting/services/accounting-templates.service';
+import { companies as companiesTable } from '@geniuserp/shared/schema';
 
 /**
  * Rezultat validare
@@ -34,6 +35,8 @@ class AccountingValidationSuite {
   private pdfService: GeneralJournalPDFService;
   private excelService: GeneralJournalExcelService;
   private templatesService: AccountingTemplatesService;
+  private db = getClient();
+  private testCompanyId: string | null = null;
 
   constructor() {
     this.journalService = new JournalService();
@@ -42,6 +45,27 @@ class AccountingValidationSuite {
     this.pdfService = new GeneralJournalPDFService();
     this.excelService = new GeneralJournalExcelService();
     this.templatesService = new AccountingTemplatesService();
+  }
+  
+  /**
+   * Obține company ID pentru teste din DB (NU hardcodat)
+   */
+  private async getTestCompanyId(): Promise<string> {
+    if (this.testCompanyId) {
+      return this.testCompanyId;
+    }
+    
+    const companies = await this.db.select({ id: companiesTable.id })
+      .from(companiesTable)
+      .limit(1);
+    
+    if (!companies.length) {
+      throw new Error('Nu există companii în DB pentru validare. Rulează seed-urile mai întâi.');
+    }
+    
+    this.testCompanyId = companies[0].id;
+    console.log(`✓ Folosesc company ID din DB pentru teste`);
+    return this.testCompanyId;
   }
 
   /**
@@ -76,7 +100,7 @@ class AccountingValidationSuite {
     console.log('📝 Testare numerotare jurnale...');
 
     try {
-      const testCompanyId = '7196288d-7314-4512-8b67-2c82449b5465';
+      const testCompanyId = await this.getTestCompanyId();
       const testDate = new Date('2025-01-15');
 
       // Test generare număr jurnal
@@ -128,7 +152,7 @@ class AccountingValidationSuite {
     console.log('📅 Testare perioade contabile...');
 
     try {
-      const testCompanyId = '7196288d-7314-4512-8b67-2c82449b5465';
+      const testCompanyId = await this.getTestCompanyId();
       const testDate = new Date('2025-01-15');
 
       // Test validare perioadă deschisă
@@ -171,8 +195,9 @@ class AccountingValidationSuite {
     console.log('📊 Testare rapoarte Registru Jurnal...');
 
     try {
+      const testCompanyId = await this.getTestCompanyId();
       const testOptions = {
-        companyId: '7196288d-7314-4512-8b67-2c82449b5465',
+        companyId: testCompanyId,
         companyName: 'Test Company SRL',
         startDate: new Date('2025-01-01'),
         endDate: new Date('2025-01-31'),
@@ -213,9 +238,10 @@ class AccountingValidationSuite {
     console.log('📋 Testare note contabile manuale...');
 
     try {
+      const testCompanyId = await this.getTestCompanyId();
       // Test creare notă echilibrată
       const testEntry = {
-        companyId: '7196288d-7314-4512-8b67-2c82449b5465',
+        companyId: testCompanyId,
         type: LedgerEntryType.GENERAL,
         amount: 1000,
         description: 'Test notă contabilă - validare echilibrare',
@@ -282,8 +308,9 @@ class AccountingValidationSuite {
     console.log('📝 Testare șabloane contabile...');
 
     try {
+      const testCompanyId = await this.getTestCompanyId();
       // Test obținere șabloane
-      const templates = await this.templatesService.getTemplatesForCompany('7196288d-7314-4512-8b67-2c82449b5465');
+      const templates = await this.templatesService.getTemplatesForCompany(testCompanyId);
       
       const hasDepreciationTemplate = templates.some(t => t.category === 'depreciation');
       const hasAccrualTemplate = templates.some(t => t.category === 'accrual');
