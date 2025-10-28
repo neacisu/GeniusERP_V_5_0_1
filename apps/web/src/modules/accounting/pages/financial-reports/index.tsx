@@ -131,7 +131,7 @@ export default function FinancialReportsPage() {
 
   // Fetch reports by type and period
   const { data: reports, isLoading: isLoadingReports, refetch: refetchReports } = useQuery<Report[]>({
-    queryKey: ['/api/accounting/financial-reports', activeTab, selectedPeriod, dateRange],
+    queryKey: ['/api/accounting/financial-reports/financial-reports', activeTab, selectedPeriod, dateRange],
     // This is just for structure - we'll use actual API data in production
     placeholderData: [
       { 
