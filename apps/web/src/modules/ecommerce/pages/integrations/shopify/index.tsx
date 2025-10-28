@@ -5,8 +5,7 @@
  * between the ERP system and a Shopify online store.
  */
 
-import React, { useState } from 'react';
-import { EcommerceModuleLayout } from '../../../components/common/EcommerceModuleLayout';
+import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -58,22 +57,18 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { 
   AlertCircle, 
   CheckCircle,
-  XCircle,
   RefreshCw,
   Store,
   ArrowRightLeft,
   Settings,
   Key,
-  Play,
   Clock,
-  Calendar,
   Database,
   ShoppingCart,
   Tags,
   Users,
   BarChart3,
   FileCode,
-  Upload,
   Download,
   History,
   InfoIcon,

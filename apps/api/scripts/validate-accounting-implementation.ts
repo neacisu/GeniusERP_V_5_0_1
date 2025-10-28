@@ -5,13 +5,13 @@
  * Test suite pentru Note Contabile și Registrul Jurnal
  */
 
-import { getClient } from '../common/drizzle';
-import { JournalService, LedgerEntryType } from '../modules/accounting/services/journal.service';
-import { AccountingPeriodsService } from '../modules/accounting/services/accounting-periods.service';
-import { JournalNumberingService } from '../modules/accounting/services/journal-numbering.service';
-import { GeneralJournalPDFService } from '../modules/accounting/services/general-journal-pdf.service';
-import { GeneralJournalExcelService } from '../modules/accounting/services/general-journal-excel.service';
-import { AccountingTemplatesService } from '../modules/accounting/services/accounting-templates.service';
+import { getDrizzle } from '@common/drizzle';
+import { LedgerEntryType } from '@geniuserp/accounting/services/journal.service';
+import { AccountingPeriodsService } from '@geniuserp/accounting/services/accounting-periods.service';
+import { JournalNumberingService } from '@geniuserp/accounting/services/journal-numbering.service';
+import { GeneralJournalPDFService } from '@geniuserp/accounting/services/general-journal-pdf.service';
+import { GeneralJournalExcelService } from '@geniuserp/accounting/services/general-journal-excel.service';
+import { AccountingTemplatesService } from '@geniuserp/accounting/services/accounting-templates.service';
 import { companies as companiesTable } from '@geniuserp/shared/schema';
 
 /**
@@ -29,17 +29,15 @@ interface ValidationResult {
  */
 class AccountingValidationSuite {
   private results: ValidationResult[] = [];
-  private journalService: JournalService;
   private periodsService: AccountingPeriodsService;
   private numberingService: JournalNumberingService;
   private pdfService: GeneralJournalPDFService;
   private excelService: GeneralJournalExcelService;
   private templatesService: AccountingTemplatesService;
-  private db = getClient();
+  private db = getDrizzle();
   private testCompanyId: string | null = null;
 
   constructor() {
-    this.journalService = new JournalService();
     this.periodsService = new AccountingPeriodsService();
     this.numberingService = new JournalNumberingService();
     this.pdfService = new GeneralJournalPDFService();
@@ -65,7 +63,7 @@ class AccountingValidationSuite {
     
     this.testCompanyId = companies[0].id;
     console.log(`✓ Folosesc company ID din DB pentru teste`);
-    return this.testCompanyId;
+    return this.testCompanyId!; // Non-null assertion - verificat mai sus că există
   }
 
   /**
@@ -195,16 +193,17 @@ class AccountingValidationSuite {
     console.log('📊 Testare rapoarte Registru Jurnal...');
 
     try {
-      const testCompanyId = await this.getTestCompanyId();
-      const testOptions = {
-        companyId: testCompanyId,
-        companyName: 'Test Company SRL',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-01-31'),
-        detailLevel: 'detailed' as const,
-        includeReversals: true,
-        responsiblePersonName: 'Test Accountant'
-      };
+      // const testCompanyId = await this.getTestCompanyId();
+      // Opțiuni pentru teste viitoare de generare rapoarte
+      // const testOptions = {
+      //   companyId: testCompanyId,
+      //   companyName: 'Test Company SRL',
+      //   startDate: new Date('2025-01-01'),
+      //   endDate: new Date('2025-01-31'),
+      //   detailLevel: 'detailed' as const,
+      //   includeReversals: true,
+      //   responsiblePersonName: 'Test Accountant'
+      // };
 
       // Test generare PDF - simulat (nu creăm fișierul efectiv)
       const pdfTest = this.pdfService !== undefined;
@@ -312,9 +311,9 @@ class AccountingValidationSuite {
       // Test obținere șabloane
       const templates = await this.templatesService.getTemplatesForCompany(testCompanyId);
       
-      const hasDepreciationTemplate = templates.some(t => t.category === 'depreciation');
-      const hasAccrualTemplate = templates.some(t => t.category === 'accrual');
-      const hasProvisionTemplate = templates.some(t => t.category === 'provision');
+      const hasDepreciationTemplate = templates.some((t: any) => t.category === 'depreciation');
+      const hasAccrualTemplate = templates.some((t: any) => t.category === 'accrual');
+      const hasProvisionTemplate = templates.some((t: any) => t.category === 'provision');
 
       // Test aplicare șablon simulat
       const templateExists = templates.length > 0;

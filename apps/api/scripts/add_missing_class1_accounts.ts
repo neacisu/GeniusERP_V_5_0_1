@@ -1,7 +1,9 @@
-import { db } from '../db';
-import { syntheticAccounts, accountGroups } from '../../shared/schema';
+import { getDrizzle } from '@common/drizzle';
+import { syntheticAccounts, accountGroups } from '@geniuserp/shared/schema';
 import { v4 as uuidv4 } from 'uuid';
 import { eq } from 'drizzle-orm';
+
+const db = getDrizzle();
 
 /**
  * Script to add missing synthetic accounts from Class 1
@@ -9,15 +11,6 @@ import { eq } from 'drizzle-orm';
  * 
  * SECURITATE: UUID-uri grupuri sunt obținute dinamic din DB, NU hardcodate
  */
-
-// Mapare grupuri după cod (fără UUID hardcodat)
-const accountGroupMapping: Record<string, string> = {
-  '10': 'Group 10',
-  '14': 'Group 14',
-  '15': 'Group 15',
-  '16': 'Group 16',
-  '12': 'Group 12'
-};
 
 const missingAccounts = [
   {
