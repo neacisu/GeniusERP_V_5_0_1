@@ -77,8 +77,8 @@ export default function AuthPage() {
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "admin", // Pre-completat pentru dezvoltare
-      password: "admin", // Pre-completat pentru dezvoltare
+      username: "", // NU hardcoda niciodată credențiale
+      password: "", // NU hardcoda niciodată credențiale
     },
   });
 

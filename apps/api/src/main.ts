@@ -62,13 +62,30 @@ app.use(helmet({
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
 }));
 
-// CORS configuration - Allow frontend on port 5000 (Docker network and localhost)
-const allowedOrigins = process.env['ALLOWED_ORIGINS']?.split(',') || [
-  'http://localhost:5000',
-  'http://0.0.0.0:5000',
-  'http://frontend:5000', // Docker network
-  'http://localhost:3000' // Legacy support
-];
+// CORS configuration - Folosește CORS_ORIGINS din .ENV
+// Construiește default origins dinamic din ENV (ZERO hardcoding)
+const FRONTEND_PORT = process.env['VITE_FRONTEND_PORT'] || process.env['APP_PORT_FRONTEND'];
+const LEGACY_PORT = process.env['LEGACY_FRONTEND_PORT']; // Pentru backwards compatibility
+
+if (!FRONTEND_PORT && process.env['NODE_ENV'] !== 'production') {
+  appLogger.warn('VITE_FRONTEND_PORT nu este configurat - CORS poate să nu funcționeze corect!');
+}
+
+const DEFAULT_ORIGINS = [
+  FRONTEND_PORT ? `http://localhost:${FRONTEND_PORT}` : null,
+  FRONTEND_PORT ? `http://0.0.0.0:${FRONTEND_PORT}` : null,
+  FRONTEND_PORT ? `http://frontend:${FRONTEND_PORT}` : null,
+  LEGACY_PORT ? `http://localhost:${LEGACY_PORT}` : null,
+].filter(Boolean) as string[];
+
+const allowedOrigins = process.env['CORS_ORIGINS']
+  ? process.env['CORS_ORIGINS'].split(',').map(origin => origin.trim())
+  : (() => {
+      appLogger.warn('CORS_ORIGINS nu este configurat în .ENV - folosesc default-uri construite din VITE_FRONTEND_PORT');
+      appLogger.warn(`Default origins: ${DEFAULT_ORIGINS.join(', ')}`);
+      appLogger.warn('În producție, setează CORS_ORIGINS explicit pentru securitate!');
+      return DEFAULT_ORIGINS;
+    })();
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -213,8 +230,33 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
     });
 
     // Start HTTP server on configured port (from .env)
-    // Backend API server on separate port
-    const port = parseInt(process.env['APP_PORT_BACKEND'] || process.env['APP_PORT_FRONTEND'] || '5001');
+    // Backend API server - PORT trebuie să fie în .ENV!
+    const envPort = process.env['APP_PORT_BACKEND'] || process.env['PORT'] || process.env['VITE_BACKEND_PORT'];
+    
+    if (!envPort) {
+      const fallbackPort = process.env['NODE_ENV'] === 'production' 
+        ? null  // În producție NU permitem fallback
+        : process.env['APP_PORT_FRONTEND'] || '5001'; // Development fallback din ENV
+      
+      if (!fallbackPort) {
+        appLogger.error('CRITICAL: PORT nu este configurat în .ENV și NODE_ENV=production!');
+        appLogger.error('Setează APP_PORT_BACKEND sau PORT în .env!');
+        process.exit(1);
+      }
+      
+      appLogger.warn(`PORT nu este configurat în .ENV - folosesc fallback din APP_PORT_FRONTEND: ${fallbackPort}`);
+      appLogger.warn('Setează APP_PORT_BACKEND în .env pentru control explicit!');
+    }
+    
+    // Niciun port hardcodat - totul din ENV!
+    const finalPort = envPort || (process.env['NODE_ENV'] !== 'production' ? process.env['APP_PORT_FRONTEND'] : null);
+    
+    if (!finalPort) {
+      appLogger.error('CRITICAL: Niciun port configurat în .ENV!');
+      process.exit(1);
+    }
+    
+    const port = parseInt(finalPort);
     
     // Handle EADDRINUSE error gracefully (happens with tsx watch hot reload)
     httpServer.on('error', (error: NodeJS.ErrnoException) => {

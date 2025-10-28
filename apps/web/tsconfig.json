@@ -15,7 +15,12 @@
     "strict": true,
     "target": "ES2022",
     "types": ["vite/client", "node"],
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@shared/*": ["../../libs/shared/src/*"]
+    }
   },
   "include": ["src/**/*", "index.html"],
   "references": [{ "path": "./tsconfig.node.json" }]

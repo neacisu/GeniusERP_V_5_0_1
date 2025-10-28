@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react';
+import { logger } from './utils/security-logger';
 
 /**
  * Inițializează Sentry pentru tracking-ul erorilor în frontend
@@ -6,17 +7,16 @@ import * as Sentry from '@sentry/react';
  */
 export function initializeSentry(): void {
   // Verifică dacă VITE_SENTRY_DSN este configurat
-  if (!import.meta.env.VITE_SENTRY_DSN) {
-    console.warn('⚠️  VITE_SENTRY_DSN nu este configurat - Sentry error tracking disabled');
-    console.warn('   Pentru a activa Sentry, configurează VITE_SENTRY_DSN în fișierul .env');
-    console.warn('   Vizitează https://sentry.io pentru a crea un cont și a obține DSN-ul');
+  if (!import.meta.env['VITE_SENTRY_DSN']) {
+    logger.warn('VITE_SENTRY_DSN nu este configurat - Sentry error tracking disabled');
+    logger.info('Pentru a activa Sentry, configurează VITE_SENTRY_DSN în fișierul .env');
     return;
   }
 
-  console.log('🔍 Inițializare Sentry error tracking (Frontend)...');
+  logger.info('Inițializare Sentry error tracking (Frontend)');
 
   Sentry.init({
-    dsn: import.meta.env.VITE_SENTRY_DSN,
+    dsn: import.meta.env['VITE_SENTRY_DSN'],
     environment: import.meta.env.MODE,
     
     // Integrations (API v10+)
@@ -42,7 +42,7 @@ export function initializeSentry(): void {
     replaysOnErrorSampleRate: 1.0, // 100% din sesiunile cu erori
 
     // Release tracking
-    release: import.meta.env.VITE_APP_VERSION || '1.0.0',
+    release: import.meta.env['VITE_APP_VERSION'] || '1.0.0',
     
     // Send default PII (Personal Identifiable Information) like IP address
     // Recommended by Sentry for better error context
@@ -65,21 +65,23 @@ export function initializeSentry(): void {
     beforeSend(event, hint) {
       // În development, afișează erorile în consolă
       if (import.meta.env.DEV) {
-        console.error('Sentry captured error:', hint.originalException || hint.syntheticException);
+        logger.error('Sentry captured error', { 
+          error: hint.originalException || hint.syntheticException 
+        });
       }
       
       return event;
     },
   });
 
-  console.log('✅ Sentry error tracking activat (Frontend)');
+  logger.info('Sentry error tracking activat (Frontend)');
 }
 
 /**
  * Helper pentru capturarea manuală a excepțiilor în frontend
  */
 export function captureException(error: Error, context?: Record<string, any>): void {
-  if (!import.meta.env.VITE_SENTRY_DSN) {
+  if (!import.meta.env['VITE_SENTRY_DSN']) {
     return; // Sentry not configured
   }
 
@@ -91,16 +93,16 @@ export function captureException(error: Error, context?: Record<string, any>): v
       });
 
       // Set user if present
-      if (context.userId) {
-        scope.setUser({ id: String(context.userId) });
+      if (context['userId']) {
+        scope.setUser({ id: String(context['userId']) });
       }
 
       // Set tags for better filtering
-      if (context.module) {
-        scope.setTag('module', context.module);
+      if (context['module']) {
+        scope.setTag('module', context['module']);
       }
-      if (context.operation) {
-        scope.setTag('operation', context.operation);
+      if (context['operation']) {
+        scope.setTag('operation', context['operation']);
       }
     }
 
@@ -116,7 +118,7 @@ export function captureMessage(
   level: 'fatal' | 'error' | 'warning' | 'info' | 'debug' = 'info',
   context?: Record<string, any>
 ): void {
-  if (!import.meta.env.VITE_SENTRY_DSN) {
+  if (!import.meta.env['VITE_SENTRY_DSN']) {
     return;
   }
 
@@ -140,7 +142,7 @@ export function addBreadcrumb(
   data?: Record<string, any>,
   level: 'fatal' | 'error' | 'warning' | 'info' | 'debug' = 'info'
 ): void {
-  if (!import.meta.env.VITE_SENTRY_DSN) {
+  if (!import.meta.env['VITE_SENTRY_DSN']) {
     return;
   }
 
@@ -161,7 +163,7 @@ export function setUserContext(user: {
   email?: string;
   username?: string;
 }): void {
-  if (!import.meta.env.VITE_SENTRY_DSN) {
+  if (!import.meta.env['VITE_SENTRY_DSN']) {
     return;
   }
 
@@ -176,7 +178,7 @@ export function setUserContext(user: {
  * Clear user context (logout)
  */
 export function clearUserContext(): void {
-  if (!import.meta.env.VITE_SENTRY_DSN) {
+  if (!import.meta.env['VITE_SENTRY_DSN']) {
     return;
   }
 

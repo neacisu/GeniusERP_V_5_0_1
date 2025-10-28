@@ -8,6 +8,8 @@
  * while providing rich debugging information when needed.
  */
 
+import { maskSensitiveData } from '@/lib/utils/security-logger';
+
 // Log levels in order of increasing severity
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -52,8 +54,9 @@ class Logger {
     this.timers = new Map();
     
     // Default configuration
+    // Folosește import.meta.env pentru Vite (browser), nu process.env
     this.config = {
-      minLevel: (process.env.NODE_ENV === 'production') ? 'warn' : 'debug',
+      minLevel: import.meta.env.PROD ? 'warn' : 'debug',
       enableConsole: true,
       includeTimestamp: true,
       ...config
@@ -134,6 +137,7 @@ class Logger {
 
   /**
    * Format and output log entry to console
+   * Obfuscă automat date sensibile din context
    */
   private consoleOutput(level: LogLevel, entry: any): void {
     const { timestamp, module, message, context } = entry;
@@ -163,9 +167,12 @@ class Logger {
         consoleMethod = console.log;
     }
     
+    // Obfuscă date sensibile din context
+    const maskedContext = context ? maskSensitiveData(context) : context;
+    
     // Output the log entry
-    if (context && Object.keys(context).length > 0) {
-      consoleMethod(`${prefix} ${message}`, context);
+    if (maskedContext && Object.keys(maskedContext).length > 0) {
+      consoleMethod(`${prefix} ${message}`, maskedContext);
     } else {
       consoleMethod(`${prefix} ${message}`);
     }

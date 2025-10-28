@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest, getCompanyId } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useEffect } from 'react';
+import { logger, maskUUID } from '@/lib/utils/security-logger';
 import { 
   Task, 
   Thread, 
@@ -74,13 +75,13 @@ export default function useCollabApi() {
   // Initialize the auth status
   useEffect(() => {
     if (user) {
-      console.log('useCollabApi: User is authenticated', { 
-        userId: user.id,
-        companyId: user.companyId,
+      logger.debug('useCollabApi: User is authenticated', { 
+        userId: maskUUID(user.id),
+        companyId: maskUUID(user.companyId),
         hasToken: !!localStorage.getItem('user')
       });
     } else {
-      console.warn('useCollabApi: User is not authenticated');
+      logger.warn('useCollabApi: User is not authenticated');
     }
   }, [user]);
 
@@ -93,7 +94,7 @@ export default function useCollabApi() {
       queryKey: ['/api/collaboration/tasks', options],
       queryFn: async () => {
         try {
-          console.log('TASK DEBUG: Starting task fetch process...');
+          logger.debug('Starting task fetch process');
           
           // Try to get user data from localStorage first to avoid potential HTML response errors
           let companyId: string | null = null;
@@ -102,26 +103,26 @@ export default function useCollabApi() {
             if (userData) {
               const parsedUser = JSON.parse(userData);
               companyId = parsedUser.companyId || null;
-              console.log('TASK DEBUG: Found company ID in localStorage:', companyId);
+              logger.debug('Found company ID in localStorage', { companyId: companyId ? maskUUID(companyId) : null });
             }
           } catch (e) {
-            console.warn('TASK DEBUG: Error parsing user data from localStorage', e);
+            logger.warn('Error parsing user data from localStorage', { error: e });
           }
           
           // If we don't have a company ID from localStorage, try the API
           if (!companyId) {
             try {
-              console.log('TASK DEBUG: Getting user information from API...');
+              logger.debug('Getting user information from API');
               const userResponse = await apiRequest<any>('/api/auth/user');
               
               if (userResponse && userResponse.companyId) {
                 companyId = userResponse.companyId;
-                console.log('TASK DEBUG: Got company ID from API:', companyId);
+                logger.debug('Got company ID from API', { companyId: maskUUID(companyId) });
               } else {
-                console.error('TASK DEBUG: No company ID in user response:', userResponse);
+                logger.error('No company ID in user response');
               }
             } catch (error) {
-              console.error('TASK DEBUG: Error fetching user data from API:', error);
+              logger.error('Error fetching user data from API', { error });
               // If we've received an error from the user API, force a login state reset
               queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
               throw new Error('Authentication problem: Unable to fetch user information');
@@ -130,11 +131,11 @@ export default function useCollabApi() {
           
           // If we still don't have a company ID, we can't proceed
           if (!companyId) {
-            console.error('TASK DEBUG: No company ID available for tasks query after all attempts');
+            logger.error('No company ID available for tasks query after all attempts');
             throw new Error('User info not available or missing company ID');
           }
           
-          console.log('TASK DEBUG: Fetching tasks with company ID:', companyId);
+          logger.debug('Fetching tasks with company ID', { companyId: maskUUID(companyId) });
           
           // Prepare request with company ID header
           const requestOptions = {
@@ -146,14 +147,14 @@ export default function useCollabApi() {
             params: options // Add query params from options
           };
           
-          console.log('TASK DEBUG: Sending request with options:', JSON.stringify(requestOptions, null, 2));
+          logger.debug('Sending tasks request');
           
           // Make the API request for tasks
           const result = await apiRequest<{ tasks: Task[]; pagination: Pagination }>('/api/collaboration/tasks', requestOptions);
           
           // Process and return the results
           if (!result) {
-            console.error('TASK DEBUG: Tasks response is null or undefined');
+            logger.error('Tasks response is null or undefined');
             return { 
               tasks: [], 
               pagination: { 
@@ -166,7 +167,7 @@ export default function useCollabApi() {
           }
           
           if (!result.tasks) {
-            console.error('TASK DEBUG: Tasks array is missing from response:', result);
+            logger.error('Tasks array is missing from response');
             return { 
               tasks: [], 
               pagination: { 
@@ -178,10 +179,10 @@ export default function useCollabApi() {
             };
           }
           
-          console.log(`TASK DEBUG: Tasks loaded successfully: ${result.tasks.length} tasks retrieved`);
+          logger.debug('Tasks loaded successfully', { count: result.tasks.length });
           return result;
         } catch (error) {
-          console.error('TASK DEBUG: Failed to load tasks - ERROR:', error);
+          logger.error('Failed to load tasks', { error });
           // Return empty results instead of throwing to prevent UI crashes
           return { 
             tasks: [], 
@@ -263,12 +264,12 @@ export default function useCollabApi() {
       queryKey: ['/api/collaboration/threads', options],
       queryFn: async () => {
         try {
-          console.log('THREAD DEBUG: Starting thread fetch process...');
+          logger.debug('Starting thread fetch process');
           
           // Try to get company ID for request header
           const companyId = getCompanyId();
           if (!companyId) {
-            console.error('THREAD DEBUG: No company ID available for threads query');
+            logger.error('No company ID available for threads query');
             return { 
               threads: [], 
               pagination: { 
@@ -289,7 +290,7 @@ export default function useCollabApi() {
           });
           
           if (!result || !result.threads) {
-            console.error('THREAD DEBUG: Invalid response structure');
+            logger.error('Invalid threads response structure');
             return { 
               threads: [], 
               pagination: { 
@@ -301,10 +302,10 @@ export default function useCollabApi() {
             };
           }
           
-          console.log(`THREAD DEBUG: Threads loaded successfully: ${result.threads.length} threads`);
+          logger.debug('Threads loaded successfully', { count: result.threads.length });
           return result;
         } catch (error) {
-          console.error('THREAD DEBUG: Error loading threads:', error);
+          logger.error('Error loading threads', { error });
           return { 
             threads: [], 
             pagination: { 
@@ -386,12 +387,12 @@ export default function useCollabApi() {
       queryKey: ['/api/collaboration/community', options],
       queryFn: async () => {
         try {
-          console.log('COMMUNITY DEBUG: Starting community threads fetch process...');
+          logger.debug('Starting community threads fetch process');
           
           // Try to get company ID for request header
           const companyId = getCompanyId();
           if (!companyId) {
-            console.error('COMMUNITY DEBUG: No company ID available for community query');
+            logger.error('No company ID available for community query');
             return { 
               threads: [], 
               pagination: { 
@@ -412,7 +413,7 @@ export default function useCollabApi() {
           });
           
           if (!result || !result.threads) {
-            console.error('COMMUNITY DEBUG: Invalid response structure');
+            logger.error('Invalid community response structure');
             return { 
               threads: [], 
               pagination: { 
@@ -424,10 +425,10 @@ export default function useCollabApi() {
             };
           }
           
-          console.log(`COMMUNITY DEBUG: Community threads loaded successfully: ${result.threads.length} threads`);
+          logger.debug('Community threads loaded successfully', { count: result.threads.length });
           return result;
         } catch (error) {
-          console.error('COMMUNITY DEBUG: Error loading community threads:', error);
+          logger.error('Error loading community threads', { error });
           return { 
             threads: [], 
             pagination: { 
@@ -481,7 +482,7 @@ export default function useCollabApi() {
       queryKey: ['/api/collaboration/tasks', { recent: true, limit }],
       queryFn: async () => {
         try {
-          console.log('TASK DEBUG: Starting recent tasks fetch process...');
+          logger.debug('Starting recent tasks fetch process');
           
           // Try to get user data from localStorage first to avoid potential HTML response errors
           let companyId: string | null = null;
@@ -490,26 +491,26 @@ export default function useCollabApi() {
             if (userData) {
               const parsedUser = JSON.parse(userData);
               companyId = parsedUser.companyId || null;
-              console.log('TASK DEBUG: Found company ID in localStorage for recent tasks:', companyId);
+              logger.debug('Found company ID in localStorage for recent tasks', { companyId: companyId ? maskUUID(companyId) : null });
             }
           } catch (e) {
-            console.warn('TASK DEBUG: Error parsing user data from localStorage for recent tasks', e);
+            logger.warn('Error parsing user data from localStorage for recent tasks', { error: e });
           }
           
           // If we don't have a company ID from localStorage, try the API
           if (!companyId) {
             try {
-              console.log('TASK DEBUG: Getting user information from API for recent tasks...');
+              logger.debug('Getting user information from API for recent tasks');
               const userResponse = await apiRequest<any>('/api/auth/user');
               
               if (userResponse && userResponse.companyId) {
                 companyId = userResponse.companyId;
-                console.log('TASK DEBUG: Got company ID from API for recent tasks:', companyId);
+                logger.debug('Got company ID from API for recent tasks', { companyId: maskUUID(companyId) });
               } else {
-                console.error('TASK DEBUG: No company ID in user response for recent tasks:', userResponse);
+                logger.error('No company ID in user response for recent tasks');
               }
             } catch (error) {
-              console.error('TASK DEBUG: Error fetching user data from API for recent tasks:', error);
+              logger.error('Error fetching user data from API for recent tasks', { error });
               // If we've received an error from the user API, force a login state reset
               queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
               throw new Error('Authentication problem: Unable to fetch user information');
@@ -518,11 +519,11 @@ export default function useCollabApi() {
           
           // If we still don't have a company ID, we can't proceed
           if (!companyId) {
-            console.error('TASK DEBUG: No company ID available for recent tasks query after all attempts');
+            logger.error('No company ID available for recent tasks query after all attempts');
             throw new Error('User info not available or missing company ID');
           }
           
-          console.log('TASK DEBUG: Fetching recent tasks with company ID:', companyId);
+          logger.debug('Fetching recent tasks with company ID', { companyId: maskUUID(companyId) });
           
           // Create a properly formatted request with company ID
           const result = await apiRequest<{ 
@@ -545,10 +546,10 @@ export default function useCollabApi() {
             }
           });
           
-          console.log('TASK DEBUG: Recent tasks loaded successfully');
+          logger.debug('Recent tasks loaded successfully');
           return result;
         } catch (error) {
-          console.error('TASK DEBUG: Failed to load recent tasks:', error);
+          logger.error('Failed to load recent tasks', { error });
           // Return empty results instead of throwing
           return { 
             tasks: [], 

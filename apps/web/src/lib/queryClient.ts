@@ -1,10 +1,12 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { logger, maskToken, maskUUID } from "./utils/security-logger";
 
-// Configurație API
-const API_PORT = 5000; // Portul unde rulează serverul API
-const API_BASE_URL = window.location.hostname === 'localhost' 
-  ? `http://localhost:${API_PORT}` 
-  : '';  // În producție, API și frontend vor fi pe același domeniu
+// Configurație API - Folosește variabile de mediu
+const API_PORT = import.meta.env['VITE_BACKEND_PORT'] || 5001;
+const API_BASE_URL = import.meta.env['VITE_API_BASE_URL'] || 
+  (window.location.hostname === 'localhost' 
+    ? `http://localhost:${API_PORT}` 
+    : '');  // În producție, API și frontend vor fi pe același domeniu
 
 // Tipuri pentru apiRequest
 export interface ApiRequestOptions {
@@ -47,13 +49,13 @@ const getAuthToken = (): string | null => {
     
     // Verify token format
     if (typeof userData.token !== 'string' || !userData.token.includes('.')) {
-      console.error('Invalid token format in user data');
+      logger.error('Invalid token format in user data');
       return null;
     }
     
     return userData.token;
   } catch (e) {
-    console.error("Error parsing user data from localStorage", e);
+    logger.error("Error parsing user data from localStorage", { error: e });
     return null;
   }
 };
@@ -87,10 +89,10 @@ export async function refreshToken(): Promise<boolean> {
     });
     
     if (!response.ok) {
-      console.warn(`Token refresh failed with status: ${response.status}`);
+      logger.warn('Token refresh failed', { status: response.status });
       
       if (response.status === 401) {
-        console.error('Token refresh failed: Session expired');
+        logger.error('Token refresh failed: Session expired');
         // We need to reauthenticate
         if (window.location.pathname !== '/login' && window.location.pathname !== '/auth') {
           window.location.href = '/auth';
@@ -103,11 +105,11 @@ export async function refreshToken(): Promise<boolean> {
     
     // Verifică mai întâi conținutul răspunsului
     const responseText = await response.text();
-    console.log('Token refresh response:', responseText.substring(0, 100) + (responseText.length > 100 ? '...' : ''));
+    logger.debug('Token refresh response received');
     
     // Dacă răspunsul nu conține token, întoarce false
     if (!responseText || responseText.includes('<!DOCTYPE html>')) {
-      console.error('Token refresh returned HTML instead of JSON');
+      logger.error('Token refresh returned HTML instead of JSON');
       return false;
     }
     
@@ -117,7 +119,7 @@ export async function refreshToken(): Promise<boolean> {
       refreshData = JSON.parse(responseText);
       
       if (!refreshData || !refreshData.token) {
-        console.warn('Token refresh returned invalid data');
+        logger.warn('Token refresh returned invalid data');
         return false;
       }
       
@@ -125,14 +127,14 @@ export async function refreshToken(): Promise<boolean> {
       const updatedUser = { ...user, token: refreshData.token };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       
-      console.log('Token refreshed successfully');
+      logger.info('Token refreshed successfully', { tokenPreview: maskToken(refreshData.token) });
       return true;
     } catch (error) {
-      console.error('Error parsing token refresh response:', error);
+      logger.error('Error parsing token refresh response', { error });
       return false;
     }
   } catch (error) {
-    console.error('Error refreshing token:', error);
+    logger.error('Error refreshing token', { error });
     return false;
   }
 }
@@ -145,7 +147,7 @@ export function setupTokenRefresh(): void {
   
   // Only setup timer if we have a token
   if (getAuthToken()) {
-    console.log(`Setting up token refresh every ${TOKEN_REFRESH_INTERVAL / 60000} minutes`);
+    logger.info(`Setting up token refresh every ${TOKEN_REFRESH_INTERVAL / 60000} minutes`);
     tokenRefreshTimer = window.setInterval(refreshToken, TOKEN_REFRESH_INTERVAL);
     
     // Also refresh immediately on page load if token exists
@@ -172,7 +174,7 @@ export function getCompanyId(): string | null {
   try {
     const userData = localStorage.getItem('user');
     if (!userData) {
-      console.warn('Cannot get company ID: User not logged in');
+      logger.warn('Cannot get company ID: User not logged in');
       return null;
     }
     
@@ -182,31 +184,24 @@ export function getCompanyId(): string | null {
     if (user.companyId) {
       // Ensure we're using company_id not user.id
       if (user.companyId === user.id) {
-        console.warn('WARNING: Company ID matches user ID - this might indicate incorrect data');
+        logger.warn('Company ID matches user ID - this might indicate incorrect data');
       }
       
-      console.log('Using companyId in API request:', user.companyId);
+      logger.debug('Using companyId in API request', { companyId: maskUUID(user.companyId) });
       return user.companyId;
     }
     
     // Apoi verifică company_id (snake_case)
     if (user.company_id) {
-      console.log('Using company_id in API request:', user.company_id);
+      logger.debug('Using company_id in API request', { companyId: maskUUID(user.company_id) });
       return user.company_id;
     }
     
-    console.error('CRITICAL: Company ID missing from user data (both companyId and company_id)');
+    logger.error('Company ID missing from user data (both companyId and company_id)');
     return null;
   } catch (e) {
-    console.error('Error getting company ID:', e);
+    logger.error('Error getting company ID', { error: e });
     return null;
-  }
-}
-
-async function throwIfResNotOk(res: Response) {
-  if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
   }
 }
 
@@ -249,12 +244,12 @@ export async function apiRequest<T = any>(
         const parsedUser = JSON.parse(userData);
         // If we have cached user data with id and companyId, use it
         if (parsedUser && parsedUser.id && parsedUser.companyId) {
-          console.log('Using cached user data instead of API request');
+          logger.debug('Using cached user data instead of API request');
           return parsedUser as T;
         }
       }
     } catch (e) {
-      console.warn('Error accessing cached user data, proceeding with API request', e);
+      logger.warn('Error accessing cached user data, proceeding with API request', { error: e });
     }
   }
   
@@ -267,9 +262,9 @@ export async function apiRequest<T = any>(
     const token = getAuthToken();
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
-      console.log(`Using auth token for protected endpoint: ${token.substring(0, 10)}...`);
+      logger.debug('Using auth token for protected endpoint', { token: maskToken(token) });
     } else {
-      console.warn("No auth token available for API request");
+      logger.warn('No auth token available for API request');
       
       // Try to get token from localStorage directly as fallback
       try {
@@ -278,15 +273,15 @@ export async function apiRequest<T = any>(
           const userData = JSON.parse(localUser);
           if (userData?.token) {
             headers["Authorization"] = `Bearer ${userData.token}`;
-            console.log("Using fallback auth token from localStorage");
+            logger.debug('Using fallback auth token from localStorage');
           }
         }
       } catch (e) {
-        console.error("Error getting fallback token", e);
+        logger.error('Error getting fallback token', { error: e });
       }
     }
   } else {
-    console.log(`Public auth endpoint detected (${url}), skipping token check`);
+    logger.debug('Public auth endpoint detected, skipping token check');
   }
 
   try {
@@ -315,7 +310,7 @@ export async function apiRequest<T = any>(
       ? finalUrl 
       : `${API_BASE_URL}${finalUrl}`;
       
-    console.log(`API Request: ${method} ${fullUrl}`);
+    logger.logRequest(method, fullUrl, body);
     const res = await fetch(fullUrl, {
       method,
       headers,
@@ -325,7 +320,7 @@ export async function apiRequest<T = any>(
 
     // Handle authentication errors specifically
     if (res.status === 401) {
-      console.error(`Authentication failed for ${finalUrl} - User not logged in`);
+      logger.error('Authentication failed - User not logged in');
       
       // For collaboration endpoints, return a structured error object instead of throwing
       if (finalUrl.includes('/api/collaboration/')) {
@@ -337,11 +332,11 @@ export async function apiRequest<T = any>(
       const isPublicAuthEndpoint = publicAuthEndpoints.some(endpoint => url.includes(endpoint));
       
       if (!isPublicAuthEndpoint) {
-        console.log('Attempting to refresh token due to 401 error...');
+        logger.info('Attempting to refresh token due to 401 error');
         const refreshSuccess = await refreshToken();
         
         if (refreshSuccess) {
-          console.log('Token refreshed successfully, retrying the original request');
+          logger.info('Token refreshed successfully, retrying the original request');
           
           // Get the new token after refresh
           const newToken = getAuthToken();
@@ -350,7 +345,7 @@ export async function apiRequest<T = any>(
             headers["Authorization"] = `Bearer ${newToken}`;
             
             // Retry the original request with the new token
-            console.log(`Retrying request to ${fullUrl} with new token`);
+            logger.debug('Retrying request with new token');
             const retryRes = await fetch(fullUrl, {
               method,
               headers,
@@ -359,17 +354,17 @@ export async function apiRequest<T = any>(
             });
             
             if (retryRes.ok) {
-              console.log('Request retry successful after token refresh');
+              logger.info('Request retry successful after token refresh');
               const retryText = await retryRes.text();
               return retryText ? JSON.parse(retryText) : null as T;
             } else {
-              console.error(`Retry failed with status: ${retryRes.status}`);
+              logger.error('Retry failed', { status: retryRes.status });
             }
           }
         }
         
         // If refresh failed, clear localStorage and redirect
-        console.warn('Token refresh failed - clearing cached auth data');
+        logger.warn('Token refresh failed - clearing cached auth data');
         localStorage.removeItem('user');
         
         // Redirect to login if not already there
@@ -378,7 +373,7 @@ export async function apiRequest<T = any>(
         }
       } else {
         // Pentru endpoint-uri publice de auth, 401 înseamnă credentials invalide
-        console.error(`Invalid credentials for ${url}`);
+        logger.error('Invalid credentials');
       }
       
       throw new Error('Authentication required: Please login');
@@ -386,7 +381,7 @@ export async function apiRequest<T = any>(
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error(`API Error (${res.status}): ${errorText}`);
+      logger.error('API Error', { status: res.status, errorText });
       throw new Error(`${res.status}: ${errorText || res.statusText}`);
     }
     
@@ -400,23 +395,23 @@ export async function apiRequest<T = any>(
       
       // Check if the response starts with HTML markers (which would indicate a non-JSON response)
       if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
-        console.error('Received HTML instead of JSON:', text.substring(0, 100) + '...');
+        logger.error('Received HTML instead of JSON');
         
         // Handle collaboration endpoints with a graceful empty response
         if (url.includes('/api/collaboration/') || finalUrl.includes('/api/collaboration/')) {
-          console.warn(`HTML response for collaboration endpoint - returning empty data structure`);
+          logger.warn('HTML response for collaboration endpoint - returning empty data structure');
           return { error: 'Invalid response format', status: 500, items: [] } as unknown as T;
         }
         
         // Handle invoice-customers endpoint with a graceful empty response
         if (url.includes('/api/invoice-customers') || finalUrl.includes('/api/invoice-customers')) {
-          console.warn(`HTML response for invoice-customers endpoint - returning empty array`);
+          logger.warn('HTML response for invoice-customers endpoint - returning empty array');
           return [] as unknown as T;
         }
         
         // If we get HTML for a user API call, there might be an auth issue
         if (url === '/api/auth/user' || url.startsWith('/api/auth/user?')) {
-          console.warn('Authentication issue detected - redirecting to login');
+          logger.warn('Authentication issue detected - redirecting to login');
           localStorage.removeItem('user');
           
           // Redirect to login if not already there
@@ -431,11 +426,11 @@ export async function apiRequest<T = any>(
       // Parse the JSON response
       return text ? JSON.parse(text) : null as T;
     } catch (error: any) {
-      console.error('Error parsing API response:', error);
+      logger.error('Error parsing API response', { error });
       throw new Error(`Failed to parse response: ${error.message || 'Unknown error'}`);
     }
   } catch (error) {
-    console.error(`API request failed for ${url}:`, error);
+    logger.error('API request failed', { error });
     throw error;
   }
 }
@@ -454,12 +449,12 @@ export const getQueryFn =
           const parsedUser = JSON.parse(userData);
           // If we have cached user data with id and companyId, use it
           if (parsedUser && parsedUser.id && parsedUser.companyId) {
-            console.log('Using cached user data for query instead of API request');
+            logger.debug('Using cached user data for query instead of API request');
             return parsedUser;
           }
         }
       } catch (e) {
-        console.warn('Error accessing cached user data for query, proceeding with API request', e);
+        logger.warn('Error accessing cached user data for query, proceeding with API request', { error: e });
       }
     }
     
@@ -482,11 +477,11 @@ export const getQueryFn =
           const userData = JSON.parse(localUser);
           if (userData?.token) {
             headers["Authorization"] = `Bearer ${userData.token}`;
-            console.log("Query: Using fallback auth token from localStorage");
+            logger.debug("Query: Using fallback auth token from localStorage");
           }
         }
       } catch (e) {
-        console.error("Error getting fallback token for query", e);
+        logger.error("Error getting fallback token for query", { error: e });
       }
     }
     
@@ -511,7 +506,7 @@ export const getQueryFn =
           const refreshSuccess = await refreshToken();
           
           if (refreshSuccess) {
-            console.log('Token refreshed successfully, retrying the original query');
+            logger.info('Token refreshed successfully, retrying the original query');
             
             // Get the new token after refresh
             const newToken = getAuthToken();
@@ -520,26 +515,26 @@ export const getQueryFn =
               headers["Authorization"] = `Bearer ${newToken}`;
               
               // Retry the original request with the new token
-              console.log(`Retrying query to ${fullUrl} with new token`);
+              logger.debug('Retrying query with new token');
               const retryRes = await fetch(fullUrl, {
                 headers,
                 credentials: "include"
               });
               
               if (retryRes.ok) {
-                console.log('Query retry successful after token refresh');
+                logger.info('Query retry successful after token refresh');
                 const retryText = await retryRes.text();
                 try {
                   return retryText ? JSON.parse(retryText) : null;
                 } catch (e) {
-                  console.error('Error parsing retry response:', e);
+                  logger.error('Error parsing retry response', { error: e });
                   if (unauthorizedBehavior === "returnNull") {
                     return null;
                   }
                   throw new Error('Failed to parse retry response');
                 }
               } else {
-                console.error(`Query retry failed with status: ${retryRes.status}`);
+                logger.error('Query retry failed', { status: retryRes.status });
               }
             }
           }
@@ -556,7 +551,7 @@ export const getQueryFn =
       
       if (!res.ok) {
         const errorText = await res.text();
-        console.error(`Query API Error (${res.status}): ${errorText}`);
+        logger.error('Query API Error', { status: res.status, errorText });
         throw new Error(`${res.status}: ${errorText || res.statusText}`);
       }
       
@@ -570,7 +565,7 @@ export const getQueryFn =
         
         // Check if the response starts with HTML markers
         if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
-          console.error('Received HTML instead of JSON:', text.substring(0, 100) + '...');
+          logger.error('Received HTML instead of JSON');
           
           if (unauthorizedBehavior === "returnNull") {
             return null;
@@ -582,11 +577,11 @@ export const getQueryFn =
         // Parse and return the JSON response
         return text ? JSON.parse(text) : null;
       } catch (parseError: any) {
-        console.error('Error parsing query API response:', parseError);
+        logger.error('Error parsing query API response', { error: parseError });
         throw new Error(`Failed to parse response: ${parseError.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error(`Query failed for ${url}:`, error);
+      logger.error('Query failed', { error });
       throw error;
     }
   };

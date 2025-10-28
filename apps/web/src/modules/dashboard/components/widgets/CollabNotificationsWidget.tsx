@@ -5,7 +5,7 @@
  * including task assignments, mentions, and other important updates.
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
   Card, 
@@ -24,6 +24,7 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { ro } from 'date-fns/locale';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link } from 'wouter';
+import { logger } from '@/lib/utils/security-logger';
 import { 
   Bell,
   Loader2,
@@ -32,7 +33,6 @@ import {
   MessageSquare,
   AtSign,
   AlarmClock,
-  Users,
   RefreshCw,
   FileText
 } from 'lucide-react';
@@ -82,19 +82,19 @@ export default function CollabNotificationsWidget({ limit = 6 }: CollabNotificat
         }
       });
       
-      console.log('Notifications API response:', result);
+      logger.debug('Notifications API response received');
       
       // Handle different response formats
       if (result) {
         // Case 1: Response is an object with items array (our API format)
         if (typeof result === 'object' && !Array.isArray(result) && 'items' in result && Array.isArray(result.items)) {
-          console.log('Found items array in response:', result.items.length);
+          logger.debug('Found items array in response', { count: result.items.length });
           return result.items;
         }
         
         // Case 2: Response is an error object
         if (typeof result === 'object' && 'error' in result) {
-          console.warn('Error in notifications response:', result.error);
+          logger.warn('Error in notifications response', { error: result.error });
           return [];
         }
         
@@ -105,7 +105,7 @@ export default function CollabNotificationsWidget({ limit = 6 }: CollabNotificat
       }
       
       // Default: Return empty array if we can't determine the format
-      console.warn('Unrecognized notifications response format:', result);
+      logger.warn('Unrecognized notifications response format');
       return [];
     },
     staleTime: 30000 // 30 seconds
@@ -134,7 +134,7 @@ export default function CollabNotificationsWidget({ limit = 6 }: CollabNotificat
       });
       refetch();
     } catch (error) {
-      console.error('Failed to mark notification as read:', error);
+      logger.error('Failed to mark notification as read', { error });
     }
   };
   
@@ -146,7 +146,7 @@ export default function CollabNotificationsWidget({ limit = 6 }: CollabNotificat
       });
       refetch();
     } catch (error) {
-      console.error('Failed to mark all notifications as read:', error);
+      logger.error('Failed to mark all notifications as read', { error });
     }
   };
   
@@ -305,21 +305,21 @@ export default function CollabNotificationsWidget({ limit = 6 }: CollabNotificat
                         <Badge className="mt-2" variant="secondary">Necitit</Badge>
                       )}
                       
-                      {notification.metadata?.sender && (
+                      {notification.metadata?.['sender'] && (
                         <div className="flex items-center gap-2 mt-2">
                           <Avatar className="h-5 w-5">
                             <AvatarImage 
-                              src={notification.metadata.senderAvatar} 
-                              alt={notification.metadata.senderName} 
+                              src={notification.metadata['senderAvatar']} 
+                              alt={notification.metadata['senderName']} 
                             />
                             <AvatarFallback className="text-xs">
-                              {notification.metadata.senderName ? 
-                                notification.metadata.senderName.substring(0, 2).toUpperCase() : 
+                              {notification.metadata['senderName'] ? 
+                                notification.metadata['senderName'].substring(0, 2).toUpperCase() : 
                                 'U'}
                             </AvatarFallback>
                           </Avatar>
                           <span className="text-xs text-muted-foreground">
-                            {notification.metadata.senderName}
+                            {notification.metadata['senderName']}
                           </span>
                         </div>
                       )}

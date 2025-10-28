@@ -1,13 +1,14 @@
-import React, { createContext, ReactNode, useContext, useEffect } from "react";
+import { createContext, ReactNode, useContext, useEffect } from "react";
 import {
   useQuery,
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
-import { insertUserSchema, User as SelectUser, InsertUser } from "@shared/schema";
+import { User as SelectUser, InsertUser } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { captureException, setUserContext, clearUserContext, addBreadcrumb } from "@/lib/sentry";
+import { logger, maskUUID } from "@/lib/utils/security-logger";
 
 type AuthContextType = {
   user: SelectUser | null;
@@ -32,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Clean localStorage auth data if 'clean_auth' parameter is present
     if (shouldCleanAuth === 'true') {
-      console.log('Auth: Cleaning cached auth data due to clean_auth parameter');
+      logger.info('Auth: Cleaning cached auth data due to clean_auth parameter');
       localStorage.removeItem('user');
       
       // Remove the parameter from URL to avoid repeated cleaning
@@ -54,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (navigationEntry && navigationEntry.type === 'navigate' && !isSameDomain) {
         // Only log this warning - don't actually clear the token as it breaks functionality
-        console.log('Auth: New page load detected from external site - token will be validated');
+        logger.debug('Auth: New page load detected from external site - token will be validated');
       }
     }
   }, []);
@@ -67,16 +68,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   if (cachedUserString) {
     try {
       cachedUser = JSON.parse(cachedUserString);
-      console.log('Auth: Found cached user data in localStorage');
+      logger.debug('Auth: Found cached user data in localStorage');
       
       // Verify that the cached data has a token
       if (cachedUser && !('token' in cachedUser)) {
-        console.warn('Auth: Cached user data missing token, clearing invalid data');
+        logger.warn('Auth: Cached user data missing token, clearing invalid data');
         localStorage.removeItem('user');
         cachedUser = null;
       }
     } catch (e) {
-      console.error('Auth: Failed to parse cached user data', e);
+      logger.error('Auth: Failed to parse cached user data', { error: e });
       localStorage.removeItem('user'); // Clear invalid data
     }
   }
@@ -94,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
-      console.log('Attempting to login with credentials:', { username: credentials.username, passwordLength: credentials.password.length });
+      logger.info('Attempting to login');
       
       try {
         const response = await apiRequest<SelectUser & { token?: string }>("/api/auth/login", {
@@ -102,27 +103,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           body: credentials
         });
         
-        console.log('Login response received:', response ? 'Success' : 'Failed');
+        logger.info('Login response received', { success: !!response });
         return response;
       } catch (error) {
-        console.error('Login error:', error);
+        logger.error('Login error', { error });
         
-        // Capture login errors in Sentry
+        // Capture login errors in Sentry (fără username pentru securitate)
         captureException(error as Error, {
           module: 'auth',
           operation: 'login',
-          username: credentials.username,
         });
         
         throw error;
       }
     },
     onSuccess: (user: SelectUser & { token?: string, company_id?: string, first_name?: string, last_name?: string }) => {
-      console.log('Login successful, storing user data and token');
+      logger.info('Login successful, storing user data');
       
       // Make sure we have all required fields before storing
       if (!user || !user.id || !user.token) {
-        console.error('Missing critical user data in login response:', user);
+        logger.error('Missing critical user data in login response');
         toast({
           title: "Eroare",
           description: "Datele utilizatorului sunt incomplete. Contactați administratorul.",
@@ -133,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Verifică dacă există companyId sau company_id
       if (!user.companyId && !user.company_id) {
-        console.error('No companyId in user response - this is required!');
+        logger.error('No companyId in user response - this is required');
         toast({
           title: "Eroare",
           description: "ID-ul companiei lipsește din răspunsul serverului. Contactați administratorul.",
@@ -144,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Folosește company_id pentru a seta companyId (dacă lipsește)
       if (!user.companyId && user.company_id) {
-        console.log('Converting company_id to companyId for consistency');
+        logger.debug('Converting company_id to companyId for consistency');
         user.companyId = user.company_id;
       }
       
@@ -157,13 +157,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user.lastName = user.last_name;
       }
       
-      console.log('Using company ID:', user.companyId);
+      logger.debug('Using company ID', { companyId: maskUUID(user.companyId) });
       
       // Store user data with token in localStorage for JWT auth
       localStorage.setItem('user', JSON.stringify(user));
       
       // Log successful storage
-      console.log('User data stored in localStorage successfully');
+      logger.info('User data stored in localStorage successfully');
       
       // Also explicitly set in query cache
       queryClient.setQueryData(["/api/auth/user"], user);
@@ -179,7 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
     onError: (error: Error) => {
-      console.error('Login error in mutation handler:', error);
+      logger.error('Login error in mutation handler', { error });
       
       // Clear any existing invalid data
       localStorage.removeItem('user');
