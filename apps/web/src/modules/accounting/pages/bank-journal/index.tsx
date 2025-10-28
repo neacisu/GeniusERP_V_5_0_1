@@ -175,7 +175,7 @@ export default function BankJournalPage() {
 
   // Fetch bank accounts
   const { data: bankAccountsResponse, isLoading: isLoadingAccounts } = useQuery<{ data: BankAccount[]; total: number }>({
-    queryKey: ['/api/accounting/bank-accounts'],
+    queryKey: ['/api/accounting/bank-journal/bank-accounts'],
     // This is just for structure - we'll use actual API data in production
     placeholderData: { data: [
       { 
@@ -236,7 +236,7 @@ export default function BankJournalPage() {
 
   // Fetch bank transactions
   const { data: transactionsResponse, isLoading: isLoadingTransactions } = useQuery<{ data: BankTransaction[]; total: number; page: number; limit: number }>({
-    queryKey: ['/api/accounting/bank-transactions', selectedAccount, dateRange],
+    queryKey: ['/api/accounting/bank-journal/bank-transactions', selectedAccount, dateRange],
     // This is just for structure - we'll use actual API data in production
     placeholderData: { data: [
       { 
