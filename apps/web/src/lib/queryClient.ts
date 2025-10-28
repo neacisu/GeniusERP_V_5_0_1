@@ -1,12 +1,10 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { logger, maskToken, maskUUID } from "./utils/security-logger";
 
-// Configurație API - Folosește variabile de mediu
-const API_PORT = import.meta.env['VITE_BACKEND_PORT'] || 5001;
-const API_BASE_URL = import.meta.env['VITE_API_BASE_URL'] || 
-  (window.location.hostname === 'localhost' 
-    ? `http://localhost:${API_PORT}` 
-    : '');  // În producție, API și frontend vor fi pe același domeniu
+// Configurație API - În development Vite proxy /api -> backend
+// În production Nginx face routing /api -> backend
+// Deci ÎNTOTDEAUNA folosim paths relative '/api/...'
+const API_BASE_URL = '';  // Empty - folosim proxy în dev, same-origin în prod
 
 // Tipuri pentru apiRequest
 export interface ApiRequestOptions {
