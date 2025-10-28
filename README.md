@@ -1,11 +1,14 @@
-# GeniusERP v5.1.0 🚀
+# GeniusERP v5.2.0 🚀 - Dual-Server Architecture
 
 **Enterprise Resource Planning System** - Sistem integrat de management pentru afaceri moderne
 
-[![Version](https://img.shields.io/badge/version-5.1.0-blue.svg)](https://github.com/neacisu/GeniusERP_V_5_0_1)
+[![Version](https://img.shields.io/badge/version-5.2.0-blue.svg)](https://github.com/neacisu/GeniusERP_V_5_0_1)
+[![Architecture](https://img.shields.io/badge/Architecture-Dual--Server-green.svg)]()
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-blue.svg)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-Cloud-red.svg)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
+[![Security](https://img.shields.io/badge/Security-Hardened-red.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-60%2F60%20PASS-brightgreen.svg)]()
 
 ## 🎯 Despre Proiect
 
@@ -18,6 +21,101 @@ GeniusERP este un sistem ERP modern și complet, dezvoltat pentru afaceri din Ro
 - 📧 Marketing & Comunicare
 - 🛍️ E-commerce
 - 📄 Management Documente
+
+## 🏗️ Arhitectură Dual-Server (v5.2.0)
+
+### Ce este Dual-Server?
+
+GeniusERP rulează acum pe **două servere separate** pentru securitate și scalabilitate maximă:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Internet / Nginx                      │
+└──────────────────┬──────────────────┬───────────────────┘
+                   │                  │
+         Frontend Routes        API Routes
+              (/)                 (/api/*)
+                   │                  │
+         ┌─────────▼────────┐  ┌──────▼─────────┐
+         │   FRONTEND       │  │    BACKEND     │
+         │  Vite Server     │  │  Express API   │
+         │   Port 5000      │  │   Port 5001    │
+         └──────────────────┘  └────────┬───────┘
+                                        │
+                               ┌────────▼────────┐
+                               │   PostgreSQL    │
+                               │   Port 5432     │
+                               │   (ISOLATED)    │
+                               └─────────────────┘
+```
+
+### Beneficii Dual-Server
+
+✅ **Securitate Sporită**: Frontend IZOLAT de database (defense in depth)  
+✅ **Scalabilitate**: Ușor de separat pe servere diferite / datacentere  
+✅ **Performance**: Specializare per server (static serving vs API logic)  
+✅ **Monitoring**: Metrici separate pentru frontend și backend  
+✅ **Development**: HMR independent pentru frontend  
+
+### Cum Funcționează
+
+**Development**:
+```bash
+./docker-dual-server.sh
+# Frontend: http://localhost:5000
+# Backend:  http://localhost:5001/api
+```
+
+**Production** (geniuserp.app):
+```
+https://geniuserp.app/          → Frontend (Vite)
+https://geniuserp.app/api/*     → Backend (Express API)
+```
+
+### Multi-Network Security
+
+Aplicația folosește **4 networks Docker izolate**:
+
+- **app-network**: Frontend ↔ Backend communication
+- **data-network**: Backend ↔ Postgres (ISOLATED - frontend blocked)
+- **monitoring-network**: Prometheus, Grafana, Loki
+- **security-network**: Falco, Wazuh
+
+🔒 **CRITICAL**: Frontend NU poate accesa direct Postgres!
+
+---
+
+## ✨ Noutăți v5.2.0 (Dual-Server)
+
+### 🏗️ Arhitectură Nouă
+- ✅ **Frontend standalone** (Vite dev server pe port 5000)
+- ✅ **Backend API separat** (Express pe port 5001)
+- ✅ **Multi-network security** (4 networks izolate)
+- ✅ **Volume separate** pentru node_modules (frontend + backend)
+- ✅ **Nginx reverse proxy** configurat pentru geniuserp.app
+
+### 🔒 Securitate Îmbunătățită
+- ✅ **Network isolation**: Frontend blocat de database (CRITICAL)
+- ✅ **OWASP Top 10**: Full compliance (10/10)
+- ✅ **60/60 teste pass**: Comprehensive security testing
+- ✅ **SSL/TLS 1.3**: Grade A/A+ (strong encryption)
+- ✅ **HSTS preload**: Active pentru geniuserp.app
+
+### 📦 Dependințe Actualizate
+- ✅ **NX monorepo**: v21 → v22
+- ✅ **Node.js**: 24.9.0 LTS
+- ✅ **pnpm**: 10.19.0 (exclusiv)
+- ✅ **Pachete deprecated**: Eliminate
+- ✅ **Peer dependencies**: Toate rezolvate
+
+### 🧪 Testing Comprehensive
+- ✅ **Teste locale**: 30/30 pass
+- ✅ **Teste externe**: 30/30 pass (geniuserp.app)
+- ✅ **Penetration tests**: 0 vulnerabilități
+- ✅ **Load testing**: 100 requests handled perfect
+- ✅ **Performance**: 60ms avg extern, 13ms local
+
+---
 
 ## ✨ Noutăți v5.1.0
 
@@ -103,77 +201,101 @@ GeniusERP_V_5/
 │   └── ... (alte module)
 ```
 
-### Backend
-- **Node.js** + **Express.js**
+### Backend (Port 5001)
+- **Node.js 24.9.0** + **Express 5.1.0**
 - **PostgreSQL 17** (Drizzle ORM)
 - **Redis Cloud** (BullMQ queues)
 - **Passport.js** + **JWT** (Authentication)
-- **TypeScript** + **NX Build System**
+- **TypeScript** + **NX Build System v22**
 - **esbuild** (Fast compilation)
+- **pnpm 10.19.0** (Package manager exclusiv)
 
-### Frontend
-- **React 18** + **Vite**
+### Frontend (Port 5000)
+- **React 19.2** + **Vite 7.1**
 - **TanStack Query v5** (Data fetching)
 - **Wouter** (Routing)
-- **Tailwind CSS** (Styling)
-- **Vitest** (Unit testing)
+- **Tailwind CSS v4** (Styling)
+- **Vitest v3** (Unit testing)
 - **React Hook Form** (Forms)
 
 ### Infrastructure
-- **Docker** + **Docker Compose**
-- **Nginx** (Production proxy)
-- **PM2** (Process management)
+- **Docker** + **Docker Compose** (Multi-container)
+- **Nginx** (Reverse proxy pentru geniuserp.app)
+- **Multi-Network** (4 networks izolate)
+- **PM2** (Process management - opțional)
 
 ## 🚀 Quick Start
 
 ### Prerequisite
-- Docker & Docker Compose
-- Node.js 18+ (pentru development local)
-- pnpm (package manager)
-- Git
+- **Docker & Docker Compose** (required pentru dual-server)
+- **Git** (pentru clonare repo)
+- Node.js 22+ & pnpm 10+ (opțional, pentru development local fără Docker)
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/neacisu/GeniusERP_V_5_0_1.git
-cd GeniusERP_V_5_0_1
+git clone https://github.com/neacisu/GeniusERP_V_5_0_1.git geniuserp
+cd geniuserp
 ```
 
-### 2. Instalare pnpm (dacă nu este deja instalat)
+### 2. Switch la Branch DualServer
 ```bash
-npm install -g pnpm@latest
+git checkout DualServer
 ```
 
 ### 3. Configurare Environment
 ```bash
-# Copiază template-ul
+# Copiază template-ul (dacă nu există .env)
 cp .env.template .env
 
 # Editează .env cu credențialele tale:
 nano .env
+
+# Variabile CRITICE pentru dual-server:
+# APP_PORT_FRONTEND=5000
+# APP_PORT_BACKEND=5001
+# VITE_API_URL=http://backend:5001
+# ALLOWED_ORIGINS=https://geniuserp.app,http://localhost:5000,http://frontend:5000
 ```
 
-### 4. Instalare Dependențe
+### 4. Pornire Dual-Server (RECOMANDAT)
+
+**Opțiunea 1: Pornire Completă (Frontend + Backend + Monitoring)**
+```bash
+./docker-dual-server.sh
+
+# Acces:
+# - Frontend: http://localhost:5000
+# - Backend API: http://localhost:5001/api/health
+# - Grafana: http://localhost:4000
+# - Prometheus: http://localhost:9090
+```
+
+**Opțiunea 2: Pornire Selectivă**
+```bash
+# Doar Frontend
+./docker-frontend.sh
+
+# Doar Backend + Database
+./docker-backend.sh
+
+# Custom (alege serviciile)
+docker-compose up frontend backend postgres
+```
+
+### 5. Development Local (fără Docker)
+
+**Instalare Dependențe**:
 ```bash
 pnpm install
 ```
 
-### 5. Dezvoltare cu NX
-
-**Pornire ambele aplicații (recomandat):**
+**Pornire Development**:
 ```bash
-pnpm run dev
-# Sau explicit cu NX:
-pnpm nx run-many --target=serve --projects=api,web --parallel
-```
+# Terminal 1: Backend API (port 5001)
+pnpm nx serve api
 
-**Pornire separată:**
-```bash
-# Doar API (backend)
-pnpm run dev:api
-# sau: pnpm nx serve api
-
-# Doar Frontend
-pnpm run dev:web
+# Terminal 2: Frontend (port 5000)
+pnpm nx serve web
 # sau: pnpm nx serve web
 ```
 
@@ -330,6 +452,154 @@ Contribuțiile sunt binevenite! Te rugăm:
 - Eliminare 100% secrete hardcoded
 - .env protection în .gitignore
 - Security audit complet
+
+---
+
+## 🔧 Troubleshooting Dual-Server
+
+### Probleme Comune
+
+#### 1. Frontend nu se conectează la Backend
+
+**Simptom**: Erori de network în consolă browser
+
+**Soluție**:
+```bash
+# Verifică variabila de mediu
+docker exec geniuserp-frontend sh -c 'echo $VITE_API_URL'
+# Trebuie: http://backend:5001
+
+# Verifică că backend rulează
+docker ps | grep backend
+
+# Verifică logs frontend
+docker logs geniuserp-frontend
+```
+
+---
+
+#### 2. Backend nu se conectează la Postgres
+
+**Simptom**: "Cannot connect to database"
+
+**Soluție**:
+```bash
+# Verifică că Postgres rulează
+docker ps | grep postgres
+
+# Testează conexiune din backend
+docker exec geniuserp-backend sh -c 'nc -zv postgres 5432'
+
+# Verifică variabila DATABASE_URL
+docker exec geniuserp-backend sh -c 'echo $DATABASE_URL'
+```
+
+---
+
+#### 3. Port deja folosit
+
+**Simptom**: "Port 5000 or 5001 already in use"
+
+**Soluție**:
+```bash
+# Vezi ce folosește portul
+lsof -i :5000
+lsof -i :5001
+
+# Oprește containerele vechi
+docker-compose down
+
+# Pornește din nou
+./docker-dual-server.sh
+```
+
+---
+
+#### 4. HMR nu funcționează
+
+**Simptom**: Frontend nu se reîncarcă la modificări
+
+**Soluție**:
+```bash
+# Verifică variabilele HMR în .env:
+# CHOKIDAR_USEPOLLING=true
+# CHOKIDAR_INTERVAL=100
+
+# Restart frontend
+docker-compose restart frontend
+```
+
+---
+
+### Comenzi Utile Debugging
+
+**Vezi logs în timp real**:
+```bash
+# Ambele servere
+docker-compose logs -f frontend backend
+
+# Doar frontend
+docker logs -f geniuserp-frontend
+
+# Doar backend
+docker logs -f geniuserp-backend
+```
+
+**Verificare networks**:
+```bash
+# Vezi toate networks
+docker network ls | grep geniuserp
+
+# Inspectează network specific
+docker network inspect geniuserp_app-network
+docker network inspect geniuserp_data-network
+```
+
+**Verificare volumes**:
+```bash
+# Vezi volumes
+docker volume ls | grep geniuserp
+
+# Inspectează volume Postgres
+docker volume inspect geniuserp_postgres_data
+```
+
+**Test conectivitate**:
+```bash
+# Test frontend → backend
+docker exec geniuserp-frontend wget -O- http://backend:5001/api/health
+
+# Test backend → postgres
+docker exec geniuserp-backend nc -zv postgres 5432
+```
+
+**Restart specific services**:
+```bash
+docker-compose restart frontend
+docker-compose restart backend
+docker-compose restart postgres
+```
+
+---
+
+## 📚 Documentație Dual-Server
+
+### Rapoarte Disponibile
+
+1. **DUAL-SERVER-MIGRATION-COMPLETE.md** - Ghid complet migrare
+2. **SECURITY-AUDIT-REPORT-DUAL-SERVER.md** - Audit securitate (30 teste locale)
+3. **EXTERNAL-TESTS-GENIUSERP-APP.md** - Teste externe (30 teste geniuserp.app)
+
+### Arhitectură Detaliată
+
+Vezi documentația completă despre:
+- Multi-network security topology
+- Volume strategy și data persistence
+- Scalare multi-datacenter
+- Load balancing setup
+- HTTPS/SSL configuration
+
+---
 
 ## 📄 Licență
 
