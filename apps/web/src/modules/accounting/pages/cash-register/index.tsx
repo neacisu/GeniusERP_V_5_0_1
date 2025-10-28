@@ -181,7 +181,7 @@ export default function CashRegisterPage() {
 
   // Fetch cash registers
   const { data: cashRegistersResponse, isLoading: isLoadingRegisters } = useQuery<{ data: CashRegister[]; total: number }>({
-    queryKey: ['/api/accounting/cash-registers'],
+    queryKey: ['/api/accounting/cash-register/cash-registers'],
     // This is just for structure - we'll use actual API data in production
     placeholderData: { data: [
       { 
@@ -232,7 +232,7 @@ export default function CashRegisterPage() {
 
   // Fetch cash transactions
   const { data: transactionsResponse, isLoading: isLoadingTransactions } = useQuery<{ data: CashTransaction[]; total: number; page: number; limit: number }>({
-    queryKey: ['/api/accounting/cash-transactions', selectedRegister, dateRange],
+    queryKey: ['/api/accounting/cash-register/cash-transactions', selectedRegister, dateRange],
     // This is just for structure - we'll use actual API data in production
     placeholderData: { data: [
       { 
@@ -409,7 +409,7 @@ export default function CashRegisterPage() {
 
   // Fetch transaction journal entry
   const { data: journalEntry, isLoading: isLoadingJournal } = useQuery<TransactionJournalEntry[]>({
-    queryKey: ['/api/accounting/cash-transactions', selectedTransaction?.id, 'journal'],
+    queryKey: ['/api/accounting/cash-register/cash-transactions', selectedTransaction?.id, 'journal'],
     enabled: !!selectedTransaction && isJournalDialogOpen && selectedTransaction.posted,
     // This is just for structure - we'll use actual API data in production
     placeholderData: [
