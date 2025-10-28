@@ -6,8 +6,8 @@
  */
 
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { roles, permissions, rolePermissions, userRoles } from '../../../../shared/schema';
-import { and, eq } from 'drizzle-orm';
+import { roles, rolePermissions, userRoles } from '@geniuserp/shared/schema';
+import { eq } from 'drizzle-orm';
 import { Express, Request, Response, Router } from 'express';
 import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
@@ -176,7 +176,7 @@ export class RoleService {
         
         // Încercăm să logăm evenimentul fără să aruncăm erori dacă nu reușește
         try {
-          await AuditService.console.log({
+          await AuditService.log({
             userId: actorId || 'system',
             companyId: (role as any).company_id || (role as any).companyId || 'unknown',
             action: AuditAction.UPDATE,
@@ -359,11 +359,19 @@ export class RoleService {
     router.get('/roles', requireAuth, async (req: Request, res: Response) => {
       try {
         // Verificăm utilizatorul curent și afișăm mai multe detalii pentru debugging
-        this.logger.info('Fetching roles, user:', JSON.stringify(req.user || {}));
+        this.logger.info('Fetching roles', { user: req.user || {} });
 
-        // Pentru a evita eroarea, folosim o companie default dacă utilizatorul nu are una asociată
+        // MULTI-TENANT SECURITY: Doar compania user-ului autentificat!
         const user = req.user as any;
-        const companyId = user?.company_id || '7196288d-7314-4512-8b67-2c82449b5465'; // GeniusERP Demo Company
+        const companyId = user?.company_id;
+        
+        if (!companyId) {
+          this.logger.error('SECURITY: User fără company_id - acces interzis');
+          return res.status(403).json({ 
+            success: false,
+            error: 'Forbidden: User is not associated with any company' 
+          });
+        }
         
         this.logger.info(`Using company ID: ${companyId}`);
         
@@ -383,14 +391,26 @@ export class RoleService {
       }
     });
     
-    // GET /api/admin/roles/test-roles - Endpoint special pentru a rezolva erori 
-    router.get('/roles/test-roles', async (req: Request, res: Response) => {
+    // GET /api/admin/roles/test-roles - Endpoint de test (TREBUIE PROTEJAT!)
+    router.get('/roles/test-roles', requireAuth, async (req: Request, res: Response) => {
       try {
-        // Obținem datele direct din baza de date
+        // MULTI-TENANT SECURITY: Folosește DOAR compania user-ului autentificat
+        const user = req.user as any;
+        const companyId = user?.company_id;
+        
+        if (!companyId) {
+          this.logger.error('SECURITY: Test endpoint - user fără company_id');
+          return res.status(403).json({ 
+            success: false, 
+            error: 'Forbidden: User is not associated with any company' 
+          });
+        }
+        
+        // Obținem datele direct din baza de date DOAR pentru compania user-ului
         const result = await this.db
           .select()
           .from(roles)
-          .where(eq(roles.companyId, '7196288d-7314-4512-8b67-2c82449b5465')); // GeniusERP Demo Company
+          .where(eq(roles.companyId, companyId));
         
         this.logger.info(`Obtained ${result.length} roles via test endpoint`);
         

@@ -29,6 +29,7 @@
         "port": 5000,
         "hmr": true
       },
+      "note": "Port este suprascris de vite.config.ts din APP_PORT_FRONTEND ENV var",
       "configurations": {
         "production": {
           "buildTarget": "web:build:production",

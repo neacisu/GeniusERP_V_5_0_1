@@ -42,9 +42,11 @@ export default defineConfig({
     allowedHosts: process.env['VITE_ALLOWED_HOSTS']!.split(',').map(h => h.trim()).filter(Boolean),
     
     // Proxy configuration - Forward API requests to backend
+    // ZERO hardcoding - construiește dinamic din ENV
     proxy: {
       '/api': {
-        target: process.env['VITE_API_URL'] || 'http://backend:5001',
+        target: process.env['VITE_API_URL'] || 
+                `http://backend:${process.env['VITE_BACKEND_PORT'] || process.env['APP_PORT_BACKEND'] || '5001'}`,
         changeOrigin: true,
         secure: false,
         ws: true, // WebSocket support

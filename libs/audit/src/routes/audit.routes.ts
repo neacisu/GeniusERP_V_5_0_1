@@ -34,7 +34,7 @@ export function initAuditRoutes() {
         const entityId = req.body.entityId || uuidv4();
         
         // Log the action directly
-        await AuditService.console.log({
+        await AuditService.log({
           companyId,
           userId: req.user?.id || 'system',
           action: 'TEST_AUDIT_API',
@@ -105,9 +105,11 @@ export function initAuditRoutes() {
         // Get company ID from authenticated user or fall back to default company
         let companyId = req.user?.companyId;
         
-        // If no company ID, use default company or allow admins to see all
+        // MULTI-TENANT SECURITY: Dacă user nu are companyId, INTERZICE accesul
         if (!companyId) {
-          companyId = '7196288d-7314-4512-8b67-2c82449b5465'; // Default company ID
+          return res.status(403).json({ 
+            error: 'Forbidden: User must be associated with a company. Multi-tenant security enforced.' 
+          });
         }
         
         const logs = await db.select()
@@ -140,9 +142,11 @@ export function initAuditRoutes() {
         // Get company ID from authenticated user or fall back to default company
         let companyId = req.user?.companyId;
         
-        // If no company ID, use default company or allow admins to see all
+        // MULTI-TENANT SECURITY: Dacă user nu are companyId, INTERZICE accesul
         if (!companyId) {
-          companyId = '7196288d-7314-4512-8b67-2c82449b5465'; // Default company ID
+          return res.status(403).json({ 
+            error: 'Forbidden: User must be associated with a company. Multi-tenant security enforced.' 
+          });
         }
         
         const logs = await db.select()
