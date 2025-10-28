@@ -301,7 +301,31 @@ router.get('/departments/:id/employees',
 // ========================================
 router.get('/contracts',
   AuthGuard.protect(JwtAuthMode.REQUIRED),
-  (req: any, res: Response) => contractController.getContractsByEmployeeId(req, res)
+  async (req: any, res: Response) => {
+    try {
+      const { employeeId, page, limit, status } = req.query;
+      
+      // Dacă avem employeeId, returnăm contractele unui angajat specific
+      if (employeeId) {
+        const contracts = await contractService.getEmploymentContractHistory(employeeId);
+        return res.json({ success: true, data: { items: contracts, total: contracts.length } });
+      }
+      
+      // Pentru moment returnăm liste goale pentru contracte generale (necesită implementare în service)
+      res.json({ 
+        success: true, 
+        data: {
+          items: [],
+          total: 0,
+          page: parseInt(page as string) || 1,
+          limit: parseInt(limit as string) || 10,
+          message: 'All contracts listing is under development'
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
 );
 
 router.post('/contracts',
@@ -319,7 +343,37 @@ router.patch('/contracts/:id',
 // ========================================
 router.get('/absences',
   AuthGuard.protect(JwtAuthMode.REQUIRED),
-  (req: Request, res: Response) => absenceController.getPendingAbsences(req, res)
+  async (req: any, res: Response) => {
+    try {
+      const { employeeId, year, status, page, limit } = req.query;
+      
+      // Returnăm absențele cu filtrare
+      const absences = await absenceService.getEmployeeAbsences(
+        req.user?.companyId || '',
+        employeeId as string | undefined,
+        year ? parseInt(year as string) : undefined,
+        status as any
+      );
+      
+      // Paginare simplă
+      const pageNum = parseInt(page as string) || 1;
+      const limitNum = parseInt(limit as string) || 10;
+      const startIndex = (pageNum - 1) * limitNum;
+      const paginatedAbsences = absences.slice(startIndex, startIndex + limitNum);
+      
+      res.json({ 
+        success: true, 
+        data: {
+          items: paginatedAbsences,
+          total: absences.length,
+          page: pageNum,
+          limit: limitNum
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
 );
 
 router.get('/absences/employee/:employeeId',
@@ -347,7 +401,27 @@ router.patch('/absences/:id/deny',
 // ========================================
 router.get('/payroll/history',
   AuthGuard.protect(JwtAuthMode.REQUIRED),
-  (req: any, res: Response) => payrollController.getEmployeePayrollHistory(req, res)
+  async (req: any, res: Response) => {
+    try {
+      const { employeeId, year, month, limit } = req.query;
+      
+      // Pentru moment returnăm date mock - payroll history necesită implementare completă
+      const history = {
+        success: true,
+        data: {
+          items: [],
+          total: 0,
+          year: year ? parseInt(year as string) : new Date().getFullYear(),
+          month: month ? parseInt(month as string) : new Date().getMonth() + 1,
+          message: 'Payroll history is under development'
+        }
+      };
+      
+      res.json(history);
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
 );
 
 router.get('/payroll/report',
