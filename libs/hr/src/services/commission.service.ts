@@ -293,7 +293,7 @@ export class CommissionService {
             throw new Error('Each component must have type and config');
           }
           
-          this.validateCommissionConfig(component.type as CommissionType, component.config);
+          this.validateCommissionConfig(component['type'] as CommissionType, component['config']);
         }
         break;
         
