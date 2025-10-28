@@ -134,8 +134,7 @@ services:
       - logging_jobname=postgres
     restart: ${CONTAINER_RESTART_POLICY}
     networks:
-      - data-network        # Backend communication only
-      - monitoring-network  # Monitoring access
+      - data-network        # ONLY backend communication - ISOLATED!
     command: postgres -c 'max_connections=${POSTGRES_MAX_CONNECTIONS}' -c 'shared_buffers=${POSTGRES_SHARED_BUFFERS}'
 
   # Adminer pentru administrarea bazei de date (opțional)
