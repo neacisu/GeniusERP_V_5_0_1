@@ -17,6 +17,7 @@ import { AbsenceController } from '../controllers/absence.controller';
 import { PayrollController } from '../controllers/payroll.controller';
 import { CorController } from '../controllers/cor.controller';
 import { RevisalController } from '../controllers/revisal.controller';
+import { CommissionController } from '../controllers/commission.controller';
 
 // Import all HR services
 import { EmployeeService } from '../services/employee.service';
@@ -26,6 +27,7 @@ import { AbsenceService } from '../services/absence.service';
 import { PayrollService } from '../services/payroll.service';
 import { CorService } from '../services/cor.service';
 import { RevisalService } from '../services/revisal.service';
+import { CommissionService } from '../services/commission.service';
 
 // Import other required dependencies
 import { getDrizzle } from '@common/drizzle';
@@ -69,6 +71,7 @@ const absenceService = new AbsenceService();
 const payrollService = new PayrollService();
 const corService = new CorService(db, auditService);
 const revisalService = new RevisalService();
+const commissionService = new CommissionService();
 
 // Initialize all controllers with their services
 const employeeController = new EmployeeController(employeeService);
@@ -78,6 +81,7 @@ const absenceController = new AbsenceController(absenceService);
 const payrollController = new PayrollController(payrollService);
 const corController = new CorController(db, corService);
 const revisalController = new RevisalController(revisalService);
+const commissionController = new CommissionController(commissionService);
 
 // Settings routes
 router.get('/settings',
@@ -446,6 +450,284 @@ router.get('/revisal/logs',
 router.get('/revisal/logs/:id',
   AuthGuard.protect(JwtAuthMode.REQUIRED),
   (req: any, res: Response) => revisalController.getRevisalLogById(req, res)
+);
+
+// Alias pentru /revisal/logs -> /revisal/operations (frontend folosește ambele)
+router.get('/revisal/operations',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  (req: any, res: Response) => revisalController.getRevisalLogs(req, res)
+);
+
+router.get('/revisal/stats',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  async (req: any, res: Response) => {
+    try {
+      // Pentru moment returnăm statistici simple bazate pe logs
+      const logs = await revisalService.getRevisalExportLogs(req.user?.companyId || '');
+      const stats = {
+        total: logs.length,
+        completed: logs.filter((l: any) => l.status === 'completed').length,
+        pending: logs.filter((l: any) => l.status === 'pending').length,
+        failed: logs.filter((l: any) => l.status === 'failed').length
+      };
+      res.json({ success: true, data: stats });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+);
+
+router.post('/revisal/upload',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  upload.single('file'),
+  async (req: any, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: 'Niciun fișier încărcat' });
+      }
+      res.json({ 
+        success: true, 
+        data: { 
+          filename: req.file.filename,
+          path: req.file.path 
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+);
+
+// ========================================
+// COMMISSION ROUTES
+// ========================================
+router.get('/commissions',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  (req: any, res: Response) => commissionController.getCommissions(req, res)
+);
+
+router.get('/commissions/rules',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  (req: any, res: Response) => commissionController.getCommissionStructures(req, res)
+);
+
+router.get('/commissions/stats',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  (req: any, res: Response) => commissionController.getCommissionSummary(req, res)
+);
+
+router.get('/commissions/:id',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  (req: any, res: Response) => commissionController.getCommissionById(req, res)
+);
+
+router.post('/commissions',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  (req: any, res: Response) => commissionController.createCommission(req, res)
+);
+
+router.patch('/commissions/:id',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  (req: any, res: Response) => commissionController.updateCommissionStructure(req, res)
+);
+
+router.post('/commissions/:id/approve',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  (req: any, res: Response) => commissionController.approveCommission(req, res)
+);
+
+router.post('/commissions/:id/paid',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  (req: any, res: Response) => commissionController.markCommissionPaid(req, res)
+);
+
+router.post('/commissions/calculate',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  (req: any, res: Response) => commissionController.calculateCommission(req, res)
+);
+
+router.get('/commissions/employee/:employeeId',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  (req: any, res: Response) => commissionController.getEmployeeCommissions(req, res)
+);
+
+// ========================================
+// ADDITIONAL EMPLOYEE ROUTES
+// ========================================
+router.get('/employees/by-role',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  async (req: any, res: Response) => {
+    try {
+      const { role } = req.query;
+      // Reutilizăm searchEmployees cu filtru pe rol
+      req.query.role = role;
+      await employeeController.searchEmployees(req, res);
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+);
+
+// ========================================
+// ADDITIONAL PAYROLL ROUTES
+// ========================================
+// Alias pentru /payroll fără /history (listing general de payroll)
+router.get('/payroll',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  (req: any, res: Response) => payrollController.getPayrollReport(req, res)
+);
+
+router.post('/payroll/run',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  (req: any, res: Response) => payrollController.processCompanyPayroll(req, res)
+);
+
+// ========================================
+// ADDITIONAL DEPARTMENT ROUTES (cu ID)
+// ========================================
+router.get('/departments/:id',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  async (req: any, res: Response) => {
+    try {
+      const { id } = req.params;
+      const department = await departmentService.getDepartmentById(id, req.user?.companyId || '');
+      if (!department) {
+        return res.status(404).json({ success: false, message: 'Departament negăsit' });
+      }
+      res.json({ success: true, data: department });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+);
+
+router.patch('/departments/:id',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  async (req: any, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      await departmentService.updateDepartment(id, updateData, req.user?.companyId || '', req.user?.id || '');
+      res.json({ success: true, message: 'Departament actualizat cu succes' });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+);
+
+router.delete('/departments/:id',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  async (req: any, res: Response) => {
+    try {
+      const { id } = req.params;
+      await departmentService.deactivateDepartment(id, req.user?.companyId || '', req.user?.id || '');
+      res.json({ success: true, message: 'Departament dezactivat cu succes' });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+);
+
+// ========================================
+// ADDITIONAL ABSENCE ROUTES (cu ID)
+// ========================================
+router.get('/absences/:id',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  async (req: any, res: Response) => {
+    try {
+      const { id } = req.params;
+      // Căutăm absența în lista de absențe a companiei
+      const absences = await absenceService.getEmployeeAbsences(req.user?.companyId || '');
+      const absence = absences.find((a: any) => a.id === id);
+      if (!absence) {
+        return res.status(404).json({ success: false, message: 'Absență negăsită' });
+      }
+      res.json({ success: true, data: absence });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+);
+
+router.patch('/absences/:id',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  async (req: any, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { approved, comment } = req.body;
+      // Folosim reviewAbsence pentru actualizare
+      await absenceService.reviewAbsence(id, approved, comment || '', req.user?.id || '');
+      res.json({ success: true, message: 'Absență actualizată cu succes' });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+);
+
+router.delete('/absences/:id',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  async (req: any, res: Response) => {
+    try {
+      const { id } = req.params;
+      // Folosim cancelAbsence pentru ștergere
+      await absenceService.cancelAbsence(id, 'Șters de utilizator', req.user?.id || '');
+      res.json({ success: true, message: 'Absență anulată cu succes' });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+);
+
+// ========================================
+// ADDITIONAL CONTRACT ROUTES (cu ID)
+// ========================================
+router.get('/contracts/:id',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  async (req: any, res: Response) => {
+    try {
+      const { id } = req.params;
+      const contract = await contractService.getContractById(id, req.user?.companyId || '');
+      res.json({ success: true, data: contract });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+);
+
+router.delete('/contracts/:id',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  async (req: any, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { terminationDate, reason } = req.body;
+      // Folosim terminateContract pentru ștergere
+      await contractService.terminateContract(
+        id,
+        req.user?.companyId || '',
+        req.user?.id || '',
+        terminationDate ? new Date(terminationDate) : new Date(),
+        reason || 'Șters de utilizator'
+      );
+      res.json({ success: true, message: 'Contract încheiat cu succes' });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+);
+
+// ========================================
+// ANAF EXPORT ROUTE
+// ========================================
+router.post('/anaf/export',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  async (req: any, res: Response) => {
+    try {
+      // Exportul ANAF folosește același mecanism ca Revisal
+      await revisalController.generateRevisalXml(req, res);
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
 );
 
 export default router;
