@@ -10,23 +10,23 @@
  * - Year-to-date totals
  */
 
-import { employees, payrollLogs } from '../schema';
+import { employees, payrollLogs, employmentContracts } from '@geniuserp/shared/schema/hr.schema';
 import { v4 as uuidv4 } from 'uuid';
 import AuditService from '@geniuserp/audit';
 import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";
-import { sql } from 'drizzle-orm';
+import { sql, eq, and, gte, lte, desc, sum, count } from 'drizzle-orm';
 import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { getDrizzle } from "@common/drizzle";
 
 export class PayrollService {
   private drizzle: DrizzleService;
+  private db: any;
+  private auditService: AuditService;
 
   constructor() {
     this.drizzle = new DrizzleService();
-  }
-  
-  // Backward compatibility getter
-  private get db() {
-    return this.drizzle.db;
+    this.db = getDrizzle();
+    this.auditService = new AuditService();
   }
 
   /**
@@ -40,20 +40,33 @@ export class PayrollService {
    */
   async calculateEmployeePayroll(employeeId: string, companyId: string, year: number, month: number, userId: string) {
     try {
-      // Get employee details including contract
-      const employee = await this.drizzle.db.execute(
-        sql`SELECT e.*, ec.base_salary_gross, ec.contract_type 
-            FROM hr_employees e
-            JOIN hr_employment_contracts ec ON e.id = ec.employee_id
-            WHERE e.id = ${employeeId} AND e.company_id = ${companyId}`
-      );
+      // Get employee details including contract using Drizzle ORM
+      const employeeData = await this.db
+        .select({
+          employeeId: employees.id,
+          firstName: employees.firstName,
+          lastName: employees.lastName,
+          baseSalaryGross: employmentContracts.baseSalaryGross,
+          contractType: employmentContracts.contractType,
+          contractId: employmentContracts.id
+        })
+        .from(employees)
+        .innerJoin(employmentContracts, eq(employees.id, employmentContracts.employeeId))
+        .where(
+          and(
+            eq(employees.id, employeeId),
+            eq(employees.companyId, companyId),
+            eq(employmentContracts.status, 'active')
+          )
+        )
+        .limit(1);
       
-      if (!employee || employee.length === 0) {
-        throw new Error('Employee not found');
+      if (!employeeData || employeeData.length === 0) {
+        throw new Error('Employee not found or no active contract');
       }
 
-      const employeeData = employee[0];
-      const grossSalary = parseFloat(employeeData.base_salary_gross);
+      const employee = employeeData[0];
+      const grossSalary = parseFloat(employee.baseSalaryGross as string);
       
       // Calculate Romanian tax values
       // CAS: 25% employee contribution to social security
@@ -77,30 +90,40 @@ export class PayrollService {
       // CAM: 2.25% employer contribution to work insurance
       const camEmployerAmount = grossSalary * 0.0225;
       
-      // Create payroll record
+      // Create payroll record using Drizzle ORM
       const payrollId = uuidv4();
-      await this.drizzle.db.execute(
-        sql`INSERT INTO hr_payroll_logs (
-          id, company_id, employee_id, year, month, 
-          gross_total, cas_employee_amount, cass_employee_amount, 
-          income_tax_amount, personal_deduction_amount, net_salary,
-          cam_employer_amount, status, created_by
-        ) VALUES (
-          ${payrollId}, ${companyId}, ${employeeId}, ${year}, ${month}, 
-          ${grossSalary}, ${casEmployeeAmount}, ${cassEmployeeAmount}, 
-          ${incomeTaxAmount}, ${personalDeduction}, ${netSalary},
-          ${camEmployerAmount}, 'calculated', ${userId}
-        )`
-      );
+      await this.db
+        .insert(payrollLogs)
+        .values({
+          id: payrollId,
+          companyId,
+          employeeId,
+          employmentContractId: employee.contractId,
+          year,
+          month,
+          workingDaysInMonth: 22, // Poate fi calculat dinamic
+          workedDays: '22',
+          baseSalaryGross: grossSalary.toString(),
+          grossTotal: grossSalary.toString(),
+          casEmployeeAmount: casEmployeeAmount.toString(),
+          cassEmployeeAmount: cassEmployeeAmount.toString(),
+          incomeTaxAmount: incomeTaxAmount.toString(),
+          personalDeduction: personalDeduction.toString(),
+          netSalary: netSalary.toString(),
+          camEmployerAmount: camEmployerAmount.toString(),
+          status: 'calculated',
+          createdBy: userId,
+          updatedBy: userId
+        });
       
       // Audit the payroll calculation
-      await AuditService.console.log({
+      await this.auditService.logAction({
         userId,
-        companyId,
         action: AuditAction.CREATE,
-        entity: 'PAYROLL',
-        entityId: payrollId,
-        details: {
+        resourceType: AuditResourceType.PAYROLL,
+        resourceId: payrollId,
+        metadata: {
+          companyId,
           employeeId,
           year,
           month,
@@ -134,15 +157,20 @@ export class PayrollService {
    */
   async processCompanyPayroll(companyId: string, year: number, month: number, userId: string) {
     try {
-      // Get all active employees with valid contracts
-      const activeEmployees = await this.drizzle.db.execute(
-        sql`SELECT e.id 
-            FROM hr_employees e
-            JOIN hr_employment_contracts ec ON e.id = ec.employee_id
-            WHERE e.company_id = ${companyId} 
-            AND e.is_active = true
-            AND ec.status = 'active'`
-      );
+      // Get all active employees with valid contracts using Drizzle ORM
+      const activeEmployees = await this.db
+        .select({
+          id: employees.id
+        })
+        .from(employees)
+        .innerJoin(employmentContracts, eq(employees.id, employmentContracts.employeeId))
+        .where(
+          and(
+            eq(employees.companyId, companyId),
+            eq(employees.isActive, true),
+            eq(employmentContracts.status, 'active')
+          )
+        );
       
       if (!activeEmployees || activeEmployees.length === 0) {
         return { processed: 0, message: 'No active employees found' };
@@ -199,24 +227,24 @@ export class PayrollService {
       }
       
       // Update the payroll status
-      await this.drizzle.db.execute(
-        sql`UPDATE hr_payroll_logs
-            SET status = 'approved', 
-                approved_by = ${userId}, 
-                approved_at = NOW(), 
-                updated_by = ${userId}, 
-                updated_at = NOW()
-            WHERE id = ${payrollId}`
-      );
+      // Update payroll status using Drizzle ORM
+      await this.db
+        .update(payrollLogs)
+        .set({
+          status: 'approved',
+          updatedBy: userId,
+          updatedAt: new Date().toISOString()
+        })
+        .where(eq(payrollLogs.id, payrollId));
       
       // Audit the approval
-      await AuditService.console.log({
+      await this.auditService.logAction({
         userId,
-        companyId: payroll[0].company_id,
         action: AuditAction.UPDATE,
-        entity: 'PAYROLL',
-        entityId: payrollId,
-        details: {
+        resourceType: AuditResourceType.PAYROLL,
+        resourceId: payrollId,
+        metadata: {
+          companyId: payroll[0].companyId,
           status: 'approved',
           payrollId
         }
@@ -242,38 +270,46 @@ export class PayrollService {
    */
   async getEmployeePayroll(employeeId: string, year?: number, month?: number) {
     try {
-      let querySQL;
+      // Build WHERE conditions dynamically
+      const conditions = [eq(payrollLogs.employeeId, employeeId)];
       
-      if (year && month) {
-        querySQL = sql`
-          SELECT pl.*, e.first_name, e.last_name
-          FROM hr_payroll_logs pl
-          JOIN hr_employees e ON pl.employee_id = e.id
-          WHERE pl.employee_id = ${employeeId}
-          AND pl.year = ${year}
-          AND pl.month = ${month}
-          ORDER BY pl.year DESC, pl.month DESC
-        `;
-      } else if (year) {
-        querySQL = sql`
-          SELECT pl.*, e.first_name, e.last_name
-          FROM hr_payroll_logs pl
-          JOIN hr_employees e ON pl.employee_id = e.id
-          WHERE pl.employee_id = ${employeeId}
-          AND pl.year = ${year}
-          ORDER BY pl.year DESC, pl.month DESC
-        `;
-      } else {
-        querySQL = sql`
-          SELECT pl.*, e.first_name, e.last_name
-          FROM hr_payroll_logs pl
-          JOIN hr_employees e ON pl.employee_id = e.id
-          WHERE pl.employee_id = ${employeeId}
-          ORDER BY pl.year DESC, pl.month DESC
-        `;
+      if (year) {
+        conditions.push(eq(payrollLogs.year, year));
       }
       
-      const payrollRecords = await this.drizzle.db.execute(querySQL);
+      if (month) {
+        conditions.push(eq(payrollLogs.month, month));
+      }
+      
+      // Query using Drizzle ORM with JOIN
+      const payrollRecords = await this.db
+        .select({
+          // Payroll fields
+          id: payrollLogs.id,
+          companyId: payrollLogs.companyId,
+          employeeId: payrollLogs.employeeId,
+          employmentContractId: payrollLogs.employmentContractId,
+          year: payrollLogs.year,
+          month: payrollLogs.month,
+          baseSalaryGross: payrollLogs.baseSalaryGross,
+          grossTotal: payrollLogs.grossTotal,
+          netSalary: payrollLogs.netSalary,
+          casEmployeeAmount: payrollLogs.casEmployeeAmount,
+          cassEmployeeAmount: payrollLogs.cassEmployeeAmount,
+          incomeTaxAmount: payrollLogs.incomeTaxAmount,
+          camEmployerAmount: payrollLogs.camEmployerAmount,
+          personalDeduction: payrollLogs.personalDeduction,
+          status: payrollLogs.status,
+          createdAt: payrollLogs.createdAt,
+          updatedAt: payrollLogs.updatedAt,
+          // Employee fields
+          firstName: employees.firstName,
+          lastName: employees.lastName
+        })
+        .from(payrollLogs)
+        .innerJoin(employees, eq(payrollLogs.employeeId, employees.id))
+        .where(and(...conditions))
+        .orderBy(desc(payrollLogs.year), desc(payrollLogs.month));
       
       return payrollRecords || [];
     } catch (error: any) {
@@ -291,27 +327,29 @@ export class PayrollService {
    */
   async getCompanyPayrollSummary(companyId: string, year: number, month?: number) {
     try {
-      let query = `
-        SELECT 
-          COUNT(*) as employee_count,
-          SUM(gross_total) as total_gross,
-          SUM(net_salary) as total_net,
-          SUM(cas_employee_amount) as total_cas_employee,
-          SUM(cass_employee_amount) as total_cass_employee,
-          SUM(income_tax_amount) as total_income_tax,
-          SUM(cam_employer_amount) as total_cam_employer
-        FROM hr_payroll_logs
-        WHERE company_id = $1 AND year = $2
-      `;
-      
-      const params = [companyId, year];
+      // Build WHERE conditions
+      const conditions = [
+        eq(payrollLogs.companyId, companyId),
+        eq(payrollLogs.year, year)
+      ];
       
       if (month) {
-        query += ` AND month = $${params.length + 1}`;
-        params.push(month);
+        conditions.push(eq(payrollLogs.month, month));
       }
       
-      const summary = await this.drizzle.executeQuery(query, params);
+      // Query using Drizzle ORM with aggregations
+      const summary = await this.db
+        .select({
+          employeeCount: count(payrollLogs.id),
+          totalGross: sql<number>`COALESCE(SUM(CAST(${payrollLogs.grossTotal} AS numeric)), 0)`,
+          totalNet: sql<number>`COALESCE(SUM(CAST(${payrollLogs.netSalary} AS numeric)), 0)`,
+          totalCasEmployee: sql<number>`COALESCE(SUM(CAST(${payrollLogs.casEmployeeAmount} AS numeric)), 0)`,
+          totalCassEmployee: sql<number>`COALESCE(SUM(CAST(${payrollLogs.cassEmployeeAmount} AS numeric)), 0)`,
+          totalIncomeTax: sql<number>`COALESCE(SUM(CAST(${payrollLogs.incomeTaxAmount} AS numeric)), 0)`,
+          totalCamEmployer: sql<number>`COALESCE(SUM(CAST(${payrollLogs.camEmployerAmount} AS numeric)), 0)`
+        })
+        .from(payrollLogs)
+        .where(and(...conditions));
       
       if (!summary || summary.length === 0) {
         return {
@@ -326,13 +364,13 @@ export class PayrollService {
       }
       
       return {
-        employeeCount: parseInt(summary[0].employee_count) || 0,
-        totalGross: parseFloat(summary[0].total_gross) || 0,
-        totalNet: parseFloat(summary[0].total_net) || 0,
-        totalCasEmployee: parseFloat(summary[0].total_cas_employee) || 0,
-        totalCassEmployee: parseFloat(summary[0].total_cass_employee) || 0,
-        totalIncomeTax: parseFloat(summary[0].total_income_tax) || 0,
-        totalCamEmployer: parseFloat(summary[0].total_cam_employer) || 0
+        employeeCount: Number(summary[0].employeeCount) || 0,
+        totalGross: Number(summary[0].totalGross) || 0,
+        totalNet: Number(summary[0].totalNet) || 0,
+        totalCasEmployee: Number(summary[0].totalCasEmployee) || 0,
+        totalCassEmployee: Number(summary[0].totalCassEmployee) || 0,
+        totalIncomeTax: Number(summary[0].totalIncomeTax) || 0,
+        totalCamEmployer: Number(summary[0].totalCamEmployer) || 0
       };
     } catch (error: any) {
       console.error('Error retrieving company payroll summary:', error);
@@ -349,31 +387,48 @@ export class PayrollService {
    */
   async getPayrollReport(companyId: string, year: number, month?: number) {
     try {
-      // Get detailed payroll data
-      let query = `
-        SELECT 
-          pl.*,
-          e.first_name,
-          e.last_name,
-          e.cnp,
-          ec.contract_number,
-          ec.position
-        FROM hr_payroll_logs pl
-        JOIN hr_employees e ON pl.employee_id = e.id
-        LEFT JOIN hr_employment_contracts ec ON pl.employment_contract_id = ec.id
-        WHERE pl.company_id = $1 AND pl.year = $2
-      `;
-      
-      const params: any[] = [companyId, year];
+      // Build WHERE conditions
+      const conditions = [
+        eq(payrollLogs.companyId, companyId),
+        eq(payrollLogs.year, year)
+      ];
       
       if (month) {
-        query += ` AND pl.month = $${params.length + 1}`;
-        params.push(month);
+        conditions.push(eq(payrollLogs.month, month));
       }
       
-      query += ` ORDER BY e.last_name, e.first_name, pl.month`;
-      
-      const payrollData = await this.drizzle.executeQuery(query, params);
+      // Get detailed payroll data using Drizzle ORM
+      const payrollData = await this.db
+        .select({
+          // Payroll log fields
+          id: payrollLogs.id,
+          companyId: payrollLogs.companyId,
+          employeeId: payrollLogs.employeeId,
+          employmentContractId: payrollLogs.employmentContractId,
+          year: payrollLogs.year,
+          month: payrollLogs.month,
+          baseSalaryGross: payrollLogs.baseSalaryGross,
+          grossTotal: payrollLogs.grossTotal,
+          netSalary: payrollLogs.netSalary,
+          casEmployeeAmount: payrollLogs.casEmployeeAmount,
+          cassEmployeeAmount: payrollLogs.cassEmployeeAmount,
+          incomeTaxAmount: payrollLogs.incomeTaxAmount,
+          camEmployerAmount: payrollLogs.camEmployerAmount,
+          personalDeduction: payrollLogs.personalDeduction,
+          status: payrollLogs.status,
+          createdAt: payrollLogs.createdAt,
+          // Employee fields
+          firstName: employees.firstName,
+          lastName: employees.lastName,
+          cnp: employees.cnp,
+          // Contract fields
+          contractNumber: employmentContracts.contractNumber
+        })
+        .from(payrollLogs)
+        .innerJoin(employees, eq(payrollLogs.employeeId, employees.id))
+        .leftJoin(employmentContracts, eq(payrollLogs.employmentContractId, employmentContracts.id))
+        .where(and(...conditions))
+        .orderBy(employees.lastName, employees.firstName, payrollLogs.month);
       
       // Get summary data
       const summary = await this.getCompanyPayrollSummary(companyId, year, month);
@@ -401,29 +456,46 @@ export class PayrollService {
    */
   async getEmployeePayrollHistory(employeeId: string, year?: number, limit: number = 12) {
     try {
-      let query = `
-        SELECT 
-          pl.*,
-          e.first_name,
-          e.last_name,
-          ec.contract_number
-        FROM hr_payroll_logs pl
-        JOIN hr_employees e ON pl.employee_id = e.id
-        LEFT JOIN hr_employment_contracts ec ON pl.employment_contract_id = ec.id
-        WHERE pl.employee_id = $1
-      `;
-      
-      const params: any[] = [employeeId];
+      // Build WHERE conditions
+      const conditions = [eq(payrollLogs.employeeId, employeeId)];
       
       if (year) {
-        query += ` AND pl.year = $${params.length + 1}`;
-        params.push(year);
+        conditions.push(eq(payrollLogs.year, year));
       }
       
-      query += ` ORDER BY pl.year DESC, pl.month DESC LIMIT $${params.length + 1}`;
-      params.push(limit);
-      
-      const history = await this.drizzle.executeQuery(query, params);
+      // Query using Drizzle ORM
+      const history = await this.db
+        .select({
+          // Payroll log fields
+          id: payrollLogs.id,
+          companyId: payrollLogs.companyId,
+          employeeId: payrollLogs.employeeId,
+          employmentContractId: payrollLogs.employmentContractId,
+          year: payrollLogs.year,
+          month: payrollLogs.month,
+          baseSalaryGross: payrollLogs.baseSalaryGross,
+          grossTotal: payrollLogs.grossTotal,
+          netSalary: payrollLogs.netSalary,
+          casEmployeeAmount: payrollLogs.casEmployeeAmount,
+          cassEmployeeAmount: payrollLogs.cassEmployeeAmount,
+          incomeTaxAmount: payrollLogs.incomeTaxAmount,
+          camEmployerAmount: payrollLogs.camEmployerAmount,
+          personalDeduction: payrollLogs.personalDeduction,
+          status: payrollLogs.status,
+          createdAt: payrollLogs.createdAt,
+          updatedAt: payrollLogs.updatedAt,
+          // Employee fields
+          firstName: employees.firstName,
+          lastName: employees.lastName,
+          // Contract fields
+          contractNumber: employmentContracts.contractNumber
+        })
+        .from(payrollLogs)
+        .innerJoin(employees, eq(payrollLogs.employeeId, employees.id))
+        .leftJoin(employmentContracts, eq(payrollLogs.employmentContractId, employmentContracts.id))
+        .where(and(...conditions))
+        .orderBy(desc(payrollLogs.year), desc(payrollLogs.month))
+        .limit(limit);
       
       return history || [];
     } catch (error: any) {
