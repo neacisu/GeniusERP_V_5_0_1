@@ -153,15 +153,9 @@ export class RoleService {
       // Adăugăm condiția WHERE
       params.push(roleId);
       
-      // Executăm interogarea SQL dacă există câmpuri de actualizat
+      // Executăm interogarea Drizzle dacă există câmpuri de actualizat
       if (setClause.length > 0) {
-        const query = `
-          UPDATE roles 
-          SET ${setClause.join(', ')} 
-          WHERE id = $${paramIndex}
-          RETURNING *
-        `;
-        
+        // Folosim Drizzle ORM pentru update (nu raw query)
         const result = await this.db
           .update(roles)
           .set(updates)
@@ -379,11 +373,11 @@ export class RoleService {
         const roles = await this.getRolesByCompany(companyId);
         this.logger.info(`Found ${roles.length} roles for company ${companyId}`);
         
-        res.json({ success: true, data: roles });
+        return res.json({ success: true, data: roles });
       } catch (error) {
         this.logger.error('Error fetching roles:', error);
         // Trimitem mai multe detalii despre eroare pentru debugging
-        res.status(500).json({ 
+        return res.status(500).json({ 
           success: false, 
           message: 'Failed to fetch roles',
           error: error instanceof Error ? error.message : String(error)
@@ -415,14 +409,14 @@ export class RoleService {
         this.logger.info(`Obtained ${result.length} roles via test endpoint`);
         
         // Returnăm rezultatele
-        res.json({ 
+        return res.json({ 
           success: true, 
           data: result,
           message: 'Test endpoint successful'
         });
       } catch (error) {
         this.logger.error('Error in test roles endpoint:', error);
-        res.status(500).json({
+        return res.status(500).json({
           success: false,
           message: 'Failed to get test roles'
         });
@@ -434,12 +428,26 @@ export class RoleService {
       try {
         const { companyId } = req.params;
         
+        // MULTI-TENANT SECURITY: Verifică că user cere doar compania sa!
+        const userCompanyId = (req.user as any)?.company_id;
+        if (!userCompanyId) {
+          return res.status(403).json({ success: false, error: 'User not associated with any company' });
+        }
+        
+        if (companyId !== userCompanyId) {
+          this.logger.error(`SECURITY BREACH ATTEMPT: User ${(req.user as any)?.id} trying to access company ${companyId} (has ${userCompanyId})`);
+          return res.status(403).json({ 
+            success: false, 
+            error: 'Forbidden: Cannot access data from another company' 
+          });
+        }
+        
         const roles = await this.getRolesByCompany(companyId);
         
-        res.json({ success: true, data: roles });
+        return res.json({ success: true, data: roles });
       } catch (error) {
         this.logger.error('Error fetching roles:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch roles' });
+        return res.status(500).json({ success: false, message: 'Failed to fetch roles' });
       }
     });
 
@@ -454,10 +462,10 @@ export class RoleService {
           return res.status(404).json({ success: false, message: 'Role not found' });
         }
         
-        res.json({ success: true, data: role });
+        return res.json({ success: true, data: role });
       } catch (error) {
         this.logger.error('Error fetching role details:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch role details' });
+        return res.status(500).json({ success: false, message: 'Failed to fetch role details' });
       }
     });
 
@@ -479,10 +487,10 @@ export class RoleService {
           companyId
         });
         
-        res.status(201).json({ success: true, data: role });
+        return res.status(201).json({ success: true, data: role });
       } catch (error) {
         this.logger.error('Error creating role:', error);
-        res.status(500).json({ success: false, message: 'Failed to create role' });
+        return res.status(500).json({ success: false, message: 'Failed to create role' });
       }
     });
 
@@ -506,10 +514,10 @@ export class RoleService {
           req.user?.id || 'system'
         );
         
-        res.json({ success: true, data: role });
+        return res.json({ success: true, data: role });
       } catch (error) {
         this.logger.error('Error updating role:', error);
-        res.status(500).json({ success: false, message: 'Failed to update role' });
+        return res.status(500).json({ success: false, message: 'Failed to update role' });
       }
     });
 
@@ -520,10 +528,10 @@ export class RoleService {
         
         await this.deleteRole(roleId, req.user?.id || 'system');
         
-        res.json({ success: true });
+        return res.json({ success: true });
       } catch (error) {
         this.logger.error('Error deleting role:', error);
-        res.status(500).json({ success: false, message: 'Failed to delete role' });
+        return res.status(500).json({ success: false, message: 'Failed to delete role' });
       }
     });
 
