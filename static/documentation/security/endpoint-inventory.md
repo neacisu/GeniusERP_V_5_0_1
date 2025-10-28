@@ -1,6 +1,6 @@
 # Inventar Endpoint-uri API - GeniusERP
 
-**Data generării:** 2025-10-28T17:06:36.372Z
+**Data generării:** 2025-10-28T17:43:47.167Z
 
 ## Sumar Executiv
 

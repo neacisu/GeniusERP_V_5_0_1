@@ -50,6 +50,10 @@ import { globalApiRateLimiter } from './middlewares/global-rate-limit.middleware
 // Create Express app
 const app = express();
 
+// Trust proxy - NECESAR pentru Docker/Nginx (rate limiting accurate)
+// În production, Nginx/Docker network face proxy requests
+app.set('trust proxy', 1); // Trust first proxy (Docker network)
+
 // Note: Sentry is initialized via instrument.ts (loaded with --import flag)
 // This ensures proper instrumentation in ESM context
 
