@@ -226,7 +226,7 @@ export class RoleService {
         .where(eq(roles.id, roleId));
       
       // Log the audit event
-      await AuditService.console.log({
+      await AuditService.log({
         userId: actorId,
         companyId: role.companyId || 'unknown',
         action: AuditAction.DELETE,
