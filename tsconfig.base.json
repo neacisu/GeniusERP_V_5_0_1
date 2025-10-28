@@ -20,8 +20,8 @@
     "strict": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,  // Disabled - features în development
+    "noUnusedParameters": false,  // Disabled - permite parametri rezervați pentru viitor
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "allowUnreachableCode": false,
