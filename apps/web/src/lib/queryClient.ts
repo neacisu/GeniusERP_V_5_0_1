@@ -30,6 +30,45 @@ export interface ApiErrorResponse {
 const TOKEN_REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
 let tokenRefreshTimer: number | null = null;
 
+// Cache pentru CSRF token
+let csrfTokenCache: { token: string; expiresAt: number } | null = null;
+
+/**
+ * Obține CSRF token de la server
+ */
+async function getCsrfToken(): Promise<string | null> {
+  // Verifică cache-ul
+  if (csrfTokenCache && csrfTokenCache.expiresAt > Date.now()) {
+    return csrfTokenCache.token;
+  }
+  
+  try {
+    const response = await fetch('/api/auth/csrf-token', {
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      logger.warn('Failed to fetch CSRF token', { status: response.status });
+      return null;
+    }
+    
+    const data = await response.json();
+    const token = data.csrfToken;
+    const expiresIn = data.expiresIn || 3600; // default 1 hour
+    
+    // Cache token-ul
+    csrfTokenCache = {
+      token,
+      expiresAt: Date.now() + (expiresIn * 1000 * 0.9) // Refresh la 90% din expiry
+    };
+    
+    return token;
+  } catch (error) {
+    logger.error('Error fetching CSRF token', { error });
+    return null;
+  }
+}
+
 // Get the JWT token from localStorage
 const getAuthToken = (): string | null => {
   if (typeof window === 'undefined') return null;
@@ -279,6 +318,15 @@ export async function apiRequest<T = any>(
       } catch (e) {
         logger.error('Error getting fallback token', { error: e });
       }
+    }
+  }
+  
+  // Add CSRF token pentru mutative requests (POST/PUT/DELETE/PATCH)
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method.toUpperCase())) {
+    const csrfToken = await getCsrfToken();
+    if (csrfToken) {
+      headers["X-CSRF-Token"] = csrfToken;
+      logger.debug('CSRF token added to request');
     }
   } else {
     logger.debug('Public auth endpoint detected, skipping token check');

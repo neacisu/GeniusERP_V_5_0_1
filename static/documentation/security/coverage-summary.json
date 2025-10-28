@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-10-28T17:06:35.841Z",
+  "totalEndpoints": 490,
+  "publicEndpoints": 3,
+  "protectedEndpoints": 487,
+  "coverage": 100,
+  "globalAuth": true,
+  "globalRateLimit": true,
+  "csrfProtection": true,
+  "cspHeaders": true
+}

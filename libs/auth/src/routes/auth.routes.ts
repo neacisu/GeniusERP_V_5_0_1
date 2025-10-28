@@ -9,6 +9,8 @@ import { JwtAuthMode, UserRole } from "../types";
 import { DrizzleService } from "@common/drizzle";
 import { users, User as SelectUser } from '@geniuserp/shared';
 import { authRateLimiter } from "@api/middlewares/rate-limit.middleware";
+import { csrfTokenRoute } from "@api/middlewares/csrf.middleware";
+// Note: csrfProtection will be applied globally in main.ts via globalAuthMiddleware
 
 export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
   const router = Router();
@@ -17,19 +19,19 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
   // Set up session with security best practices
   // SESSION_SECRET is validated at startup by env-validation.ts
   const sessionSettings: session.SessionOptions = {
-    secret: String(process.env.SESSION_SECRET),  // Validated at startup, safe to convert
+    secret: String(process.env['SESSION_SECRET']),  // Validated at startup, safe to convert
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
     cookie: {
       maxAge: 1000 * 60 * 60 * 24, // 1 day
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env['NODE_ENV'] === "production",
       httpOnly: true,
       sameSite: 'lax', // CSRF protection
-      domain: process.env.COOKIE_DOMAIN || undefined
+      domain: process.env['COOKIE_DOMAIN'] || undefined
     },
     name: 'geniuserp.sid', // Custom session name (don't reveal tech stack)
-    proxy: process.env.NODE_ENV === "production" // Trust proxy in production
+    proxy: process.env['NODE_ENV'] === "production" // Trust proxy in production
   };
 
   // Configure Passport strategies
@@ -40,8 +42,12 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
         if (!user || !(await authService.comparePasswords(password, user.password))) {
           return done(null, false, { message: "Nume de utilizator sau parolă incorecte" });
         } else {
-          // Transform SelectUser to AuthUser by adding roles array
-          const authUser = { ...user, roles: [user.role] };
+          // Transform SelectUser to AuthUser by adding roles array and ensuring companyId
+          const authUser = { 
+            ...user, 
+            roles: [user.role],
+            companyId: user.company_id || null // Map company_id to companyId
+          };
           return done(null, authUser);
         }
       } catch (error) {
@@ -76,8 +82,12 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
   passport.deserializeUser(async (id: string, done) => {
     try {
       const user = await authService.getUserById(id);
-      // Transform SelectUser to AuthUser by adding roles array
-      const authUser = user ? { ...user, roles: [user.role] } : null;
+      // Transform SelectUser to AuthUser by adding roles array and companyId
+      const authUser = user ? { 
+        ...user, 
+        roles: [user.role],
+        companyId: user.company_id || null
+      } : null;
       done(null, authUser);
     } catch (error) {
       done(error, null);
@@ -95,13 +105,13 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
       const user = await authService.registerUser(req.body);
 
       // Return the user with token without using req.login
-      res.status(201).json({ ...user, token: user.token });
+      return res.status(201).json({ ...user, token: user.token });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Registration error';
       if (message === "Numele de utilizator există deja") {
         return res.status(400).json({ message });
       }
-      next(error);
+      return next(error);
     }
   });
 
@@ -120,10 +130,13 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
     })(req, res, next);
   });
 
+  // CSRF token endpoint - GET request fără protecție CSRF
+  router.get("/csrf-token", csrfTokenRoute);
+
   // Logout route
-  router.post("/logout", (req, res) => {
+  router.post("/logout", (_req, res) => {
     // Simply return success since we're using token-based auth
-    res.status(200).json({ message: 'Logout successful' });
+    return res.status(200).json({ message: 'Logout successful' });
   });
 
   // Refresh token route
@@ -144,27 +157,27 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
       const newToken = authService.generateToken(user);
       
       console.log(`Token refreshed successfully for user: ${user.id}`, 'auth-routes');
-      res.json({ 
+      return res.json({ 
         token: newToken,
         user: {
           id: user.id,
           username: user.username,
           role: user.role,
-          companyId: user.companyId
+          companyId: (user as any).companyId || (user as any).company_id || null
         }
       });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error('[AuthRoutes] Token refresh error:', message);
-      res.status(401).json({ error: 'Token refresh failed' });
+      return res.status(401).json({ error: 'Token refresh failed' });
     }
   });
 
   // Get current user route
   router.get("/user", 
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    (req, res) => {
-      res.json(req.user);
+    (_req, res) => {
+      return res.json(_req.user);
     }
   );
 
@@ -172,23 +185,23 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
   router.get("/users", 
     AuthGuard.protect(JwtAuthMode.REQUIRED),
     AuthGuard.roleGuard([UserRole.ADMIN]),
-    async (req, res) => {
+    async (_req, res) => {
       try {
         // Use DrizzleService to get all users through query method
         const usersData = await drizzleService.query(async (db) => {
           return await db.select().from(users);
         });
-        res.json(usersData);
+        return res.json(usersData);
       } catch (error) {
         console.error('Error fetching users:', error);
-        res.status(500).json({ error: 'Failed to fetch users' });
+        return res.status(500).json({ error: 'Failed to fetch users' });
       }
     }
   );
 
   // Test endpoints - ONLY in development
   // These are security-sensitive and should NEVER be exposed in production
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env['NODE_ENV'] !== 'production') {
     // Test token generation endpoint
     router.get('/test-token/:userId', async (req, res) => {
       try {

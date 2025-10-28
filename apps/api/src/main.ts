@@ -41,6 +41,11 @@ import testSentryRoutes from './routes/test-sentry.route';
 // Security Headers (Helmet & CORS) - imports at top level
 import helmet from 'helmet';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import { csrfSetup } from './middlewares/csrf.middleware';
+// Global Security Middlewares
+import { globalAuthMiddleware } from './middlewares/global-auth.middleware';
+import { globalApiRateLimiter } from './middlewares/global-rate-limit.middleware';
 
 // Create Express app
 const app = express();
@@ -48,9 +53,25 @@ const app = express();
 // Note: Sentry is initialized via instrument.ts (loaded with --import flag)
 // This ensures proper instrumentation in ESM context
 
-// Helmet configuration for security headers (API-only, no CSP for HTML serving)
+// Helmet configuration for security headers (API with strict CSP)
 app.use(helmet({
-  contentSecurityPolicy: false, // Not serving HTML anymore, frontend handles this
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'none'"], // API nu servește scripturi
+      styleSrc: ["'none'"],  // API nu servește stiluri
+      imgSrc: ["'none'"],    // API nu servește imagini
+      connectSrc: ["'self'"], // Permite doar conexiuni la același origin
+      fontSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'none'"],
+      frameSrc: ["'none'"],
+      frameAncestors: ["'none'"], // Previne embedding în iframe
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      upgradeInsecureRequests: process.env['NODE_ENV'] === 'production' ? [] : null
+    }
+  },
   hsts: process.env['NODE_ENV'] === 'production' ? {
     maxAge: 31536000,
     includeSubDomains: true,
@@ -59,7 +80,9 @@ app.use(helmet({
   frameguard: { action: 'deny' },
   noSniff: true,
   xssFilter: true,
-  referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  // Previne information disclosure
+  hidePoweredBy: true
 }));
 
 // CORS configuration - Folosește CORS_ORIGINS din .ENV
@@ -110,11 +133,27 @@ appLogger.info('✓ Security headers (Helmet) and CORS configured');
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Cookie parser pentru CSRF tokens
+app.use(cookieParser());
+
+// CSRF setup - generează tokens pentru toate request-urile
+app.use(csrfSetup());
+
 // Apply metrics middleware early to capture all requests
 app.use(metricsMiddleware);
 
 // Apply Loki logging middleware
 app.use(loggingMiddleware);
+
+// ===== GLOBAL SECURITY MIDDLEWARE =====
+// Apply GLOBAL rate limiting on ALL API routes (100 req/min)
+app.use('/api', globalApiRateLimiter);
+appLogger.info('✓ Global rate limiting applied on /api/* (100 req/min)');
+
+// Apply GLOBAL authentication on ALL API routes (with public endpoint whitelist)
+app.use(globalAuthMiddleware());
+appLogger.info('✓ Global authentication applied on /api/* (whitelist: login, register, webhooks)');
+// =========================================
 
 // Serve static files from public directory
 app.use('/templates', express.static('public/templates'));

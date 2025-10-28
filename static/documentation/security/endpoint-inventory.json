@@ -1,0 +1,4772 @@
+{
+  "generatedAt": "2025-10-28T17:06:36.373Z",
+  "summary": {
+    "totalEndpoints": 490,
+    "totalModules": 17,
+    "authProtected": 71,
+    "rateLimited": 60
+  },
+  "modules": [
+    {
+      "module": "Accounting",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/:companyId",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/:companyId/general",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:companyId/vat",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/:companyId/vat",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:companyId/account-mappings",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/:companyId/account-mappings/:type",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:companyId/account-mappings/reset",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:companyId/relationships",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:companyId/relationships",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/:companyId/relationships/:id",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:companyId/relationships/:id",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:companyId/document-counters",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:companyId/document-counters",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/:companyId/document-counters/:type",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:companyId/document-counters/:counterId",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:companyId/fiscal-periods",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:companyId/opening-balances",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:companyId/opening-balances/import",
+          "file": "libs/accounting/src/routes/accounting-settings.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/metrics",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/recent-transactions",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/account-classes",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/account-groups",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/account-groups/by-class/:classId",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/synthetic-accounts",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/synthetic-accounts/by-group/:groupId",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/synthetic-accounts/by-grade/:grade",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/analytic-accounts",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/analytic-accounts/by-synthetic/:syntheticId",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/analytic-accounts",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/journal-entries",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/journal-entries/:id",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/journal-entries",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/trial-balance/async",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/balance-sheet/async",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/income-statement/async",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/suppliers",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/suppliers/:id",
+          "file": "libs/accounting/src/routes/accounting.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/bank-accounts",
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/bank-accounts/:id",
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/bank-accounts",
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/bank-accounts/:id",
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/bank-transactions",
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/bank-transactions/:id",
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/bank-transactions/deposits",
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/bank-transactions/payments",
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/bank-transactions/transfers",
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/bank-statements/import/:bankAccountId",
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/bank-reconciliations/:bankAccountId",
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/bank-accounts/:id/balance",
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/bank-accounts/:id/statement/cached",
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/bank-reconciliations/:bankAccountId/async",
+          "file": "libs/accounting/src/routes/bank-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/cash-registers",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/cash-registers/:id",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/cash-registers",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/cash-registers/:id",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/receipts",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/payments",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/transfers",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/cash-transactions",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/cash-registers/:id/transactions",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/cash-registers/:id/balance",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/cash-registers/:id/bank-deposits",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/cash-registers/:id/bank-withdrawals",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/reconciliations/:registerId",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/registers/:id/daily-closing",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/reports/daily/cached",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/reconciliations/:registerId/async",
+          "file": "libs/accounting/src/routes/cash-register.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/financial-reports",
+          "file": "libs/accounting/src/routes/financial-reports.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/financial-indicators",
+          "file": "libs/accounting/src/routes/financial-reports.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/reopen/:periodId",
+          "file": "libs/accounting/src/routes/fiscal-closure.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/periods",
+          "file": "libs/accounting/src/routes/fiscal-closure.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/period/:periodId",
+          "file": "libs/accounting/src/routes/fiscal-closure.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/generate-periods",
+          "file": "libs/accounting/src/routes/fiscal-closure.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/validate-period",
+          "file": "libs/accounting/src/routes/fiscal-closure.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/month/async",
+          "file": "libs/accounting/src/routes/fiscal-closure.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/year/async",
+          "file": "libs/accounting/src/routes/fiscal-closure.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/vat/async",
+          "file": "libs/accounting/src/routes/fiscal-closure.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/vat/d300",
+          "file": "libs/accounting/src/routes/fiscal-closure.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/pdf",
+          "file": "libs/accounting/src/routes/general-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/excel",
+          "file": "libs/accounting/src/routes/general-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/preview",
+          "file": "libs/accounting/src/routes/general-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/periods",
+          "file": "libs/accounting/src/routes/general-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/transactions",
+          "file": "libs/accounting/src/routes/ledger.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/transactions/:id",
+          "file": "libs/accounting/src/routes/ledger.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/entries",
+          "file": "libs/accounting/src/routes/ledger.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/entry",
+          "file": "libs/accounting/src/routes/ledger.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/entries",
+          "file": "libs/accounting/src/routes/ledger.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/entries/:id",
+          "file": "libs/accounting/src/routes/ledger.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/entries/:id/post",
+          "file": "libs/accounting/src/routes/ledger.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/entries/:id/unpost",
+          "file": "libs/accounting/src/routes/ledger.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/entries/:id/reverse",
+          "file": "libs/accounting/src/routes/ledger.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/accounting/src/routes/manual-entries.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/accounting/src/routes/manual-entries.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id",
+          "file": "libs/accounting/src/routes/manual-entries.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/validate",
+          "file": "libs/accounting/src/routes/manual-entries.routes.ts",
+          "middleware": [
+            "validation"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": true
+        },
+        {
+          "method": "POST",
+          "path": "/start",
+          "file": "libs/accounting/src/routes/onboarding.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/import-chart",
+          "file": "libs/accounting/src/routes/onboarding.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/import-balances",
+          "file": "libs/accounting/src/routes/onboarding.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/validate",
+          "file": "libs/accounting/src/routes/onboarding.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/finalize",
+          "file": "libs/accounting/src/routes/onboarding.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/upload-preview",
+          "file": "libs/accounting/src/routes/onboarding.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/import-balances-excel",
+          "file": "libs/accounting/src/routes/onboarding.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/download-template",
+          "file": "libs/accounting/src/routes/onboarding.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/status/:companyId",
+          "file": "libs/accounting/src/routes/onboarding.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/invoices",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/invoices/:id",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/invoices",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/invoices/:id",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/invoices/:id",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/invoices/:id/payments",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/invoices/:id/payments",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/payments/:id",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/ledger-entries",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/ledger-entries",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/ledger-entries/:id",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/suppliers/:id/statement",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/suppliers/:id/balance",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/complete-supplier-details",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/journal/generate-async",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/bulk-create-invoices",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/bulk-record-payments",
+          "file": "libs/accounting/src/routes/purchase-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/invoices",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/invoices/:id",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/invoices",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/invoices/:id",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/invoices/:id",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/invoices/:id/payments",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/invoices/:id/payments",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/payments/:id",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/receipts",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/receipts",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/receipts/:id",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/ledger-entries",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/ledger-entries",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/ledger-entries/:id",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/customers/:id/statement",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/customers/:id/balance",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/reports/sales-by-period",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/reports/sales-by-product",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/reports/sales-by-customer",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/journal/generate-async",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/bulk-create-invoices",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/bulk-record-payments",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/jobs/:jobId",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/jobs/:jobId/cancel",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/jobs/metrics",
+          "file": "libs/accounting/src/routes/sales-journal.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "AI",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/generate",
+          "file": "libs/ai/src/routes/ai-reports.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id",
+          "file": "libs/ai/src/routes/ai-reports.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/ai/src/routes/ai-reports.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "file": "libs/ai/src/routes/ai.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "file": "libs/ai/src/routes/ai.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/report",
+          "file": "libs/ai/src/routes/ai.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/analyze",
+          "file": "libs/ai/src/routes/inbox-ai.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/suggest-responses",
+          "file": "libs/ai/src/routes/inbox-ai.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/complete-response",
+          "file": "libs/ai/src/routes/inbox-ai.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/create-reminders",
+          "file": "libs/ai/src/routes/inbox-ai.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "file": "libs/ai/src/routes/openai.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/completion",
+          "file": "libs/ai/src/routes/openai.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/analyze",
+          "file": "libs/ai/src/routes/openai.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/answer",
+          "file": "libs/ai/src/routes/product-qa.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/compare",
+          "file": "libs/ai/src/routes/product-qa.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/search-documentation",
+          "file": "libs/ai/src/routes/product-qa.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/usage-suggestions/:productId",
+          "file": "libs/ai/src/routes/product-qa.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/lead-scoring/:leadId",
+          "file": "libs/ai/src/routes/sales-ai.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/recommendations/deal/:dealId",
+          "file": "libs/ai/src/routes/sales-ai.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/predict-outcome/:dealId",
+          "file": "libs/ai/src/routes/sales-ai.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/followup-timing/:customerId",
+          "file": "libs/ai/src/routes/sales-ai.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "Analytics",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/reports",
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/reports",
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/reports/:id",
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/reports/:id/run",
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/reports/:id/history",
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/dashboards",
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/dashboards",
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/dashboards/:id",
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/dashboards/:id",
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/alerts",
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/alerts",
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/alerts/history",
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/metrics",
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/metrics/summary",
+          "file": "libs/analytics/src/routes/analytics.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/business-units",
+          "file": "libs/analytics/src/routes/business-intelligence.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/business-units",
+          "file": "libs/analytics/src/routes/business-intelligence.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/cost-centers",
+          "file": "libs/analytics/src/routes/business-intelligence.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/cost-centers",
+          "file": "libs/analytics/src/routes/business-intelligence.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/cost-allocations",
+          "file": "libs/analytics/src/routes/business-intelligence.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/cost-allocations",
+          "file": "libs/analytics/src/routes/business-intelligence.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/cost-allocations/run",
+          "file": "libs/analytics/src/routes/business-intelligence.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/cost-analysis",
+          "file": "libs/analytics/src/routes/business-intelligence.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/profit-analysis",
+          "file": "libs/analytics/src/routes/business-intelligence.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/business-performance",
+          "file": "libs/analytics/src/routes/business-intelligence.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard",
+          "file": "libs/analytics/src/routes/business-intelligence.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/models",
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/models",
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/models/:id",
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/models/:id",
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/models/:id",
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/models/:id/train",
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/models/:id/predict",
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/scenarios",
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/scenarios",
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/scenarios/:id",
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/scenarios/:id/run",
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/inventory-forecast",
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/sales-forecast",
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/purchase-recommendations",
+          "file": "libs/analytics/src/routes/predictive.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "Audit",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/test",
+          "file": "libs/audit/src/routes/audit.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/entity/:entity/:entityId",
+          "file": "libs/audit/src/routes/audit.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/recent/:limit",
+          "file": "libs/audit/src/routes/audit.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/recent",
+          "file": "libs/audit/src/routes/audit.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/search",
+          "file": "libs/audit/src/routes/audit.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/stats",
+          "file": "libs/audit/src/routes/audit.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/user/:userId",
+          "file": "libs/audit/src/routes/audit.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin-actions",
+          "file": "libs/audit/src/routes/audit.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "Auth",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/register",
+          "file": "libs/auth/src/routes/auth.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/login",
+          "file": "libs/auth/src/routes/auth.routes.ts",
+          "middleware": [
+            "rateLimit"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": true,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/csrf-token",
+          "file": "libs/auth/src/routes/auth.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/logout",
+          "file": "libs/auth/src/routes/auth.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/refresh",
+          "file": "libs/auth/src/routes/auth.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/user",
+          "file": "libs/auth/src/routes/auth.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/users",
+          "file": "libs/auth/src/routes/auth.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/test-token/:userId",
+          "file": "libs/auth/src/routes/auth.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/verify-token",
+          "file": "libs/auth/src/routes/auth.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/verify",
+          "file": "libs/auth/src/routes/auth.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/setup",
+          "file": "libs/auth/src/routes/mfa.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/verify",
+          "file": "libs/auth/src/routes/mfa.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/disable",
+          "file": "libs/auth/src/routes/mfa.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/regenerate-backup-codes",
+          "file": "libs/auth/src/routes/mfa.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "file": "libs/auth/src/routes/mfa.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "BPM",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/bpm/src/routes/api-connection.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/api-connection.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/bpm/src/routes/api-connection.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/api-connection.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/api-connection.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:id/test",
+          "file": "libs/bpm/src/routes/api-connection.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/process-placeholder",
+          "file": "libs/bpm/src/routes/bpm.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/process-placeholder",
+          "file": "libs/bpm/src/routes/bpm.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/discover",
+          "file": "libs/bpm/src/routes/bpm.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/bpm/src/routes/process-instance.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/process-instance.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/bpm/src/routes/process-instance.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:id/cancel",
+          "file": "libs/bpm/src/routes/process-instance.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:id/pause",
+          "file": "libs/bpm/src/routes/process-instance.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:id/resume",
+          "file": "libs/bpm/src/routes/process-instance.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id/history",
+          "file": "libs/bpm/src/routes/process-instance.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id/status",
+          "file": "libs/bpm/src/routes/process-instance.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/bpm/src/routes/process.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/process.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/bpm/src/routes/process.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/process.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/process.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:id/status",
+          "file": "libs/bpm/src/routes/process.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:id/duplicate",
+          "file": "libs/bpm/src/routes/process.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/templates/all",
+          "file": "libs/bpm/src/routes/process.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/templates/:templateId/create",
+          "file": "libs/bpm/src/routes/process.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:processId/start",
+          "file": "libs/bpm/src/routes/process.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/bpm/src/routes/scheduled-job.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/scheduled-job.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/bpm/src/routes/scheduled-job.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/scheduled-job.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/scheduled-job.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:id/toggle",
+          "file": "libs/bpm/src/routes/scheduled-job.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:id/run",
+          "file": "libs/bpm/src/routes/scheduled-job.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/instance/:instanceId",
+          "file": "libs/bpm/src/routes/step-execution.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/step-execution.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/step-execution.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:id/complete",
+          "file": "libs/bpm/src/routes/step-execution.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:id/fail",
+          "file": "libs/bpm/src/routes/step-execution.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:id/skip",
+          "file": "libs/bpm/src/routes/step-execution.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/bpm/src/routes/step-template.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/by-type/:type",
+          "file": "libs/bpm/src/routes/step-template.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/by-target-type/:targetType",
+          "file": "libs/bpm/src/routes/step-template.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/step-template.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/bpm/src/routes/step-template.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/step-template.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/step-template.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:id/toggle-global",
+          "file": "libs/bpm/src/routes/step-template.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/bpm/src/routes/trigger.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/trigger.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/bpm/src/routes/trigger.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/trigger.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:id",
+          "file": "libs/bpm/src/routes/trigger.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:id/toggle",
+          "file": "libs/bpm/src/routes/trigger.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:id/execute",
+          "file": "libs/bpm/src/routes/trigger.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "Collaboration",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "${BASE_PATH}/:id/replies",
+          "file": "libs/collab/src/routes/message.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "${BASE_PATH}/:id",
+          "file": "libs/collab/src/routes/message.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "${BASE_PATH}/:id",
+          "file": "libs/collab/src/routes/message.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "${BASE_PATH}/:id",
+          "file": "libs/collab/src/routes/message.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/api/collaboration/tasks",
+          "file": "libs/collab/src/routes/task.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/api/collaboration/tasks/:id",
+          "file": "libs/collab/src/routes/task.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/api/collaboration/tasks",
+          "file": "libs/collab/src/routes/task.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/api/collaboration/tasks/:id",
+          "file": "libs/collab/src/routes/task.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/collaboration/tasks/:id",
+          "file": "libs/collab/src/routes/task.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/api/collaboration/tasks/:id/assign",
+          "file": "libs/collab/src/routes/task.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/api/collaboration/tasks/:id/status",
+          "file": "libs/collab/src/routes/task.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "${BASE_PATH}/:id",
+          "file": "libs/collab/src/routes/thread.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "${BASE_PATH}/:id",
+          "file": "libs/collab/src/routes/thread.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "${BASE_PATH}/:id",
+          "file": "libs/collab/src/routes/thread.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "${BASE_PATH}/watched-tasks",
+          "file": "libs/collab/src/routes/watcher.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "${BASE_PATH}/add-user",
+          "file": "libs/collab/src/routes/watcher.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "${BASE_PATH}/:taskId",
+          "file": "libs/collab/src/routes/watcher.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "${BASE_PATH}/:taskId/is-watching",
+          "file": "libs/collab/src/routes/watcher.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "${BASE_PATH}/:taskId",
+          "file": "libs/collab/src/routes/watcher.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "${BASE_PATH}/:taskId/users/:userId",
+          "file": "libs/collab/src/routes/watcher.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "Communications",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/comms/src/routes/channel-configs.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/type/:channel",
+          "file": "libs/comms/src/routes/channel-configs.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:configId",
+          "file": "libs/comms/src/routes/channel-configs.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/comms/src/routes/channel-configs.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:configId",
+          "file": "libs/comms/src/routes/channel-configs.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:configId",
+          "file": "libs/comms/src/routes/channel-configs.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/comms/src/routes/contacts.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:contactId",
+          "file": "libs/comms/src/routes/contacts.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/comms/src/routes/contacts.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:contactId",
+          "file": "libs/comms/src/routes/contacts.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:contactId",
+          "file": "libs/comms/src/routes/contacts.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/find",
+          "file": "libs/comms/src/routes/contacts.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:messageId/users",
+          "file": "libs/comms/src/routes/message-access.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:messageId/users/:userId",
+          "file": "libs/comms/src/routes/message-access.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:messageId/users/:userId",
+          "file": "libs/comms/src/routes/message-access.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:messageId/users/:userId",
+          "file": "libs/comms/src/routes/message-access.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:messageId/users/:userId",
+          "file": "libs/comms/src/routes/message-access.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:messageId/users/:userId/permissions/:permission",
+          "file": "libs/comms/src/routes/message-access.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:messageId/users/bulk",
+          "file": "libs/comms/src/routes/message-access.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/thread/:threadId",
+          "file": "libs/comms/src/routes/messages.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:messageId",
+          "file": "libs/comms/src/routes/messages.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/thread/:threadId",
+          "file": "libs/comms/src/routes/messages.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:messageId",
+          "file": "libs/comms/src/routes/messages.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:messageId/read",
+          "file": "libs/comms/src/routes/messages.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:messageId",
+          "file": "libs/comms/src/routes/messages.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/search",
+          "file": "libs/comms/src/routes/messages.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:threadId/users",
+          "file": "libs/comms/src/routes/thread-access.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:threadId/users/:userId",
+          "file": "libs/comms/src/routes/thread-access.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:threadId/users/:userId",
+          "file": "libs/comms/src/routes/thread-access.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:threadId/users/:userId",
+          "file": "libs/comms/src/routes/thread-access.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:threadId/users/:userId",
+          "file": "libs/comms/src/routes/thread-access.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:threadId/users/:userId/permissions/:permission",
+          "file": "libs/comms/src/routes/thread-access.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/comms/src/routes/threads.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:threadId",
+          "file": "libs/comms/src/routes/threads.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/comms/src/routes/threads.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:threadId",
+          "file": "libs/comms/src/routes/threads.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:threadId",
+          "file": "libs/comms/src/routes/threads.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "Companies",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/company/src/routes/company.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/search",
+          "file": "libs/company/src/routes/company.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/hierarchy",
+          "file": "libs/company/src/routes/company.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/franchises",
+          "file": "libs/company/src/routes/company.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id",
+          "file": "libs/company/src/routes/company.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/company/src/routes/company.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/:id",
+          "file": "libs/company/src/routes/company.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:id",
+          "file": "libs/company/src/routes/company.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/companies/:id",
+          "file": "libs/company/src/routes/company.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/companies",
+          "file": "libs/company/src/routes/company.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/companies/:id",
+          "file": "libs/company/src/routes/company.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/companies/:id",
+          "file": "libs/company/src/routes/company.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "CRM",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/customers",
+          "file": "libs/crm/src/routes/crm.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/customers/:id",
+          "file": "libs/crm/src/routes/crm.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/customers/:id",
+          "file": "libs/crm/src/routes/crm.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/customers/:id",
+          "file": "libs/crm/src/routes/crm.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/deals",
+          "file": "libs/crm/src/routes/crm.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/deals/:id",
+          "file": "libs/crm/src/routes/crm.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/deals/:id",
+          "file": "libs/crm/src/routes/crm.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/deals/:id",
+          "file": "libs/crm/src/routes/crm.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/anaf-proxy",
+          "file": "libs/crm/src/routes/crm.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/company/:cui",
+          "file": "libs/crm/src/routes/crm.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/companies/batch",
+          "file": "libs/crm/src/routes/crm.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "Ecommerce",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/active",
+          "file": "libs/ecommerce/src/routes/cart.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:cartId",
+          "file": "libs/ecommerce/src/routes/cart.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/item",
+          "file": "libs/ecommerce/src/routes/cart.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/item/:itemId",
+          "file": "libs/ecommerce/src/routes/cart.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/item/:itemId",
+          "file": "libs/ecommerce/src/routes/cart.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:cartId/clear",
+          "file": "libs/ecommerce/src/routes/cart.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:cartId/discount",
+          "file": "libs/ecommerce/src/routes/cart.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/cart/:cartId",
+          "file": "libs/ecommerce/src/routes/checkout.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/direct",
+          "file": "libs/ecommerce/src/routes/checkout.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/ecommerce/src/routes/orders.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:orderId",
+          "file": "libs/ecommerce/src/routes/orders.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/ecommerce/src/routes/orders.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/:orderId",
+          "file": "libs/ecommerce/src/routes/orders.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:orderId/status",
+          "file": "libs/ecommerce/src/routes/orders.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/stats/count-by-status",
+          "file": "libs/ecommerce/src/routes/orders.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/search/:query",
+          "file": "libs/ecommerce/src/routes/orders.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/connect",
+          "file": "libs/ecommerce/src/routes/pos.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/status/:posSystem",
+          "file": "libs/ecommerce/src/routes/pos.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/import-orders",
+          "file": "libs/ecommerce/src/routes/pos.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/export-products",
+          "file": "libs/ecommerce/src/routes/pos.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/sync-inventory",
+          "file": "libs/ecommerce/src/routes/pos.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "file": "libs/ecommerce/src/routes/shopify.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/credentials",
+          "file": "libs/ecommerce/src/routes/shopify.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/verify-credentials",
+          "file": "libs/ecommerce/src/routes/shopify.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/enabled",
+          "file": "libs/ecommerce/src/routes/shopify.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/sync/products",
+          "file": "libs/ecommerce/src/routes/shopify.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/import/orders",
+          "file": "libs/ecommerce/src/routes/shopify.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/webhook/:type",
+          "file": "libs/ecommerce/src/routes/shopify.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/ecommerce/src/routes/transactions.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:transactionId",
+          "file": "libs/ecommerce/src/routes/transactions.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/order/:orderId",
+          "file": "libs/ecommerce/src/routes/transactions.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/ecommerce/src/routes/transactions.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:transactionId/status",
+          "file": "libs/ecommerce/src/routes/transactions.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:transactionId/refund",
+          "file": "libs/ecommerce/src/routes/transactions.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/stats/:period",
+          "file": "libs/ecommerce/src/routes/transactions.routes.ts",
+          "middleware": [
+            "auth"
+          ],
+          "hasAuth": true,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "HR",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/settings",
+          "file": "libs/hr/src/routes/hr.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/settings/:id",
+          "file": "libs/hr/src/routes/hr.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/employees/draft",
+          "file": "libs/hr/src/routes/hr.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/documents/generate-compliance",
+          "file": "libs/hr/src/routes/hr.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/documents/upload",
+          "file": "libs/hr/src/routes/hr.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/holidays",
+          "file": "libs/hr/src/routes/hr.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "Integrations",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/exchange-rates",
+          "file": "libs/integrations/src/routes/integrations.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/exchange-rates/bnr",
+          "file": "libs/integrations/src/routes/integrations.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/exchange-rates/historical",
+          "file": "libs/integrations/src/routes/integrations.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/exchange-rates/bnr/update",
+          "file": "libs/integrations/src/routes/integrations.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/exchange-rates/bnr/test-rss",
+          "file": "libs/integrations/src/routes/integrations.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/exchange-rates/convert",
+          "file": "libs/integrations/src/routes/integrations.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/anaf/validate-vat/:vatNumber",
+          "file": "libs/integrations/src/routes/integrations.routes.ts",
+          "middleware": [
+            "validation"
+          ],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": true
+        },
+        {
+          "method": "GET",
+          "path": "/anaf/company/:fiscalCode",
+          "file": "libs/integrations/src/routes/integrations.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/exchange-rates/bnr/all",
+          "file": "libs/integrations/src/routes/integrations.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/exchange-rates/bnr/all",
+          "file": "libs/integrations/src/routes/public.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/exchange-rates/historical",
+          "file": "libs/integrations/src/routes/public.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/exchange-rates/bnr/update",
+          "file": "libs/integrations/src/routes/public.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "Inventory",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/nir",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/nir/:id",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/nir/:id/status",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/nir",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/transfer",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/transfer/:id",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/transfers",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/transfer/:id/status",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/check-stock-levels",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/stock/low",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/stock/threshold",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/stock/notifications",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/stock/notifications",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/stock-items",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/stock-items/:id",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/stock-items/check-levels",
+          "file": "libs/inventory/src/routes/inventory.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "Invoicing",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/invoicing/src/routes/customer.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/invoicing/src/routes/invoice-numbering.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id",
+          "file": "libs/invoicing/src/routes/invoice-numbering.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/invoicing/src/routes/invoice-numbering.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PATCH",
+          "path": "/:id",
+          "file": "libs/invoicing/src/routes/invoice-numbering.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:id",
+          "file": "libs/invoicing/src/routes/invoice-numbering.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/generate-number",
+          "file": "libs/invoicing/src/routes/invoice-numbering.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/invoicing/src/routes/invoice.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id",
+          "file": "libs/invoicing/src/routes/invoice.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/:id",
+          "file": "libs/invoicing/src/routes/invoice.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:id",
+          "file": "libs/invoicing/src/routes/invoice.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "Settings",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/global",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/global/:key",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/global",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/global/:id",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/global/:id",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/features",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/features/:feature/status",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/features",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/features/:id/enable",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/features/:id/disable",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/features/:id",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/modules/:moduleName/settings",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/modules/:moduleName/settings/:key",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/modules/:moduleName/settings",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/modules/:moduleName/defaults",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/multi-modules",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/user-preferences/:userId",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/user-preferences/:userId/category/:category",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/user-preferences/:userId/module/:module",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/user-preferences/:userId/key/:key",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/user-preferences",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/user-preferences/:id",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/user-preferences/:id",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/themes/:companyId",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/themes/:companyId/default",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/themes/id/:id",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/themes",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/themes/:id",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/themes/:id/set-default",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/themes/:id",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/setup-placeholder",
+          "file": "libs/settings/src/routes/settings.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/settings/src/routes/setup.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/progress",
+          "file": "libs/settings/src/routes/setup.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/step",
+          "file": "libs/settings/src/routes/setup.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/check/:step",
+          "file": "libs/settings/src/routes/setup.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/onboarding",
+          "file": "libs/settings/src/routes/setup.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    },
+    {
+      "module": "Users",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "file": "libs/users/src/routes/user.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id",
+          "file": "libs/users/src/routes/user.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "file": "libs/users/src/routes/user.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "PUT",
+          "path": "/:id",
+          "file": "libs/users/src/routes/user.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/roles/all",
+          "file": "libs/users/src/routes/user.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/:id/roles",
+          "file": "libs/users/src/routes/user.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "POST",
+          "path": "/:id/roles/:roleId",
+          "file": "libs/users/src/routes/user.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "DELETE",
+          "path": "/:id/roles/:roleId",
+          "file": "libs/users/src/routes/user.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/permissions/all",
+          "file": "libs/users/src/routes/user.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        },
+        {
+          "method": "GET",
+          "path": "/roles/:id/permissions",
+          "file": "libs/users/src/routes/user.routes.ts",
+          "middleware": [],
+          "hasAuth": false,
+          "hasRateLimit": false,
+          "hasValidation": false
+        }
+      ]
+    }
+  ]
+}
