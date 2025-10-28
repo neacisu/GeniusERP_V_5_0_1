@@ -250,7 +250,7 @@ export class ValidateDocumentService {
       });
       
       // Log audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: invoiceData.companyId,
         franchiseId: invoiceData.franchiseId,
@@ -373,7 +373,7 @@ export class ValidateDocumentService {
       });
       
       // Log audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: documentData.companyId,
         franchiseId: documentData.franchiseId,

@@ -48,7 +48,7 @@ export class SalesAiService {
    */
   async scoreLead(leadId: string, userId: string): Promise<LeadScoringResult> {
     // Log the action
-    await AuditService.log({
+    await AuditService.console.log({
       userId,
       companyId: 'default',  // This would come from actual context in a real implementation
       action: 'score',
@@ -106,7 +106,7 @@ export class SalesAiService {
     userId: string
   ): Promise<SalesRecommendation[]> {
     // Log the action
-    await AuditService.log({
+    await AuditService.console.log({
       userId,
       companyId: 'default',  // This would come from actual context in a real implementation
       action: 'generate_recommendations',
@@ -173,7 +173,7 @@ export class SalesAiService {
     factorsDecreasing: string[];
   }> {
     // Log the action
-    await AuditService.log({
+    await AuditService.console.log({
       userId,
       companyId: 'default',  // This would come from actual context in a real implementation
       action: 'predict_outcome',
@@ -220,7 +220,7 @@ export class SalesAiService {
     alternateOptions: { day: string; time: string }[];
   }> {
     // Log the action
-    await AuditService.log({
+    await AuditService.console.log({
       userId,
       companyId: 'default',  // This would come from actual context in a real implementation
       action: 'suggest_followup',

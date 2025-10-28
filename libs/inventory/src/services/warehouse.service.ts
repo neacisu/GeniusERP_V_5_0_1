@@ -44,7 +44,7 @@ export class WarehouseService {
     );
 
     // Log the warehouse creation action
-    await AuditService.log({
+    await AuditService.console.log({
       action: AuditAction.CREATE,
       entity: 'warehouse',
       entityId: warehouse.id,
@@ -84,7 +84,7 @@ export class WarehouseService {
     }
 
     // Log the warehouse update action
-    await AuditService.log({
+    await AuditService.console.log({
       action: AuditAction.UPDATE,
       entity: 'warehouse',
       entityId: warehouse.id,
@@ -147,7 +147,7 @@ export class WarehouseService {
     );
 
     // Log the warehouse deletion action
-    await AuditService.log({
+    await AuditService.console.log({
       action: AuditAction.DELETE,
       entity: 'warehouse',
       entityId: id,

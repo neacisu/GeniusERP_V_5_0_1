@@ -383,7 +383,7 @@ export class AccountingTemplatesService extends DrizzleService {
     });
 
     // Log audit
-    await this.auditService.log({
+    await this.auditService.console.log({
       companyId: request.companyId,
       userId: request.userId,
       action: 'TEMPLATE_APPLIED' as any,
@@ -444,7 +444,7 @@ export class AccountingTemplatesService extends DrizzleService {
     });
 
     // Log audit pentru reversare
-    await this.auditService.log({
+    await this.auditService.console.log({
       companyId: request.companyId,
       userId: request.userId,
       action: 'AUTO_REVERSAL_CREATED' as any,

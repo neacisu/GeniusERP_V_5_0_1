@@ -71,7 +71,7 @@ export class InvoiceService {
     
     // Audit log if user is provided
     if (userId) {
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: invoice.companyId,
         action: AuditActionType.CREATE,
@@ -123,7 +123,7 @@ export class InvoiceService {
     
     // Audit log if user is provided
     if (userId) {
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: invoice.companyId,
         action: AuditActionType.UPDATE,
@@ -172,7 +172,7 @@ export class InvoiceService {
     
     // Audit log if user is provided
     if (userId) {
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: invoice.companyId,
         action: AuditActionType.UPDATE,
@@ -220,7 +220,7 @@ export class InvoiceService {
     
     // Audit log if user is provided
     if (userId) {
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: invoice.companyId,
         action: AuditActionType.UPDATE,
@@ -280,7 +280,7 @@ export class InvoiceService {
     
     // Audit log if user is provided
     if (userId) {
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: invoice.companyId,
         action: AuditActionType.DELETE,
@@ -700,7 +700,7 @@ export class InvoiceService {
       
       // Audit log if user is provided
       if (userId) {
-        await AuditService.log({
+        await AuditService.console.log({
           userId,
           companyId,
           action: 'DELETE',

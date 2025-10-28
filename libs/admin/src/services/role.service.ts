@@ -176,7 +176,7 @@ export class RoleService {
         
         // Încercăm să logăm evenimentul fără să aruncăm erori dacă nu reușește
         try {
-          await AuditService.log({
+          await AuditService.console.log({
             userId: actorId || 'system',
             companyId: (role as any).company_id || (role as any).companyId || 'unknown',
             action: AuditAction.UPDATE,
@@ -226,7 +226,7 @@ export class RoleService {
         .where(eq(roles.id, roleId));
       
       // Log the audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId: actorId,
         companyId: role.companyId || 'unknown',
         action: AuditAction.DELETE,

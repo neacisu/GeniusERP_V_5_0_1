@@ -7,7 +7,6 @@
 
 import { Job, Processor, Worker, WorkerOptions } from 'bullmq';
 import { QueueName, JobPayload, JobTypeMap } from './types';
-import { log } from '../../vite';
 import { defaultConnectionOptions } from './queues';
 import { getNotificationService } from '../../common/services/registry';
 import { NotificationType, NotificationPriority } from '../services/notification.service';
@@ -46,30 +45,30 @@ export function createWorker<T = JobPayload>(
   
   // Add standardized error and event handling
   worker.on('error', (error) => {
-    log(`[Worker:${queueName}] ❌ Error: ${error.message}`, 'worker-error');
+    console.log(`[Worker:${queueName}] ❌ Error: ${error.message}`, 'worker-error');
     console.error(`Worker ${queueName} error:`, error);
   });
   
   worker.on('failed', (job, error) => {
     const jobId = job?.id || 'unknown';
     const jobName = job?.name || 'unknown';
-    log(`[Worker:${queueName}] ❌ Job ${jobName}:${jobId} failed: ${error.message}`, 'worker-job-failed');
+    console.log(`[Worker:${queueName}] ❌ Job ${jobName}:${jobId} failed: ${error.message}`, 'worker-job-failed');
     console.error(`Job ${jobName}:${jobId} failed:`, error);
   });
   
   worker.on('completed', (job) => {
     const jobId = job?.id || 'unknown';
     const jobName = job?.name || 'unknown';
-    log(`[Worker:${queueName}] ✅ Job ${jobName}:${jobId} completed successfully`, 'worker-job-completed');
+    console.log(`[Worker:${queueName}] ✅ Job ${jobName}:${jobId} completed successfully`, 'worker-job-completed');
   });
   
   worker.on('active', (job) => {
     const jobId = job?.id || 'unknown';
     const jobName = job?.name || 'unknown';
-    log(`[Worker:${queueName}] 🔄 Processing job ${jobName}:${jobId}`, 'worker-job-active');
+    console.log(`[Worker:${queueName}] 🔄 Processing job ${jobName}:${jobId}`, 'worker-job-active');
   });
   
-  log(`[Worker:${queueName}] ✅ Worker initialized successfully`, 'worker');
+  console.log(`[Worker:${queueName}] ✅ Worker initialized successfully`, 'worker');
   return worker;
 }
 
@@ -83,15 +82,15 @@ export function createWorker<T = JobPayload>(
 function wrapProcessor<T>(queueName: string, processor: Processor<T>): Processor<T> {
   return async (job: Job<T>) => {
     try {
-      log(`[Worker:${queueName}] 🔄 Processing job ${job.name}:${job.id}`, 'worker-job-processing');
+      console.log(`[Worker:${queueName}] 🔄 Processing job ${job.name}:${job.id}`, 'worker-job-processing');
       
       // Process the job with the provided processor
       const result = await processor(job);
       
-      log(`[Worker:${queueName}] ✅ Job ${job.name}:${job.id} completed`, 'worker-job-completed');
+      console.log(`[Worker:${queueName}] ✅ Job ${job.name}:${job.id} completed`, 'worker-job-completed');
       return result;
     } catch (error: any) {
-      log(`[Worker:${queueName}] ❌ Job ${job.name}:${job.id} failed: ${error.message}`, 'worker-job-failed');
+      console.log(`[Worker:${queueName}] ❌ Job ${job.name}:${job.id} failed: ${error.message}`, 'worker-job-failed');
       // Re-throw the error to let BullMQ handle it
       throw error;
     }
@@ -107,25 +106,25 @@ export function createAllWorkers() {
   return {
     // Inventory worker - handles stock-related jobs
     inventoryWorker: createWorker<JobTypeMap[keyof JobTypeMap]>(QueueName.Inventory, async (job) => {
-      log(`Processing inventory job: ${job.name}`, 'inventory-job');
+      console.log(`Processing inventory job: ${job.name}`, 'inventory-job');
       
       try {
         switch (job.name) {
           case 'low-stock-alert': {
             const data = job.data as JobTypeMap['low-stock-alert'];
-            log(`Low stock alert for product ${data.alert.productName}`, 'inventory-job');
+            console.log(`Low stock alert for product ${data.alert.productName}`, 'inventory-job');
             // Implementation would be here
             break;
           }
           case 'scheduled-stock-check': {
             const data = job.data as JobTypeMap['scheduled-stock-check'];
-            log(`Scheduled stock check for company ${data.companyId}`, 'inventory-job');
+            console.log(`Scheduled stock check for company ${data.companyId}`, 'inventory-job');
             // Implementation would be here
             break;
           }
           case 'stock-transfer': {
             const data = job.data as JobTypeMap['stock-transfer'];
-            log(`Stock transfer from ${data.sourceWarehouseId} to ${data.targetWarehouseId}`, 'inventory-job');
+            console.log(`Stock transfer from ${data.sourceWarehouseId} to ${data.targetWarehouseId}`, 'inventory-job');
             // Implementation would be here
             break;
           }
@@ -133,7 +132,7 @@ export function createAllWorkers() {
             const data = job.data as JobTypeMap['alert'];
             const severityLabel = data.severity ? data.severity.toUpperCase() : 'UNKNOWN';
             
-            log(`[${severityLabel}] Inventory alert for product ${data.productName || data.sku} in warehouse ${data.warehouseId}`, 'inventory-alert');
+            console.log(`[${severityLabel}] Inventory alert for product ${data.productName || data.sku} in warehouse ${data.warehouseId}`, 'inventory-alert');
             
             // Get the notification service from the registry (using imported function)
             const notificationService = getNotificationService();
@@ -159,20 +158,20 @@ export function createAllWorkers() {
               // Send the notification to the company
               await notificationService.notifyCompany(data.companyId, notification);
               
-              log(`Notification sent to company ${data.companyId} for product ${data.productName || data.sku}`, 'inventory-alert');
+              console.log(`Notification sent to company ${data.companyId} for product ${data.productName || data.sku}`, 'inventory-alert');
             } else {
-              log(`Cannot send notification: missing company ID for product ${data.productName || data.sku}`, 'inventory-alert-error');
+              console.log(`Cannot send notification: missing company ID for product ${data.productName || data.sku}`, 'inventory-alert-error');
             }
             
             break;
           }
           default:
-            log(`Unknown job type: ${job.name}`, 'inventory-job-error');
+            console.log(`Unknown job type: ${job.name}`, 'inventory-job-error');
         }
         
         return { success: true, jobName: job.name, jobId: job.id };
       } catch (error: any) {
-        log(`Error processing inventory job: ${error.message}`, 'inventory-job-error');
+        console.log(`Error processing inventory job: ${error.message}`, 'inventory-job-error');
         throw error; // Re-throw to mark the job as failed
       }
     }),
@@ -186,13 +185,13 @@ export function createAllWorkers() {
     
     // Reporting worker - handles report generation jobs
     reportingWorker: createWorker<JobTypeMap[keyof JobTypeMap]>(QueueName.Reporting, async (job) => {
-      log(`Processing reporting job: ${job.name}`, 'reporting-job');
+      console.log(`Processing reporting job: ${job.name}`, 'reporting-job');
       
       try {
         switch (job.name) {
           case 'generate-report': {
             const data = job.data as JobTypeMap['generate-report'];
-            log(`Generating ${data.reportType} report`, 'reporting-job');
+            console.log(`Generating ${data.reportType} report`, 'reporting-job');
             // Implementation would be here
             
             // Return the report URL for clients to fetch the report
@@ -204,35 +203,35 @@ export function createAllWorkers() {
             };
           }
           default:
-            log(`Unknown job type: ${job.name}`, 'reporting-job-error');
+            console.log(`Unknown job type: ${job.name}`, 'reporting-job-error');
         }
         
         return { success: true, jobName: job.name, jobId: job.id };
       } catch (error: any) {
-        log(`Error processing reporting job: ${error.message}`, 'reporting-job-error');
+        console.log(`Error processing reporting job: ${error.message}`, 'reporting-job-error');
         throw error; // Re-throw to mark the job as failed
       }
     }),
     
     // Document worker - handles document processing jobs
     documentWorker: createWorker<JobTypeMap[keyof JobTypeMap]>(QueueName.Document, async (job) => {
-      log(`Processing document job: ${job.name}`, 'document-job');
+      console.log(`Processing document job: ${job.name}`, 'document-job');
       
       try {
         switch (job.name) {
           case 'document-processing': {
             const data = job.data as JobTypeMap['document-processing'];
-            log(`Processing document ${data.documentId} with action ${data.action}`, 'document-job');
+            console.log(`Processing document ${data.documentId} with action ${data.action}`, 'document-job');
             // Implementation would be here
             break;
           }
           default:
-            log(`Unknown job type: ${job.name}`, 'document-job-error');
+            console.log(`Unknown job type: ${job.name}`, 'document-job-error');
         }
         
         return { success: true, jobName: job.name, jobId: job.id };
       } catch (error: any) {
-        log(`Error processing document job: ${error.message}`, 'document-job-error');
+        console.log(`Error processing document job: ${error.message}`, 'document-job-error');
         throw error; // Re-throw to mark the job as failed
       }
     })

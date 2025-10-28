@@ -20,7 +20,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { accountingCacheService } from './accounting-cache.service';
 import { accountingQueueService } from './accounting-queue.service';
-import { log } from "@api/vite";
 import { createModuleLogger } from "@common/logger/loki-logger";
 
 // Import all type definitions
@@ -1765,14 +1764,14 @@ export class PurchaseJournalService {
         );
         
         if (cached) {
-          log(`Purchase journal cache hit for ${params.companyId} ${periodStart}-${periodEnd}`, 'purchase-journal-cache');
+          console.log(`Purchase journal cache hit for ${params.companyId} ${periodStart}-${periodEnd}`, 'purchase-journal-cache');
           return cached;
         }
       }
     }
     
     // Generate report (cache miss or disabled)
-    log(`Generating purchase journal for ${params.companyId} ${periodStart}-${periodEnd}`, 'purchase-journal');
+    console.log(`Generating purchase journal for ${params.companyId} ${periodStart}-${periodEnd}`, 'purchase-journal');
     const report = await this.generatePurchaseJournal(params);
     
     // Cache result
@@ -1783,7 +1782,7 @@ export class PurchaseJournalService {
         periodEnd,
         report
       );
-      log(`Purchase journal cached for ${params.companyId}`, 'purchase-journal-cache');
+      console.log(`Purchase journal cached for ${params.companyId}`, 'purchase-journal-cache');
     }
     
     return report;
@@ -1805,7 +1804,7 @@ export class PurchaseJournalService {
       const periodStart = params.periodStart.toISOString().split('T')[0];
       const periodEnd = params.periodEnd.toISOString().split('T')[0];
       
-      log(`Queueing async purchase journal generation for ${params.companyId}`, 'purchase-journal-async');
+      console.log(`Queueing async purchase journal generation for ${params.companyId}`, 'purchase-journal-async');
       
       const job = await accountingQueueService.queuePurchaseJournalGeneration({
         companyId: params.companyId,
@@ -1822,7 +1821,7 @@ export class PurchaseJournalService {
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      log(`Error queueing purchase journal generation: ${errorMessage}`, 'purchase-journal-error');
+      console.log(`Error queueing purchase journal generation: ${errorMessage}`, 'purchase-journal-error');
       throw error;
     }
   }
@@ -1852,15 +1851,15 @@ export class PurchaseJournalService {
         const period = `${year}-${month}`;
         
         await accountingCacheService.invalidatePurchaseJournal(companyId, period);
-        log(`Invalidated purchase journal cache for ${companyId} period ${period}`, 'purchase-journal-cache');
+        console.log(`Invalidated purchase journal cache for ${companyId} period ${period}`, 'purchase-journal-cache');
       } else {
         // Nuclear option - invalidate all periods for company
         await accountingCacheService.invalidatePurchaseJournal(companyId);
-        log(`Invalidated all purchase journal cache for ${companyId}`, 'purchase-journal-cache');
+        console.log(`Invalidated all purchase journal cache for ${companyId}`, 'purchase-journal-cache');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      log(`Error invalidating purchase journal cache: ${errorMessage}`, 'purchase-journal-error');
+      console.log(`Error invalidating purchase journal cache: ${errorMessage}`, 'purchase-journal-error');
       // Don't throw - cache invalidation failures shouldn't break the main operation
     }
   }

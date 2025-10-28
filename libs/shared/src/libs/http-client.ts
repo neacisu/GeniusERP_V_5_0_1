@@ -70,11 +70,11 @@ export class HttpClient {
     // Request interceptor
     this.axiosInstance.interceptors.request.use(
       (config) => {
-        log(`🌐 HTTP Request: ${config.method?.toUpperCase()} ${config.url}`, 'http-client');
+        console.log(`🌐 HTTP Request: ${config.method?.toUpperCase()} ${config.url}`, 'http-client');
         return config;
       },
       (error) => {
-        log(`❌ HTTP Request Error: ${error.message}`, 'http-client');
+        console.log(`❌ HTTP Request Error: ${error.message}`, 'http-client');
         return Promise.reject(error);
       }
     );
@@ -82,14 +82,14 @@ export class HttpClient {
     // Response interceptor
     this.axiosInstance.interceptors.response.use(
       (response) => {
-        log(`✅ HTTP Response: ${response.status} from ${response.config.url}`, 'http-client');
+        console.log(`✅ HTTP Response: ${response.status} from ${response.config.url}`, 'http-client');
         return response;
       },
       async (error: AxiosError) => {
         const config = error.config as HttpClientConfig & { _retryCount?: number };
         
         if (!config) {
-          log(`❌ HTTP Response Error: No config available`, 'http-client');
+          console.log(`❌ HTTP Response Error: No config available`, 'http-client');
           return Promise.reject(error);
         }
 
@@ -105,7 +105,7 @@ export class HttpClient {
         if (shouldRetry) {
           config._retryCount += 1;
           
-          log(`🔄 Retrying request (${config._retryCount}/${this.retryConfig.retries}): ${config.method?.toUpperCase()} ${config.url}`, 'http-client');
+          console.log(`🔄 Retrying request (${config._retryCount}/${this.retryConfig.retries}): ${config.method?.toUpperCase()} ${config.url}`, 'http-client');
           
           // Delay before retrying
           await new Promise(resolve => setTimeout(resolve, this.retryConfig.retryDelay));
@@ -114,12 +114,12 @@ export class HttpClient {
 
         // Log error details
         if (error.response) {
-          log(`❌ HTTP Response Error: ${error.response.status} from ${config.url}`, 'http-client');
-          log(`Details: ${JSON.stringify(error.response.data)}`, 'http-client');
+          console.log(`❌ HTTP Response Error: ${error.response.status} from ${config.url}`, 'http-client');
+          console.log(`Details: ${JSON.stringify(error.response.data)}`, 'http-client');
         } else if (error.request) {
-          log(`❌ HTTP Request Failed: No response received from ${config.url}`, 'http-client');
+          console.log(`❌ HTTP Request Failed: No response received from ${config.url}`, 'http-client');
         } else {
-          log(`❌ HTTP Setup Error: ${error.message}`, 'http-client');
+          console.log(`❌ HTTP Setup Error: ${error.message}`, 'http-client');
         }
 
         return Promise.reject(error);
@@ -134,7 +134,7 @@ export class HttpClient {
     try {
       return await this.axiosInstance.request<T>(config);
     } catch (error) {
-      log(`❌ HTTP Request Failed: ${(error as Error).message}`, 'http-client');
+      console.log(`❌ HTTP Request Failed: ${(error as Error).message}`, 'http-client');
       throw error;
     }
   }

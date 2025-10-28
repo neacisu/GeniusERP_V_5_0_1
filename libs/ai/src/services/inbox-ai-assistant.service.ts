@@ -51,7 +51,7 @@ export class InboxAiAssistantService {
     userId: string
   ): Promise<EmailAnalysis> {
     // Log the action
-    await AuditService.log({
+    await AuditService.console.log({
       entityId: messageId,
       action: 'analyze',
       userId,
@@ -98,7 +98,7 @@ export class InboxAiAssistantService {
     userId: string
   ): Promise<ResponseSuggestion[]> {
     // Log the action
-    await AuditService.log({
+    await AuditService.console.log({
       entityId: messageId,
       action: 'generate_suggestions',
       userId,
@@ -160,7 +160,7 @@ export class InboxAiAssistantService {
     confidence: number;
   }> {
     // Log the action
-    await AuditService.log({
+    await AuditService.console.log({
       entityId: messageId,
       action: 'generate_complete_response',
       userId,
@@ -204,7 +204,7 @@ export class InboxAiAssistantService {
     priority: 'high' | 'medium' | 'low';
   }[]> {
     // Log the action
-    await AuditService.log({
+    await AuditService.console.log({
       entityId: messageId,
       action: 'create_followup_reminders',
       userId,

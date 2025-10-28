@@ -148,7 +148,7 @@ export class DepreciationCalculationService extends DrizzleService {
       journalNumber = entry.journalNumber;
 
       // Log audit
-      await this.auditService.log({
+      await this.auditService.console.log({
         companyId,
         userId,
         action: 'DEPRECIATION_POSTED' as any,

@@ -5,7 +5,6 @@
 import { Router, Request, Response } from 'express';
 import { bnrExchangeRateService } from '../services/bnr-exchange-rate.service';
 import { CurrencyService } from '../services/currency.service';
-import { log } from "@api/vite";
 import { Services } from "@common/services/registry";
 import { fx_rates } from '@geniuserp/shared';
 import { and, eq, gte, lte, inArray, asc } from 'drizzle-orm';
@@ -26,7 +25,7 @@ router.get('/exchange-rates/bnr/all', async (req: Request, res: Response) => {
     // Set response header to explicitly expect JSON
     res.setHeader('Content-Type', 'application/json');
     
-    log('📣 Public access to BNR exchange rates', 'api');
+    console.log('📣 Public access to BNR exchange rates', 'api');
     
     let date: Date | undefined;
     if (req.query['date']) {
@@ -47,7 +46,7 @@ router.get('/exchange-rates/bnr/all', async (req: Request, res: Response) => {
       public: true
     });
   } catch (error) {
-    log(`❌ Error in public BNR rates API: ${(error as Error).message}`, 'api');
+    console.log(`❌ Error in public BNR rates API: ${(error as Error).message}`, 'api');
     return res.status(500).json({ 
       success: false, 
       error: (error as Error).message,
@@ -62,7 +61,7 @@ router.get('/exchange-rates/historical', async (req: Request, res: Response) => 
     // Set response header to explicitly expect JSON
     res.setHeader('Content-Type', 'application/json');
     
-    log('📣 Public access to historical exchange rates', 'api');
+    console.log('📣 Public access to historical exchange rates', 'api');
     
     const currencies = req.query['currencies'] 
       ? (req.query['currencies'] as string).split(',') 
@@ -81,7 +80,7 @@ router.get('/exchange-rates/historical', async (req: Request, res: Response) => 
       });
     }
 
-    log(`📈 Fetching historical rates for currencies: ${currencies.join(', ')} for the past ${days} days ${source ? `(source: ${source})` : ''}`, 'api');
+    console.log(`📈 Fetching historical rates for currencies: ${currencies.join(', ')} for the past ${days} days ${source ? `(source: ${source})` : ''}`, 'api');
     
     const db = Services.db;
     const endDate = new Date();
@@ -183,7 +182,7 @@ router.get('/exchange-rates/historical', async (req: Request, res: Response) => 
       public: true
     });
   } catch (error) {
-    log(`❌ Error in historical exchange rates API: ${(error as Error).message}`, 'api');
+    console.log(`❌ Error in historical exchange rates API: ${(error as Error).message}`, 'api');
     return res.status(500).json({ 
       success: false, 
       error: (error as Error).message,
@@ -198,7 +197,7 @@ router.post('/exchange-rates/bnr/update', async (_req: Request, res: Response) =
     // Set response header to explicitly expect JSON
     res.setHeader('Content-Type', 'application/json');
     
-    log('🔄 Manual BNR exchange rate update triggered (public access)', 'api');
+    console.log('🔄 Manual BNR exchange rate update triggered (public access)', 'api');
     
     const rates = await bnrExchangeRateService.manualFetch();
     
@@ -213,7 +212,7 @@ router.post('/exchange-rates/bnr/update', async (_req: Request, res: Response) =
       public: true
     });
   } catch (error) {
-    log(`❌ Error in public BNR update API: ${(error as Error).message}`, 'api');
+    console.log(`❌ Error in public BNR update API: ${(error as Error).message}`, 'api');
     return res.status(500).json({
       success: false,
       error: (error as Error).message,

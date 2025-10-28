@@ -15,12 +15,11 @@ validateEnv();
 // Set BullMQ to ignore eviction policy before importing any other modules
 process.env['BULLMQ_IGNORE_EVICTION_POLICY'] = "true";
 
-// We are using Express as our standardized framework
-console.log('Starting Express application...');
+// Backend API server (Express) - No frontend serving
+console.log('Starting Backend API server...');
 
 import express, { type Request, Response, NextFunction } from "express";
 import { createServer } from "http";
-import { setupVite, serveStatic, log } from "./vite";
 import { initializeModules } from './modules';
 // Import the services registry to ensure it's available globally
 import './common/services';
@@ -49,21 +48,9 @@ const app = express();
 // Note: Sentry is initialized via instrument.ts (loaded with --import flag)
 // This ensures proper instrumentation in ESM context
 
-// Helmet configuration for security headers
+// Helmet configuration for security headers (API-only, no CSP for HTML serving)
 app.use(helmet({
-  contentSecurityPolicy: process.env['NODE_ENV'] === 'production' ? {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // unsafe-eval needed for React dev
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
-      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "https://webservicesp.anaf.ro", "wss:", "ws:"],
-      frameSrc: ["'none'"],
-      objectSrc: ["'none'"],
-      upgradeInsecureRequests: []
-    }
-  } : false, // Disable CSP in development for HMR
+  contentSecurityPolicy: false, // Not serving HTML anymore, frontend handles this
   hsts: process.env['NODE_ENV'] === 'production' ? {
     maxAge: 31536000,
     includeSubDomains: true,
@@ -75,11 +62,12 @@ app.use(helmet({
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
 }));
 
-// CORS configuration
+// CORS configuration - Allow frontend on port 5000 (Docker network and localhost)
 const allowedOrigins = process.env['ALLOWED_ORIGINS']?.split(',') || [
-  'http://localhost:3000',
   'http://localhost:5000',
-  'http://0.0.0.0:5000'
+  'http://0.0.0.0:5000',
+  'http://frontend:5000', // Docker network
+  'http://localhost:3000' // Legacy support
 ];
 
 app.use(cors({
@@ -136,7 +124,7 @@ if (process.env['NODE_ENV'] === 'development') {
   appLogger.info('✅ Sentry test routes enabled at /api/test-sentry/*');
 }
 
-// Request logging middleware
+// Request logging middleware (API routes only)
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -160,7 +148,7 @@ app.use((req, res, next) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
-      log(logLine);
+      appLogger.info(logLine);
     }
   });
 
@@ -194,11 +182,10 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 (async () => {
   try {
-    // Simplified startup for debugging purposes
-    appLogger.info('Starting server with minimal services for debugging');
+    // Backend API server startup
+    appLogger.info('Starting Backend API server');
     
-    // Initialize essential modules FIRST - BEFORE Vite middleware
-    // This ensures API routes are registered before the catch-all SPA handler
+    // Initialize essential modules
     appLogger.info('Initializing modules...');
     await initializeModules(app);
     
@@ -215,16 +202,8 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
     if (process.env['SENTRY_DSN']) {
       Sentry.setupExpressErrorHandler(app);
     }
-
-    // Setup Vite for frontend serving (dev & prod)
-    // This MUST come AFTER API routes registration
-    if (app.get("env") === "development") {
-      await setupVite(app, httpServer);
-    } else {
-      serveStatic(app);
-    }
     
-    // General error handling middleware for non-API routes
+    // General error handling middleware
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
@@ -234,8 +213,8 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
     });
 
     // Start HTTP server on configured port (from .env)
-    // Single port for both frontend (Vite middleware) and backend API
-    const port = parseInt(process.env['APP_PORT_FRONTEND']!);
+    // Backend API server on separate port
+    const port = parseInt(process.env['APP_PORT_BACKEND'] || process.env['APP_PORT_FRONTEND'] || '5001');
     
     // Handle EADDRINUSE error gracefully (happens with tsx watch hot reload)
     httpServer.on('error', (error: NodeJS.ErrnoException) => {
@@ -250,8 +229,8 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
     });
     
     httpServer.listen(port, "0.0.0.0", () => {
-      appLogger.info(`Server is running on port ${port}`);
-      log(`Server is running on port ${port}`); // Keep vite log too
+      appLogger.info(`✅ Backend API server is running on port ${port}`);
+      console.log(`✅ Backend API server is running on port ${port}`);
     });
     
   } catch (error) {

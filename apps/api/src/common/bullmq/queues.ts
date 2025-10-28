@@ -10,7 +10,6 @@
 
 import { Queue, QueueOptions } from 'bullmq';
 import { QueueName } from './types';
-import { log } from '../../vite';
 import { RedisService } from '@common/services/redis.service';
 
 // Get a Redis connection instance
@@ -22,13 +21,13 @@ try {
   redisService.connect().then(client => {
     if (client) {
       redisConnection = client;
-      log('Redis connection established for BullMQ queues', 'bullmq');
+      console.log('Redis connection established for BullMQ queues', 'bullmq');
     } else {
-      log('Redis connection not available, using fallback options', 'bullmq');
+      console.log('Redis connection not available, using fallback options', 'bullmq');
     }
   });
 } catch (error: any) {
-  log(`⚠️ Failed to establish Redis connection for BullMQ: ${error.message}`, 'bullmq-error');
+  console.log(`⚠️ Failed to establish Redis connection for BullMQ: ${error.message}`, 'bullmq-error');
   console.error('Redis connection error:', error);
 }
 
@@ -69,11 +68,11 @@ function createQueue(name: string, options: Partial<QueueOptions> = {}): Queue {
   });
   
   queue.on('error', (error) => {
-    log(`[Queue:${name}] ❌ Error: ${error.message}`, 'queue-error');
+    console.log(`[Queue:${name}] ❌ Error: ${error.message}`, 'queue-error');
     console.error(`Queue ${name} error:`, error);
   });
   
-  log(`[Queue:${name}] ✅ Initialized successfully`, 'queue');
+  console.log(`[Queue:${name}] ✅ Initialized successfully`, 'queue');
   return queue;
 }
 

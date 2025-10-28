@@ -317,7 +317,7 @@ export class AuditController {
       this.logger.debug(`Creating test audit log for company ${companyId}`);
       
       // Log the action directly
-      await AuditService.log({
+      await AuditService.console.log({
         companyId,
         userId: req.user?.id || 'system',
         action: 'TEST_AUDIT_API',
@@ -366,7 +366,7 @@ export class AuditController {
       
       this.logger.debug(`Creating audit log: ${logData.action} on ${logData.entity}`);
       
-      const logId = await AuditService.log(logData);
+      const logId = await AuditService.console.log(logData);
       
       if (!logId) {
         this.logger.warn('Failed to create audit log');

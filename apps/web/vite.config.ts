@@ -41,6 +41,16 @@ export default defineConfig({
     // allowedHosts DOAR din .env (VITE_ALLOWED_HOSTS)
     allowedHosts: process.env['VITE_ALLOWED_HOSTS']!.split(',').map(h => h.trim()).filter(Boolean),
     
+    // Proxy configuration - Forward API requests to backend
+    proxy: {
+      '/api': {
+        target: process.env['VITE_API_URL'] || 'http://backend:5001',
+        changeOrigin: true,
+        secure: false,
+        ws: true, // WebSocket support
+      }
+    },
+    
     // Setări watch DOAR din .env
     watch: {
       usePolling: process.env['CHOKIDAR_USEPOLLING'] === 'true',

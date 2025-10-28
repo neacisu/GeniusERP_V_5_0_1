@@ -116,7 +116,7 @@ export class ProductsService {
       }).returning();
 
       // Log the action for audit
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: 'system', // Temporar până avem companyId
         action: AuditAction.CREATE,
@@ -195,7 +195,7 @@ export class ProductsService {
         .returning();
 
       // Log the action for audit
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: 'system', // Temporar până avem companyId
         action: AuditAction.UPDATE,
@@ -245,7 +245,7 @@ export class ProductsService {
         .where(eq(inventoryProducts.id, id));
 
       // Log the action for audit
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: 'system', // Temporar până avem companyId
         action: AuditAction.DELETE,
@@ -285,7 +285,7 @@ export class ProductsService {
         .returning();
 
       // Log the action for audit
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: 'system', // Temporar până avem companyId
         action: AuditAction.UPDATE,

@@ -17,7 +17,6 @@ import { VATClosureService } from './vat-closure.service';
 import { YearEndClosureService, ProfitTaxAdjustments, ProfitDistribution } from './year-end-closure.service';
 import { AuditLogService } from './audit-log.service';
 import { accountingQueueService } from './accounting-queue.service';
-import { log } from "@api/vite";
 
 export interface MonthEndClosureRequest {
   companyId: string;
@@ -479,7 +478,7 @@ export class FiscalClosureService extends DrizzleService {
         }
       );
 
-      await this.auditService.log({
+      await this.auditService.console.log({
         companyId,
         userId,
         action: 'PERIOD_REOPENED' as any,
@@ -511,7 +510,7 @@ export class FiscalClosureService extends DrizzleService {
    */
   async closeMonthAsync(request: MonthEndClosureRequest): Promise<{ jobId: string; message: string }> {
     try {
-      log(`Queueing async month-end closure for ${request.year}-${request.month}`, 'fiscal-closure-async');
+      console.log(`Queueing async month-end closure for ${request.year}-${request.month}`, 'fiscal-closure-async');
       
       const job = await accountingQueueService.queueMonthClose({
         companyId: request.companyId,
@@ -529,7 +528,7 @@ export class FiscalClosureService extends DrizzleService {
         message: `Month-end closure queued. Job ID: ${job.id}`
       };
     } catch (error: any) {
-      log(`Error queueing month-end closure: ${error.message}`, 'fiscal-closure-error');
+      console.log(`Error queueing month-end closure: ${error.message}`, 'fiscal-closure-error');
       throw error;
     }
   }
@@ -540,7 +539,7 @@ export class FiscalClosureService extends DrizzleService {
    */
   async closeYearAsync(request: YearEndClosureRequest): Promise<{ jobId: string; message: string }> {
     try {
-      log(`Queueing async year-end closure for fiscal year ${request.fiscalYear}`, 'fiscal-closure-async');
+      console.log(`Queueing async year-end closure for fiscal year ${request.fiscalYear}`, 'fiscal-closure-async');
       
       const job = await accountingQueueService.queueYearClose({
         companyId: request.companyId,
@@ -554,7 +553,7 @@ export class FiscalClosureService extends DrizzleService {
         message: `Year-end closure queued. Job ID: ${job.id}`
       };
     } catch (error: any) {
-      log(`Error queueing year-end closure: ${error.message}`, 'fiscal-closure-error');
+      console.log(`Error queueing year-end closure: ${error.message}`, 'fiscal-closure-error');
       throw error;
     }
   }

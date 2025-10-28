@@ -72,7 +72,7 @@ export default class NoteContabilService {
       };
 
       // Log audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId: noteData.userId,
         companyId: noteData.companyId,
         action: 'create',
@@ -211,7 +211,7 @@ export default class NoteContabilService {
       // For now, we just return a dummy note
       
       // Log audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId: userId,
         companyId: companyId,
         action: 'view',
@@ -337,7 +337,7 @@ export default class NoteContabilService {
       // For now, we just return a dummy validated note
       
       // Log audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId: userId,
         companyId: companyId,
         action: 'validate',
@@ -473,7 +473,7 @@ export default class NoteContabilService {
       }
       
       // Log audit event with REAL data
-      await AuditService.log({
+      await AuditService.console.log({
         userId: userId,
         companyId: companyId,
         action: 'generate_accounting_note',

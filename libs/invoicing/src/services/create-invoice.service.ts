@@ -12,7 +12,6 @@ import { exchangeRateService } from '../../integrations/services/exchange-rate.s
 import { InvoiceStatus } from '../types/invoice-status.enum';
 import { AuditService } from '@geniuserp/audit';
 import { AuditActionType } from "@common/enums/audit-action.enum";
-import { log } from "@api/vite";
 import { InvoiceService } from './invoice.service';
 import { ENTITY_NAME } from '../index';
 
@@ -47,17 +46,17 @@ export class CreateInvoiceService {
         userId
       } = input;
 
-      log(`📝 Creating invoice with currency ${currency}${convertTo ? ` (convert to ${convertTo})` : ''}`, 'invoice-service');
+      console.log(`📝 Creating invoice with currency ${currency}${convertTo ? ` (convert to ${convertTo})` : ''}`, 'invoice-service');
       
       // Convert currency if needed
       let finalAmount = totalAmount;
       let finalCurrency = currency;
       
       if (convertTo && convertTo !== currency) {
-        log(`💱 Converting amount from ${currency} to ${convertTo}`, 'invoice-service');
+        console.log(`💱 Converting amount from ${currency} to ${convertTo}`, 'invoice-service');
         finalAmount = await InvoiceService.convertCurrency(totalAmount, currency, convertTo);
         finalCurrency = convertTo;
-        log(`💰 Converted amount: ${finalAmount.toFixed(2)} ${finalCurrency}`, 'invoice-service');
+        console.log(`💰 Converted amount: ${finalAmount.toFixed(2)} ${finalCurrency}`, 'invoice-service');
       }
 
       // Insert the invoice using transaction
@@ -80,7 +79,7 @@ export class CreateInvoiceService {
       
       // Log the audit record if userId is provided
       if (userId) {
-        await AuditService.log({
+        await AuditService.console.log({
           userId,
           companyId,
           action: AuditActionType.CREATE,
@@ -96,10 +95,10 @@ export class CreateInvoiceService {
         });
       }
       
-      log(`✅ Invoice created successfully with ID: ${result.id}`, 'invoice-service');
+      console.log(`✅ Invoice created successfully with ID: ${result.id}`, 'invoice-service');
       return result;
     } catch (error) {
-      log(`❌ Error creating invoice: ${(error as Error).message}`, 'invoice-service');
+      console.log(`❌ Error creating invoice: ${(error as Error).message}`, 'invoice-service');
       throw new Error(`Failed to create invoice: ${(error as Error).message}`);
     }
   }

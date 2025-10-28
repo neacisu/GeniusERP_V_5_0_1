@@ -1,0 +1,22 @@
+FROM node:24.9.0-alpine
+
+WORKDIR /app
+
+# Instalăm pnpm (cea mai nouă versiune)
+RUN npm install -g pnpm@10.19.0
+
+# Copiem fișierele de dependințe pentru caching optim
+COPY package.json pnpm-lock.yaml .npmrc pnpm-workspace.yaml ./
+
+# Instalăm dependințele folosind EXCLUSIV pnpm
+RUN pnpm install
+
+# Expunem portul pentru Vite dev server
+EXPOSE 5000
+
+# Asigurăm permisiuni de scriere în directorul de lucru
+RUN chmod -R 777 /app
+
+# Comanda de pornire - Vite standalone dev server
+CMD ["pnpm", "nx", "serve", "web"]
+

@@ -8,7 +8,6 @@
 import { eq, and, desc } from 'drizzle-orm';
 import { fx_rates } from '@geniuserp/shared';
 import { getDrizzle } from "@common/drizzle";
-import { log } from "@api/vite";
 
 export class CurrencyService {
   /**
@@ -38,10 +37,10 @@ export class CurrencyService {
       const ronAmount = from === 'RON' ? amount : amount * rateFrom;
       const converted = to === 'RON' ? ronAmount : ronAmount / rateTo;
 
-      log(`💱 Converted ${amount} ${from} to ${converted.toFixed(2)} ${to} using BNR rates`, 'currency');
+      console.log(`💱 Converted ${amount} ${from} to ${converted.toFixed(2)} ${to} using BNR rates`, 'currency');
       return parseFloat(converted.toFixed(2));
     } catch (error) {
-      log(`❌ Error converting currency: ${(error as Error).message}`, 'currency');
+      console.log(`❌ Error converting currency: ${(error as Error).message}`, 'currency');
       throw new Error(`Failed to convert currency: ${(error as Error).message}`);
     }
   }
@@ -72,7 +71,7 @@ export class CurrencyService {
         .orderBy(desc(fx_rates.date));
 
       if (!result.length) {
-        log(`⚠️ No exchange rate found for ${currency}`, 'currency');
+        console.log(`⚠️ No exchange rate found for ${currency}`, 'currency');
         return null;
       }
 
@@ -80,7 +79,7 @@ export class CurrencyService {
       const rssRate = result.find((r: { source: string; rate: any }) => r.source === 'BNR_RSS');
       if (rssRate) {
         const rate = parseFloat(rssRate.rate.toString());
-        log(`📊 Retrieved RSS rate for ${currency}: ${rate}`, 'currency');
+        console.log(`📊 Retrieved RSS rate for ${currency}: ${rate}`, 'currency');
         return rate;
       }
 
@@ -88,16 +87,16 @@ export class CurrencyService {
       const bnrRate = result.find((r: { source: string; rate: any }) => r.source === 'BNR');
       if (bnrRate) {
         const rate = parseFloat(bnrRate.rate.toString());
-        log(`📊 Retrieved BNR rate for ${currency}: ${rate}`, 'currency');
+        console.log(`📊 Retrieved BNR rate for ${currency}: ${rate}`, 'currency');
         return rate;
       }
 
       // If no preferred sources found, use the first available rate
       const rate = parseFloat(result[0].rate.toString());
-      log(`📊 Retrieved fallback rate for ${currency}: ${rate}`, 'currency');
+      console.log(`📊 Retrieved fallback rate for ${currency}: ${rate}`, 'currency');
       return rate;
     } catch (error) {
-      log(`❌ Error getting exchange rate: ${(error as Error).message}`, 'currency');
+      console.log(`❌ Error getting exchange rate: ${(error as Error).message}`, 'currency');
       return null;
     }
   }
@@ -165,10 +164,10 @@ export class CurrencyService {
         }
       }
 
-      log(`📈 Retrieved ${Object.keys(rates).length} exchange rates (combined sources)`, 'currency');
+      console.log(`📈 Retrieved ${Object.keys(rates).length} exchange rates (combined sources)`, 'currency');
       return rates;
     } catch (error) {
-      log(`❌ Error getting exchange rates: ${(error as Error).message}`, 'currency');
+      console.log(`❌ Error getting exchange rates: ${(error as Error).message}`, 'currency');
       return {};
     }
   }

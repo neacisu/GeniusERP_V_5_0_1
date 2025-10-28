@@ -9,7 +9,6 @@ import { exchangeRateService } from '../services/exchange-rate.service';
 import { anafService } from '../services/anaf.service';
 import { bnrExchangeRateService } from '../services/bnr-exchange-rate.service';
 import { CurrencyService } from '../services/currency.service';
-import { log } from "@api/vite";
 import { Services } from "@common/services/registry";
 import { fx_rates } from '../../../../shared/schema';
 import { and, eq, gte, lte, inArray, asc } from 'drizzle-orm';
@@ -38,7 +37,7 @@ router.use((req, res, next) => {
   if (isPublicRoute) {
     // This is a public route, continue without auth
     res.setHeader('Content-Type', 'application/json');
-    log(`📣 Public access to ${req.path}`, 'api');
+    console.log(`📣 Public access to ${req.path}`, 'api');
     next();
   } else {
     // For all other routes, require authentication
@@ -57,7 +56,7 @@ router.get('/exchange-rates', async (req, res, next) => {
       rates 
     });
   } catch (error) {
-    log(`❌ Error in exchange rates API: ${(error as Error).message}`, 'api');
+    console.log(`❌ Error in exchange rates API: ${(error as Error).message}`, 'api');
     next(error);
   }
 });
@@ -74,7 +73,7 @@ router.get('/exchange-rates/bnr', async (req, res, next) => {
         source: 'BNR Official'
       });
     } catch (bnrError) {
-      log(`⚠️ BNR service error, falling back to general exchange rate API: ${(bnrError as Error).message}`, 'api');
+      console.log(`⚠️ BNR service error, falling back to general exchange rate API: ${(bnrError as Error).message}`, 'api');
       const date = req.query.date as string;
       const rates = await exchangeRateService.getBNRReferenceRate(date);
       res.json({ 
@@ -85,7 +84,7 @@ router.get('/exchange-rates/bnr', async (req, res, next) => {
       });
     }
   } catch (error) {
-    log(`❌ Error in BNR exchange rates API: ${(error as Error).message}`, 'api');
+    console.log(`❌ Error in BNR exchange rates API: ${(error as Error).message}`, 'api');
     next(error);
   }
 });
@@ -110,7 +109,7 @@ router.get('/exchange-rates/historical', async (req, res, next) => {
       });
     }
 
-    log(`📈 Fetching historical rates for currencies: ${currencies.join(', ')} for the past ${days} days ${source ? `(source: ${source})` : ''}`, 'api');
+    console.log(`📈 Fetching historical rates for currencies: ${currencies.join(', ')} for the past ${days} days ${source ? `(source: ${source})` : ''}`, 'api');
     
     const db = Services.db;
     const endDate = new Date();
@@ -211,7 +210,7 @@ router.get('/exchange-rates/historical', async (req, res, next) => {
       endDate: endDate.toISOString().split('T')[0]
     });
   } catch (error) {
-    log(`❌ Error in historical exchange rates API: ${(error as Error).message}`, 'api');
+    console.log(`❌ Error in historical exchange rates API: ${(error as Error).message}`, 'api');
     next(error);
   }
 });
@@ -220,7 +219,7 @@ router.get('/exchange-rates/historical', async (req, res, next) => {
 router.post('/exchange-rates/bnr/update', 
   async (req, res, next) => {
     try {
-      log('🔄 Manual BNR exchange rate update triggered', 'api');
+      console.log('🔄 Manual BNR exchange rate update triggered', 'api');
       // Set response header to explicitly expect JSON
       res.setHeader('Content-Type', 'application/json');
       
@@ -235,7 +234,7 @@ router.post('/exchange-rates/bnr/update',
         currencyCount: Object.keys(rates).length
       });
     } catch (error) {
-      log(`❌ Error in manual BNR update API: ${(error as Error).message}`, 'api');
+      console.log(`❌ Error in manual BNR update API: ${(error as Error).message}`, 'api');
       res.status(500).json({
         success: false,
         error: (error as Error).message,
@@ -249,7 +248,7 @@ router.get('/exchange-rates/bnr/test-rss',
   authGuard.requireRoles([UserRole.ADMIN, UserRole.COMPANY_ADMIN]),
   async (req, res, next) => {
     try {
-      log('🔍 Testing BNR RSS feeds...', 'api');
+      console.log('🔍 Testing BNR RSS feeds...', 'api');
       // Set response header to explicitly expect JSON
       res.setHeader('Content-Type', 'application/json');
       
@@ -261,7 +260,7 @@ router.get('/exchange-rates/bnr/test-rss',
       for (const currency of currencies) {
         try {
           const feedUrl = rssFeeds[currency];
-          log(`🔍 Testing RSS feed URL for ${currency}: ${feedUrl}`, 'api');
+          console.log(`🔍 Testing RSS feed URL for ${currency}: ${feedUrl}`, 'api');
           
           const httpClient = bnrExchangeRateService['httpClient'];
           const response = await httpClient.get(feedUrl, {
@@ -279,7 +278,7 @@ router.get('/exchange-rates/bnr/test-rss',
             message: `Successfully fetched RSS feed for ${currency}`
           };
           
-          log(`✅ Successfully fetched RSS feed for ${currency}. Response length: ${response.length}`, 'api');
+          console.log(`✅ Successfully fetched RSS feed for ${currency}. Response length: ${response.length}`, 'api');
         } catch (urlError) {
           results[currency] = {
             success: false,
@@ -287,7 +286,7 @@ router.get('/exchange-rates/bnr/test-rss',
             message: `Failed to fetch RSS feed for ${currency}`
           };
           
-          log(`❌ Failed to fetch RSS feed for ${currency}: ${(urlError as Error).message}`, 'api');
+          console.log(`❌ Failed to fetch RSS feed for ${currency}: ${(urlError as Error).message}`, 'api');
         }
       }
       
@@ -298,7 +297,7 @@ router.get('/exchange-rates/bnr/test-rss',
         message: 'RSS feed test completed'
       });
     } catch (error) {
-      log(`❌ Error in RSS test API: ${(error as Error).message}`, 'api');
+      console.log(`❌ Error in RSS test API: ${(error as Error).message}`, 'api');
       res.status(500).json({
         success: false,
         error: (error as Error).message,
@@ -328,7 +327,7 @@ router.get('/exchange-rates/convert', async (req, res, next) => {
       date: new Date().toISOString().split('T')[0]
     });
   } catch (error) {
-    log(`❌ Error in currency conversion API: ${(error as Error).message}`, 'api');
+    console.log(`❌ Error in currency conversion API: ${(error as Error).message}`, 'api');
     next(error);
   }
 });
@@ -347,7 +346,7 @@ router.get('/anaf/validate-vat/:vatNumber',
       const validationResult = await anafService.validateVat(vatNumber);
       res.json(validationResult);
     } catch (error) {
-      log(`❌ Error in VAT validation API: ${(error as Error).message}`, 'api');
+      console.log(`❌ Error in VAT validation API: ${(error as Error).message}`, 'api');
       next(error);
     }
 });
@@ -371,7 +370,7 @@ router.get('/anaf/company/:fiscalCode',
 
       res.json(companyInfo);
     } catch (error) {
-      log(`❌ Error in company info API: ${(error as Error).message}`, 'api');
+      console.log(`❌ Error in company info API: ${(error as Error).message}`, 'api');
       next(error);
     }
 });
@@ -397,7 +396,7 @@ router.get('/exchange-rates/bnr/all', async (req, res, next) => {
       source: 'BNR Official'
     });
   } catch (error) {
-    log(`❌ Error in BNR rates API: ${(error as Error).message}`, 'api');
+    console.log(`❌ Error in BNR rates API: ${(error as Error).message}`, 'api');
     next(error);
   }
 });

@@ -52,7 +52,7 @@ export class ValidateInvoiceController {
       }
       
       // Log the validation in audit trail
-      await AuditService.log({
+      await AuditService.console.log({
         userId: userId as string,
         companyId: companyId as string,
         action: 'VALIDATE',
@@ -104,7 +104,7 @@ export class ValidateInvoiceController {
             
             // Log the validation in audit trail
             if (result.success) {
-              await AuditService.log({
+              await AuditService.console.log({
                 userId: userId as string,
                 companyId: companyId as string,
                 action: 'VALIDATE_BATCH',

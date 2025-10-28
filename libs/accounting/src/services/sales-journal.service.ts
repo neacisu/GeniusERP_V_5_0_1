@@ -36,7 +36,6 @@ import {
 } from '../types/sales-journal-data-types';
 import { accountingCacheService } from './accounting-cache.service';
 import { accountingQueueService } from './accounting-queue.service';
-import { log } from "@api/vite";
 
 /**
  * Sales journal entry interface
@@ -2195,14 +2194,14 @@ export class SalesJournalService {
         );
         
         if (cached) {
-          log(`Sales journal cache hit for ${params.companyId} ${periodStart}-${periodEnd}`, 'sales-journal-cache');
+          console.log(`Sales journal cache hit for ${params.companyId} ${periodStart}-${periodEnd}`, 'sales-journal-cache');
           return cached;
         }
       }
     }
     
     // Generate report (cache miss or disabled)
-    log(`Generating sales journal for ${params.companyId} ${periodStart}-${periodEnd}`, 'sales-journal');
+    console.log(`Generating sales journal for ${params.companyId} ${periodStart}-${periodEnd}`, 'sales-journal');
     const report = await this.generateSalesJournal(params);
     
     // Cache result
@@ -2213,7 +2212,7 @@ export class SalesJournalService {
         periodEnd,
         report
       );
-      log(`Sales journal cached for ${params.companyId}`, 'sales-journal-cache');
+      console.log(`Sales journal cached for ${params.companyId}`, 'sales-journal-cache');
     }
     
     return report;
@@ -2235,7 +2234,7 @@ export class SalesJournalService {
       const periodStart = params.periodStart.toISOString().split('T')[0];
       const periodEnd = params.periodEnd.toISOString().split('T')[0];
       
-      log(`Queueing async sales journal generation for ${params.companyId}`, 'sales-journal-async');
+      console.log(`Queueing async sales journal generation for ${params.companyId}`, 'sales-journal-async');
       
       const job = await accountingQueueService.queueSalesJournalGeneration({
         companyId: params.companyId,
@@ -2252,7 +2251,7 @@ export class SalesJournalService {
       };
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      log(`Error queueing sales journal generation: ${errorMessage}`, 'sales-journal-error');
+      console.log(`Error queueing sales journal generation: ${errorMessage}`, 'sales-journal-error');
       throw error;
     }
   }
@@ -2282,15 +2281,15 @@ export class SalesJournalService {
         const period = `${year}-${month}`;
         
         await accountingCacheService.invalidateSalesJournal(companyId, period);
-        log(`Invalidated sales journal cache for ${companyId} period ${period}`, 'sales-journal-cache');
+        console.log(`Invalidated sales journal cache for ${companyId} period ${period}`, 'sales-journal-cache');
       } else {
         // Nuclear option - invalidate all periods for company
         await accountingCacheService.invalidateSalesJournal(companyId);
-        log(`Invalidated all sales journal cache for ${companyId}`, 'sales-journal-cache');
+        console.log(`Invalidated all sales journal cache for ${companyId}`, 'sales-journal-cache');
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      log(`Error invalidating sales journal cache: ${errorMessage}`, 'sales-journal-error');
+      console.log(`Error invalidating sales journal cache: ${errorMessage}`, 'sales-journal-error');
       // Don't throw - cache invalidation failures shouldn't break the main operation
     }
   }

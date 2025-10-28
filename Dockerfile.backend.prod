@@ -1,0 +1,68 @@
+# ===================================
+# Stage 1: Build Backend
+# ===================================
+FROM node:24.9.0-alpine AS builder
+
+WORKDIR /app
+
+# Instalăm dependențele pentru build + PDFKit requirements
+RUN apk add --no-cache \
+    python3 make g++ git \
+    cairo cairo-dev pango pango-dev pixman pixman-dev \
+    jpeg-dev giflib-dev librsvg-dev
+
+# Instalăm pnpm (cea mai nouă versiune)
+RUN npm install -g pnpm@10.19.0
+
+# Copiem fișierele de dependințe
+COPY package.json pnpm-lock.yaml .npmrc pnpm-workspace.yaml ./
+
+# Instalăm dependințele folosind EXCLUSIV pnpm
+RUN pnpm install --frozen-lockfile
+
+# Copiem tot codul sursă
+COPY . .
+
+# Build backend cu NX
+RUN pnpm nx build api
+
+# ===================================
+# Stage 2: Production Runtime
+# ===================================
+FROM node:24.9.0-alpine
+
+WORKDIR /app
+
+# Instalăm utilitare pentru verificarea serviciilor și pachete esențiale
+# Runtime dependencies pentru PDFKit
+RUN apk add --no-cache \
+    postgresql-client redis curl busybox-extras \
+    cairo pango pixman jpeg giflib librsvg \
+    python3 py3-pip
+
+# Instalăm pnpm (cea mai nouă versiune)
+RUN npm install -g pnpm@10.19.0
+
+# Copiem fișierele de dependințe și instalăm doar dependencies de producție
+COPY package.json pnpm-lock.yaml .npmrc pnpm-workspace.yaml ./
+RUN pnpm install --prod --frozen-lockfile
+
+# Copiem artefactele de build din stage-ul anterior
+COPY --from=builder /app/dist ./dist
+
+# Copiem fișierele de configurare
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Setăm variabilele de mediu pentru producție
+ENV NODE_ENV=production
+
+# Expunem portul backend API
+EXPOSE 5001
+
+# Folosim entrypoint-ul pentru a aștepta serviciile dependente
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+# Comanda de start pentru producție
+CMD ["node", "dist/apps/api/main.js"]
+

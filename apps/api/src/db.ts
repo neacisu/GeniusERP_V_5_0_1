@@ -9,7 +9,6 @@ import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 // Import ONLY schema namespace, not the entire @geniuserp/shared package
 import { schema } from '@geniuserp/shared';
-import { log } from './vite';
 
 if (!process.env['DATABASE_URL']) {
   throw new Error(
@@ -35,4 +34,4 @@ export const pool = queryClient;
 // Make pool available globally for backward compatibility
 globalThis.pool = pool;
 
-log('✅ Database connection initialized (PostgreSQL 17 local)', 'db-init');
+console.log('✅ Database connection initialized (PostgreSQL 17 local)');

@@ -8,7 +8,6 @@
 import { Express } from 'express';
 import { SettingsModule } from './settings.module';
 import { settingsRouter } from './routes';
-import { log } from "@api/vite";
 
 /**
  * Initialize the Settings module
@@ -18,14 +17,14 @@ import { log } from "@api/vite";
  * @returns Module information
  */
 export function initSettingsModule(app: Express) {
-  log('⚙️ Initializing settings module', 'settings-module');
+  console.log('⚙️ Initializing settings module', 'settings-module');
   
   // Initialize the module
   const moduleInfo = SettingsModule.initialize(app);
   
   // Register the module with the Express app
   app.use('/api/settings', settingsRouter);
-  log('⚙️ Settings module routes registered at /api/settings', 'settings-module');
+  console.log('⚙️ Settings module routes registered at /api/settings', 'settings-module');
   
   // Return module info
   return {

@@ -6,7 +6,6 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import type postgres from 'postgres';
-import { log } from "@api/vite";
 import type {
   CreateAssessmentData,
   InventoryAssessment,
@@ -26,7 +25,7 @@ export class InventoryAssessmentService {
    * Create a new inventory assessment document
    */
   async createAssessment(data: CreateAssessmentData, userId: string, companyId: string): Promise<InventoryAssessment> {
-    log(`Creating assessment with data: ${JSON.stringify(data, null, 2)}`, 'inventory-assessment');
+    console.log(`Creating assessment with data: ${JSON.stringify(data, null, 2)}`, 'inventory-assessment');
     
     try {
       // Set default values and prepare data
@@ -85,7 +84,7 @@ export class InventoryAssessmentService {
       ];
       
       const [result] = await pool.unsafe(query, values);
-      log('Assessment created successfully', 'inventory-assessment');
+      console.log('Assessment created successfully', 'inventory-assessment');
       
       return result as unknown as InventoryAssessment;
     } catch (error) {
@@ -103,7 +102,7 @@ export class InventoryAssessmentService {
     companyId: string, 
     _userId: string
   ): Promise<AssessmentWithItems> {
-    log(`Initializing assessment items for assessment: ${assessmentId}`, 'inventory-assessment');
+    console.log(`Initializing assessment items for assessment: ${assessmentId}`, 'inventory-assessment');
     
     try {
       // Get assessment details first
@@ -125,10 +124,10 @@ export class InventoryAssessmentService {
         throw new Error(`Assessment must be in DRAFT status to initialize items. Current status: ${assessment.status}`);
       }
       
-      log(`Assessment warehouse ID: ${warehouseId}`, 'inventory-assessment');
+      console.log(`Assessment warehouse ID: ${warehouseId}`, 'inventory-assessment');
       
       // Get all products with stock in the warehouse - using parameterized query
-      log(`Getting stock items for warehouse ${warehouseId}`, 'inventory-assessment');
+      console.log(`Getting stock items for warehouse ${warehouseId}`, 'inventory-assessment');
       
       // First try getting items from the stocks table
       const stocksQuery = `
@@ -155,11 +154,11 @@ export class InventoryAssessmentService {
       const stockItems = await pool.unsafe(stocksQuery, [warehouseId]);
       let stockItemsList = stockItems;
       
-      log(`Found ${stockItemsList.length} stock items in stocks table`, 'inventory-assessment');
+      console.log(`Found ${stockItemsList.length} stock items in stocks table`, 'inventory-assessment');
       
       // If no items found in stocks, try the inventory_stock table (backup)
       if (stockItemsList.length === 0) {
-        log('No items in stocks table, trying inventory_stock table', 'inventory-assessment');
+        console.log('No items in stocks table, trying inventory_stock table', 'inventory-assessment');
         
         const inventoryStockQuery = `
           SELECT 
@@ -179,7 +178,7 @@ export class InventoryAssessmentService {
         `;
         
         stockItemsList = await pool.unsafe(inventoryStockQuery, [warehouseId, companyId]);
-        log(`Found ${stockItemsList.length} stock items in inventory_stock table`, 'inventory-assessment');
+        console.log(`Found ${stockItemsList.length} stock items in inventory_stock table`, 'inventory-assessment');
       }
       
       // Create assessment items for each stock item
@@ -188,7 +187,7 @@ export class InventoryAssessmentService {
       let errorCount = 0;
       
       if (stockItemsList.length === 0) {
-        log(`No stock items found for warehouse: ${warehouseId}`, 'inventory-assessment');
+        console.log(`No stock items found for warehouse: ${warehouseId}`, 'inventory-assessment');
         
         // Update assessment status to IN_PROGRESS even with no items
         // This allows the user to proceed to the next step
@@ -211,10 +210,10 @@ export class InventoryAssessmentService {
       }
       
       // Process each stock item and create an assessment item
-      log(`Processing ${stockItemsList.length} stock items`, 'inventory-assessment');
+      console.log(`Processing ${stockItemsList.length} stock items`, 'inventory-assessment');
       
       for (const item of stockItemsList) {
-        log(`Processing stock item for ${item.product_name || 'unknown product'}`, 'inventory-assessment');
+        console.log(`Processing stock item for ${item.product_name || 'unknown product'}`, 'inventory-assessment');
         
         try {
           // Generate a UUID for the item
@@ -254,7 +253,7 @@ export class InventoryAssessmentService {
           ]);
           
           const assessmentItem = insertResult[0];
-          log(`Item created with ID: ${assessmentItem.id}`, 'inventory-assessment');
+          console.log(`Item created with ID: ${assessmentItem.id}`, 'inventory-assessment');
           
           assessmentItems.push(assessmentItem);
           successCount++;
@@ -266,7 +265,7 @@ export class InventoryAssessmentService {
       }
     
       // After processing all items, update assessment status to IN_PROGRESS
-      log(`Processed items with success: ${successCount}, errors: ${errorCount}`, 'inventory-assessment');
+      console.log(`Processed items with success: ${successCount}, errors: ${errorCount}`, 'inventory-assessment');
       
       if (successCount === 0 && errorCount > 0) {
         // All inserts failed - this is a real problem
@@ -274,7 +273,7 @@ export class InventoryAssessmentService {
       }
       
       // Update assessment status to IN_PROGRESS using direct SQL
-      log('Updating assessment status to IN_PROGRESS', 'inventory-assessment');
+      console.log('Updating assessment status to IN_PROGRESS', 'inventory-assessment');
       const updateStatusQuery = `
         UPDATE inventory_assessments
         SET status = $1, updated_at = NOW()
@@ -305,7 +304,7 @@ export class InventoryAssessmentService {
    * Get assessment by ID
    */
   async getAssessmentById(assessmentId: string): Promise<InventoryAssessment | null> {
-    log(`Getting assessment details for ID: ${assessmentId}`, 'inventory-assessment');
+    console.log(`Getting assessment details for ID: ${assessmentId}`, 'inventory-assessment');
     
     try {
       const query = `
@@ -330,7 +329,7 @@ export class InventoryAssessmentService {
    * Get assessment with items
    */
   async getAssessmentWithItems(assessmentId: string): Promise<AssessmentWithItems | null> {
-    log(`Getting assessment details with items for ID: ${assessmentId}`, 'inventory-assessment');
+    console.log(`Getting assessment details with items for ID: ${assessmentId}`, 'inventory-assessment');
     
     try {
       // Get the assessment first
@@ -361,7 +360,7 @@ export class InventoryAssessmentService {
    * Placeholder method - implementation needed
    */
   async updateAssessmentStatus(assessmentId: string, status: string, _userId: string): Promise<InventoryAssessment> {
-    log(`Updating assessment ${assessmentId} status to ${status}`, 'inventory-assessment');
+    console.log(`Updating assessment ${assessmentId} status to ${status}`, 'inventory-assessment');
     
     try {
       const query = `
@@ -395,7 +394,7 @@ export class InventoryAssessmentService {
     countedBy: string, 
     _userId: string
   ): Promise<InventoryAssessmentItem> {
-    log(`Recording item count for ${itemId}: ${actualQuantity}`, 'inventory-assessment');
+    console.log(`Recording item count for ${itemId}: ${actualQuantity}`, 'inventory-assessment');
     
     try {
       const query = `
@@ -427,7 +426,7 @@ export class InventoryAssessmentService {
    * Placeholder method - implementation needed
    */
   async processInventoryDifferences(assessmentId: string, _userId: string): Promise<ProcessDifferencesResult> {
-    log(`Processing inventory differences for ${assessmentId}`, 'inventory-assessment');
+    console.log(`Processing inventory differences for ${assessmentId}`, 'inventory-assessment');
     
     try {
       // This would typically:

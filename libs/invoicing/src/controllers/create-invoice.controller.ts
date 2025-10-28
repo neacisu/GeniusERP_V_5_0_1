@@ -62,7 +62,7 @@ export class CreateInvoiceController {
       
       // Log the successful creation in the audit trail
       try {
-        await AuditService.log({
+        await AuditService.console.log({
           userId: userId as string,
           companyId: companyId as string,
           action: 'CREATE',
@@ -144,7 +144,7 @@ export class CreateInvoiceController {
             
             // Log the successful creation in the audit trail
             try {
-              await AuditService.log({
+              await AuditService.console.log({
                 userId: userId as string,
                 companyId: companyId as string,
                 action: 'CREATE_BATCH',

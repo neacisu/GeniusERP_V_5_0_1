@@ -184,7 +184,7 @@ export class FXRevaluationService extends DrizzleService {
       journalNumber = entry.journalNumber;
 
       // Log audit
-      await this.auditService.log({
+      await this.auditService.console.log({
         companyId,
         userId,
         action: 'FX_REVALUATION_POSTED' as any,

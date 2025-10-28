@@ -82,7 +82,7 @@ export class AccountingPeriodsService extends DrizzleService {
       db.insert(fiscalPeriods).values(periodData).returning()
     );
 
-    await this.auditService.log({
+    await this.auditService.console.log({
       companyId: request.companyId,
       userId: 'system', // TODO: Pass userId from request
       action: 'PERIOD_CREATED' as any,
@@ -146,7 +146,7 @@ export class AccountingPeriodsService extends DrizzleService {
         .returning()
     );
 
-    await this.auditService.log({
+    await this.auditService.console.log({
       companyId,
       userId: request.closedBy,
       action: 'PERIOD_STATUS_CHANGED' as any,

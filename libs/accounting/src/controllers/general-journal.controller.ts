@@ -12,7 +12,6 @@ import { GeneralJournalExcelService } from '../services/general-journal-excel.se
 import { AccountingPeriodsService } from '../services/accounting-periods.service';
 import { BaseController } from './base.controller';
 import { z } from 'zod';
-import { log } from "@api/vite";
 
 /**
  * Validare schema pentru cereri
@@ -93,13 +92,13 @@ export class GeneralJournalController extends BaseController {
         responsiblePersonTitle: 'Contabil șef'
       };
 
-      log(`📊 Generare Registru Jurnal PDF pentru ${companyName}, perioada ${startDate.toLocaleDateString('ro-RO')} - ${endDate.toLocaleDateString('ro-RO')}`, 'general-journal');
+      console.log(`📊 Generare Registru Jurnal PDF pentru ${companyName}, perioada ${startDate.toLocaleDateString('ro-RO')} - ${endDate.toLocaleDateString('ro-RO')}`, 'general-journal');
 
       // Generează PDF-ul
       const filePath = await this.pdfService.generateGeneralJournalPDF(options);
 
       // Log audit pentru generarea raportului
-      log(`✅ Registru Jurnal PDF generat de ${userId} pentru compania ${companyId}`, 'general-journal');
+      console.log(`✅ Registru Jurnal PDF generat de ${userId} pentru compania ${companyId}`, 'general-journal');
 
       // Returnează fișierul
       res.download(filePath, `registru-jurnal-${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}.pdf`, (err) => {
@@ -178,13 +177,13 @@ export class GeneralJournalController extends BaseController {
         includeMetadata: true // Excel include foi suplimentare cu metadata
       };
 
-      log(`📊 Generare Registru Jurnal Excel pentru ${companyName}, perioada ${startDate.toLocaleDateString('ro-RO')} - ${endDate.toLocaleDateString('ro-RO')}`, 'general-journal');
+      console.log(`📊 Generare Registru Jurnal Excel pentru ${companyName}, perioada ${startDate.toLocaleDateString('ro-RO')} - ${endDate.toLocaleDateString('ro-RO')}`, 'general-journal');
 
       // Generează Excel-ul
       const filePath = await this.excelService.generateGeneralJournalExcel(options);
 
       // Log audit pentru generarea raportului
-      log(`✅ Registru Jurnal Excel generat de ${userId} pentru compania ${companyId}`, 'general-journal');
+      console.log(`✅ Registru Jurnal Excel generat de ${userId} pentru compania ${companyId}`, 'general-journal');
 
       // Returnează fișierul
       res.download(filePath, `registru-jurnal-${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}.xlsx`, (err) => {

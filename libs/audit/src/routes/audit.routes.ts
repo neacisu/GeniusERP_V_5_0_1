@@ -34,7 +34,7 @@ export function initAuditRoutes() {
         const entityId = req.body.entityId || uuidv4();
         
         // Log the action directly
-        await AuditService.log({
+        await AuditService.console.log({
           companyId,
           userId: req.user?.id || 'system',
           action: 'TEST_AUDIT_API',

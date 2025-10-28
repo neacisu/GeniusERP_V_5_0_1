@@ -18,7 +18,6 @@
 
 import { accountingQueueService } from './accounting-queue.service';
 import { RedisService } from '@common/services/redis.service';
-import { log } from "@api/vite";
 
 /**
  * Rezultat operațiune bulk
@@ -170,7 +169,7 @@ export class BulkOperationsService {
     userId: string
   ): Promise<BulkOperationResult> {
     try {
-      log(`Bulk creating ${invoices.length} invoices for company ${companyId}`, 'bulk-operations');
+      console.log(`Bulk creating ${invoices.length} invoices for company ${companyId}`, 'bulk-operations');
       
       // Validare rapidă (fail fast)
       const validationErrors = this.validateInvoices(invoices);
@@ -191,7 +190,7 @@ export class BulkOperationsService {
         userId
       });
       
-      log(`Bulk invoice creation job queued: ${job.id}`, 'bulk-operations');
+      console.log(`Bulk invoice creation job queued: ${job.id}`, 'bulk-operations');
       
       return {
         success: true,
@@ -200,7 +199,7 @@ export class BulkOperationsService {
         message: `Job queued successfully. Track progress using job ID: ${job.id}`
       };
     } catch (error: any) {
-      log(`Error queueing bulk invoice creation: ${error.message}`, 'bulk-operations-error');
+      console.log(`Error queueing bulk invoice creation: ${error.message}`, 'bulk-operations-error');
       return {
         success: false,
         totalItems: invoices.length,
@@ -269,7 +268,7 @@ export class BulkOperationsService {
     userId: string
   ): Promise<BulkOperationResult> {
     try {
-      log(`Bulk recording ${payments.length} payments for company ${companyId}`, 'bulk-operations');
+      console.log(`Bulk recording ${payments.length} payments for company ${companyId}`, 'bulk-operations');
       
       // Validare rapidă
       const validationErrors = this.validatePayments(payments);
@@ -290,7 +289,7 @@ export class BulkOperationsService {
         userId
       });
       
-      log(`Bulk payment recording job queued: ${job.id}`, 'bulk-operations');
+      console.log(`Bulk payment recording job queued: ${job.id}`, 'bulk-operations');
       
       return {
         success: true,
@@ -299,7 +298,7 @@ export class BulkOperationsService {
         message: `Job queued successfully. Track progress using job ID: ${job.id}`
       };
     } catch (error: any) {
-      log(`Error queueing bulk payment recording: ${error.message}`, 'bulk-operations-error');
+      console.log(`Error queueing bulk payment recording: ${error.message}`, 'bulk-operations-error');
       return {
         success: false,
         totalItems: payments.length,
@@ -362,7 +361,7 @@ export class BulkOperationsService {
     totalAccounts: number;
   }> {
     try {
-      log(`Bulk reconciling ${accountIds.length} accounts for company ${companyId}`, 'bulk-operations');
+      console.log(`Bulk reconciling ${accountIds.length} accounts for company ${companyId}`, 'bulk-operations');
       
       // Creează job separat pentru fiecare cont (permite procesare în paralel)
       const jobs = await Promise.all(
@@ -378,7 +377,7 @@ export class BulkOperationsService {
       
       const jobIds = jobs.map(job => job.id).filter((id): id is string => id !== undefined);
       
-      log(`Created ${jobIds.length} reconciliation jobs`, 'bulk-operations');
+      console.log(`Created ${jobIds.length} reconciliation jobs`, 'bulk-operations');
       
       return {
         success: true,
@@ -386,7 +385,7 @@ export class BulkOperationsService {
         totalAccounts: accountIds.length
       };
     } catch (error: any) {
-      log(`Error queueing bulk reconciliation: ${error.message}`, 'bulk-operations-error');
+      console.log(`Error queueing bulk reconciliation: ${error.message}`, 'bulk-operations-error');
       return {
         success: false,
         jobIds: [],
@@ -426,7 +425,7 @@ export class BulkOperationsService {
     message?: string;
   }> {
     try {
-      log(`Batch export of ${journals.length} journals for company ${companyId}`, 'bulk-operations');
+      console.log(`Batch export of ${journals.length} journals for company ${companyId}`, 'bulk-operations');
       
       if (journals.length === 0) {
         return {
@@ -445,7 +444,7 @@ export class BulkOperationsService {
         userId
       });
       
-      log(`Batch export job queued: ${job.id}`, 'bulk-operations');
+      console.log(`Batch export job queued: ${job.id}`, 'bulk-operations');
       
       return {
         success: true,
@@ -453,7 +452,7 @@ export class BulkOperationsService {
         message: `Batch export queued. Track progress using job ID: ${job.id}`
       };
     } catch (error: any) {
-      log(`Error queueing batch export: ${error.message}`, 'bulk-operations-error');
+      console.log(`Error queueing batch export: ${error.message}`, 'bulk-operations-error');
       return {
         success: false,
         message: `Failed to queue batch export: ${error.message}`
@@ -499,7 +498,7 @@ export class BulkOperationsService {
         errors: jobResult?.errors
       };
     } catch (error: any) {
-      log(`Error getting bulk operation progress: ${error.message}`, 'bulk-operations-error');
+      console.log(`Error getting bulk operation progress: ${error.message}`, 'bulk-operations-error');
       return null;
     }
   }
@@ -513,10 +512,10 @@ export class BulkOperationsService {
   async cancelBulkOperation(jobId: string): Promise<boolean> {
     try {
       await accountingQueueService.cancelJob(jobId);
-      log(`Bulk operation cancelled: ${jobId}`, 'bulk-operations');
+      console.log(`Bulk operation cancelled: ${jobId}`, 'bulk-operations');
       return true;
     } catch (error: any) {
-      log(`Error cancelling bulk operation: ${error.message}`, 'bulk-operations-error');
+      console.log(`Error cancelling bulk operation: ${error.message}`, 'bulk-operations-error');
       return false;
     }
   }

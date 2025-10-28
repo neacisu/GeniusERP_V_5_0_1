@@ -1,0 +1,39 @@
+# ===================================
+# Stage 1: Build Frontend
+# ===================================
+FROM node:24.9.0-alpine AS builder
+
+WORKDIR /app
+
+# Instalăm pnpm (cea mai nouă versiune)
+RUN npm install -g pnpm@10.19.0
+
+# Copiem fișierele de dependințe
+COPY package.json pnpm-lock.yaml .npmrc pnpm-workspace.yaml ./
+
+# Instalăm dependințele folosind EXCLUSIV pnpm
+RUN pnpm install --frozen-lockfile
+
+# Copiem tot codul sursă
+COPY . .
+
+# Build frontend cu NX
+RUN pnpm nx build web
+
+# ===================================
+# Stage 2: Nginx Production Server
+# ===================================
+FROM nginx:1.27-alpine
+
+# Copiem configurația personalizată Nginx
+COPY nginx/nginx.frontend.conf /etc/nginx/conf.d/default.conf
+
+# Copiem fișierele builduite din stage-ul anterior
+COPY --from=builder /app/dist/apps/web /usr/share/nginx/html
+
+# Expunem portul pentru frontend
+EXPOSE 5000
+
+# Pornire Nginx
+CMD ["nginx", "-g", "daemon off;"]
+

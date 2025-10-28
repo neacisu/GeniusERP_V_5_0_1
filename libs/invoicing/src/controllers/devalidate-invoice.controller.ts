@@ -55,7 +55,7 @@ export class DevalidateInvoiceController {
       }
       
       // Log the devalidation in audit trail
-      await AuditService.log({
+      await AuditService.console.log({
         userId: userId as string,
         companyId: companyId as string,
         action: 'DEVALIDATE',

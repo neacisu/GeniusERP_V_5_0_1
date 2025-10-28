@@ -70,7 +70,7 @@ export class AuditService {
    * @returns Promise that resolves to the log ID
    */
   async logAction(data: any): Promise<string> {
-    return AuditService.log(data);
+    return AuditService.console.log(data);
   }
   
   /**
@@ -93,7 +93,7 @@ export class AuditService {
       }
     };
     
-    return AuditService.log(auditData);
+    return AuditService.console.log(auditData);
   }
   /**
    * Create an audit log entry
@@ -103,7 +103,7 @@ export class AuditService {
    */
   static createAuditLog(data: AuditLogData): Promise<string> {
     console.warn('[AuditService] createAuditLog is deprecated, use log instead');
-    return this.log(data);
+    return this.console.log(data);
   }
 
   /**
@@ -123,7 +123,7 @@ export class AuditService {
     const userAgent = req.headers?.['user-agent'] || '';
     
     // Combine with provided data
-    return AuditService.log({
+    return AuditService.console.log({
       userId,
       companyId,
       action: data.action || 'UNKNOWN',

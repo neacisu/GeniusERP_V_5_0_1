@@ -150,7 +150,7 @@ router.post('/generate',
         
         const reportContent = completion.choices?.[0]?.message.content || 'No content generated';
         
-        await AuditService.log({
+        await AuditService.console.log({
           action: 'REPORT_GENERATION_COMPLETED',
           entity: 'ANALYTICS_REPORT',
           entityId: 'mock-report',

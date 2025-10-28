@@ -147,7 +147,7 @@ export class TriggerController {
       });
 
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.CREATE,
@@ -222,7 +222,7 @@ export class TriggerController {
       }
 
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.UPDATE,
@@ -291,7 +291,7 @@ export class TriggerController {
       }
       
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.DELETE,
@@ -362,7 +362,7 @@ export class TriggerController {
       }
       
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.UPDATE,
@@ -430,7 +430,7 @@ export class TriggerController {
       }
       
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.BPM_PROCESS_ACTION,

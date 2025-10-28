@@ -111,7 +111,7 @@ export class OpenAiService {
     
     try {
       // Log the attempt to use OpenAI
-      await AuditService.log({
+      await AuditService.console.log({
         action: 'AI_REQUEST',
         entity: 'AI_MODEL',
         entityId: params.model || this.config.defaultModel,
@@ -161,7 +161,7 @@ export class OpenAiService {
       });
       
       // Log token usage
-      await AuditService.log({
+      await AuditService.console.log({
         action: 'AI_RESPONSE',
         entity: 'AI_MODEL',
         entityId: params.model || this.config.defaultModel,
@@ -181,7 +181,7 @@ export class OpenAiService {
       console.error('Error creating chat completion:', error);
       
       // Log the error
-      await AuditService.log({
+      await AuditService.console.log({
         action: 'AI_REQUEST_ERROR',
         entity: 'AI_MODEL',
         entityId: params.model || this.config.defaultModel,

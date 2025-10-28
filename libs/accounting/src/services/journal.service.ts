@@ -18,7 +18,6 @@ import { JournalNumberingService } from './journal-numbering.service';
 import { AccountingPeriodsService } from './accounting-periods.service';
 import { accountingQueueService } from './accounting-queue.service';
 import { RedisService } from '@common/services/redis.service';
-import { log } from "@api/vite";
 
 /**
  * Ledger entry type
@@ -313,7 +312,7 @@ export class JournalService {
       
       // Log audit event
       if (userId) {
-        await AuditService.log({
+        await AuditService.console.log({
           userId,
           companyId,
           franchiseId,
@@ -463,7 +462,7 @@ export class JournalService {
       .where(eq(accountingLedgerEntries.id, ledgerEntryId));
     
     // Log audit event for the original entry
-    await AuditService.log({
+    await AuditService.console.log({
       userId,
       companyId: originalEntry.companyId,
       action: AuditAction.UPDATE,
@@ -707,7 +706,7 @@ export class JournalService {
       .where(eq(accountingLedgerEntries.id, ledgerEntryId));
     
     // Log audit event
-    await AuditService.log({
+    await AuditService.console.log({
       userId,
       companyId: entry.companyId,
       action: AuditAction.UPDATE,
@@ -788,7 +787,7 @@ export class JournalService {
       .where(eq(accountingLedgerEntries.id, ledgerEntryId));
     
     // Log audit event
-    await AuditService.log({
+    await AuditService.console.log({
       userId,
       companyId: entry.companyId,
       action: AuditAction.UPDATE,
@@ -895,11 +894,11 @@ export class JournalService {
    */
   public async queueBalanceUpdate(journalEntryId: string, companyId: string): Promise<void> {
     try {
-      log(`Queueing balance update for journal entry ${journalEntryId}`, 'journal-async');
+      console.log(`Queueing balance update for journal entry ${journalEntryId}`, 'journal-async');
       await accountingQueueService.queueBalanceUpdate({ journalEntryId, companyId });
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      log(`Error queueing balance update: ${errorMessage}`, 'journal-error');
+      console.log(`Error queueing balance update: ${errorMessage}`, 'journal-error');
     }
   }
   
@@ -916,10 +915,10 @@ export class JournalService {
       }
       
       await redisService.invalidatePattern(`acc:ledger:${companyId}:*`);
-      log(`Invalidated ledger cache for ${companyId}`, 'journal-cache');
+      console.log(`Invalidated ledger cache for ${companyId}`, 'journal-cache');
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      log(`Error invalidating ledger cache: ${errorMessage}`, 'journal-error');
+      console.log(`Error invalidating ledger cache: ${errorMessage}`, 'journal-error');
     }
   }
 }

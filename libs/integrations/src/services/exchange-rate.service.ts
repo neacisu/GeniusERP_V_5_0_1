@@ -6,7 +6,6 @@
  */
 
 import { createHttpClient, HttpClient } from '@geniuserp/shared/libs/http-client';
-import { log } from "@api/vite";
 
 interface ExchangeRateResponse {
   result: string;
@@ -49,7 +48,7 @@ export class ExchangeRateService {
    */
   async getLatestRates(baseCurrency: string = this.baseCurrency): Promise<Record<string, number>> {
     try {
-      log(`📊 Fetching latest exchange rates with base currency: ${baseCurrency}`, 'exchange-rate');
+      console.log(`📊 Fetching latest exchange rates with base currency: ${baseCurrency}`, 'exchange-rate');
       
       const response = await this.httpClient.get<ExchangeRateResponse>(`/latest/${baseCurrency}`);
       
@@ -57,10 +56,10 @@ export class ExchangeRateService {
         throw new Error('Failed to fetch exchange rates');
       }
       
-      log(`✅ Successfully fetched exchange rates for ${Object.keys(response.rates).length} currencies`, 'exchange-rate');
+      console.log(`✅ Successfully fetched exchange rates for ${Object.keys(response.rates).length} currencies`, 'exchange-rate');
       return response.rates;
     } catch (error) {
-      log(`❌ Error fetching exchange rates: ${(error as Error).message}`, 'exchange-rate');
+      console.log(`❌ Error fetching exchange rates: ${(error as Error).message}`, 'exchange-rate');
       throw new Error(`Failed to fetch exchange rates: ${(error as Error).message}`);
     }
   }
@@ -70,7 +69,7 @@ export class ExchangeRateService {
    */
   async getHistoricalRate(date: string, from: string = this.baseCurrency, to: string = 'EUR'): Promise<number> {
     try {
-      log(`📊 Fetching historical exchange rate for ${from} to ${to} on ${date}`, 'exchange-rate');
+      console.log(`📊 Fetching historical exchange rate for ${from} to ${to} on ${date}`, 'exchange-rate');
       
       // Format date as YYYY-MM-DD
       const formattedDate = new Date(date).toISOString().split('T')[0];
@@ -83,7 +82,7 @@ export class ExchangeRateService {
       
       return response.rates[to];
     } catch (error) {
-      log(`❌ Error fetching historical exchange rate: ${(error as Error).message}`, 'exchange-rate');
+      console.log(`❌ Error fetching historical exchange rate: ${(error as Error).message}`, 'exchange-rate');
       throw new Error(`Failed to fetch historical exchange rate: ${(error as Error).message}`);
     }
   }
@@ -100,11 +99,11 @@ export class ExchangeRateService {
       }
       
       const convertedAmount = amount * rates[to];
-      log(`💱 Converted ${amount} ${from} to ${convertedAmount.toFixed(2)} ${to}`, 'exchange-rate');
+      console.log(`💱 Converted ${amount} ${from} to ${convertedAmount.toFixed(2)} ${to}`, 'exchange-rate');
       
       return convertedAmount;
     } catch (error) {
-      log(`❌ Error converting currency: ${(error as Error).message}`, 'exchange-rate');
+      console.log(`❌ Error converting currency: ${(error as Error).message}`, 'exchange-rate');
       throw new Error(`Failed to convert currency: ${(error as Error).message}`);
     }
   }
@@ -118,7 +117,7 @@ export class ExchangeRateService {
     // For now, we'll use our regular service as a placeholder
     try {
       const formattedDate = date || new Date().toISOString().split('T')[0];
-      log(`📊 Fetching BNR reference exchange rate for ${formattedDate}`, 'exchange-rate');
+      console.log(`📊 Fetching BNR reference exchange rate for ${formattedDate}`, 'exchange-rate');
       
       // Just use the latest rates endpoint since the historical endpoint isn't reliably working
       const response = await this.httpClient.get<ExchangeRateResponse>(`/latest/RON`);
@@ -139,7 +138,7 @@ export class ExchangeRateService {
       
       return filteredRates;
     } catch (error) {
-      log(`❌ Error fetching BNR reference rate: ${(error as Error).message}`, 'exchange-rate');
+      console.log(`❌ Error fetching BNR reference rate: ${(error as Error).message}`, 'exchange-rate');
       throw new Error(`Failed to fetch BNR reference rate: ${(error as Error).message}`);
     }
   }

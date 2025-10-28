@@ -9,7 +9,6 @@ import { JwtAuthMode, UserRole } from "../types";
 import { DrizzleService } from "@common/drizzle";
 import { users, User as SelectUser } from '@geniuserp/shared';
 import { authRateLimiter } from "@api/middlewares/rate-limit.middleware";
-import { log } from "@api/vite";
 
 export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
   const router = Router();
@@ -144,7 +143,7 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
       // Generate a new token
       const newToken = authService.generateToken(user);
       
-      log(`Token refreshed successfully for user: ${user.id}`, 'auth-routes');
+      console.log(`Token refreshed successfully for user: ${user.id}`, 'auth-routes');
       res.json({ 
         token: newToken,
         user: {
@@ -218,7 +217,7 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
       });
     });
     
-    log('⚠️  Test auth endpoints enabled (development only)', 'auth-routes');
+    console.log('⚠️  Test auth endpoints enabled (development only)', 'auth-routes');
   }
   
   // Authentication verification endpoint

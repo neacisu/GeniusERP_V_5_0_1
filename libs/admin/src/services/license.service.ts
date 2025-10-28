@@ -203,7 +203,7 @@ export class LicenseService {
       });
       
       // Log the audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId: actorId,
         companyId: 'system',
         action: AuditAction.CREATE,
@@ -309,7 +309,7 @@ export class LicenseService {
       });
       
       // Log the audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId: actorId,
         companyId: 'system',
         action: AuditAction.UPDATE,
@@ -378,7 +378,7 @@ export class LicenseService {
       });
       
       // Log the audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId: actorId,
         companyId: 'system',
         action: AuditAction.UPDATE,
@@ -538,7 +538,7 @@ export class LicenseService {
         this.logger.info(`License ${license.key_identifier} has expired`);
         
         // Log the audit event
-        await AuditService.log({
+        await AuditService.console.log({
           userId: 'system',
           companyId: 'system',
           action: AuditAction.UPDATE,

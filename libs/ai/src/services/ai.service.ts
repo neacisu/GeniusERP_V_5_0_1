@@ -78,7 +78,7 @@ export class AIService {
     
     try {
       // Log the report generation attempt
-      await AuditService.log({
+      await AuditService.console.log({
         action: 'REPORT_GENERATION_STARTED',
         entity: 'ANALYTICS_REPORT',
         entityId: 'new',
@@ -121,7 +121,7 @@ export class AIService {
       if (!this.drizzleService?.db) {
         console.log('Database not available, returning content only without persistence');
         
-        await AuditService.log({
+        await AuditService.console.log({
           action: 'REPORT_GENERATION_COMPLETED',
           entity: 'ANALYTICS_REPORT',
           entityId: reportId,
@@ -181,7 +181,7 @@ export class AIService {
         });
         
         // Log successful generation
-        await AuditService.log({
+        await AuditService.console.log({
           action: 'REPORT_GENERATION_COMPLETED',
           entity: 'ANALYTICS_REPORT',
           entityId: reportId,
@@ -198,7 +198,7 @@ export class AIService {
         console.error('Database operation failed during report generation:', dbError);
         
         // Still return the content even if DB operations fail
-        await AuditService.log({
+        await AuditService.console.log({
           action: 'REPORT_DB_ERROR',
           entity: 'ANALYTICS_REPORT',
           entityId: reportId,
@@ -229,7 +229,7 @@ export class AIService {
       
     } catch (error) {
       // Log the error
-      await AuditService.log({
+      await AuditService.console.log({
         action: 'REPORT_GENERATION_FAILED',
         entity: 'ANALYTICS_REPORT',
         entityId: 'failed',

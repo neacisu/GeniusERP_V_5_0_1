@@ -60,7 +60,7 @@ export class PipelineService {
       });
 
       if (result.length > 0) {
-        await AuditService.log({
+        await AuditService.console.log({
           userId,
           companyId: data.companyId,
           action: AuditAction.CREATE,
@@ -109,7 +109,7 @@ export class PipelineService {
       });
 
       if (result.length > 0) {
-        await AuditService.log({
+        await AuditService.console.log({
           userId,
           companyId: data.companyId || result[0].companyId,
           action: AuditAction.UPDATE,
@@ -173,7 +173,7 @@ export class PipelineService {
       });
 
       if (result.length > 0) {
-        await AuditService.log({
+        await AuditService.console.log({
           userId,
           companyId,
           action: AuditAction.DELETE,
@@ -332,7 +332,7 @@ export class PipelineService {
       });
 
       if (result.length > 0) {
-        await AuditService.log({
+        await AuditService.console.log({
           userId,
           companyId: data.companyId,
           action: AuditAction.CREATE,
@@ -369,7 +369,7 @@ export class PipelineService {
       });
 
       if (result.length > 0) {
-        await AuditService.log({
+        await AuditService.console.log({
           userId,
           companyId: data.companyId || result[0].companyId,
           action: AuditAction.UPDATE,
@@ -420,7 +420,7 @@ export class PipelineService {
       });
 
       if (result.length > 0) {
-        await AuditService.log({
+        await AuditService.console.log({
           userId,
           companyId,
           action: AuditAction.DELETE,
@@ -500,7 +500,7 @@ export class PipelineService {
         });
       }
 
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.UPDATE,

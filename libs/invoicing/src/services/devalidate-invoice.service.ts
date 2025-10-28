@@ -100,7 +100,7 @@ export class DevalidateInvoiceService {
       });
       
       // Log audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: invoiceData.companyId,
         franchiseId: invoiceData.franchiseId,

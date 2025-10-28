@@ -10,7 +10,6 @@
 
 import { Job } from 'bullmq';
 import { JobTypeMap } from "@common/bullmq/types";
-import { log } from "@api/vite";
 import { RedisService } from '@common/services/redis.service';
 import {
   BalanceUpdateResult,
@@ -58,7 +57,7 @@ export type AccountingJobResult =
  * Rutează job-urile către handler-ul corespunzător
  */
 export async function processAccountingJob(job: Job<JobTypeMap[keyof JobTypeMap]>): Promise<AccountingJobResult> {
-  log(`Processing accounting job: ${job.name}`, 'accounting-job');
+  console.log(`Processing accounting job: ${job.name}`, 'accounting-job');
   
   try {
     switch (job.name) {
@@ -140,11 +139,11 @@ export async function processAccountingJob(job: Job<JobTypeMap[keyof JobTypeMap]
         return await handleGenerateIncomeStatement(job);
       
       default:
-        log(`Unknown accounting job type: ${job.name}`, 'accounting-job-error');
+        console.log(`Unknown accounting job type: ${job.name}`, 'accounting-job-error');
         throw new Error(`Unknown job type: ${job.name}`);
     }
   } catch (error: unknown) {
-    log(`Error processing accounting job ${job.name}: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error processing accounting job ${job.name}: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
@@ -157,7 +156,7 @@ export async function processAccountingJob(job: Job<JobTypeMap[keyof JobTypeMap]
 
 async function handleBalanceUpdate(job: Job): Promise<BalanceUpdateResult> {
   const data = job.data as JobTypeMap['balance-update'];
-  log(`Balance update for journal entry ${data.journalEntryId}`, 'accounting-job');
+  console.log(`Balance update for journal entry ${data.journalEntryId}`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -179,7 +178,7 @@ async function handleBalanceUpdate(job: Job): Promise<BalanceUpdateResult> {
     
     // Update account balances
     // Nota: logica efectivă de update este în JournalService
-    log(`Updating balances for ${entry.lines?.length || 0} account lines`, 'accounting-job');
+    console.log(`Updating balances for ${entry.lines?.length || 0} account lines`, 'accounting-job');
     
     await job.updateProgress(80);
     
@@ -188,7 +187,7 @@ async function handleBalanceUpdate(job: Job): Promise<BalanceUpdateResult> {
     const totalCredit = entry.lines?.reduce((sum, line) => sum + (line.creditAmount || 0), 0) || 0;
     
     if (Math.abs(totalDebit - totalCredit) > 0.01) {
-      log(`WARNING: Balance mismatch for entry ${data.journalEntryId}: debit=${totalDebit}, credit=${totalCredit}`, 'accounting-job-warning');
+      console.log(`WARNING: Balance mismatch for entry ${data.journalEntryId}: debit=${totalDebit}, credit=${totalCredit}`, 'accounting-job-warning');
     }
     
     await job.updateProgress(100);
@@ -201,14 +200,14 @@ async function handleBalanceUpdate(job: Job): Promise<BalanceUpdateResult> {
       linesProcessed: entry.lines?.length || 0
     };
   } catch (error: unknown) {
-    log(`Error updating balance: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error updating balance: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
 
 async function handleAccountReconciliation(job: Job): Promise<AccountReconciliationResult> {
   const data = job.data as JobTypeMap['account-reconciliation'];
-  log(`Account reconciliation for account ${data.accountId}`, 'accounting-job');
+  console.log(`Account reconciliation for account ${data.accountId}`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -219,7 +218,7 @@ async function handleAccountReconciliation(job: Job): Promise<AccountReconciliat
     await job.updateProgress(20);
     
     // 1. Citește toate entries din perioada
-    log(`Calculating balance for account ${data.accountId} from ${data.startDate} to ${data.endDate}`, 'accounting-job');
+    console.log(`Calculating balance for account ${data.accountId} from ${data.startDate} to ${data.endDate}`, 'accounting-job');
     
     const entriesResult = await db.$client.unsafe(`
       SELECT 
@@ -264,7 +263,7 @@ async function handleAccountReconciliation(job: Job): Promise<AccountReconciliat
     
     // 4. Log rezultat
     if (!reconciled) {
-      log(`WARNING: Reconciliation mismatch for account ${data.accountId}: expected=${expectedBalance}, actual=${actualBalance}, diff=${difference}`, 'accounting-job-warning');
+      console.log(`WARNING: Reconciliation mismatch for account ${data.accountId}: expected=${expectedBalance}, actual=${actualBalance}, diff=${difference}`, 'accounting-job-warning');
     }
     
     await job.updateProgress(100);
@@ -281,7 +280,7 @@ async function handleAccountReconciliation(job: Job): Promise<AccountReconciliat
       entriesCount: entriesResult.length
     };
   } catch (error: unknown) {
-    log(`Error reconciling account: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error reconciling account: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
@@ -294,7 +293,7 @@ async function handleAccountReconciliation(job: Job): Promise<AccountReconciliat
 
 async function handleGenerateSalesJournal(job: Job): Promise<JournalGenerationResult> {
   const data = job.data as JobTypeMap['generate-sales-journal'];
-  log(`Generating sales journal for company ${data.companyId}`, 'accounting-job');
+  console.log(`Generating sales journal for company ${data.companyId}`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -305,7 +304,7 @@ async function handleGenerateSalesJournal(job: Job): Promise<JournalGenerationRe
     await job.updateProgress(20);
     
     // Generate report
-    log(`Generating sales journal from ${data.periodStart} to ${data.periodEnd}`, 'accounting-job');
+    console.log(`Generating sales journal from ${data.periodStart} to ${data.periodEnd}`, 'accounting-job');
     
     const report = await salesJournalService.generateSalesJournal({
       companyId: data.companyId,
@@ -322,7 +321,7 @@ async function handleGenerateSalesJournal(job: Job): Promise<JournalGenerationRe
     if (redisService.isConnected()) {
       const cacheKey = `acc:sales-journal:${data.companyId}:${data.periodStart}:${data.periodEnd}`;
       await redisService.setCached(cacheKey, report, 1800); // 30 min TTL
-      log(`Sales journal cached with key: ${cacheKey}`, 'accounting-job');
+      console.log(`Sales journal cached with key: ${cacheKey}`, 'accounting-job');
     }
     
     await job.updateProgress(100);
@@ -336,14 +335,14 @@ async function handleGenerateSalesJournal(job: Job): Promise<JournalGenerationRe
       totalAmount: report.totals?.totalAmount || 0
     };
   } catch (error: unknown) {
-    log(`Error generating sales journal: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error generating sales journal: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
 
 async function handleGeneratePurchaseJournal(job: Job): Promise<JournalGenerationResult> {
   const data = job.data as JobTypeMap['generate-purchase-journal'];
-  log(`Generating purchase journal for company ${data.companyId}`, 'accounting-job');
+  console.log(`Generating purchase journal for company ${data.companyId}`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -354,7 +353,7 @@ async function handleGeneratePurchaseJournal(job: Job): Promise<JournalGeneratio
     await job.updateProgress(20);
     
     // Generate report
-    log(`Generating purchase journal from ${data.periodStart} to ${data.periodEnd}`, 'accounting-job');
+    console.log(`Generating purchase journal from ${data.periodStart} to ${data.periodEnd}`, 'accounting-job');
     
     const report = await purchaseJournalService.generatePurchaseJournal({
       companyId: data.companyId,
@@ -371,7 +370,7 @@ async function handleGeneratePurchaseJournal(job: Job): Promise<JournalGeneratio
     if (redisService.isConnected()) {
       const cacheKey = `acc:purchase-journal:${data.companyId}:${data.periodStart}:${data.periodEnd}`;
       await redisService.setCached(cacheKey, report, 1800); // 30 min TTL
-      log(`Purchase journal cached with key: ${cacheKey}`, 'accounting-job');
+      console.log(`Purchase journal cached with key: ${cacheKey}`, 'accounting-job');
     }
     
     await job.updateProgress(100);
@@ -385,7 +384,7 @@ async function handleGeneratePurchaseJournal(job: Job): Promise<JournalGeneratio
       totalAmount: report.totals?.totalAmount || 0
     };
   } catch (error: unknown) {
-    log(`Error generating purchase journal: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error generating purchase journal: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
@@ -398,7 +397,7 @@ async function handleGeneratePurchaseJournal(job: Job): Promise<JournalGeneratio
 
 async function handleJournalExport(job: Job): Promise<JournalExportResult> {
   const data = job.data as JobTypeMap['export-journal-excel'];
-  log(`Exporting ${data.journalType} journal as ${data.format}`, 'accounting-job');
+  console.log(`Exporting ${data.journalType} journal as ${data.format}`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -465,7 +464,7 @@ async function handleJournalExport(job: Job): Promise<JournalExportResult> {
     
     await job.updateProgress(90);
     
-    log(`Export saved to: ${exportPath}`, 'accounting-job');
+    console.log(`Export saved to: ${exportPath}`, 'accounting-job');
     
     await job.updateProgress(100);
     
@@ -478,14 +477,14 @@ async function handleJournalExport(job: Job): Promise<JournalExportResult> {
       periodEnd: data.periodEnd
     };
   } catch (error: unknown) {
-    log(`Error exporting journal: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error exporting journal: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
 
 async function handleBatchExport(job: Job): Promise<BatchExportResult> {
   const data = job.data as JobTypeMap['batch-export'];
-  log(`Batch export of ${data.journals.length} journals`, 'accounting-job');
+  console.log(`Batch export of ${data.journals.length} journals`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -511,7 +510,7 @@ async function handleBatchExport(job: Job): Promise<BatchExportResult> {
     
     for (let i = 0; i < data.journals.length; i++) {
       const journalType = data.journals[i];
-      log(`Exporting ${journalType} journal (${i + 1}/${data.journals.length})`, 'accounting-job');
+      console.log(`Exporting ${journalType} journal (${i + 1}/${data.journals.length})`, 'accounting-job');
       
       let filePath: string;
       
@@ -584,11 +583,11 @@ async function handleBatchExport(job: Job): Promise<BatchExportResult> {
       try {
         fs.unlinkSync(filePath);
       } catch (_cleanupError) {
-        log(`Warning: Could not delete temp file ${filePath}`, 'accounting-job-warning');
+        console.log(`Warning: Could not delete temp file ${filePath}`, 'accounting-job-warning');
       }
     }
     
-    log(`Batch export ZIP created: ${zipFilePath}`, 'accounting-job');
+    console.log(`Batch export ZIP created: ${zipFilePath}`, 'accounting-job');
     
     await job.updateProgress(100);
     
@@ -600,7 +599,7 @@ async function handleBatchExport(job: Job): Promise<BatchExportResult> {
       filesIncluded: exportedFiles.length
     };
   } catch (error: unknown) {
-    log(`Error in batch export: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error in batch export: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
@@ -613,7 +612,7 @@ async function handleBatchExport(job: Job): Promise<BatchExportResult> {
 
 async function handleFiscalMonthClose(job: Job): Promise<FiscalMonthCloseResult> {
   const data = job.data as JobTypeMap['fiscal-month-close'];
-  log(`Fiscal month close for ${data.year}-${data.month}`, 'accounting-job');
+  console.log(`Fiscal month close for ${data.year}-${data.month}`, 'accounting-job');
   
   await job.updateProgress(5);
   
@@ -629,7 +628,7 @@ async function handleFiscalMonthClose(job: Job): Promise<FiscalMonthCloseResult>
     
     // Step 1: Depreciation (if not skipped)
     if (!data.skipDepreciation) {
-      log(`Running depreciation for ${data.year}-${data.month}`, 'accounting-job');
+      console.log(`Running depreciation for ${data.year}-${data.month}`, 'accounting-job');
       await job.updateProgress(15);
       
       const { DepreciationCalculationService } = await import('../services/depreciation-calculation.service');
@@ -643,13 +642,13 @@ async function handleFiscalMonthClose(job: Job): Promise<FiscalMonthCloseResult>
         dryRun: data.dryRun || false
       });
       
-      log(`Depreciation complete: ${results.depreciation.itemCount} assets, total ${results.depreciation.totalDepreciation} RON`, 'accounting-job');
+      console.log(`Depreciation complete: ${results.depreciation.itemCount} assets, total ${results.depreciation.totalDepreciation} RON`, 'accounting-job');
       await job.updateProgress(30);
     }
     
     // Step 2: FX Revaluation (if not skipped)
     if (!data.skipFXRevaluation) {
-      log(`Running FX revaluation for ${data.year}-${data.month}`, 'accounting-job');
+      console.log(`Running FX revaluation for ${data.year}-${data.month}`, 'accounting-job');
       await job.updateProgress(35);
       
       const { FXRevaluationService } = await import('../services/fx-revaluation.service');
@@ -663,13 +662,13 @@ async function handleFiscalMonthClose(job: Job): Promise<FiscalMonthCloseResult>
         dryRun: data.dryRun || false
       });
       
-      log(`FX revaluation complete: net difference ${results.fxRevaluation.netDifference} RON`, 'accounting-job');
+      console.log(`FX revaluation complete: net difference ${results.fxRevaluation.netDifference} RON`, 'accounting-job');
       await job.updateProgress(55);
     }
     
     // Step 3: VAT Closure (if not skipped)
     if (!data.skipVAT) {
-      log(`Running VAT closure for ${data.year}-${data.month}`, 'accounting-job');
+      console.log(`Running VAT closure for ${data.year}-${data.month}`, 'accounting-job');
       await job.updateProgress(60);
       
       const { VATClosureService } = await import('../services/vat-closure.service');
@@ -685,13 +684,13 @@ async function handleFiscalMonthClose(job: Job): Promise<FiscalMonthCloseResult>
       // Convert to Record<string, unknown> to match type
       results.vatClosure = vatResult as unknown as Record<string, unknown>;
       
-      log(`VAT closure complete`, 'accounting-job');
+      console.log(`VAT closure complete`, 'accounting-job');
       await job.updateProgress(75);
     }
     
     // Step 4: Lock period (if not dry run)
     if (!data.dryRun) {
-      log(`Locking period ${data.year}-${data.month}`, 'accounting-job');
+      console.log(`Locking period ${data.year}-${data.month}`, 'accounting-job');
       await job.updateProgress(80);
       
       const { PeriodLockService } = await import('../services/period-lock.service');
@@ -709,7 +708,7 @@ async function handleFiscalMonthClose(job: Job): Promise<FiscalMonthCloseResult>
       );
       
       results.periodLocked = true;
-      log(`Period ${data.year}-${data.month} locked`, 'accounting-job');
+      console.log(`Period ${data.year}-${data.month} locked`, 'accounting-job');
       await job.updateProgress(95);
     }
     
@@ -724,14 +723,14 @@ async function handleFiscalMonthClose(job: Job): Promise<FiscalMonthCloseResult>
       results
     };
   } catch (error: unknown) {
-    log(`Error in fiscal month close: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error in fiscal month close: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
 
 async function handleFiscalYearClose(job: Job): Promise<FiscalYearCloseResult> {
   const data = job.data as JobTypeMap['fiscal-year-close'];
-  log(`Fiscal year close for ${data.fiscalYear}`, 'accounting-job');
+  console.log(`Fiscal year close for ${data.fiscalYear}`, 'accounting-job');
   
   await job.updateProgress(5);
   
@@ -740,7 +739,7 @@ async function handleFiscalYearClose(job: Job): Promise<FiscalYearCloseResult> {
     
     // 1. Close all months (1-12)
     for (let month = 1; month <= 12; month++) {
-      log(`Closing month ${month}/${data.fiscalYear}`, 'accounting-job');
+      console.log(`Closing month ${month}/${data.fiscalYear}`, 'accounting-job');
       
       const monthCloseResult = await handleFiscalMonthClose({
         ...job,
@@ -765,7 +764,7 @@ async function handleFiscalYearClose(job: Job): Promise<FiscalYearCloseResult> {
     
     // 2. Create year-end closing entries (121 -> 117)
     if (!data.dryRun) {
-      log(`Creating year-end closing entries for ${data.fiscalYear}`, 'accounting-job');
+      console.log(`Creating year-end closing entries for ${data.fiscalYear}`, 'accounting-job');
       
       const { YearEndClosureService } = await import('../services/year-end-closure.service');
       const yearEndService = new YearEndClosureService();
@@ -777,7 +776,7 @@ async function handleFiscalYearClose(job: Job): Promise<FiscalYearCloseResult> {
         dryRun: false
       });
       
-      log(`Year-end closing entries created for ${data.fiscalYear}`, 'accounting-job');
+      console.log(`Year-end closing entries created for ${data.fiscalYear}`, 'accounting-job');
     }
     
     await job.updateProgress(100);
@@ -791,14 +790,14 @@ async function handleFiscalYearClose(job: Job): Promise<FiscalYearCloseResult> {
       monthResults
     };
   } catch (error: unknown) {
-    log(`Error in fiscal year close: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error in fiscal year close: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
 
 async function handleVATClosure(job: Job): Promise<VATClosureResult> {
   const data = job.data as JobTypeMap['vat-closure'];
-  log(`VAT closure for ${data.periodYear}-${data.periodMonth}`, 'accounting-job');
+  console.log(`VAT closure for ${data.periodYear}-${data.periodMonth}`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -837,7 +836,7 @@ async function handleVATClosure(job: Job): Promise<VATClosureResult> {
       ...result
     };
   } catch (error: unknown) {
-    log(`Error in VAT closure: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error in VAT closure: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
@@ -850,7 +849,7 @@ async function handleVATClosure(job: Job): Promise<VATClosureResult> {
 
 async function handleBulkInvoiceCreate(job: Job): Promise<BulkInvoiceCreateResult> {
   const data = job.data as JobTypeMap['batch-invoice-create'];
-  log(`Bulk creating ${data.invoices.length} invoices`, 'accounting-job');
+  console.log(`Bulk creating ${data.invoices.length} invoices`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -864,7 +863,7 @@ async function handleBulkInvoiceCreate(job: Job): Promise<BulkInvoiceCreateResul
     for (let i = 0; i < data.invoices.length; i++) {
       try {
         const invoice = data.invoices[i];
-        log(`Processing bulk invoice ${i + 1}/${data.invoices.length}`, 'accounting-job');
+        console.log(`Processing bulk invoice ${i + 1}/${data.invoices.length}`, 'accounting-job');
         
         // Extract invoice parameters
         const invoiceId = await salesJournalService.createCustomerInvoice(
@@ -887,7 +886,7 @@ async function handleBulkInvoiceCreate(job: Job): Promise<BulkInvoiceCreateResul
         const progress = 10 + ((i + 1) / data.invoices.length) * 85;
         await job.updateProgress(Math.round(progress));
       } catch (innerError: unknown) {
-        log(`Error creating invoice ${i + 1}: ${getErrorMessage(innerError)}`, 'accounting-job-error');
+        console.log(`Error creating invoice ${i + 1}: ${getErrorMessage(innerError)}`, 'accounting-job-error');
         errors.push({ 
           index: i, 
           invoiceNumber: data.invoices[i].invoiceData?.invoiceNumber || data.invoices[i].invoiceNumber,
@@ -914,21 +913,21 @@ async function handleBulkInvoiceCreate(job: Job): Promise<BulkInvoiceCreateResul
       const { BulkOperationsService } = await import('../services/bulk-operations.service');
       const bulkOpsService = new BulkOperationsService();
       await bulkOpsService.cacheBulkOperationResult(job.id as string, result as never);
-      log(`Bulk invoice result cached for job ${job.id}`, 'accounting-job');
+      console.log(`Bulk invoice result cached for job ${job.id}`, 'accounting-job');
     } catch (cacheError: unknown) {
-      log(`Warning: Failed to cache bulk invoice result: ${getErrorMessage(cacheError)}`, 'accounting-job-warning');
+      console.log(`Warning: Failed to cache bulk invoice result: ${getErrorMessage(cacheError)}`, 'accounting-job-warning');
     }
     
     return result;
   } catch (error: unknown) {
-    log(`Error in bulk invoice create: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error in bulk invoice create: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
 
 async function handleBulkPaymentRecord(job: Job): Promise<BulkPaymentRecordResult> {
   const data = job.data as JobTypeMap['batch-payment-record'];
-  log(`Bulk recording ${data.payments.length} payments`, 'accounting-job');
+  console.log(`Bulk recording ${data.payments.length} payments`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -942,7 +941,7 @@ async function handleBulkPaymentRecord(job: Job): Promise<BulkPaymentRecordResul
     for (let i = 0; i < data.payments.length; i++) {
       try {
         const payment = data.payments[i];
-        log(`Processing payment ${i + 1}/${data.payments.length} for invoice ${payment.invoiceId}`, 'accounting-job');
+        console.log(`Processing payment ${i + 1}/${data.payments.length} for invoice ${payment.invoiceId}`, 'accounting-job');
         
         // Record payment
         const paymentId = await salesJournalService.recordInvoicePayment(payment);
@@ -959,7 +958,7 @@ async function handleBulkPaymentRecord(job: Job): Promise<BulkPaymentRecordResul
         const progress = 10 + ((i + 1) / data.payments.length) * 85;
         await job.updateProgress(Math.round(progress));
       } catch (innerError: unknown) {
-        log(`Error recording payment ${i + 1}: ${getErrorMessage(innerError)}`, 'accounting-job-error');
+        console.log(`Error recording payment ${i + 1}: ${getErrorMessage(innerError)}`, 'accounting-job-error');
         errors.push({
           index: i,
           invoiceId: data.payments[i].invoiceId,
@@ -987,14 +986,14 @@ async function handleBulkPaymentRecord(job: Job): Promise<BulkPaymentRecordResul
       const { BulkOperationsService } = await import('../services/bulk-operations.service');
       const bulkOpsService = new BulkOperationsService();
       await bulkOpsService.cacheBulkOperationResult(job.id as string, result as never);
-      log(`Bulk payment result cached for job ${job.id}`, 'accounting-job');
+      console.log(`Bulk payment result cached for job ${job.id}`, 'accounting-job');
     } catch (cacheError: unknown) {
-      log(`Warning: Failed to cache bulk payment result: ${getErrorMessage(cacheError)}`, 'accounting-job-warning');
+      console.log(`Warning: Failed to cache bulk payment result: ${getErrorMessage(cacheError)}`, 'accounting-job-warning');
     }
     
     return result;
   } catch (error: unknown) {
-    log(`Error in bulk payment record: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error in bulk payment record: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
@@ -1007,7 +1006,7 @@ async function handleBulkPaymentRecord(job: Job): Promise<BulkPaymentRecordResul
 
 async function handleDepreciationCalculate(job: Job): Promise<DepreciationCalculateResult> {
   const data = job.data as JobTypeMap['depreciation-calculate'];
-  log(`Calculating depreciation for ${data.periodYear}-${data.periodMonth}`, 'accounting-job');
+  console.log(`Calculating depreciation for ${data.periodYear}-${data.periodMonth}`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -1028,7 +1027,7 @@ async function handleDepreciationCalculate(job: Job): Promise<DepreciationCalcul
     
     await job.updateProgress(90);
     
-    log(`Depreciation calculated: ${result.itemCount} assets, total ${result.totalDepreciation} RON`, 'accounting-job');
+    console.log(`Depreciation calculated: ${result.itemCount} assets, total ${result.totalDepreciation} RON`, 'accounting-job');
     
     // Cache result
     const redisService = new RedisService();
@@ -1052,14 +1051,14 @@ async function handleDepreciationCalculate(job: Job): Promise<DepreciationCalcul
       dryRun: data.dryRun || false
     };
   } catch (error: unknown) {
-    log(`Error calculating depreciation: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error calculating depreciation: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
 
 async function handleFXRevaluation(job: Job): Promise<FXRevaluationResult> {
   const data = job.data as JobTypeMap['fx-revaluation'];
-  log(`FX revaluation for ${data.periodYear}-${data.periodMonth}`, 'accounting-job');
+  console.log(`FX revaluation for ${data.periodYear}-${data.periodMonth}`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -1080,7 +1079,7 @@ async function handleFXRevaluation(job: Job): Promise<FXRevaluationResult> {
     
     await job.updateProgress(90);
     
-    log(`FX revaluation complete: gains ${result.totalGains} RON, losses ${result.totalLosses} RON, net ${result.netDifference} RON`, 'accounting-job');
+    console.log(`FX revaluation complete: gains ${result.totalGains} RON, losses ${result.totalLosses} RON, net ${result.netDifference} RON`, 'accounting-job');
     
     // Cache result
     const redisService = new RedisService();
@@ -1106,14 +1105,14 @@ async function handleFXRevaluation(job: Job): Promise<FXRevaluationResult> {
       dryRun: data.dryRun || false
     };
   } catch (error: unknown) {
-    log(`Error in FX revaluation: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error in FX revaluation: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
 
 async function handleVATTransfer(job: Job): Promise<VATTransferResult> {
   const data = job.data as JobTypeMap['vat-transfer'];
-  log(`VAT transfer for invoice ${data.invoiceId}`, 'accounting-job');
+  console.log(`VAT transfer for invoice ${data.invoiceId}`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -1139,7 +1138,7 @@ async function handleVATTransfer(job: Job): Promise<VATTransferResult> {
       paymentAmount: data.paymentAmount
     };
   } catch (error: unknown) {
-    log(`Error in VAT transfer: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error in VAT transfer: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
@@ -1150,7 +1149,7 @@ async function handleVATTransfer(job: Job): Promise<VATTransferResult> {
  */
 async function handleGenerateNoteContabil(job: Job): Promise<GenerateNoteContabilResult> {
   const data = job.data as JobTypeMap['generate-note-contabil'];
-  log(`Generating note contabil for document ${data.documentId} (type: ${data.documentType})`, 'accounting-job');
+  console.log(`Generating note contabil for document ${data.documentId} (type: ${data.documentType})`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -1190,7 +1189,7 @@ async function handleGenerateNoteContabil(job: Job): Promise<GenerateNoteContabi
       errors: result.errors
     };
   } catch (error: unknown) {
-    log(`Error generating note contabil: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error generating note contabil: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
@@ -1201,7 +1200,7 @@ async function handleGenerateNoteContabil(job: Job): Promise<GenerateNoteContabi
  */
 async function handleGenerateNotePdf(job: Job): Promise<GenerateNotePdfResult> {
   const data = job.data as JobTypeMap['generate-note-pdf'];
-  log(`Generating PDF for note contabil ${data.noteId}`, 'accounting-job');
+  console.log(`Generating PDF for note contabil ${data.noteId}`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -1241,7 +1240,7 @@ async function handleGenerateNotePdf(job: Job): Promise<GenerateNotePdfResult> {
       size: pdfBuffer.length
     };
   } catch (error: unknown) {
-    log(`Error generating note PDF: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error generating note PDF: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
@@ -1252,7 +1251,7 @@ async function handleGenerateNotePdf(job: Job): Promise<GenerateNotePdfResult> {
  */
 async function handleGenerateTrialBalance(job: Job): Promise<FinancialReportResult> {
   const data = job.data as JobTypeMap['generate-trial-balance'];
-  log(`Generating trial balance for company ${data.companyId} (${data.startDate} - ${data.endDate})`, 'accounting-job');
+  console.log(`Generating trial balance for company ${data.companyId} (${data.startDate} - ${data.endDate})`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -1313,7 +1312,7 @@ async function handleGenerateTrialBalance(job: Job): Promise<FinancialReportResu
       data: trialBalance
     };
   } catch (error: unknown) {
-    log(`Error generating trial balance: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error generating trial balance: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
@@ -1324,7 +1323,7 @@ async function handleGenerateTrialBalance(job: Job): Promise<FinancialReportResu
  */
 async function handleGenerateBalanceSheet(job: Job): Promise<FinancialReportResult> {
   const data = job.data as JobTypeMap['generate-balance-sheet'];
-  log(`Generating balance sheet for company ${data.companyId} at ${data.date}`, 'accounting-job');
+  console.log(`Generating balance sheet for company ${data.companyId} at ${data.date}`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -1383,7 +1382,7 @@ async function handleGenerateBalanceSheet(job: Job): Promise<FinancialReportResu
       data: balanceSheet
     };
   } catch (error: unknown) {
-    log(`Error generating balance sheet: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error generating balance sheet: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }
@@ -1394,7 +1393,7 @@ async function handleGenerateBalanceSheet(job: Job): Promise<FinancialReportResu
  */
 async function handleGenerateIncomeStatement(job: Job): Promise<FinancialReportResult> {
   const data = job.data as JobTypeMap['generate-income-statement'];
-  log(`Generating income statement for company ${data.companyId} (${data.startDate} - ${data.endDate})`, 'accounting-job');
+  console.log(`Generating income statement for company ${data.companyId} (${data.startDate} - ${data.endDate})`, 'accounting-job');
   
   await job.updateProgress(10);
   
@@ -1455,7 +1454,7 @@ async function handleGenerateIncomeStatement(job: Job): Promise<FinancialReportR
       data: incomeStatement
     };
   } catch (error: unknown) {
-    log(`Error generating income statement: ${getErrorMessage(error)}`, 'accounting-job-error');
+    console.log(`Error generating income statement: ${getErrorMessage(error)}`, 'accounting-job-error');
     throw error;
   }
 }

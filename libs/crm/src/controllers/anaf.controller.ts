@@ -54,7 +54,7 @@ class AnafController {
       const response = await anafService.queryAnaf(cuiList);
       
       // Auditare cerere
-      AuditService.log({
+      AuditService.console.log({
         userId: req.user?.id || 'anonymous',
         companyId: req.user?.companyId || 'unknown',
         action: 'anaf_proxy_request',
@@ -72,7 +72,7 @@ class AnafController {
       console.error('Eroare la interogarea API-ului ANAF:', error.message);
       
       // Auditare eroare
-      AuditService.log({
+      AuditService.console.log({
         userId: req.user?.id || 'anonymous',
         companyId: req.user?.companyId || 'unknown',
         action: 'anaf_proxy_request_error',
@@ -133,7 +133,7 @@ class AnafController {
       
       if (companyData) {
         // Auditare cerere reușită
-        AuditService.log({
+        AuditService.console.log({
           userId: req.user?.id || 'anonymous',
           companyId: req.user?.companyId || 'unknown',
           action: 'anaf_get_company',
@@ -156,7 +156,7 @@ class AnafController {
       console.error('Eroare la obținerea datelor companiei:', error.message);
       
       // Auditare eroare
-      AuditService.log({
+      AuditService.console.log({
         userId: req.user?.id || 'anonymous',
         companyId: req.user?.companyId || 'unknown',
         action: 'anaf_get_company_error',
@@ -260,7 +260,7 @@ class AnafController {
       const errors = validResults.filter(r => r.error).map(r => ({ cui: r.cui, error: r.error }));
       
       // Auditare cerere batch
-      AuditService.log({
+      AuditService.console.log({
         userId: req.user?.id || 'anonymous',
         companyId: req.user?.companyId || 'unknown',
         action: 'anaf_batch_get_companies',
@@ -287,7 +287,7 @@ class AnafController {
       console.error('Eroare la interogarea batch ANAF:', error.message);
       
       // Auditare eroare
-      AuditService.log({
+      AuditService.console.log({
         userId: req.user?.id || 'anonymous',
         companyId: req.user?.companyId || 'unknown',
         action: 'anaf_batch_get_companies_error',

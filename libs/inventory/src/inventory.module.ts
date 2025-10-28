@@ -14,7 +14,6 @@ import { CheckStockLevelsService } from './services/check-stock-levels.service';
 import { NirService } from './services/nir.service';
 import { ExchangeRateService } from '@geniuserp/integrations/services/exchange-rate.service';
 import { setupInventoryRoutes } from './routes/inventory.routes';
-import { log } from "@api/vite";
 
 // Controllers
 import { nirController } from './controllers/nir.controller';
@@ -35,7 +34,7 @@ export class InventoryModule {
    * @returns Registered components
    */
   static register() {
-    log('📦 Registering inventory module with multi-gestiune support', 'inventory-module');
+    console.log('📦 Registering inventory module with multi-gestiune support', 'inventory-module');
     
     // Set up API routes
     const router = Router();
@@ -76,7 +75,7 @@ export class InventoryModule {
    * Initialize the inventory module and return a structure report
    */
   static initialize() {
-    log('📦 Initializing inventory module with multi-gestiune support', 'inventory-module');
+    console.log('📦 Initializing inventory module with multi-gestiune support', 'inventory-module');
     
     const registeredComponents = this.register();
     

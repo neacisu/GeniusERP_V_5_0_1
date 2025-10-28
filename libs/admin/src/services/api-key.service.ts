@@ -227,7 +227,7 @@ export class ApiKeyService {
       }
       
       // Log the audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId: updatedBy,
         companyId: apiKey.company_id,
         action: AuditAction.UPDATE,
@@ -292,7 +292,7 @@ export class ApiKeyService {
         .returning();
       
       // Log the audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId: updatedBy,
         companyId: apiKey.company_id,
         action: AuditAction.UPDATE,
@@ -339,7 +339,7 @@ export class ApiKeyService {
         .where(eq(api_keys.id, keyId));
       
       // Log the audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId: updatedBy,
         companyId: existingKey.company_id,
         action: AuditAction.UPDATE,

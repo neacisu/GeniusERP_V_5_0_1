@@ -632,7 +632,7 @@ router.post('/activate-placeholder', AuthGuard.protect(JwtAuthMode.REQUIRED), as
     }
     
     // Log the activation attempt for audit purposes
-    await AuditService.log({
+    await AuditService.console.log({
       userId,
       companyId,
       action: AuditAction.INTEGRATION_ACTIVATE,

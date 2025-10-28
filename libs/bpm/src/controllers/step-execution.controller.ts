@@ -139,7 +139,7 @@ export class StepExecutionController {
       }
 
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.UPDATE,
@@ -204,7 +204,7 @@ export class StepExecutionController {
       }
       
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.BPM_PROCESS_ACTION,
@@ -261,7 +261,7 @@ export class StepExecutionController {
       }
       
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.BPM_PROCESS_ACTION,
@@ -319,7 +319,7 @@ export class StepExecutionController {
       }
       
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.BPM_PROCESS_ACTION,

@@ -10,7 +10,6 @@ import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
 import { z } from 'zod';
 import { ProductsService } from '../services/products.service';
-import { log } from "@api/vite";
 import { importValidatorService } from '../services/import-validator.service.instance';
 import { ImportOptions } from '../types/import-validation';
 
@@ -60,7 +59,7 @@ export function createProductsController(productsService: ProductsService): Rout
         const products = await productsService.getAllProducts();
         res.json(products);
       } catch (error: any) {
-        log(`Error fetching products: ${error.message}`, 'inventory-products');
+        console.log(`Error fetching products: ${error.message}`, 'inventory-products');
         res.status(500).json({ error: 'Eroare la obținerea produselor' });
       }
     }
@@ -85,7 +84,7 @@ export function createProductsController(productsService: ProductsService): Rout
         
         res.json(product);
       } catch (error: any) {
-        log(`Error fetching product: ${error.message}`, 'inventory-products');
+        console.log(`Error fetching product: ${error.message}`, 'inventory-products');
         res.status(500).json({ error: 'Eroare la obținerea produsului' });
       }
     }
@@ -105,7 +104,7 @@ export function createProductsController(productsService: ProductsService): Rout
         const products = await productsService.getProductsByCategory(categoryId);
         res.json(products);
       } catch (error: any) {
-        log(`Error fetching products by category: ${error.message}`, 'inventory-products');
+        console.log(`Error fetching products by category: ${error.message}`, 'inventory-products');
         res.status(500).json({ error: 'Eroare la obținerea produselor după categorie' });
       }
     }
@@ -142,7 +141,7 @@ export function createProductsController(productsService: ProductsService): Rout
           const newProduct = await productsService.createProduct(productData, userId);
           res.status(201).json(newProduct);
         } catch (error: any) {
-          log(`Error creating product: ${error.message}`, 'inventory-products');
+          console.log(`Error creating product: ${error.message}`, 'inventory-products');
           
           // Check if it's a duplicate error
           if (error.message && error.message.includes('already exists')) {
@@ -168,7 +167,7 @@ export function createProductsController(productsService: ProductsService): Rout
           res.status(500).json({ error: 'Eroare la crearea produsului' });
         }
       } catch (error: any) {
-        log(`Error processing product creation: ${error.message}`, 'inventory-products');
+        console.log(`Error processing product creation: ${error.message}`, 'inventory-products');
         res.status(500).json({ error: 'Eroare la crearea produsului' });
       }
     }
@@ -211,7 +210,7 @@ export function createProductsController(productsService: ProductsService): Rout
           const updatedProduct = await productsService.updateProduct(id, productData, userId);
           res.json(updatedProduct);
         } catch (error: any) {
-          log(`Error updating product: ${error.message}`, 'inventory-products');
+          console.log(`Error updating product: ${error.message}`, 'inventory-products');
           
           // Check if it's a duplicate error
           if (error.message && error.message.includes('already exists')) {
@@ -237,7 +236,7 @@ export function createProductsController(productsService: ProductsService): Rout
           res.status(500).json({ error: 'Eroare la actualizarea produsului' });
         }
       } catch (error: any) {
-        log(`Error processing product update: ${error.message}`, 'inventory-products');
+        console.log(`Error processing product update: ${error.message}`, 'inventory-products');
         res.status(500).json({ error: 'Eroare la actualizarea produsului' });
       }
     }
@@ -271,7 +270,7 @@ export function createProductsController(productsService: ProductsService): Rout
           await productsService.deleteProduct(id, userId);
           res.json({ success: true, message: 'Produsul a fost șters cu succes' });
         } catch (error: any) {
-          log(`Error deleting product: ${error.message}`, 'inventory-products');
+          console.log(`Error deleting product: ${error.message}`, 'inventory-products');
           
           // Return better error messages for specific errors
           if (error.message && error.message.includes('has stock movements')) {
@@ -283,7 +282,7 @@ export function createProductsController(productsService: ProductsService): Rout
           res.status(500).json({ error: 'Eroare la ștergerea produsului' });
         }
       } catch (error: any) {
-        log(`Error processing product deletion: ${error.message}`, 'inventory-products');
+        console.log(`Error processing product deletion: ${error.message}`, 'inventory-products');
         res.status(500).json({ error: 'Eroare la ștergerea produsului' });
       }
     }
@@ -315,7 +314,7 @@ export function createProductsController(productsService: ProductsService): Rout
         const deactivatedProduct = await productsService.deactivateProduct(id, userId);
         res.json(deactivatedProduct);
       } catch (error: any) {
-        log(`Error deactivating product: ${error.message}`, 'inventory-products');
+        console.log(`Error deactivating product: ${error.message}`, 'inventory-products');
         res.status(500).json({ error: 'Eroare la dezactivarea produsului' });
       }
     }
@@ -364,7 +363,7 @@ export function createProductsController(productsService: ProductsService): Rout
           preview: validationReport.validData.slice(0, 5) // Primele 5 înregistrări pentru previzualizare
         });
       } catch (error: any) {
-        log(`Error validating import: ${error.message}`, 'inventory-products');
+        console.log(`Error validating import: ${error.message}`, 'inventory-products');
         res.status(500).json({ error: 'Eroare la validarea importului' });
       }
     }
@@ -428,7 +427,7 @@ export function createProductsController(productsService: ProductsService): Rout
           report: importResult.report
         });
       } catch (error: any) {
-        log(`Error importing products: ${error.message}`, 'inventory-products');
+        console.log(`Error importing products: ${error.message}`, 'inventory-products');
         res.status(500).json({ error: 'Eroare la importul produselor' });
       }
     }
@@ -463,7 +462,7 @@ export function createProductsController(productsService: ProductsService): Rout
             : 'Codul de bare este disponibil'
         });
       } catch (error: any) {
-        log(`Error checking barcode: ${error.message}`, 'inventory-products');
+        console.log(`Error checking barcode: ${error.message}`, 'inventory-products');
         res.status(500).json({ error: 'Eroare la verificarea codului de bare' });
       }
     }

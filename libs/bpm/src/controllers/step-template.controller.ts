@@ -119,7 +119,7 @@ export class StepTemplateController {
       });
       
       // Log the action
-      await AuditService.log({
+      await AuditService.console.log({
         action: AuditAction.CREATE,
         entity: 'bpm_step_templates',
         entityId: stepTemplate.id,
@@ -185,7 +185,7 @@ export class StepTemplateController {
       const stepTemplate = await this.stepTemplateService.updateStepTemplate(id, data, companyId);
       
       // Log the action
-      await AuditService.log({
+      await AuditService.console.log({
         action: AuditAction.UPDATE,
         entity: 'bpm_step_templates',
         entityId: id,
@@ -236,7 +236,7 @@ export class StepTemplateController {
       await this.stepTemplateService.deleteStepTemplate(id, companyId);
       
       // Log the action
-      await AuditService.log({
+      await AuditService.console.log({
         action: AuditAction.DELETE,
         entity: 'bpm_step_templates',
         entityId: id,
@@ -372,7 +372,7 @@ export class StepTemplateController {
       const stepTemplate = await this.stepTemplateService.toggleGlobalTemplate(id, isGlobal, companyId);
       
       // Log the action
-      await AuditService.log({
+      await AuditService.console.log({
         action: AuditAction.UPDATE,
         entity: 'bpm_step_templates',
         entityId: id,

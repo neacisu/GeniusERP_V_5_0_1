@@ -369,7 +369,7 @@ export class InventoryValuationService {
     });
     
     // Log the valuation for audit purposes
-    await AuditService.log({
+    await AuditService.console.log({
       action: AuditAction.CREATE,
       entity: 'valuation',
       entityId: result.id,
@@ -462,7 +462,7 @@ export class InventoryValuationService {
     });
     
     // Log the batch creation for audit purposes
-    await AuditService.log({
+    await AuditService.console.log({
       action: AuditAction.CREATE,
       entity: 'batch',
       entityId: batch.id,
@@ -580,7 +580,7 @@ export class InventoryValuationService {
     
     // Log the stock consumption for audit purposes
     // Note: companyId extraction simplified - should be passed as parameter if multi-company support needed
-    await AuditService.log({
+    await AuditService.console.log({
       action: AuditAction.UPDATE,
       entity: 'stock',
       entityId: `${productId}-${warehouseId}`,

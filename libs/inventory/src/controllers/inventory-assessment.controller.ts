@@ -12,7 +12,6 @@ import { UserRole } from '@geniuserp/auth';
 import { z } from 'zod';
 import { InventoryAssessmentService } from '../services/inventory-assessment.service';
 import { InventoryValuationService } from '../services/inventory-valuation.service';
-import { log } from "@api/vite";
 import { validateRequest } from "@common/middleware/validate-request";
 import { pool } from "@api/db";
 
@@ -92,15 +91,15 @@ export function createInventoryAssessmentController(
         const requestBody = { ...req.body };
         if (!requestBody.assessmentNumber && requestBody.name) {
           requestBody.assessmentNumber = requestBody.name;
-          log(`Added assessmentNumber from name: ${requestBody.assessmentNumber}`, 'inventory-assessment');
+          console.log(`Added assessmentNumber from name: ${requestBody.assessmentNumber}`, 'inventory-assessment');
         }
         
-        log(`Validating request body: ${JSON.stringify(requestBody, null, 2)}`, 'inventory-assessment');
+        console.log(`Validating request body: ${JSON.stringify(requestBody, null, 2)}`, 'inventory-assessment');
         
         const validationResult = createAssessmentSchema.safeParse(requestBody);
         if (!validationResult.success) {
           const errors = validationResult.error.format();
-          log(`Validation errors: ${JSON.stringify(errors)}`, 'inventory-assessment');
+          console.log(`Validation errors: ${JSON.stringify(errors)}`, 'inventory-assessment');
           res.status(400).json({ 
             message: 'Validation error',
             errors
@@ -113,7 +112,7 @@ export function createInventoryAssessmentController(
         next();
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown validation error';
-        log(`Validation error: ${message}`, 'inventory-assessment');
+        console.log(`Validation error: ${message}`, 'inventory-assessment');
         res.status(400).json({ 
           message: 'Validation error',
           error: message
@@ -123,7 +122,7 @@ export function createInventoryAssessmentController(
     async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
       try {
         // Log headers for debugging
-        log(`Request headers: ${JSON.stringify({
+        console.log(`Request headers: ${JSON.stringify({
           authorization: req.headers.authorization ? 'Bearer ***' : 'none',
           contentType: req.headers['content-type'],
           userId: req.headers['x-user-id'],
@@ -136,7 +135,7 @@ export function createInventoryAssessmentController(
         
         // If auth info isn't in user object, try getting from headers
         if (!userId || !companyId) {
-          log('Auth not from middleware, trying X-User-ID and X-Company-ID headers', 'inventory-assessment');
+          console.log('Auth not from middleware, trying X-User-ID and X-Company-ID headers', 'inventory-assessment');
           userId = req.headers['x-user-id'] as string;
           companyId = req.headers['x-company-id'] as string;
           
@@ -147,11 +146,11 @@ export function createInventoryAssessmentController(
           }
         }
         
-        log(`Creating assessment with user=${userId}, company=${companyId}`, 'inventory-assessment');
+        console.log(`Creating assessment with user=${userId}, company=${companyId}`, 'inventory-assessment');
         
         // Log request body and headers for debugging
-        log(`Creating assessment with body: ${JSON.stringify(req.body, null, 2)}`, 'inventory-assessment');
-        log(`Request headers: ${JSON.stringify({
+        console.log(`Creating assessment with body: ${JSON.stringify(req.body, null, 2)}`, 'inventory-assessment');
+        console.log(`Request headers: ${JSON.stringify({
           authorization: req.headers.authorization ? 'Bearer ***' : 'none',
           contentType: req.headers['content-type'],
           userId: req.headers['x-user-id'],
@@ -177,14 +176,14 @@ export function createInventoryAssessmentController(
           notes: req.body.notes
         };
         
-        log(`Mapped assessment data: ${JSON.stringify(assessmentData, null, 2)}`, 'inventory-assessment');
+        console.log(`Mapped assessment data: ${JSON.stringify(assessmentData, null, 2)}`, 'inventory-assessment');
         
         const result = await assessmentService.createAssessment(assessmentData, userId, companyId);
         
         res.status(201).json(result);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        log(`Error creating inventory assessment: ${message}`, 'inventory-assessment');
+        console.log(`Error creating inventory assessment: ${message}`, 'inventory-assessment');
         res.status(500).json({ error: 'Eroare la crearea documentului de inventariere', details: message });
       }
     }
@@ -227,7 +226,7 @@ export function createInventoryAssessmentController(
         });
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        log(`Error fetching inventory assessments: ${message}`, 'inventory-assessment');
+        console.log(`Error fetching inventory assessments: ${message}`, 'inventory-assessment');
         res.status(500).json({ error: 'Eroare la obținerea documentelor de inventariere', details: message });
       }
     }
@@ -297,7 +296,7 @@ export function createInventoryAssessmentController(
         });
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        log(`Error fetching inventory assessment: ${message}`, 'inventory-assessment');
+        console.log(`Error fetching inventory assessment: ${message}`, 'inventory-assessment');
         res.status(message.includes('not found') ? 404 : 500)
           .json({ error: 'Eroare la obținerea documentului de inventariere', details: message });
       }
@@ -325,7 +324,7 @@ export function createInventoryAssessmentController(
         }
         
         const assessmentId = req.params['id'];
-        log(`Initializing assessment items for ID: ${assessmentId}, User ID: ${userId}`, 'inventory-assessment');
+        console.log(`Initializing assessment items for ID: ${assessmentId}, User ID: ${userId}`, 'inventory-assessment');
         
         try {
           // First get the assessment details to extract warehouse_id
@@ -341,11 +340,11 @@ export function createInventoryAssessmentController(
           const assessment = assessmentResult[0];
           const warehouseId = assessment['warehouse_id'];
           
-          log(`Found assessment with warehouseId: ${warehouseId}`, 'inventory-assessment');
+          console.log(`Found assessment with warehouseId: ${warehouseId}`, 'inventory-assessment');
           
           // Now initialize the items with all required parameters
           const result = await assessmentService.initializeAssessmentItems(assessmentId, warehouseId, companyId, userId);
-          log(`Successfully initialized assessment items - Result: ${result ? 'returned' : 'none'}`, 'inventory-assessment');
+          console.log(`Successfully initialized assessment items - Result: ${result ? 'returned' : 'none'}`, 'inventory-assessment');
           res.json(result);
         } catch (initError) {
           console.error(`[inventory-assessment-controller] Error in initializeAssessmentItems:`, initError);
@@ -353,7 +352,7 @@ export function createInventoryAssessmentController(
         }
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        log(`Error initializing assessment items: ${message}`, 'inventory-assessment');
+        console.log(`Error initializing assessment items: ${message}`, 'inventory-assessment');
         res.status(500).json({ error: 'Eroare la inițializarea articolelor de inventariere', details: message });
       }
     }
@@ -388,7 +387,7 @@ export function createInventoryAssessmentController(
         res.json(result);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        log(`Error updating assessment status: ${message}`, 'inventory-assessment');
+        console.log(`Error updating assessment status: ${message}`, 'inventory-assessment');
         res.status(500).json({ error: 'Eroare la actualizarea stării documentului de inventariere', details: message });
       }
     }
@@ -429,7 +428,7 @@ export function createInventoryAssessmentController(
         res.json(result);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        log(`Error recording item count: ${message}`, 'inventory-assessment');
+        console.log(`Error recording item count: ${message}`, 'inventory-assessment');
         res.status(500).json({ error: 'Eroare la înregistrarea numărării articolului', details: message });
       }
     }
@@ -461,7 +460,7 @@ export function createInventoryAssessmentController(
         res.json(result);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        log(`Error processing inventory differences: ${message}`, 'inventory-assessment');
+        console.log(`Error processing inventory differences: ${message}`, 'inventory-assessment');
         res.status(500).json({ error: 'Eroare la procesarea diferențelor de inventar', details: message });
       }
     }
@@ -527,7 +526,7 @@ export function createInventoryAssessmentController(
         });
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        log(`Error fetching assessment summary: ${message}`, 'inventory-assessment');
+        console.log(`Error fetching assessment summary: ${message}`, 'inventory-assessment');
         res.status(500).json({ error: 'Eroare la obținerea rezumatului de inventariere', details: message });
       }
     }
@@ -564,7 +563,7 @@ export function createInventoryAssessmentController(
         res.json(result);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        log(`Error calculating stock valuation: ${message}`, 'inventory-assessment');
+        console.log(`Error calculating stock valuation: ${message}`, 'inventory-assessment');
         res.status(500).json({ error: 'Eroare la calcularea valorii stocului', details: message });
       }
     }
@@ -609,7 +608,7 @@ export function createInventoryAssessmentController(
         res.json(result);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        log(`Error fetching valuation history: ${message}`, 'inventory-assessment');
+        console.log(`Error fetching valuation history: ${message}`, 'inventory-assessment');
         res.status(500).json({ error: 'Eroare la obținerea istoricului de evaluare', details: message });
       }
     }

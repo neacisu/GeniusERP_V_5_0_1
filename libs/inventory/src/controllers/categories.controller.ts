@@ -10,7 +10,6 @@ import { z } from 'zod';
 import { CategoriesService } from '../services/categories.service';
 import { AuthGuard } from '@geniuserp/auth';
 import { JwtAuthMode } from '@geniuserp/auth';
-import { log } from "@api/vite";
 
 // Validation schema for creating a category
 const createCategorySchema = z.object({
@@ -43,7 +42,7 @@ export function createCategoriesController(categoriesService: CategoriesService)
         const categories = await categoriesService.getAllCategories();
         res.json(categories);
       } catch (error: any) {
-        log(`Error fetching categories: ${error.message}`, 'inventory-categories');
+        console.log(`Error fetching categories: ${error.message}`, 'inventory-categories');
         res.status(500).json({ error: 'Eroare la obținerea categoriilor' });
       }
     }
@@ -68,7 +67,7 @@ export function createCategoriesController(categoriesService: CategoriesService)
         
         res.json(category);
       } catch (error: any) {
-        log(`Error fetching category: ${error.message}`, 'inventory-categories');
+        console.log(`Error fetching category: ${error.message}`, 'inventory-categories');
         res.status(500).json({ error: 'Eroare la obținerea categoriei' });
       }
     }
@@ -87,7 +86,7 @@ export function createCategoriesController(categoriesService: CategoriesService)
         const rootCategories = await categoriesService.getRootCategories();
         res.json(rootCategories);
       } catch (error: any) {
-        log(`Error fetching root categories: ${error.message}`, 'inventory-categories');
+        console.log(`Error fetching root categories: ${error.message}`, 'inventory-categories');
         res.status(500).json({ error: 'Eroare la obținerea categoriilor principale' });
       }
     }
@@ -107,7 +106,7 @@ export function createCategoriesController(categoriesService: CategoriesService)
         const childCategories = await categoriesService.getChildCategories(parentId);
         res.json(childCategories);
       } catch (error: any) {
-        log(`Error fetching child categories: ${error.message}`, 'inventory-categories');
+        console.log(`Error fetching child categories: ${error.message}`, 'inventory-categories');
         res.status(500).json({ error: 'Eroare la obținerea subcategoriilor' });
       }
     }
@@ -126,7 +125,7 @@ export function createCategoriesController(categoriesService: CategoriesService)
         const hierarchy = await categoriesService.getCategoryHierarchy();
         res.json(hierarchy);
       } catch (error: any) {
-        log(`Error fetching category hierarchy: ${error.message}`, 'inventory-categories');
+        console.log(`Error fetching category hierarchy: ${error.message}`, 'inventory-categories');
         res.status(500).json({ error: 'Eroare la obținerea ierarhiei categoriilor' });
       }
     }
@@ -176,7 +175,7 @@ export function createCategoriesController(categoriesService: CategoriesService)
           
           res.status(201).json(newCategory);
         } catch (error: any) {
-          log(`Error creating category: ${error.message}`, 'inventory-categories');
+          console.log(`Error creating category: ${error.message}`, 'inventory-categories');
           
           // Verificăm dacă este o eroare de duplicare (nume duplicat)
           if (error.code === '23505' && error.constraint === 'inventory_categories_name_unique') {
@@ -189,7 +188,7 @@ export function createCategoriesController(categoriesService: CategoriesService)
           res.status(500).json({ error: 'Eroare la crearea categoriei' });
         }
       } catch (error: any) {
-        log(`Error processing category creation: ${error.message}`, 'inventory-categories');
+        console.log(`Error processing category creation: ${error.message}`, 'inventory-categories');
         res.status(500).json({ error: 'Eroare la crearea categoriei' });
       }
     }
@@ -251,7 +250,7 @@ export function createCategoriesController(categoriesService: CategoriesService)
 
           res.json(updatedCategory);
         } catch (error: any) {
-          log(`Error updating category: ${error.message}`, 'inventory-categories');
+          console.log(`Error updating category: ${error.message}`, 'inventory-categories');
           
           // Verificăm dacă este o eroare de duplicare (nume duplicat)
           if (error.code === '23505' && error.constraint === 'inventory_categories_name_unique') {
@@ -264,7 +263,7 @@ export function createCategoriesController(categoriesService: CategoriesService)
           res.status(500).json({ error: 'Eroare la actualizarea categoriei' });
         }
       } catch (error: any) {
-        log(`Error processing category update: ${error.message}`, 'inventory-categories');
+        console.log(`Error processing category update: ${error.message}`, 'inventory-categories');
         res.status(500).json({ error: 'Eroare la actualizarea categoriei' });
       }
     }
@@ -297,7 +296,7 @@ export function createCategoriesController(categoriesService: CategoriesService)
         await categoriesService.deleteCategory(id, userId);
         res.json({ success: true, message: 'Categoria a fost ștearsă cu succes' });
       } catch (error: any) {
-        log(`Error deleting category: ${error.message}`, 'inventory-categories');
+        console.log(`Error deleting category: ${error.message}`, 'inventory-categories');
         
         // Return better error messages for specific errors
         if (error.message && error.message.includes('Cannot delete category with children')) {

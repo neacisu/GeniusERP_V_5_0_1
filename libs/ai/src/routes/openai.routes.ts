@@ -33,7 +33,7 @@ router.get('/status', AuthGuard.protect(JwtAuthMode.REQUIRED), (req, res) => {
   try {
     // Log audit event for checking OpenAI status
     if (req.user && req.user.companyId) {
-      AuditService.log({
+      AuditService.console.log({
         action: 'CHECK_OPENAI_STATUS',
         entity: 'AI_MODULE',
         entityId: 'openai',

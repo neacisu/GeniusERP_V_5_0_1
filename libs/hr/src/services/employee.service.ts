@@ -208,7 +208,7 @@ export class EmployeeService {
       const createdEmployee = result[0];
       
       // Audit the creation
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.CREATE,
@@ -373,7 +373,7 @@ export class EmployeeService {
       
       // Log the creation to audit system
       try {
-        AuditService.log({
+        AuditService.console.log({
           userId: 'system', // Using 'system' as userId since this method doesn't require a user ID
           companyId,        // We have the company ID from the function parameters
           entity: AuditResourceType.EMPLOYEE,
@@ -583,7 +583,7 @@ export class EmployeeService {
       const createdContract = result[0];
       
       // Audit the contract creation
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.CREATE,
@@ -768,7 +768,7 @@ export class EmployeeService {
         .returning();
       
       // Audit the update
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: currentEmployee[0].companyId,
         action: AuditAction.UPDATE,
@@ -903,7 +903,7 @@ export class EmployeeService {
         .returning();
       
       // Audit the update
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: currentContract[0].companyId,
         action: AuditAction.UPDATE,
@@ -1192,7 +1192,7 @@ export class EmployeeService {
       const createdDepartment = result[0];
       
       // Audit the creation
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.CREATE,

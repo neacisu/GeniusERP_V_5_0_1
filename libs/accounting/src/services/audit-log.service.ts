@@ -129,7 +129,7 @@ export class AuditLogService {
     closingBalance: number,
     transactionCount: number
   ): Promise<void> {
-    await this.log({
+    await this.console.log({
       companyId,
       userId,
       action: AuditAction.DAILY_CLOSING,
@@ -156,7 +156,7 @@ export class AuditLogService {
     reason: string,
     amount: number
   ): Promise<void> {
-    await this.log({
+    await this.console.log({
       companyId,
       userId,
       action: AuditAction.CASH_TRANSACTION_CANCELED,
@@ -183,7 +183,7 @@ export class AuditLogService {
     bankTransactionId: string,
     amount: number
   ): Promise<void> {
-    await this.log({
+    await this.console.log({
       companyId,
       userId,
       action: type === 'deposit' ? AuditAction.CASH_DEPOSIT_TO_BANK : AuditAction.CASH_WITHDRAWAL_FROM_BANK,

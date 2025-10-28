@@ -262,7 +262,7 @@ export class ImportValidatorService {
     result.report!.createdRows++;
     
     // Înregistrează acțiunea în jurnalul de audit
-    this.auditService.log({
+    this.auditService.console.log({
       entityId: productId,
       entityType: 'inventoryProducts',
       action: 'create',
@@ -329,7 +329,7 @@ export class ImportValidatorService {
     result.report!.updatedRows++;
     
     // Înregistrează acțiunea în jurnalul de audit
-    this.auditService.log({
+    this.auditService.console.log({
       entityId: existingProduct.id,
       entityType: 'inventoryProducts',
       action: 'update',

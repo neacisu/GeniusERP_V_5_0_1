@@ -59,7 +59,7 @@ export class ProductQaService {
     const questionId = randomUUID();
     
     // Log the action
-    await AuditService.log({
+    await AuditService.console.log({
       entityId: questionId,
       action: 'answer',
       userId,
@@ -117,7 +117,7 @@ export class ProductQaService {
     const comparisonId = randomUUID();
     
     // Log the action
-    await AuditService.log({
+    await AuditService.console.log({
       entityId: comparisonId,
       action: 'compare',
       userId,
@@ -199,7 +199,7 @@ export class ProductQaService {
     totalResults: number;
   }> {
     // Log the action
-    await AuditService.log({
+    await AuditService.console.log({
       entityId: 'search',
       action: 'search',
       userId,
@@ -283,7 +283,7 @@ export class ProductQaService {
     }[];
   }> {
     // Log the action
-    await AuditService.log({
+    await AuditService.console.log({
       entityId: productId,
       action: 'generate_suggestions',
       userId,

@@ -123,7 +123,7 @@ export class AccountingAttachmentsService extends DrizzleService {
       console.log(`💾 Atașament salvat (simulat): ${attachment.originalFileName}`);
 
       // Log audit
-      await this.auditService.log({
+      await this.auditService.console.log({
         companyId: request.companyId,
         userId: request.userId,
         action: 'ATTACHMENT_UPLOADED' as any,
@@ -209,7 +209,7 @@ export class AccountingAttachmentsService extends DrizzleService {
     }
 
     // Log audit pentru descărcare
-    await this.auditService.log({
+    await this.auditService.console.log({
       companyId,
       userId,
       action: 'ATTACHMENT_DOWNLOADED' as any,
@@ -256,7 +256,7 @@ export class AccountingAttachmentsService extends DrizzleService {
       }
 
       // Log audit
-      await this.auditService.log({
+      await this.auditService.console.log({
         companyId,
         userId,
         action: 'ATTACHMENT_DELETED' as any,

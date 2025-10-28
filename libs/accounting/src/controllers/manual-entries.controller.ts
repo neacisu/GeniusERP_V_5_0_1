@@ -169,7 +169,7 @@ export class ManualEntriesController extends BaseController {
       });
 
       // Log audit pentru operațiunea de creare
-      await this.auditService.log({
+      await this.auditService.console.log({
         companyId,
         userId,
         action: 'MANUAL_ENTRY_CREATED' as any,

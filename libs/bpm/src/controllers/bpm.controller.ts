@@ -43,7 +43,7 @@ export class BpmController {
 
       // Log the access for audit purposes
       try {
-        await AuditService.log({
+        await AuditService.console.log({
           companyId,
           userId,
           action: 'BPM_PROCESS_VIEW', // Use string literal to avoid enum reference issues
@@ -100,7 +100,7 @@ export class BpmController {
 
       // Log the request for audit purposes
       try {
-        await AuditService.log({
+        await AuditService.console.log({
           companyId,
           userId,
           action: AuditAction.BPM_PROCESS_ACTION,

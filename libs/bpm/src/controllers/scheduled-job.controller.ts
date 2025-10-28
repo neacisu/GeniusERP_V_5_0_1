@@ -157,7 +157,7 @@ export class ScheduledJobController {
       });
 
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.CREATE,
@@ -233,7 +233,7 @@ export class ScheduledJobController {
       const job = await this._scheduledJobService.updateScheduledJob(id, companyId, updateData);
 
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.UPDATE,
@@ -297,7 +297,7 @@ export class ScheduledJobController {
       const success = await this._scheduledJobService.deleteScheduledJob(id, companyId);
       
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.DELETE,
@@ -360,7 +360,7 @@ export class ScheduledJobController {
       }
       
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.UPDATE,
@@ -415,7 +415,7 @@ export class ScheduledJobController {
       }
       
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: 'BPM_PROCESS_ACTION',

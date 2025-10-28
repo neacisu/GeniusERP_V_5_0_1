@@ -106,7 +106,7 @@ router.post(
       });
       
       // Log audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId: req.user!.id,
         companyId,
         action: AuditAction.CREATE,
@@ -185,7 +185,7 @@ router.post(
       }
       
       // Log audit event for successful reversal
-      await AuditService.log({
+      await AuditService.console.log({
         userId: req.user!.id,
         companyId,
         action: 'DEVALIDATE',
@@ -320,7 +320,7 @@ router.get(
       });
       
       // Log audit event
-      await AuditService.log({
+      await AuditService.console.log({
         userId: req.user!.id,
         companyId: companyId as string,
         action: AuditAction.CREATE,

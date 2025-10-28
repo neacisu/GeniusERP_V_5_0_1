@@ -6,7 +6,6 @@
  */
 
 import { createHttpClient, HttpClient } from '@geniuserp/shared/libs/http-client';
-import { log } from "@api/vite";
 import { parseStringPromise } from 'xml2js';
 import { Services } from "@common/services/registry";
 import { fx_rates } from '@geniuserp/shared';
@@ -47,9 +46,9 @@ export class BnrExchangeRateService {
     cron.schedule('0 */3 * * *', async () => {
       try {
         await this.fetchAndStoreRatesFromRss();
-        log('🔄 Scheduled BNR exchange rate update (RSS) completed successfully', 'bnr-exchange');
+        console.log('🔄 Scheduled BNR exchange rate update (RSS) completed successfully', 'bnr-exchange');
       } catch (error) {
-        log(`❌ Scheduled BNR exchange rate update (RSS) failed: ${(error as Error).message}`, 'bnr-exchange');
+        console.log(`❌ Scheduled BNR exchange rate update (RSS) failed: ${(error as Error).message}`, 'bnr-exchange');
         // No fallback to XML as per requirements to use only RSS feeds
       }
     }, {
@@ -60,16 +59,16 @@ export class BnrExchangeRateService {
     cron.schedule('30 14 * * *', async () => {
       try {
         await this.fetchAndStoreRatesFromRss();
-        log('🔄 BNR daily update check (14:30) completed successfully', 'bnr-exchange');
+        console.log('🔄 BNR daily update check (14:30) completed successfully', 'bnr-exchange');
       } catch (error) {
-        log(`❌ BNR daily update check failed: ${(error as Error).message}`, 'bnr-exchange');
+        console.log(`❌ BNR daily update check failed: ${(error as Error).message}`, 'bnr-exchange');
         // No fallback to XML as per requirements to use only RSS feeds
       }
     }, {
       timezone: 'Europe/Bucharest'
     });
     
-    log('📅 BNR exchange rate sync scheduled every 3 hours and at 14:30 Romania time (using only RSS feeds)', 'bnr-exchange');
+    console.log('📅 BNR exchange rate sync scheduled every 3 hours and at 14:30 Romania time (using only RSS feeds)', 'bnr-exchange');
   }
   
   /**
@@ -77,7 +76,7 @@ export class BnrExchangeRateService {
    */
   async fetchAndStoreRatesFromRss(): Promise<void> {
     try {
-      log('🌐 Fetching exchange rates from BNR RSS feeds (including historical data)...', 'bnr-exchange');
+      console.log('🌐 Fetching exchange rates from BNR RSS feeds (including historical data)...', 'bnr-exchange');
       
       const currencies = Object.keys(BNR_CURRENCY_RSS_FEEDS);
       let totalRatesStored = 0;
@@ -87,7 +86,7 @@ export class BnrExchangeRateService {
       for (const currency of currencies) {
         try {
           const feedUrl = BNR_CURRENCY_RSS_FEEDS[currency as keyof typeof BNR_CURRENCY_RSS_FEEDS];
-          log(`📡 Fetching RSS feed for ${currency}: ${feedUrl}`, 'bnr-exchange');
+          console.log(`📡 Fetching RSS feed for ${currency}: ${feedUrl}`, 'bnr-exchange');
           
           const response = await this.httpClient.get(feedUrl, {
             responseType: 'text',
@@ -103,13 +102,13 @@ export class BnrExchangeRateService {
           
           if (!parsed || !parsed.rss || !parsed.rss.channel || !parsed.rss.channel[0] || 
               !parsed.rss.channel[0].item || !parsed.rss.channel[0].item.length) {
-            log(`⚠️ Invalid RSS structure for ${currency}`, 'bnr-exchange');
+            console.log(`⚠️ Invalid RSS structure for ${currency}`, 'bnr-exchange');
             continue;
           }
           
           // Get all items (includes historical data, not just latest)
           const items = parsed.rss.channel[0].item;
-          log(`📊 Found ${items.length} historical items in RSS feed for ${currency}`, 'bnr-exchange');
+          console.log(`📊 Found ${items.length} historical items in RSS feed for ${currency}`, 'bnr-exchange');
           
           let currencyRatesStored = 0;
           
@@ -123,7 +122,7 @@ export class BnrExchangeRateService {
               const rateMatch = title.match(/1\s+\w+\s+=\s+(\d+(?:\.\d+)?)\s+RON/);
               
               if (!rateMatch) {
-                log(`⚠️ Could not extract rate from title: "${title}" for ${currency}`, 'bnr-exchange');
+                console.log(`⚠️ Could not extract rate from title: "${title}" for ${currency}`, 'bnr-exchange');
                 continue;
               }
               
@@ -152,22 +151,22 @@ export class BnrExchangeRateService {
               
               // Only log the most recent rate to avoid flooding the logs
               if (currencyRatesStored === 1) {
-                log(`✅ Stored latest RSS rate for ${currency}: ${rateValue} (${dateStr})`, 'bnr-exchange');
+                console.log(`✅ Stored latest RSS rate for ${currency}: ${rateValue} (${dateStr})`, 'bnr-exchange');
               }
             } catch (itemError) {
-              log(`⚠️ Error processing RSS item for ${currency}: ${(itemError as Error).message}`, 'bnr-exchange');
+              console.log(`⚠️ Error processing RSS item for ${currency}: ${(itemError as Error).message}`, 'bnr-exchange');
             }
           }
           
           // Log summary for this currency
           if (currencyRatesStored > 0) {
             successfulCurrencies++;
-            log(`📊 Stored ${currencyRatesStored} historical rates for ${currency} from RSS feed`, 'bnr-exchange');
+            console.log(`📊 Stored ${currencyRatesStored} historical rates for ${currency} from RSS feed`, 'bnr-exchange');
           } else {
-            log(`❌ Failed to store any rates for ${currency} from RSS feed`, 'bnr-exchange');
+            console.log(`❌ Failed to store any rates for ${currency} from RSS feed`, 'bnr-exchange');
           }
         } catch (currencyError) {
-          log(`❌ Error processing RSS feed for ${currency}: ${(currencyError as Error).message}`, 'bnr-exchange');
+          console.log(`❌ Error processing RSS feed for ${currency}: ${(currencyError as Error).message}`, 'bnr-exchange');
         }
       }
       
@@ -175,9 +174,9 @@ export class BnrExchangeRateService {
         throw new Error('Failed to process any RSS feeds successfully');
       }
       
-      log(`✅ Successfully stored ${totalRatesStored} BNR exchange rates from ${successfulCurrencies}/${currencies.length} RSS feeds`, 'bnr-exchange');
+      console.log(`✅ Successfully stored ${totalRatesStored} BNR exchange rates from ${successfulCurrencies}/${currencies.length} RSS feeds`, 'bnr-exchange');
     } catch (error) {
-      log(`❌ Error fetching BNR exchange rates from RSS: ${(error as Error).message}`, 'bnr-exchange');
+      console.log(`❌ Error fetching BNR exchange rates from RSS: ${(error as Error).message}`, 'bnr-exchange');
       throw new Error(`Failed to fetch and store BNR exchange rates from RSS: ${(error as Error).message}`);
     }
   }
@@ -187,7 +186,7 @@ export class BnrExchangeRateService {
    */
   async fetchAndStoreRatesFromXml(): Promise<void> {
     try {
-      log('🌐 Fetching exchange rates from BNR XML feed...', 'bnr-exchange');
+      console.log('🌐 Fetching exchange rates from BNR XML feed...', 'bnr-exchange');
       
       const response = await this.httpClient.get(BNR_XML_URL, {
         responseType: 'text'
@@ -207,7 +206,7 @@ export class BnrExchangeRateService {
       const dateStr = parsed.DataSet.Body[0].Cube[0].$.date;
       const date = new Date(dateStr);
       
-      log(`📊 Processing ${rates.length} exchange rates from BNR XML for date ${dateStr}`, 'bnr-exchange');
+      console.log(`📊 Processing ${rates.length} exchange rates from BNR XML for date ${dateStr}`, 'bnr-exchange');
       
       // Process each rate
       for (const rate of rates) {
@@ -227,9 +226,9 @@ export class BnrExchangeRateService {
         });
       }
       
-      log(`✅ Successfully stored ${rates.length} BNR exchange rates in database from XML`, 'bnr-exchange');
+      console.log(`✅ Successfully stored ${rates.length} BNR exchange rates in database from XML`, 'bnr-exchange');
     } catch (error) {
-      log(`❌ Error fetching BNR exchange rates from XML: ${(error as Error).message}`, 'bnr-exchange');
+      console.log(`❌ Error fetching BNR exchange rates from XML: ${(error as Error).message}`, 'bnr-exchange');
       throw new Error(`Failed to fetch and store BNR exchange rates from XML: ${(error as Error).message}`);
     }
   }
@@ -241,9 +240,9 @@ export class BnrExchangeRateService {
     try {
       // Use RSS method as primary source as requested
       await this.fetchAndStoreRatesFromRss();
-      log('✅ RSS method completed successfully', 'bnr-exchange');
+      console.log('✅ RSS method completed successfully', 'bnr-exchange');
     } catch (error) {
-      log(`❌ RSS method failed: ${(error as Error).message}`, 'bnr-exchange');
+      console.log(`❌ RSS method failed: ${(error as Error).message}`, 'bnr-exchange');
       throw new Error(`Failed to fetch exchange rates from RSS: ${(error as Error).message}`);
     }
   }
@@ -265,7 +264,7 @@ export class BnrExchangeRateService {
       
       // If no rates in DB, fetch from sources
       if (!allRates || allRates.length === 0) {
-        log('🔄 No exchange rates found in database, fetching from sources...', 'bnr-exchange');
+        console.log('🔄 No exchange rates found in database, fetching from sources...', 'bnr-exchange');
         await this.fetchAndStoreRates();
         return this.getLatestRates(); // Retry after fetching
       }
@@ -298,10 +297,10 @@ export class BnrExchangeRateService {
         }
       }
       
-      log(`📈 Retrieved ${Object.keys(ratesObject).length} exchange rates from database (combined sources)`, 'bnr-exchange');
+      console.log(`📈 Retrieved ${Object.keys(ratesObject).length} exchange rates from database (combined sources)`, 'bnr-exchange');
       return ratesObject;
     } catch (error) {
-      log(`❌ Error getting exchange rates: ${(error as Error).message}`, 'bnr-exchange');
+      console.log(`❌ Error getting exchange rates: ${(error as Error).message}`, 'bnr-exchange');
       throw new Error(`Failed to get exchange rates: ${(error as Error).message}`);
     }
   }
@@ -311,18 +310,18 @@ export class BnrExchangeRateService {
    * Useful for testing or initial setup
    */
   async manualFetch(): Promise<Record<string, number>> {
-    log('🔍 Starting manual BNR exchange rate update from RSS feeds...', 'bnr-exchange');
+    console.log('🔍 Starting manual BNR exchange rate update from RSS feeds...', 'bnr-exchange');
     
     try {
       // Process each RSS feed for available currencies
-      log('🔍 Fetching RSS feeds for all configured currencies...', 'bnr-exchange');
+      console.log('🔍 Fetching RSS feeds for all configured currencies...', 'bnr-exchange');
       const currencies = Object.keys(BNR_CURRENCY_RSS_FEEDS);
       
       // Test individual RSS feed connections first (for debugging)
       for (const currency of currencies) {
         try {
           const feedUrl = BNR_CURRENCY_RSS_FEEDS[currency as keyof typeof BNR_CURRENCY_RSS_FEEDS];
-          log(`🔍 Testing RSS feed URL for ${currency}: ${feedUrl}`, 'bnr-exchange');
+          console.log(`🔍 Testing RSS feed URL for ${currency}: ${feedUrl}`, 'bnr-exchange');
           
           const response = await this.httpClient.get(feedUrl, {
             responseType: 'text',
@@ -333,22 +332,22 @@ export class BnrExchangeRateService {
             }
           });
           
-          log(`✅ Successfully fetched RSS feed for ${currency}. Response length: ${response.length}`, 'bnr-exchange');
+          console.log(`✅ Successfully fetched RSS feed for ${currency}. Response length: ${response.length}`, 'bnr-exchange');
         } catch (urlError) {
-          log(`⚠️ Failed to fetch RSS feed for ${currency}: ${(urlError as Error).message}`, 'bnr-exchange');
+          console.log(`⚠️ Failed to fetch RSS feed for ${currency}: ${(urlError as Error).message}`, 'bnr-exchange');
         }
       }
       
       // Now store all rates from RSS feeds
       try {
         await this.fetchAndStoreRatesFromRss();
-        log('✅ Manual RSS feed update completed successfully', 'bnr-exchange');
+        console.log('✅ Manual RSS feed update completed successfully', 'bnr-exchange');
       } catch (rssError) {
-        log(`❌ RSS feed update failed: ${(rssError as Error).message}`, 'bnr-exchange');
+        console.log(`❌ RSS feed update failed: ${(rssError as Error).message}`, 'bnr-exchange');
         throw rssError; // Re-throw as this is our primary method now
       }
     } catch (error) {
-      log(`❌ Manual exchange rate update failed: ${(error as Error).message}`, 'bnr-exchange');
+      console.log(`❌ Manual exchange rate update failed: ${(error as Error).message}`, 'bnr-exchange');
       throw new Error(`Failed to manually fetch exchange rates from RSS: ${(error as Error).message}`);
     }
     
@@ -398,7 +397,7 @@ export class BnrExchangeRateService {
       const rates = await this.getLatestRates();
       return rates[currency] || null;
     } catch (error) {
-      log(`❌ Error getting rate for ${currency}: ${(error as Error).message}`, 'bnr-exchange');
+      console.log(`❌ Error getting rate for ${currency}: ${(error as Error).message}`, 'bnr-exchange');
       throw new Error(`Failed to get rate for ${currency}: ${(error as Error).message}`);
     }
   }

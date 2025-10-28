@@ -16,7 +16,6 @@ import { AuditLogService } from './audit-log.service';
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import { accountingQueueService } from './accounting-queue.service';
 import { accountingCacheService } from './accounting-cache.service';
-import { log } from "@api/vite";
 
 export interface VATClosureRequest {
   companyId: string;
@@ -101,7 +100,7 @@ export class VATClosureService extends DrizzleService {
       journalNumber = entry.journalNumber;
 
       // Log audit
-      await this.auditService.log({
+      await this.auditService.console.log({
         companyId,
         userId,
         action: 'VAT_CLOSED' as any,
@@ -355,20 +354,20 @@ export class VATClosureService extends DrizzleService {
         const cached = await accountingCacheService.getVATReport(companyId, year, month);
         
         if (cached) {
-          log(`VAT D300 report cache hit for ${companyId} ${year}-${month}`, 'vat-cache');
+          console.log(`VAT D300 report cache hit for ${companyId} ${year}-${month}`, 'vat-cache');
           return cached;
         }
       }
     }
     
     // Generate report
-    log(`Generating VAT D300 report for ${companyId} ${year}-${month}`, 'vat-closure');
+    console.log(`Generating VAT D300 report for ${companyId} ${year}-${month}`, 'vat-closure');
     const report = await this.calculateD300Report(companyId, year, month);
     
     // Cache result
     if (useCache && accountingCacheService.isConnected()) {
       await accountingCacheService.setVATReport(companyId, year, month, report);
-      log(`VAT D300 report cached for ${companyId}`, 'vat-cache');
+      console.log(`VAT D300 report cached for ${companyId}`, 'vat-cache');
     }
     
     return report;
@@ -379,7 +378,7 @@ export class VATClosureService extends DrizzleService {
    */
   async closeVATPeriodAsync(request: VATClosureRequest): Promise<{ jobId: string; message: string }> {
     try {
-      log(`Queueing async VAT closure for ${request.periodYear}-${request.periodMonth}`, 'vat-closure-async');
+      console.log(`Queueing async VAT closure for ${request.periodYear}-${request.periodMonth}`, 'vat-closure-async');
       
       const job = await accountingQueueService.queueVATClosure({
         companyId: request.companyId,
@@ -394,7 +393,7 @@ export class VATClosureService extends DrizzleService {
         message: `VAT closure queued. Job ID: ${job.id}`
       };
     } catch (error: any) {
-      log(`Error queueing VAT closure: ${error.message}`, 'vat-closure-error');
+      console.log(`Error queueing VAT closure: ${error.message}`, 'vat-closure-error');
       throw error;
     }
   }
@@ -411,9 +410,9 @@ export class VATClosureService extends DrizzleService {
       }
       
       await accountingCacheService.invalidateVATReport(companyId, year, month);
-      log(`Invalidated VAT cache for ${companyId}`, 'vat-cache');
+      console.log(`Invalidated VAT cache for ${companyId}`, 'vat-cache');
     } catch (error: any) {
-      log(`Error invalidating VAT cache: ${error.message}`, 'vat-cache-error');
+      console.log(`Error invalidating VAT cache: ${error.message}`, 'vat-cache-error');
     }
   }
 }

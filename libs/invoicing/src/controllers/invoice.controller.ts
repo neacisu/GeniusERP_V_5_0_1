@@ -142,7 +142,7 @@ export class InvoiceController {
       }
 
       // Log the update in audit trail
-      await AuditService.log({
+      await AuditService.console.log({
         userId: userId as string,
         companyId: companyId as string,
         action: 'UPDATE',
@@ -192,7 +192,7 @@ export class InvoiceController {
       }
 
       // Log the deletion in audit trail
-      await AuditService.log({
+      await AuditService.console.log({
         userId: userId as string,
         companyId: companyId as string,
         action: 'DELETE',

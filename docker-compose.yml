@@ -1,25 +1,76 @@
 services:
-  app:
+  # ===== FRONTEND SERVICE (Vite Standalone) =====
+  frontend:
     build:
       context: .
-      dockerfile: Dockerfile.dev
-    container_name: geniuserp-app
+      dockerfile: Dockerfile.frontend.dev
+    container_name: geniuserp-frontend
     volumes:
       - .:/app
-      - ./apps:/app/apps
-      - ./libs:/app/libs
-      - node_modules_volume:/app/node_modules
+      - frontend_node_modules:/app/node_modules
+      - /app/dist  # Exclude dist directory
     ports:
-      - "${APP_PORT_FRONTEND}:${APP_PORT_FRONTEND}" # Single port for both frontend (Vite) and backend (Express middleware mode)
+      - "${APP_PORT_FRONTEND}:${APP_PORT_FRONTEND}"
     labels:
       - logging=promtail
-      - logging_jobname=geniuserp-app
+      - logging_jobname=geniuserp-frontend
+    environment:
+      # Node environment
+      - NODE_ENV=${NODE_ENV:-development}
+      
+      # API URL for proxy
+      - VITE_API_URL=${VITE_API_URL}
+      
+      # Vite HMR configuration
+      - VITE_DEV_SERVER_URL=${VITE_DEV_SERVER_URL}
+      - VITE_HMR_PROTOCOL=${VITE_HMR_PROTOCOL}
+      - VITE_HMR_HOST=${VITE_HMR_HOST}
+      - VITE_HMR_PORT=${VITE_HMR_PORT}
+      - VITE_HMR_CLIENT_PORT=${VITE_HMR_CLIENT_PORT}
+      - VITE_ALLOWED_HOSTS=${VITE_ALLOWED_HOSTS}
+      
+      # Watch polling for Docker
+      - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING}
+      - CHOKIDAR_INTERVAL=${CHOKIDAR_INTERVAL}
+      
+      # Frontend port
+      - APP_PORT_FRONTEND=${APP_PORT_FRONTEND}
+      
+      # Sentry (Frontend)
+      - VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
+      - VITE_APP_VERSION=${VITE_APP_VERSION}
+    depends_on:
+      - backend
+    restart: ${CONTAINER_RESTART_POLICY}
+    networks:
+      - app-network
+      - monitoring-network
+
+  # ===== BACKEND SERVICE (Express API) =====
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend.dev
+    container_name: geniuserp-backend
+    volumes:
+      - .:/app
+      - backend_node_modules:/app/node_modules
+      - /app/dist  # Exclude dist directory
+    ports:
+      - "${APP_PORT_BACKEND}:${APP_PORT_BACKEND}"
+    labels:
+      - logging=promtail
+      - logging_jobname=geniuserp-backend
     environment:
       # Variabile de bază
       - NODE_ENV=${NODE_ENV:-development}
       - DATABASE_URL=${DATABASE_URL}
       
-      # Redis Cloud (citite din .env)
+      # Backend port
+      - APP_PORT_BACKEND=${APP_PORT_BACKEND}
+      - APP_PORT_FRONTEND=${APP_PORT_FRONTEND}
+      
+      # Redis Cloud
       - REDIS_URL=${REDIS_URL}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
@@ -28,7 +79,7 @@ services:
       
       - RUN_MIGRATIONS=${RUN_MIGRATIONS:-false}
       
-      # Secrets pentru securitate (citite din .env)
+      # Secrets pentru securitate
       - JWT_SECRET=${JWT_SECRET}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
       - SESSION_SECRET=${SESSION_SECRET}
@@ -37,14 +88,14 @@ services:
       - ANAF_API_URL=${ANAF_API_URL}
       - ANAF_API_VERSION=${ANAF_API_VERSION:-v7}
       
-      # Date pentru email
+      # Email configuration
       - SMTP_HOST=${SMTP_HOST}
       - SMTP_PORT=${SMTP_PORT:-587}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
       - EMAIL_FROM=${EMAIL_FROM}
       
-      # Setări pentru logging
+      # Logging
       - LOG_LEVEL=${LOG_LEVEL:-debug}
       - ENABLE_SQL_LOGGING=${ENABLE_SQL_LOGGING:-true}
       
@@ -53,30 +104,19 @@ services:
       - OPENAI_ORGANIZATION=${OPENAI_ORGANIZATION}
       - OPENAI_DEFAULT_MODEL=${OPENAI_DEFAULT_MODEL:-gpt-4}
       
-      # Sentry Error Tracking
+      # Sentry (Backend)
       - SENTRY_DSN=${SENTRY_DSN}
-      - VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
       
-      # Setări pentru debugare și HMR
-      - VITE_DEV_SERVER_URL=${VITE_DEV_SERVER_URL}
-      
-      # Setări Vite HMR pentru Hot Reload în Docker
-      - VITE_HMR_PROTOCOL=${VITE_HMR_PROTOCOL}
-      - VITE_HMR_HOST=${VITE_HMR_HOST}
-      - VITE_HMR_PORT=${VITE_HMR_PORT}
-      - VITE_HMR_CLIENT_PORT=${VITE_HMR_CLIENT_PORT}
-      
-      # Vite Allowed Hosts (citit din .env)
-      - VITE_ALLOWED_HOSTS=${VITE_ALLOWED_HOSTS}
-      
-      # Enable watch polling pentru Docker volumes (important pentru HMR)
-      - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING}
-      - CHOKIDAR_INTERVAL=${CHOKIDAR_INTERVAL}
+      # CORS configuration
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     depends_on:
       - postgres
     restart: ${CONTAINER_RESTART_POLICY}
     networks:
-      - geniuserp-network
+      - app-network
+      - data-network
+      - monitoring-network
+      - security-network
 
   postgres:
     image: postgres:17-alpine
@@ -94,7 +134,8 @@ services:
       - logging_jobname=postgres
     restart: ${CONTAINER_RESTART_POLICY}
     networks:
-      - geniuserp-network
+      - data-network        # Backend communication only
+      - monitoring-network  # Monitoring access
     command: postgres -c 'max_connections=${POSTGRES_MAX_CONNECTIONS}' -c 'shared_buffers=${POSTGRES_SHARED_BUFFERS}'
 
   # Adminer pentru administrarea bazei de date (opțional)
@@ -110,7 +151,8 @@ services:
     depends_on:
       - postgres
     networks:
-      - geniuserp-network
+      - data-network       # Access to Postgres
+      - monitoring-network # Logging
 
   # ===== MONITORING STACK =====
   
@@ -132,7 +174,7 @@ services:
       - logging=promtail
       - logging_jobname=prometheus
     networks:
-      - geniuserp-network
+      - monitoring-network
     restart: unless-stopped
 
   # Grafana - Dashboards și Alerte
@@ -155,7 +197,7 @@ services:
       - logging=promtail
       - logging_jobname=grafana
     networks:
-      - geniuserp-network
+      - monitoring-network
     depends_on:
       - prometheus
       - loki
@@ -176,7 +218,7 @@ services:
       - logging=promtail
       - logging_jobname=loki
     networks:
-      - geniuserp-network
+      - monitoring-network
     restart: unless-stopped
 
   # Promtail - Log collector
@@ -189,7 +231,7 @@ services:
       - ${DOCKER_CONTAINERS_PATH}:${DOCKER_CONTAINERS_PATH}:ro
     command: -config.file=${PROMTAIL_CONFIG_FILE}
     networks:
-      - geniuserp-network
+      - monitoring-network
     depends_on:
       - loki
     restart: unless-stopped
@@ -213,7 +255,8 @@ services:
       - logging=promtail
       - logging_jobname=falco
     networks:
-      - geniuserp-network
+      - security-network
+      - monitoring-network  # For logging
     restart: unless-stopped
 
   # Wazuh Indexer (OpenSearch) - CON SSL ACTIVAT
@@ -248,7 +291,8 @@ services:
       - wazuh_indexer_data:${WAZUH_INDEXER_DATA_PATH}
       - ./monitoring/wazuh/certs/wazuh-certificates:/usr/share/wazuh-indexer/certs/
     networks:
-      - geniuserp-network
+      - security-network
+      - monitoring-network
     restart: unless-stopped
 
   # Wazuh Manager - CON SSL
@@ -282,7 +326,8 @@ services:
       - logging=promtail
       - logging_jobname=wazuh-manager
     networks:
-      - geniuserp-network
+      - security-network
+      - monitoring-network
     depends_on:
       - wazuh-indexer
     restart: unless-stopped
@@ -313,7 +358,8 @@ services:
     volumes:
       - ./monitoring/wazuh/certs/wazuh-certificates:/usr/share/wazuh-dashboard/certs:ro
     networks:
-      - geniuserp-network
+      - security-network
+      - monitoring-network
     depends_on:
       - wazuh-manager
     restart: unless-stopped
@@ -334,17 +380,33 @@ services:
     restart: "no"
 
 networks:
+  # Multi-network architecture for security isolation
+  app-network:
+    driver: bridge
+  data-network:
+    driver: bridge
+    internal: true  # No internet access - database isolation
+  monitoring-network:
+    driver: bridge
+  security-network:
+    driver: bridge
+  # Legacy network for backward compatibility
   geniuserp-network:
     driver: ${DOCKER_NETWORK_DRIVER}
 
 volumes:
+  # Database volume (EXTERNAL - preserves data)
   postgres_data:
     external: true
     name: geniuserp_postgres_data
-  node_modules_volume:
+  # Separate node_modules for frontend and backend
+  frontend_node_modules:
+  backend_node_modules:
+  # Monitoring volumes
   prometheus_data:
   grafana_data:
   loki_data:
+  # Security volumes
   wazuh_indexer_data:
   wazuh_manager_data:
   wazuh_manager_etc:

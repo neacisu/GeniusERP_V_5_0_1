@@ -150,7 +150,7 @@ export class ApiConnectionController {
       });
 
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.CREATE,
@@ -218,7 +218,7 @@ export class ApiConnectionController {
       });
 
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.UPDATE,
@@ -282,7 +282,7 @@ export class ApiConnectionController {
       const success = await this._apiConnectionService.deleteApiConnection(id, companyId);
       
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.DELETE,
@@ -339,7 +339,7 @@ export class ApiConnectionController {
       const testResult = await this._apiConnectionService.testApiConnection(id, companyId);
       
       // Record audit log
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: 'BPM_PROCESS_ACTION',

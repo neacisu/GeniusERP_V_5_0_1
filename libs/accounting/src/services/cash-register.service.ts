@@ -18,7 +18,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { AuditLogService } from './audit-log.service';
 import { accountingQueueService } from './accounting-queue.service';
 import { RedisService } from '@common/services/redis.service';
-import { log } from "@api/vite";
 import {
   CashRegisterWithClosing,
   CreateCashRegisterData,
@@ -1812,14 +1811,14 @@ export class CashRegisterService {
         const cached = await redisService.getCached<CashRegisterReport>(cacheKey);
         
         if (cached) {
-          log(`Daily cash report cache hit for ${cashRegisterId}`, 'cash-register-cache');
+          console.log(`Daily cash report cache hit for ${cashRegisterId}`, 'cash-register-cache');
           return cached;
         }
       }
     }
     
     // Generate report
-    log(`Generating daily cash report for ${cashRegisterId}`, 'cash-register');
+    console.log(`Generating daily cash report for ${cashRegisterId}`, 'cash-register');
     const report = await this.generateCashRegisterReport(companyId, cashRegisterId, date, date);
     
     // Cache result (1 day TTL for historical data, 5 min for today)
@@ -1831,7 +1830,7 @@ export class CashRegisterService {
       await redisService.connect();
       if (redisService.isConnected()) {
         await redisService.setCached(cacheKey, report, ttl);
-        log(`Daily cash report cached for ${cashRegisterId}`, 'cash-register-cache');
+        console.log(`Daily cash report cached for ${cashRegisterId}`, 'cash-register-cache');
       }
     }
     
@@ -1849,7 +1848,7 @@ export class CashRegisterService {
     _userId: string
   ): Promise<ReconciliationJobResult> {
     try {
-      log(`Queueing async cash reconciliation for ${cashRegisterId}`, 'cash-register-async');
+      console.log(`Queueing async cash reconciliation for ${cashRegisterId}`, 'cash-register-async');
       
       const job = await accountingQueueService.queueAccountReconciliation({
         accountId: cashRegisterId,
@@ -1864,7 +1863,7 @@ export class CashRegisterService {
       };
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      log(`Error queueing cash reconciliation: ${errorMessage}`, 'cash-register-error');
+      console.log(`Error queueing cash reconciliation: ${errorMessage}`, 'cash-register-error');
       throw error;
     }
   }
@@ -1889,10 +1888,10 @@ export class CashRegisterService {
         : `acc:cash-report:${companyId}:*`;
       
       await redisService.invalidatePattern(pattern);
-      log(`Invalidated cash report cache for ${companyId}`, 'cash-register-cache');
+      console.log(`Invalidated cash report cache for ${companyId}`, 'cash-register-cache');
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      log(`Error invalidating cash report cache: ${errorMessage}`, 'cash-register-error');
+      console.log(`Error invalidating cash report cache: ${errorMessage}`, 'cash-register-error');
     }
   }
 }

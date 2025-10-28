@@ -68,7 +68,7 @@ export async function logAction(params: {
   entityId: string;
   details: Record<string, any>;
 }): Promise<string> {
-  return AuditService.log(params as any);
+  return AuditService.console.log(params as any);
 }
 
 /**

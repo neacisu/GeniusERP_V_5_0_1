@@ -10,7 +10,6 @@
  */
 
 import { createHttpClient, HttpClient } from '@geniuserp/shared/libs/http-client';
-import { log } from "@api/vite";
 
 export interface AnafConfig {
   apiBaseUrl?: string;
@@ -59,7 +58,7 @@ export class AnafService {
       }
     });
     
-    log('🏛️ ANAF service initialized', 'anaf');
+    console.log('🏛️ ANAF service initialized', 'anaf');
   }
 
   /**
@@ -71,7 +70,7 @@ export class AnafService {
       // Clean up VAT number - remove 'RO' prefix if present
       const cleanVat = vatNumber.replace(/^RO/i, '').trim();
       
-      log(`🔍 Validating VAT number: ${cleanVat}`, 'anaf');
+      console.log(`🔍 Validating VAT number: ${cleanVat}`, 'anaf');
       
       // Format for ANAF API
       const payload = [{
@@ -102,7 +101,7 @@ export class AnafService {
         message: result.mesaj
       };
     } catch (error: any) {
-      log(`❌ Error validating VAT number: ${error.message}`, 'anaf');
+      console.log(`❌ Error validating VAT number: ${error.message}`, 'anaf');
       
       return {
         valid: false,
@@ -121,13 +120,13 @@ export class AnafService {
       // Clean up fiscal code - remove 'RO' prefix if present
       const cleanFiscalCode = fiscalCode.replace(/^RO/i, '').trim();
       
-      log(`🔍 Retrieving company info for fiscal code: ${cleanFiscalCode}`, 'anaf');
+      console.log(`🔍 Retrieving company info for fiscal code: ${cleanFiscalCode}`, 'anaf');
       
       // First validate the VAT number to get basic info
       const vatValidation = await this.validateVat(cleanFiscalCode);
       
       if (!vatValidation.valid) {
-        log(`❌ Invalid fiscal code: ${cleanFiscalCode}`, 'anaf');
+        console.log(`❌ Invalid fiscal code: ${cleanFiscalCode}`, 'anaf');
         return null;
       }
       
@@ -143,7 +142,7 @@ export class AnafService {
         lastUpdated: new Date().toISOString()
       };
     } catch (error: any) {
-      log(`❌ Error retrieving company info: ${error.message}`, 'anaf');
+      console.log(`❌ Error retrieving company info: ${error.message}`, 'anaf');
       return null;
     }
   }
@@ -155,7 +154,7 @@ export class AnafService {
   async checkEFacturaRegistration(fiscalCode: string): Promise<boolean> {
     try {
       // This is a placeholder - ANAF doesn't currently have a public API for this check
-      log(`🔍 Checking e-Factura registration for: ${fiscalCode}`, 'anaf');
+      console.log(`🔍 Checking e-Factura registration for: ${fiscalCode}`, 'anaf');
       
       // In a real implementation, this would make an API call to ANAF
       // For now we assume larger companies are registered (just as an example)
@@ -168,11 +167,11 @@ export class AnafService {
       // This is completely made up for demonstration - not real logic
       const isRegistered = companyInfo.active && companyInfo.vatPayer;
       
-      log(`ℹ️ e-Factura registration status for ${fiscalCode}: ${isRegistered ? 'Registered' : 'Not registered'}`, 'anaf');
+      console.log(`ℹ️ e-Factura registration status for ${fiscalCode}: ${isRegistered ? 'Registered' : 'Not registered'}`, 'anaf');
       
       return isRegistered;
     } catch (error: any) {
-      log(`❌ Error checking e-Factura registration: ${error.message}`, 'anaf');
+      console.log(`❌ Error checking e-Factura registration: ${error.message}`, 'anaf');
       return false;
     }
   }

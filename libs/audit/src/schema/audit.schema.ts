@@ -25,7 +25,7 @@ export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
 
 /**
- * Interface for audit log data provided to AuditService.log() method
+ * Interface for audit log data provided to AuditService.console.log() method
  * This includes optional properties that will be stored in the details field
  */
 export interface AuditLogData {

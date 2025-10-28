@@ -60,7 +60,7 @@ export function registerOpenAIControllerRoutes(app: any, openAiService: OpenAiSe
       try {
         // Log audit event for checking OpenAI status
         if (req.user) {
-          AuditService.log({
+          AuditService.console.log({
             action: 'CHECK_OPENAI_STATUS',
             entity: 'AI_MODULE',
             entityId: 'openai',
@@ -266,7 +266,7 @@ export function registerOpenAIControllerRoutes(app: any, openAiService: OpenAiSe
         });
         
         // Log the configuration update
-        await AuditService.log({
+        await AuditService.console.log({
           action: 'OPENAI_CONFIG_UPDATE',
           entity: 'AI_MODULE',
           entityId: 'openai_config',

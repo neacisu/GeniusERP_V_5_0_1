@@ -8,7 +8,6 @@
  */
 
 import { createHttpClient, HttpClient } from '@geniuserp/shared/libs/http-client';
-import { log } from "@api/vite";
 
 // Types for e-Factura requests and responses
 export interface EFacturaConfig {
@@ -58,7 +57,7 @@ export class EFacturaService {
       }
     });
     
-    log(`🧾 e-Factura service initialized in ${this.environment} environment`, 'e-factura');
+    console.log(`🧾 e-Factura service initialized in ${this.environment} environment`, 'e-factura');
   }
 
   /**
@@ -68,7 +67,7 @@ export class EFacturaService {
    */
   async submitInvoice(invoiceXml: string, metadata: Record<string, any> = {}): Promise<EFacturaSubmissionResult> {
     try {
-      log(`📤 Submitting invoice to e-Factura (${this.environment})`, 'e-factura');
+      console.log(`📤 Submitting invoice to e-Factura (${this.environment})`, 'e-factura');
       
       // In a real implementation, you would:
       // 1. Convert your invoice to the UBL XML format
@@ -84,7 +83,7 @@ export class EFacturaService {
         }
       });
       
-      log(`✅ Successfully submitted invoice to e-Factura`, 'e-factura');
+      console.log(`✅ Successfully submitted invoice to e-Factura`, 'e-factura');
       
       return {
         success: true,
@@ -93,7 +92,7 @@ export class EFacturaService {
         timestamp: response.timestamp
       };
     } catch (error: any) {
-      log(`❌ Error submitting invoice to e-Factura: ${error.message}`, 'e-factura');
+      console.log(`❌ Error submitting invoice to e-Factura: ${error.message}`, 'e-factura');
       
       return {
         success: false,
@@ -109,7 +108,7 @@ export class EFacturaService {
    */
   async checkInvoiceStatus(referenceId: string): Promise<EFacturaInvoiceStatus> {
     try {
-      log(`🔍 Checking e-Factura invoice status for reference: ${referenceId}`, 'e-factura');
+      console.log(`🔍 Checking e-Factura invoice status for reference: ${referenceId}`, 'e-factura');
       
       const response = await this.httpClient.get<any>(`/status/${referenceId}`);
       
@@ -121,7 +120,7 @@ export class EFacturaService {
         details: response.details
       };
     } catch (error: any) {
-      log(`❌ Error checking e-Factura invoice status: ${error.message}`, 'e-factura');
+      console.log(`❌ Error checking e-Factura invoice status: ${error.message}`, 'e-factura');
       
       throw new Error(`Failed to check invoice status: ${error.message}`);
     }
@@ -135,7 +134,7 @@ export class EFacturaService {
     // In a real implementation, this would generate proper UBL XML
     // For now, we return a placeholder
     
-    log(`📝 Generating UBL XML for invoice ${invoiceData['invoiceNumber']}`, 'e-factura');
+    console.log(`📝 Generating UBL XML for invoice ${invoiceData['invoiceNumber']}`, 'e-factura');
     
     // This is just a simplified example - real UBL XML is much more complex
     return `<?xml version="1.0" encoding="UTF-8"?>
@@ -156,17 +155,17 @@ export class EFacturaService {
    */
   async downloadInvoice(referenceId: string): Promise<Buffer | null> {
     try {
-      log(`📥 Downloading invoice from e-Factura for reference: ${referenceId}`, 'e-factura');
+      console.log(`📥 Downloading invoice from e-Factura for reference: ${referenceId}`, 'e-factura');
       
       const response = await this.httpClient.get<any>(`/download/${referenceId}`, {
         responseType: 'arraybuffer'
       });
       
-      log(`✅ Successfully downloaded invoice from e-Factura`, 'e-factura');
+      console.log(`✅ Successfully downloaded invoice from e-Factura`, 'e-factura');
       
       return Buffer.from(response);
     } catch (error: any) {
-      log(`❌ Error downloading invoice from e-Factura: ${error.message}`, 'e-factura');
+      console.log(`❌ Error downloading invoice from e-Factura: ${error.message}`, 'e-factura');
       
       throw new Error(`Failed to download invoice: ${error.message}`);
     }

@@ -10,7 +10,6 @@
 import { getDrizzle, DrizzleService } from "@common/drizzle";
 import { Queue } from 'bullmq';
 import { randomUUID } from 'crypto';
-import { log } from "@api/vite";
 // Import the queue from the centralized BullMQ module
 import { inventoryQueue } from "@common/bullmq";
 // Keep QueueService import for backward compatibility
@@ -80,7 +79,7 @@ export class CheckStockLevelsService {
    * @returns Results of the stock check with alerts
    */
   async checkLevels(companyId: string, franchiseId?: string, warehouseId?: string): Promise<StockCheckResult> {
-    log(`[CheckStockLevelsService] 🔍 Checking stock levels for company: ${companyId}`, 'inventory-stock-check');
+    console.log(`[CheckStockLevelsService] 🔍 Checking stock levels for company: ${companyId}`, 'inventory-stock-check');
     
     try {
       // Build query to check stock against thresholds using string interpolation for simpler testing
@@ -121,7 +120,7 @@ export class CheckStockLevelsService {
       sql += ` AND w.is_active = true`;
       
       // Log the full query for debugging
-      log(`[CheckStockLevelsService] Running low stock query: ${sql}`, 'inventory-stock-check');
+      console.log(`[CheckStockLevelsService] Running low stock query: ${sql}`, 'inventory-stock-check');
       
       // Execute the query (no params needed with string interpolation)
       const lowStockResult = await this.drizzle.executeQuery(sql);
@@ -201,9 +200,9 @@ export class CheckStockLevelsService {
             jobId: `inventory-alert-${alert.productId}-${alert.warehouseId}-${new Date().getTime()}`
           });
           
-          log(`[CheckStockLevelsService] ✅ Queued inventory alert job for ${item.product_name} with severity ${severity}`, 'inventory-stock-check');
+          console.log(`[CheckStockLevelsService] ✅ Queued inventory alert job for ${item.product_name} with severity ${severity}`, 'inventory-stock-check');
         } catch (error: any) {
-          log(`[CheckStockLevelsService] ⚠️ Failed to enqueue alert job: ${error?.message || String(error)}`, 'inventory-stock-check-error');
+          console.log(`[CheckStockLevelsService] ⚠️ Failed to enqueue alert job: ${error?.message || String(error)}`, 'inventory-stock-check-error');
           
           // Fallback to direct notification if queuing fails
           try {
@@ -223,9 +222,9 @@ export class CheckStockLevelsService {
               actionUrl: `/inventory/products/${alert.productId}`
             });
             
-            log(`[CheckStockLevelsService] ✅ Sent direct notification for ${item.product_name} (fallback)`, 'inventory-stock-check');
+            console.log(`[CheckStockLevelsService] ✅ Sent direct notification for ${item.product_name} (fallback)`, 'inventory-stock-check');
           } catch (notifyError: any) {
-            log(`[CheckStockLevelsService] ⚠️ Failed to send fallback notification: ${notifyError?.message || String(notifyError)}`, 'inventory-stock-check-error');
+            console.log(`[CheckStockLevelsService] ⚠️ Failed to send fallback notification: ${notifyError?.message || String(notifyError)}`, 'inventory-stock-check-error');
           }
         }
         
@@ -246,9 +245,9 @@ export class CheckStockLevelsService {
             jobId: `low-stock-${alert.productId}-${alert.warehouseId}-${new Date().getTime()}`
           });
           
-          log(`[CheckStockLevelsService] ✅ Queued alert for ${item.product_name} in ${item.warehouse_name}`, 'inventory-stock-check');
+          console.log(`[CheckStockLevelsService] ✅ Queued alert for ${item.product_name} in ${item.warehouse_name}`, 'inventory-stock-check');
         } else {
-          log(`[CheckStockLevelsService] ⚠️ No queue available, alert for ${item.product_name} was not queued`, 'inventory-stock-check');
+          console.log(`[CheckStockLevelsService] ⚠️ No queue available, alert for ${item.product_name} was not queued`, 'inventory-stock-check');
         }
       }
       
@@ -259,11 +258,11 @@ export class CheckStockLevelsService {
         timestamp: new Date()
       };
       
-      log(`[CheckStockLevelsService] ✅ Found ${alerts.length} products below threshold out of ${totalProducts} total`, 'inventory-stock-check');
+      console.log(`[CheckStockLevelsService] ✅ Found ${alerts.length} products below threshold out of ${totalProducts} total`, 'inventory-stock-check');
       
       return result;
     } catch (error: any) {
-      log(`[CheckStockLevelsService] ❌ Error checking stock levels: ${error.message}`, 'inventory-stock-check-error');
+      console.log(`[CheckStockLevelsService] ❌ Error checking stock levels: ${error.message}`, 'inventory-stock-check-error');
       throw new Error(`Failed to check stock levels: ${error.message || String(error)}`);
     }
   }
@@ -277,7 +276,7 @@ export class CheckStockLevelsService {
    */
   async scheduleRegularChecks(companyId: string, schedulePattern: string = '0 0 * * *'): Promise<string | null> {
     if (!this.stockQueue) {
-      log(`[CheckStockLevelsService] ⚠️ Cannot schedule checks without a queue`, 'inventory-stock-check');
+      console.log(`[CheckStockLevelsService] ⚠️ Cannot schedule checks without a queue`, 'inventory-stock-check');
       return null;
     }
     
@@ -289,7 +288,7 @@ export class CheckStockLevelsService {
         await this.stockQueue.removeRepeatable('scheduled-stock-check', { jobId, pattern: schedulePattern });
       } catch (error) {
         // If job doesn't exist yet, this is ok
-        log(`[CheckStockLevelsService] No existing job found to remove, continuing...`, 'inventory-stock-check');
+        console.log(`[CheckStockLevelsService] No existing job found to remove, continuing...`, 'inventory-stock-check');
       }
       
       // Create a new repeatable job with improved options
@@ -313,11 +312,11 @@ export class CheckStockLevelsService {
         }
       );
       
-      log(`[CheckStockLevelsService] ✅ Scheduled regular stock checks for company ${companyId} with pattern: ${schedulePattern}`, 'inventory-stock-check');
+      console.log(`[CheckStockLevelsService] ✅ Scheduled regular stock checks for company ${companyId} with pattern: ${schedulePattern}`, 'inventory-stock-check');
       
       return jobId;
     } catch (error: any) {
-      log(`[CheckStockLevelsService] ❌ Error scheduling stock checks: ${error.message}`, 'inventory-stock-check-error');
+      console.log(`[CheckStockLevelsService] ❌ Error scheduling stock checks: ${error.message}`, 'inventory-stock-check-error');
       throw new Error(`Failed to schedule stock checks: ${error.message || String(error)}`);
     }
   }
@@ -371,7 +370,7 @@ export class CheckStockLevelsService {
       sql += ` ORDER BY threshold_percentage ASC`;
       
       // Log the full query for debugging
-      log(`[CheckStockLevelsService] Running approaching threshold query: ${sql}`, 'inventory-stock-check');
+      console.log(`[CheckStockLevelsService] Running approaching threshold query: ${sql}`, 'inventory-stock-check');
       
       // Execute the query
       const result = await this.drizzle.executeQuery(sql);
@@ -380,7 +379,7 @@ export class CheckStockLevelsService {
       const approachingRows = Array.isArray(result) ? result : 
                              ((result as any)?.rows || []);
       
-      log(`[CheckStockLevelsService] ✅ Found ${approachingRows.length} products approaching threshold`, 'inventory-stock-check');
+      console.log(`[CheckStockLevelsService] ✅ Found ${approachingRows.length} products approaching threshold`, 'inventory-stock-check');
       
       // Send notifications if requested
       if (sendNotifications && approachingRows.length > 0) {
@@ -411,16 +410,16 @@ export class CheckStockLevelsService {
               actionUrl: `/inventory/products/${item.product_id}`
             });
             
-            log(`[CheckStockLevelsService] ✅ Sent approaching threshold notification for ${item.product_name}`, 'inventory-stock-check');
+            console.log(`[CheckStockLevelsService] ✅ Sent approaching threshold notification for ${item.product_name}`, 'inventory-stock-check');
           } catch (error: any) {
-            log(`[CheckStockLevelsService] ⚠️ Failed to send approaching threshold notification: ${error?.message || String(error)}`, 'inventory-stock-check-error');
+            console.log(`[CheckStockLevelsService] ⚠️ Failed to send approaching threshold notification: ${error?.message || String(error)}`, 'inventory-stock-check-error');
           }
         }
       }
       
       return approachingRows;
     } catch (error: any) {
-      log(`[CheckStockLevelsService] ❌ Error getting approaching threshold products: ${error.message}`, 'inventory-stock-check-error');
+      console.log(`[CheckStockLevelsService] ❌ Error getting approaching threshold products: ${error.message}`, 'inventory-stock-check-error');
       throw new Error(`Failed to get approaching threshold products: ${error.message || String(error)}`);
     }
   }
@@ -435,7 +434,7 @@ export class CheckStockLevelsService {
    */
   async getLowStockProducts(companyId: string, warehouseId?: string, thresholdPercentage: number = 20): Promise<any[]> {
     try {
-      log(`[CheckStockLevelsService] Getting low stock products for company ${companyId} (threshold: ${thresholdPercentage}%)`, 'inventory-stock-check');
+      console.log(`[CheckStockLevelsService] Getting low stock products for company ${companyId} (threshold: ${thresholdPercentage}%)`, 'inventory-stock-check');
       
       let sql = `
         SELECT 
@@ -479,11 +478,11 @@ export class CheckStockLevelsService {
       // Safely access rows with defensive checks
       const lowStockProducts = Array.isArray(result) ? result : ((result as any)?.rows || []);
       
-      log(`[CheckStockLevelsService] ✅ Found ${lowStockProducts.length} products below ${thresholdPercentage}% threshold`, 'inventory-stock-check');
+      console.log(`[CheckStockLevelsService] ✅ Found ${lowStockProducts.length} products below ${thresholdPercentage}% threshold`, 'inventory-stock-check');
       
       return lowStockProducts;
     } catch (error: any) {
-      log(`[CheckStockLevelsService] ❌ Error getting low stock products: ${error.message}`, 'inventory-stock-check-error');
+      console.log(`[CheckStockLevelsService] ❌ Error getting low stock products: ${error.message}`, 'inventory-stock-check-error');
       throw new Error(`Failed to get low stock products: ${error.message || String(error)}`);
     }
   }
@@ -496,7 +495,7 @@ export class CheckStockLevelsService {
    */
   async getNotificationSettings(companyId: string): Promise<NotificationSettings> {
     try {
-      log(`[CheckStockLevelsService] Getting notification settings for company ${companyId}`, 'inventory-settings');
+      console.log(`[CheckStockLevelsService] Getting notification settings for company ${companyId}`, 'inventory-settings');
       
       // Check if settings already exist in memory cache
       if (this.notificationSettingsCache.has(companyId)) {
@@ -533,20 +532,20 @@ export class CheckStockLevelsService {
           // Cache for future use
           this.notificationSettingsCache.set(companyId, validatedSettings);
           
-          log(`[CheckStockLevelsService] ✅ Loaded notification settings for company ${companyId}`, 'inventory-settings');
+          console.log(`[CheckStockLevelsService] ✅ Loaded notification settings for company ${companyId}`, 'inventory-settings');
           return validatedSettings;
         }
       } catch (error: any) {
         // If there's an error querying, log it but don't fail - we'll return defaults
-        log(`[CheckStockLevelsService] ⚠️ Error querying notification settings: ${error.message}`, 'inventory-settings-error');
+        console.log(`[CheckStockLevelsService] ⚠️ Error querying notification settings: ${error.message}`, 'inventory-settings-error');
       }
       
       // Return default settings if none found
       this.notificationSettingsCache.set(companyId, { ...this.DEFAULT_NOTIFICATION_SETTINGS });
-      log(`[CheckStockLevelsService] ℹ️ Using default notification settings for company ${companyId}`, 'inventory-settings');
+      console.log(`[CheckStockLevelsService] ℹ️ Using default notification settings for company ${companyId}`, 'inventory-settings');
       return { ...this.DEFAULT_NOTIFICATION_SETTINGS };
     } catch (error: any) {
-      log(`[CheckStockLevelsService] ❌ Error getting notification settings: ${error.message}`, 'inventory-settings-error');
+      console.log(`[CheckStockLevelsService] ❌ Error getting notification settings: ${error.message}`, 'inventory-settings-error');
       // Return default settings on error
       return { ...this.DEFAULT_NOTIFICATION_SETTINGS };
     }
@@ -561,7 +560,7 @@ export class CheckStockLevelsService {
    */
   async updateNotificationSettings(companyId: string, settings: Partial<NotificationSettings>): Promise<NotificationSettings> {
     try {
-      log(`[CheckStockLevelsService] Updating notification settings for company ${companyId}`, 'inventory-settings');
+      console.log(`[CheckStockLevelsService] Updating notification settings for company ${companyId}`, 'inventory-settings');
       
       // Get current settings (or defaults if none exist)
       const currentSettings = await this.getNotificationSettings(companyId);
@@ -594,10 +593,10 @@ export class CheckStockLevelsService {
       
       try {
         await this.drizzle.executeQuery(upsertQuery);
-        log(`[CheckStockLevelsService] ✅ Saved notification settings for company ${companyId}`, 'inventory-settings');
+        console.log(`[CheckStockLevelsService] ✅ Saved notification settings for company ${companyId}`, 'inventory-settings');
       } catch (error: any) {
         // If there's an error saving, log it but continue (we'll still update in-memory cache)
-        log(`[CheckStockLevelsService] ⚠️ Error saving notification settings: ${error.message}`, 'inventory-settings-error');
+        console.log(`[CheckStockLevelsService] ⚠️ Error saving notification settings: ${error.message}`, 'inventory-settings-error');
       }
       
       // Update cache
@@ -605,7 +604,7 @@ export class CheckStockLevelsService {
       
       return updatedSettings;
     } catch (error: any) {
-      log(`[CheckStockLevelsService] ❌ Error updating notification settings: ${error.message}`, 'inventory-settings-error');
+      console.log(`[CheckStockLevelsService] ❌ Error updating notification settings: ${error.message}`, 'inventory-settings-error');
       throw new Error(`Failed to update notification settings: ${error.message || String(error)}`);
     }
   }

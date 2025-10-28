@@ -16,7 +16,6 @@ import { bankAccounts, bankTransactions, BankAccount, BankTransaction } from '@g
 import { v4 as uuidv4 } from 'uuid';
 import { accountingQueueService } from './accounting-queue.service';
 import { RedisService } from '@common/services/redis.service';
-import { log } from "@api/vite";
 
 /**
  * Bank transaction type enum
@@ -979,14 +978,14 @@ export class BankJournalService {
         const cached = await redisService.getCached<any>(cacheKey);
         
         if (cached) {
-          log(`Bank statement cache hit for ${bankAccountId}`, 'bank-journal-cache');
+          console.log(`Bank statement cache hit for ${bankAccountId}`, 'bank-journal-cache');
           return cached;
         }
       }
     }
     
     // Generate statement
-    log(`Generating bank statement for ${bankAccountId}`, 'bank-journal');
+    console.log(`Generating bank statement for ${bankAccountId}`, 'bank-journal');
     const statement = await this.generateBankStatement(companyId, bankAccountId, startDate, endDate);
     
     // Cache result (30 min TTL)
@@ -995,7 +994,7 @@ export class BankJournalService {
       await redisService.connect();
       if (redisService.isConnected()) {
         await redisService.setCached(cacheKey, statement, 1800);
-        log(`Bank statement cached for ${bankAccountId}`, 'bank-journal-cache');
+        console.log(`Bank statement cached for ${bankAccountId}`, 'bank-journal-cache');
       }
     }
     
@@ -1013,7 +1012,7 @@ export class BankJournalService {
     userId: string
   ): Promise<{ jobId: string; message: string }> {
     try {
-      log(`Queueing async bank reconciliation for ${bankAccountId}`, 'bank-journal-async');
+      console.log(`Queueing async bank reconciliation for ${bankAccountId}`, 'bank-journal-async');
       
       const job = await accountingQueueService.queueAccountReconciliation({
         accountId: bankAccountId,
@@ -1027,7 +1026,7 @@ export class BankJournalService {
         message: `Bank reconciliation queued. Job ID: ${job.id}`
       };
     } catch (error: any) {
-      log(`Error queueing bank reconciliation: ${error.message}`, 'bank-journal-error');
+      console.log(`Error queueing bank reconciliation: ${error.message}`, 'bank-journal-error');
       throw error;
     }
   }
@@ -1052,9 +1051,9 @@ export class BankJournalService {
         : `acc:bank-statement:${companyId}:*`;
       
       await redisService.invalidatePattern(pattern);
-      log(`Invalidated bank statement cache for ${companyId}`, 'bank-journal-cache');
+      console.log(`Invalidated bank statement cache for ${companyId}`, 'bank-journal-cache');
     } catch (error: any) {
-      log(`Error invalidating bank statement cache: ${error.message}`, 'bank-journal-error');
+      console.log(`Error invalidating bank statement cache: ${error.message}`, 'bank-journal-error');
     }
   }
 }

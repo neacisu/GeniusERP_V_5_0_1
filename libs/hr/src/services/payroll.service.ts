@@ -94,7 +94,7 @@ export class PayrollService {
       );
       
       // Audit the payroll calculation
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId,
         action: AuditAction.CREATE,
@@ -210,7 +210,7 @@ export class PayrollService {
       );
       
       // Audit the approval
-      await AuditService.log({
+      await AuditService.console.log({
         userId,
         companyId: payroll[0].company_id,
         action: AuditAction.UPDATE,
