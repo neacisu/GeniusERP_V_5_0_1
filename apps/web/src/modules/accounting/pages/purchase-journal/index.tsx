@@ -204,7 +204,7 @@ export default function PurchaseJournalPage() {
         periodStart: format(reportPeriodStart, 'yyyy-MM-dd'),
         periodEnd: format(reportPeriodEnd, 'yyyy-MM-dd')
       });
-      const response = await apiRequest(`/api/accounting/purchases/journal?${params}`);
+      const response = await apiRequest(`/api/accounting/purchase-journal/journal?${params}`);
       return response.data || response;
     },
     enabled: mainSection === 'journal-report' && !!reportPeriodStart && !!reportPeriodEnd
@@ -212,7 +212,7 @@ export default function PurchaseJournalPage() {
 
   // Fetch purchase invoices
   const { data: invoicesResponse, isLoading: isLoadingInvoices } = useQuery<{ data: PurchaseInvoice[]; total: number; page: number; limit: number }>({
-    queryKey: ['/api/accounting/purchases/invoices', dateRange],
+    queryKey: ['/api/accounting/purchase-journal/invoices', dateRange],
     // This is just for structure - we'll use actual API data in production
     placeholderData: { data: [
       {
@@ -399,7 +399,7 @@ export default function PurchaseJournalPage() {
 
   // Fetch invoice journal entry
   const { data: journalEntry, isLoading: isLoadingJournal } = useQuery<InvoiceJournalEntry[]>({
-    queryKey: ['/api/accounting/purchases/invoices', selectedInvoice?.id, 'journal'],
+    queryKey: ['/api/accounting/purchase-journal/invoices', selectedInvoice?.id, 'journal'],
     enabled: !!selectedInvoice && isJournalDialogOpen && selectedInvoice.posted,
     // This is just for structure - we'll use actual API data in production
     placeholderData: [
@@ -1190,10 +1190,10 @@ export default function PurchaseJournalPage() {
                   <CardDescription>{journalReport.companyName} (CUI: {journalReport.companyFiscalCode})</CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => window.open(`/api/accounting/purchases/journal/export/excel?periodStart=${format(reportPeriodStart, 'yyyy-MM-dd')}&periodEnd=${format(reportPeriodEnd, 'yyyy-MM-dd')}`, '_blank')}>
+                  <Button variant="outline" size="sm" onClick={() => window.open(`/api/accounting/purchase-journal/journal/export/excel?periodStart=${format(reportPeriodStart, 'yyyy-MM-dd')}&periodEnd=${format(reportPeriodEnd, 'yyyy-MM-dd')}`, '_blank')}>
                     <FileSpreadsheet className="h-4 w-4 mr-2" />Excel
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => window.open(`/api/accounting/purchases/journal/export/pdf?periodStart=${format(reportPeriodStart, 'yyyy-MM-dd')}&periodEnd=${format(reportPeriodEnd, 'yyyy-MM-dd')}`, '_blank')}>
+                  <Button variant="outline" size="sm" onClick={() => window.open(`/api/accounting/purchase-journal/journal/export/pdf?periodStart=${format(reportPeriodStart, 'yyyy-MM-dd')}&periodEnd=${format(reportPeriodEnd, 'yyyy-MM-dd')}`, '_blank')}>
                     <FileText className="h-4 w-4 mr-2" />PDF
                   </Button>
                 </div>
@@ -1364,7 +1364,7 @@ export default function PurchaseJournalPage() {
               const grossTotal = netTotal + vatTotal;
               
               // API Call
-              const response = await fetch('/api/accounting/purchases/invoices', {
+              const response = await fetch('/api/accounting/purchase-journal/invoices', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
