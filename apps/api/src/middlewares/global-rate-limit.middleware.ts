@@ -11,34 +11,10 @@ import { createModuleLogger } from '../common/logger/loki-logger';
 
 const logger = createModuleLogger('GlobalRateLimit');
 
-// Redis store setup (same as existing rate-limit.middleware.ts)
-const REDIS_URL = process.env['REDIS_URL'] || process.env['REDIS_HOST'];
-let store: any = undefined;
-
-if (REDIS_URL) {
-  try {
-    const { createClient } = await import('redis');
-    const { RedisStore } = await import('rate-limit-redis');
-    
-    const redisClient = createClient({
-      url: REDIS_URL,
-      socket: {
-        reconnectStrategy: (retries) => Math.min(retries * 50, 500)
-      }
-    });
-    
-    redisClient.on('error', (err) => logger.error('Redis Client Error', err));
-    await redisClient.connect();
-    
-    store = new RedisStore({
-      sendCommand: (...args: string[]) => redisClient.sendCommand(args)
-    });
-    
-    logger.info('✓ Rate limiting using Redis store');
-  } catch (error) {
-    logger.error('Failed to connect to Redis for rate limiting', error);
-  }
-}
+// Redis store setup - folosește același store din rate-limit.middleware.ts
+// Pentru a evita duplicarea conexiunii Redis, folosim memory store
+// Rate limiting specific (auth, accounting) folosește deja Redis
+const store: any = undefined; // Memory store implicit (same as existing implementation)
 
 /**
  * Global API Rate Limiter
