@@ -13,13 +13,14 @@ RUN apk add --no-cache \
     jpeg-dev giflib-dev librsvg-dev \
     busybox-extras
 
-# Instalăm pnpm (cea mai nouă versiune) și instrumente CLI
-RUN npm install -g pnpm@10.19.0 tsx drizzle-kit
+# Activăm pnpm folosind Corepack (built-in în Node.js) - ZERO npm!
+RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
 
 # Copiem fișierele de dependințe pentru caching optim
 COPY package.json pnpm-lock.yaml .npmrc pnpm-workspace.yaml ./
 
 # Instalăm dependințele folosind EXCLUSIV pnpm
+# tsx și drizzle-kit sunt deja în package.json dev dependencies
 RUN pnpm install
 
 # Copiem scriptul de entrypoint

@@ -2,8 +2,8 @@ FROM node:24.9.0-alpine
 
 WORKDIR /app
 
-# Instalăm pnpm (cea mai nouă versiune)
-RUN npm install -g pnpm@10.19.0
+# Activăm pnpm folosind Corepack (built-in în Node.js) - ZERO npm!
+RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
 
 # Copiem fișierele de dependințe pentru caching optim
 COPY package.json pnpm-lock.yaml .npmrc pnpm-workspace.yaml ./
