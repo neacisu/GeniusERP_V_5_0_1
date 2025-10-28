@@ -58,7 +58,7 @@
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "NODE_OPTIONS='--import=tsx/esm' tsx watch --tsconfig=tsconfig.base.json apps/api/src/main.ts",
+        "command": "NODE_OPTIONS='--import=tsx/esm --trace-deprecation' tsx watch --tsconfig=tsconfig.base.json apps/api/src/main.ts",
         "cwd": "{projectRoot}/../.."
       }
     },
