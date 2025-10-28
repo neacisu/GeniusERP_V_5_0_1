@@ -1421,7 +1421,7 @@ export default function SalesJournalPage() {
               const grossTotal = netTotal + vatTotal;
               
               // API Call
-              const response = await fetch('/api/accounting/sales/invoices', {
+              const response = await fetch('/api/accounting/sales-journal/invoices', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
