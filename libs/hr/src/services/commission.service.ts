@@ -217,65 +217,65 @@ export class CommissionService {
   private validateCommissionConfig(type: CommissionType, config: Record<string, any>): void {
     switch (type) {
       case CommissionType.FIXED:
-        if (typeof config.amount !== 'number' || config.amount <= 0) {
+        if (typeof config['amount'] !== 'number' || config['amount'] <= 0) {
           throw new Error('Fixed commission requires a positive amount');
         }
         break;
         
       case CommissionType.PERCENTAGE:
-        if (typeof config.percentage !== 'number' || config.percentage <= 0 || config.percentage > 100) {
+        if (typeof config['percentage'] !== 'number' || config['percentage'] <= 0 || config['percentage'] > 100) {
           throw new Error('Percentage commission requires a positive percentage (0-100)');
         }
         break;
         
       case CommissionType.TIERED_PERCENTAGE:
-        if (!Array.isArray(config.tiers) || config.tiers.length === 0) {
+        if (!Array.isArray(config['tiers']) || config['tiers'].length === 0) {
           throw new Error('Tiered percentage requires at least one tier');
         }
         
-        for (const tier of config.tiers) {
-          if (typeof tier.threshold !== 'number' || typeof tier.percentage !== 'number') {
+        for (const tier of config['tiers']) {
+          if (typeof tier['threshold'] !== 'number' || typeof tier['percentage'] !== 'number') {
             throw new Error('Each tier must have threshold and percentage values');
           }
           
-          if (tier.percentage <= 0 || tier.percentage > 100) {
+          if (tier['percentage'] <= 0 || tier['percentage'] > 100) {
             throw new Error('Tier percentages must be positive (0-100)');
           }
         }
         break;
         
       case CommissionType.PROGRESSIVE:
-        if (!Array.isArray(config.levels) || config.levels.length === 0) {
+        if (!Array.isArray(config['levels']) || config['levels'].length === 0) {
           throw new Error('Progressive commission requires at least one level');
         }
         
-        for (const level of config.levels) {
-          if (typeof level.threshold !== 'number' || typeof level.rate !== 'number') {
+        for (const level of config['levels']) {
+          if (typeof level['threshold'] !== 'number' || typeof level['rate'] !== 'number') {
             throw new Error('Each level must have threshold and rate values');
           }
           
-          if (level.rate <= 0 || level.rate > 100) {
+          if (level['rate'] <= 0 || level['rate'] > 100) {
             throw new Error('Level rates must be positive (0-100)');
           }
         }
         break;
         
       case CommissionType.TEAM:
-        if (typeof config.teamPercentage !== 'number' || config.teamPercentage <= 0 || config.teamPercentage > 100) {
+        if (typeof config['teamPercentage'] !== 'number' || config['teamPercentage'] <= 0 || config['teamPercentage'] > 100) {
           throw new Error('Team commission requires a positive team percentage (0-100)');
         }
         
-        if (!Array.isArray(config.distribution) || config.distribution.length === 0) {
+        if (!Array.isArray(config['distribution']) || config['distribution'].length === 0) {
           throw new Error('Team commission requires a distribution array');
         }
         
         let totalShare = 0;
-        for (const member of config.distribution) {
-          if (typeof member.role !== 'string' || typeof member.share !== 'number') {
+        for (const member of config['distribution']) {
+          if (typeof member['role'] !== 'string' || typeof member['share'] !== 'number') {
             throw new Error('Each team member must have role and share values');
           }
           
-          totalShare += member.share;
+          totalShare += member['share'];
         }
         
         if (Math.abs(totalShare - 100) > 0.01) { // Allow small floating point error
@@ -284,12 +284,12 @@ export class CommissionService {
         break;
         
       case CommissionType.MIXED:
-        if (!Array.isArray(config.components) || config.components.length === 0) {
+        if (!Array.isArray(config['components']) || config['components'].length === 0) {
           throw new Error('Mixed commission requires at least one component');
         }
         
-        for (const component of config.components) {
-          if (!component.type || !component.config) {
+        for (const component of config['components']) {
+          if (!component['type'] || !component['config']) {
             throw new Error('Each component must have type and config');
           }
           
@@ -509,19 +509,19 @@ export class CommissionService {
   ): number {
     switch (type) {
       case CommissionType.FIXED:
-        return config.amount;
+        return config['amount'];
         
       case CommissionType.PERCENTAGE:
-        return (saleAmount * config.percentage) / 100;
+        return (saleAmount * config['percentage']) / 100;
         
       case CommissionType.TIERED_PERCENTAGE:
         // Sort tiers by threshold in descending order
-        const sortedTiers = [...config.tiers].sort((a, b) => b.threshold - a.threshold);
+        const sortedTiers = [...config['tiers']].sort((a, b) => b['threshold'] - a['threshold']);
         
         // Find the applicable tier
         for (const tier of sortedTiers) {
-          if (saleAmount >= tier.threshold) {
-            return (saleAmount * tier.percentage) / 100;
+          if (saleAmount >= tier['threshold']) {
+            return (saleAmount * tier['percentage']) / 100;
           }
         }
         
@@ -530,7 +530,7 @@ export class CommissionService {
         
       case CommissionType.PROGRESSIVE:
         // Sort levels by threshold in ascending order
-        const sortedLevels = [...config.levels].sort((a, b) => a.threshold - b.threshold);
+        const sortedLevels = [...config['levels']].sort((a, b) => a['threshold'] - b['threshold']);
         
         let totalCommission = 0;
         let remainingSale = saleAmount;
@@ -538,11 +538,11 @@ export class CommissionService {
         
         // Calculate commission for each level
         for (const level of sortedLevels) {
-          if (saleAmount >= level.threshold) {
-            const levelAmount = Math.min(remainingSale, level.threshold - prevThreshold);
-            totalCommission += (levelAmount * level.rate) / 100;
+          if (saleAmount >= level['threshold']) {
+            const levelAmount = Math.min(remainingSale, level['threshold'] - prevThreshold);
+            totalCommission += (levelAmount * level['rate']) / 100;
             remainingSale -= levelAmount;
-            prevThreshold = level.threshold;
+            prevThreshold = level['threshold'];
           } else {
             break;
           }
@@ -551,19 +551,19 @@ export class CommissionService {
         // Add commission for amount above the highest tier
         if (remainingSale > 0 && sortedLevels.length > 0) {
           const highestLevel = sortedLevels[sortedLevels.length - 1];
-          totalCommission += (remainingSale * highestLevel.rate) / 100;
+          totalCommission += (remainingSale * highestLevel['rate']) / 100;
         }
         
         return totalCommission;
         
       case CommissionType.TEAM:
-        const teamCommission = (saleAmount * config.teamPercentage) / 100;
+        const teamCommission = (saleAmount * config['teamPercentage']) / 100;
         
         // If individual role is specified in metadata, calculate their share
-        if (metadata.role) {
-          const roleDist = config.distribution.find((d: any) => d.role === metadata.role);
+        if (metadata['role']) {
+          const roleDist = config['distribution'].find((d: any) => d['role'] === metadata['role']);
           if (roleDist) {
-            return (teamCommission * roleDist.share) / 100;
+            return (teamCommission * roleDist['share']) / 100;
           }
         }
         
@@ -573,10 +573,10 @@ export class CommissionService {
       case CommissionType.MIXED:
         let mixedCommission = 0;
         
-        for (const component of config.components) {
+        for (const component of config['components']) {
           mixedCommission += this.calculateCommissionAmount(
-            component.type,
-            component.config,
+            component['type'],
+            component['config'],
             saleAmount,
             metadata
           );
