@@ -520,7 +520,7 @@ const CustomerDetailPage: React.FC = () => {
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-gray-500">Sursă Lead</p>
-                      <p>{(customer.customFields?.source as string) || 'Nedefinit'}</p>
+                      <p>{(customer.customFields?.['source'] as string) || 'Nedefinit'}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-gray-500">Cifră de afaceri anuală</p>
@@ -528,7 +528,7 @@ const CustomerDetailPage: React.FC = () => {
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-gray-500">Număr angajați</p>
-                      <p>{(customer.customFields?.employeeCount as number) || 'Nedefinit'}</p>
+                      <p>{(customer.customFields?.['employeeCount'] as number) || 'Nedefinit'}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-gray-500">Tip relație comercială</p>

@@ -79,7 +79,7 @@ const CustomersPage: React.FC = () => {
   const segments = [...new Set(companiesData
     .map(company => {
       // Using the customFields.segment or the regular segment field
-      const segment = company.customFields?.segment || company.segment;
+      const segment = company.customFields?.['segment'] || company.segment;
       return segment;
     })
     .filter(Boolean)
@@ -88,11 +88,11 @@ const CustomersPage: React.FC = () => {
   // Filter companies based on in-memory filters
   const filteredCustomers = companiesData.filter(company => {
     // Type filter - check in customFields.type or the type field
-    const companyType = company.customFields?.type || company.type || '';
+    const companyType = company.customFields?.['type'] || company.type || '';
     const matchesType = typeFilter === 'all' || companyType === typeFilter;
     
     // Segment filter - check in customFields.segment or the segment field
-    const companySegment = company.customFields?.segment || company.segment || '';
+    const companySegment = company.customFields?.['segment'] || company.segment || '';
     const matchesSegment = segmentFilter === 'all' || companySegment === segmentFilter;
     
     // Industry filter

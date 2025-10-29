@@ -51,17 +51,17 @@ function TutorialsPage() {
     // Aplicăm filtrare suplimentară
     if (filter === 'beginner') {
       filteredTutorials = filteredTutorials.filter(tutorial => 
-        tutorial.metadata?.level === 'beginner' || tutorial.metadata?.level === 'începător'
+        tutorial.metadata?.['level'] === 'beginner' || tutorial.metadata?.['level'] === 'începător'
       );
     } else if (filter === 'advanced') {
       filteredTutorials = filteredTutorials.filter(tutorial => 
-        tutorial.metadata?.level === 'advanced' || tutorial.metadata?.level === 'avansat'
+        tutorial.metadata?.['level'] === 'advanced' || tutorial.metadata?.['level'] === 'avansat'
       );
     }
     
     // Sortare în funcție de filtru
     if (filter === 'popular') {
-      filteredTutorials.sort((a, b) => ((b.metadata?.views || 0) - (a.metadata?.views || 0)));
+      filteredTutorials.sort((a, b) => ((b.metadata?.['views'] || 0) - (a.metadata?.['views'] || 0)));
     } else if (filter === 'recent') {
       filteredTutorials.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
@@ -201,7 +201,7 @@ function TutorialsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-start justify-between">
                     <span>{tutorial.title}</span>
-                    {renderDifficultyBadge(tutorial.metadata?.level)}
+                    {renderDifficultyBadge(tutorial.metadata?.['level'])}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -210,29 +210,29 @@ function TutorialsPage() {
                   </div>
                   
                   <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-2 mb-2">
-                    {tutorial.metadata?.duration && (
+                    {tutorial.metadata?.['duration'] && (
                       <div className="flex items-center">
                         <Clock className="h-4 w-4 mr-1" />
-                        <span>{tutorial.metadata.duration} min</span>
+                        <span>{tutorial.metadata['duration']} min</span>
                       </div>
                     )}
-                    {tutorial.metadata?.views !== undefined && (
+                    {tutorial.metadata?.['views'] !== undefined && (
                       <div className="flex items-center">
                         <Eye className="h-4 w-4 mr-1" />
-                        <span>{tutorial.metadata.views} vizualizări</span>
+                        <span>{tutorial.metadata['views']} vizualizări</span>
                       </div>
                     )}
-                    {tutorial.metadata?.rating && (
+                    {tutorial.metadata?.['rating'] && (
                       <div className="flex items-center">
                         <Star className="h-4 w-4 mr-1 text-yellow-500" />
-                        <span>{tutorial.metadata.rating}/5</span>
+                        <span>{tutorial.metadata['rating']}/5</span>
                       </div>
                     )}
                   </div>
                   
                   <div className="flex gap-2 mt-2">
-                    {tutorial.metadata?.tags && Array.isArray(tutorial.metadata.tags) && (
-                      tutorial.metadata.tags.map((tag: string, idx: number) => (
+                    {tutorial.metadata?.['tags'] && Array.isArray(tutorial.metadata['tags']) && (
+                      tutorial.metadata['tags'].map((tag: string, idx: number) => (
                         <Badge key={idx} variant="secondary">{tag}</Badge>
                       ))
                     )}

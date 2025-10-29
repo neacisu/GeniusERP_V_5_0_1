@@ -41,17 +41,17 @@ function ResourcesPage() {
     // Aplicăm filtrare suplimentară
     if (filter === 'documents') {
       filteredResources = filteredResources.filter(resource => 
-        resource.metadata?.type === 'document' || resource.metadata?.type === 'file'
+        resource.metadata?.['type'] === 'document' || resource.metadata?.['type'] === 'file'
       );
     } else if (filter === 'links') {
       filteredResources = filteredResources.filter(resource => 
-        resource.metadata?.type === 'link' || resource.metadata?.type === 'url'
+        resource.metadata?.['type'] === 'link' || resource.metadata?.['type'] === 'url'
       );
     }
     
     // Sortare în funcție de filtru
     if (filter === 'popular') {
-      filteredResources.sort((a, b) => ((b.metadata?.downloads || 0) - (a.metadata?.downloads || 0)));
+      filteredResources.sort((a, b) => ((b.metadata?.['downloads'] || 0) - (a.metadata?.['downloads'] || 0)));
     } else if (filter === 'recent') {
       filteredResources.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
