@@ -117,6 +117,82 @@ export class MessageDrizzleService extends BaseDrizzleService {
       throw error;
     }
   }
+
+  /**
+   * Get all messages for a company with filtering
+   * 
+   * @param companyId Company ID
+   * @param options Query options (limit, offset, sort, filter, search)
+   * @returns List of messages with pagination and stats
+   */
+  async getAllMessages(companyId: string, options: {
+    limit?: number;
+    offset?: number;
+    sortOrder?: 'asc' | 'desc';
+    filter?: 'all' | 'unread' | 'starred';
+    search?: string;
+  } = {}): Promise<{
+    messages: CollaborationMessage[];
+    pagination: { total: number; limit: number; offset: number };
+    stats: { total: number; unread: number; starred: number };
+  }> {
+    const context = 'getAllMessages';
+    try {
+      const {
+        limit = 50,
+        offset = 0,
+        sortOrder = 'desc' // Default to newest first for all messages view
+      } = options;
+      
+      logger.debug(`[${context}] Fetching all messages for company ${companyId} with options: ${JSON.stringify(options)}`);
+      
+      return await this.query(async (db) => {
+        // Build the where condition - for now, just company_id
+        // TODO: Add filter for unread/starred when those fields are added
+        const whereCondition = eq(collaborationMessages.companyId, companyId);
+        
+        // Execute the query with the appropriate ordering
+        const messagesResult = sortOrder === 'asc'
+          ? await db.select().from(collaborationMessages)
+              .where(whereCondition)
+              .orderBy(collaborationMessages.createdAt)
+              .limit(limit)
+              .offset(offset)
+          : await db.select().from(collaborationMessages)
+              .where(whereCondition)
+              .orderBy(desc(collaborationMessages.createdAt))
+              .limit(limit)
+              .offset(offset);
+        
+        // Count total matching records
+        const totalResult = await db.select({
+            count: sql`count(*)`
+          })
+          .from(collaborationMessages)
+          .where(whereCondition);
+        
+        const total = Number(totalResult[0]?.count || 0);
+        
+        // TODO: Calculate unread/starred counts when those fields are added
+        const stats = {
+          total,
+          unread: 0, // Placeholder
+          starred: 0 // Placeholder
+        };
+        
+        logger.info(`[${context}] Found ${messagesResult.length} messages (total: ${total}) for company ${companyId}`);
+        
+        return {
+          messages: messagesResult,
+          pagination: { total, limit, offset },
+          stats
+        };
+      });
+    } catch (error) {
+      logger.error(`[${context}] Error fetching all messages for company ${companyId}: ${error instanceof Error ? error.message : String(error)}`);
+      throw error;
+    }
+  }
   
   /**
    * Get all messages for a thread

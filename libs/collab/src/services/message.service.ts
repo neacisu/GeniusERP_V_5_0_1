@@ -96,6 +96,75 @@ export class MessageService {
   }
   
   /**
+   * Get all messages for a company with filtering
+   * 
+   * @param companyId Company ID
+   * @param options Query options (limit, offset, sort, filter, search)
+   * @returns List of messages with pagination and stats
+   */
+  async getAllMessages(companyId: string, options: {
+    limit?: number;
+    offset?: number;
+    sortOrder?: 'asc' | 'desc';
+    filter?: 'all' | 'unread' | 'starred';
+    search?: string;
+  } = {}): Promise<{ 
+    messages: CollaborationMessage[]; 
+    pagination: { total: number; limit: number; offset: number };
+    stats: { total: number; unread: number; starred: number };
+  }> {
+    try {
+      const {
+        limit = 50,
+        offset = 0,
+        sortOrder = 'desc' // Default to newest first for all messages view
+      } = options;
+      
+      // Build the where condition - for now, just company_id
+      // TODO: Add filter for unread/starred when those fields are added
+      const whereCondition = eq(collaborationMessages.companyId, companyId);
+      
+      // Execute the query with the appropriate ordering
+      const messagesResult = sortOrder === 'asc' 
+        ? await this.db.select().from(collaborationMessages)
+            .where(whereCondition)
+            .orderBy(collaborationMessages.createdAt)
+            .limit(limit)
+            .offset(offset)
+        : await this.db.select().from(collaborationMessages)
+            .where(whereCondition)
+            .orderBy(desc(collaborationMessages.createdAt))
+            .limit(limit)
+            .offset(offset);
+      
+      // Count total matching records
+      const totalResult = await this.db.select({ 
+          count: sql`count(*)` 
+        })
+        .from(collaborationMessages)
+        .where(whereCondition);
+      
+      const total = Number(totalResult[0]?.count || 0);
+      
+      // TODO: Calculate unread/starred counts when those fields are added
+      const stats = {
+        total,
+        unread: 0, // Placeholder
+        starred: 0 // Placeholder
+      };
+      
+      return { 
+        messages: messagesResult,
+        pagination: { total, limit, offset },
+        stats
+      };
+    } catch (error) {
+      logger.error(`Error fetching all messages for company ${companyId}: ${error instanceof Error ? error.message : String(error)}`);
+      throw error;
+    }
+  }
+
+  /**
    * Get all messages for a thread
    * 
    * @param threadId Thread ID

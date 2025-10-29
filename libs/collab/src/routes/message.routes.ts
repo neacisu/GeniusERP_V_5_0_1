@@ -24,31 +24,52 @@ const BASE_PATH = '/api/collaboration/messages';
  */
 export function registerMessageRoutes(app: Express, messageService: MessageService): void {
   /**
-   * Get messages for a thread
+   * Get messages (all messages or for a specific thread)
    * 
    * @route GET /api/collaboration/messages
+   * @queryParam threadId - (optional) Filter messages by thread ID
+   * @queryParam filter - (optional) Filter: 'all' | 'unread' | 'starred'
+   * @queryParam search - (optional) Search in message content
+   * @queryParam limit - (optional) Number of results per page (default: 50)
+   * @queryParam offset - (optional) Offset for pagination (default: 0)
+   * @queryParam sortOrder - (optional) Sort order: 'asc' | 'desc'
    */
   app.get(BASE_PATH, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
-      // const companyId = req.user.companyId;  // Unused variable
-      const threadId = req.query['threadId'] as string;
       
-      if (!threadId) {
-        return return res.status(400).json({ message: 'threadId query parameter is required' });
-      }
+      const companyId = req.user.companyId;
+      const threadId = req.query['threadId'] as string | undefined;
       
       // Extract query parameters
-      // const limit = req.query['limit'] ? parseInt(req.query['limit'] as string) : 50;  // Unused variable
-      // const offset = req.query['offset'] ? parseInt(req.query['offset'] as string) : 0;  // Unused variable
-      const sortOrder = (req.query['sortOrder'] as 'asc' | 'desc') || 'asc';
+      const limit = req.query['limit'] ? parseInt(req.query['limit'] as string) : 50;
+      const offset = req.query['offset'] ? parseInt(req.query['offset'] as string) : 0;
+      const sortOrder = (req.query['sortOrder'] as 'asc' | 'desc') || (threadId ? 'asc' : 'desc');
       
-      const result = await messageService.getMessagesByThreadId(threadId, companyId, {
+      // If threadId is provided, get messages for that thread
+      if (threadId) {
+        const result = await messageService.getMessagesByThreadId(threadId, companyId, {
+          limit,
+          offset,
+          sortOrder
+        });
+        
+        return res.status(200).json(result);
+      }
+      
+      // Otherwise, get all messages with filtering
+      const filter = (req.query['filter'] as 'all' | 'unread' | 'starred') || 'all';
+      const search = req.query['search'] as string | undefined;
+      const refresh = req.query['refresh'] as string | undefined; // Ignorat deocamdată, pentru cache busting
+      
+      const result = await messageService.getAllMessages(companyId, {
         limit,
         offset,
-        sortOrder
+        sortOrder,
+        filter,
+        search
       });
       
       return res.status(200).json(result);
@@ -66,10 +87,10 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
   app.get(`${BASE_PATH}/:id/replies`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       const { id } = req.params;
-      // const companyId = req.user.companyId;  // Unused variable
+      const companyId = req.user.companyId;
       
       const replies = await messageService.getReplies(id, companyId);
       
@@ -88,15 +109,15 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
   app.get(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       const { id } = req.params;
-      // const companyId = req.user.companyId;  // Unused variable
+      const companyId = req.user.companyId;
       
       const message = await messageService.getMessageById(id, companyId);
       
       if (!message) {
-        return return res.status(404).json({ message: 'Message not found' });
+        return res.status(404).json({ message: 'Message not found' });
       }
       
       return res.status(200).json(message);
@@ -114,10 +135,10 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
   app.post(BASE_PATH, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
-      // const userId = req.user.id;  // Unused variable
-      // const companyId = req.user.companyId;  // Unused variable
+      const userId = req.user.id;
+      const companyId = req.user.companyId;
       
       // Validate request body
       const messageSchema = insertCollaborationMessageSchema.extend({
@@ -152,11 +173,11 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
   app.patch(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       const { id } = req.params;
-      // const userId = req.user.id;  // Unused variable
-      // const companyId = req.user.companyId;  // Unused variable
+      const userId = req.user.id;
+      const companyId = req.user.companyId;
       
       // Validate request body (partial updates allowed)
       const updateMessageSchema = insertCollaborationMessageSchema.partial();
@@ -183,15 +204,15 @@ export function registerMessageRoutes(app: Express, messageService: MessageServi
   app.delete(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       const { id } = req.params;
-      // const companyId = req.user.companyId;  // Unused variable
+      const companyId = req.user.companyId;
       
       const success = await messageService.deleteMessage(id, companyId);
       
       if (!success) {
-        return return res.status(404).json({ message: 'Message not found' });
+        return res.status(404).json({ message: 'Message not found' });
       }
       
       return res.status(204).send();

@@ -23,11 +23,47 @@ export class MessageController {
    * @param router Express router
    */
   registerRoutes(router: Router): void {
+    // GET all messages (must be before /:id to avoid route conflict)
+    router.get('/', AuthGuard.protect(JwtAuthMode.REQUIRED), this.getAllMessages.bind(this));
     router.get('/thread/:threadId', AuthGuard.protect(JwtAuthMode.REQUIRED), this.getMessagesByThread.bind(this));
     router.get('/:id', AuthGuard.protect(JwtAuthMode.REQUIRED), this.getMessageById.bind(this));
     router.post('/', AuthGuard.protect(JwtAuthMode.REQUIRED), this.createMessage.bind(this));
     router.patch('/:id', AuthGuard.protect(JwtAuthMode.REQUIRED), this.updateMessage.bind(this));
     router.delete('/:id', AuthGuard.protect(JwtAuthMode.REQUIRED), this.deleteMessage.bind(this));
+  }
+
+  /**
+   * Get all messages with filtering and pagination
+   */
+  async getAllMessages(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.user || !req.user.companyId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+      
+      const companyId = req.user.companyId;
+      
+      // Parse query parameters
+      const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 50;
+      const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;
+      const sortOrder = (req.query['sortOrder'] as 'asc' | 'desc') || 'desc';
+      const filter = (req.query['filter'] as 'all' | 'unread' | 'starred') || 'all';
+      const search = req.query['search'] as string | undefined;
+      
+      const result = await this.messageService.getAllMessages(companyId, {
+        limit,
+        offset,
+        sortOrder,
+        filter,
+        search
+      });
+      
+      res.status(200).json(result);
+    } catch (error) {
+      logger.error(`Error in GET /api/collaboration/messages: ${error instanceof Error ? error.message : String(error)}`);
+      res.status(500).json({ message: 'Internal server error' });
+    }
   }
 
   /**
