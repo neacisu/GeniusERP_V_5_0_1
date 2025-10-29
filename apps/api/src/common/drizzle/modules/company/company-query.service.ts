@@ -255,16 +255,16 @@ export class CompanyQueryService extends BaseDrizzleService {
       logger.debug(`[${context}] Getting franchises${parentId ? ` for parent company ${parentId}` : ''}`);
       
       return await this.query(async (db) => {
-        // Build query with conditions
+        // Build query with conditions using proper Drizzle helpers
         const conditions: SQL<unknown>[] = [
-          sql`deleted_at IS NULL`,
-          sql`type = 'franchise'`
+          isNull(companies.deletedAt),
+          eq(companies.type, 'franchise')
         ];
         
         // Add parent ID condition if provided
         if (parentId) {
           logger.debug(`[${context}] Adding parent ID filter: ${parentId}`);
-          conditions.push(sql`parent_id = ${parentId}`);
+          conditions.push(eq(companies.parentId, parentId));
         }
         
         const result = await db
@@ -272,8 +272,8 @@ export class CompanyQueryService extends BaseDrizzleService {
             id: companies.id,
             name: companies.name,
             fiscalCode: companies.fiscalCode,
-            parentId: sql<string>`parent_id`,
-            type: sql<string>`type`
+            parentId: companies.parentId,
+            type: companies.type
           })
           .from(companies)
           .where(and(...conditions));

@@ -230,17 +230,21 @@ export const rolePermissionRelations = relations(rolePermissions, ({ one }) => (
 export const companies = pgTable("companies", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
+  type: text("type").notNull().default("headquarters"), // headquarters | subsidiary | franchise
+  parentId: uuid("parent_id").references((): any => companies.id),
   fiscalCode: text("fiscal_code").notNull().unique(),
   registrationNumber: text("registration_number").notNull(),
   address: text("address").notNull(),
   city: text("city").notNull(),
   county: text("county").notNull(),
   country: text("country").notNull().default("Romania"),
+  postalCode: varchar("postal_code", { length: 20 }),
   phone: text("phone"),
   email: text("email"),
   website: varchar("website", { length: 255 }),
   bankAccount: text("bank_account"),
   bankName: text("bank_name"),
+  socialCapital: decimal("social_capital", { precision: 15, scale: 2 }),
   vatPayer: boolean("vat_payer").default(true),
   vatRate: integer("vat_rate").default(19),
   // TVA la încasare (Cash VAT) - applicable pentru firme înscrise în registrul special
@@ -248,6 +252,9 @@ export const companies = pgTable("companies", {
   logoUrl: text("logo_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdBy: uuid("created_by"),
+  updatedBy: uuid("updated_by"),
+  deletedAt: timestamp("deleted_at"),
 });
 
 export const insertCompanySchema = createInsertSchema(companies); // Fixed: removed omit() for drizzle-zod compatibility;

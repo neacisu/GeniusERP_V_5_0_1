@@ -30,6 +30,9 @@ const PUBLIC_ENDPOINTS = [
   // COR (Romanian Occupation Classification) - public data
   '/api/hr/cor',
   
+  // Company endpoints - franchises list is public
+  '/api/companies/franchises',
+  
   // Static assets
   '/templates',
   '/tserrors',

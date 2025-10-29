@@ -45,7 +45,7 @@ import {
   validateInvoiceRouter,
   devalidateInvoiceRouter,
   customerRoutes,
-  invoiceNumberingRoutes
+  createInvoiceNumberingRoutes
 } from '../../../../libs/invoicing/src/index';
 
 // Import other module routes - these need to be checked
@@ -53,7 +53,10 @@ import { setupInventoryRoutes } from '../../../../libs/inventory/src/index';
 import { setupUserRoutes } from '../../../../libs/users/src/index';
 import { setupCrmRoutes } from '../../../../libs/crm/src/index';
 import { setupAnalyticsRoutes, setupPredictiveAnalyticsRoutes } from '../../../../libs/analytics/src/index';
-import { setupCompanyRoutes } from '../../../../libs/company/src/index';
+import { createCompanyRouter } from '../../../../libs/company/src/index';
+import { CompanyController } from '../../../../libs/company/src/controllers/company.controller';
+import { CompanyService } from '../../../../libs/company/src/services/company.service';
+import { DrizzleService } from '@common/drizzle/drizzle.service';
 
 export async function initializeModules(app: Express): Promise<void> {
   console.log('Initializing modules from NX libraries...');
@@ -98,8 +101,8 @@ export async function initializeModules(app: Express): Promise<void> {
   app.use('/api/invoices/validate', validateInvoiceRouter);
   app.use('/api/invoices/devalidate', devalidateInvoiceRouter);
   app.use('/api/invoices/customers', customerRoutes);
-  app.use('/api/invoices/numbering', invoiceNumberingRoutes);
-  console.log('✅ Invoicing routes registered at /api/invoices');
+  app.use('/api/invoicing/numbering-settings', createInvoiceNumberingRoutes());
+  console.log('✅ Invoicing routes registered at /api/invoices and /api/invoicing');
   
   // ===== USER ROUTES =====
   app.use('/api/users', setupUserRoutes());
@@ -124,7 +127,10 @@ export async function initializeModules(app: Express): Promise<void> {
   console.log('✅ AI routes registered at /api/ai');
   
   // ===== COMPANY ROUTES =====
-  app.use('/api/companies', setupCompanyRoutes());
+  const drizzleService = new DrizzleService();
+  const companyService = new CompanyService(drizzleService);
+  const companyController = new CompanyController(companyService);
+  app.use('/api/companies', createCompanyRouter(companyController));
   console.log('✅ Company routes registered at /api/companies');
   
   // ===== INTEGRATIONS ROUTES =====

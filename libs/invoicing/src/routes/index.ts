@@ -9,4 +9,4 @@ export { default as createInvoiceRouter } from './create-invoice.route';
 export { default as validateInvoiceRouter } from './validate-invoice.route';
 export { default as devalidateInvoiceRouter } from './devalidate-invoice.route';
 export { customerRoutes } from './customer.routes';
-export { invoiceNumberingRoutes } from './invoice-numbering.routes';
+export { createInvoiceNumberingRoutes } from './invoice-numbering.routes';

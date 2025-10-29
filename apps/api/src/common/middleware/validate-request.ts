@@ -19,7 +19,7 @@ interface ValidationSchemas {
  * @returns Express middleware function
  */
 export function validateRequest(schemas: ValidationSchemas) {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       // Validate request body if schema provided
       if (schemas.body) {
@@ -27,26 +27,31 @@ export function validateRequest(schemas: ValidationSchemas) {
       }
       
       // Validate query parameters if schema provided
+      // NOTE: req.query is a getter-only property in Express, cannot be reassigned
+      // We validate but don't modify it - if validation passes, the original query is safe to use
       if (schemas.query) {
-        req.query = await schemas.query.parseAsync(req.query) as any;
+        await schemas.query.parseAsync(req.query);
       }
 
       // Validate URL parameters if schema provided
+      // NOTE: req.params is also a getter-only property in Express
+      // We validate but don't modify it
       if (schemas.params) {
-        req.params = await schemas.params.parseAsync(req.params) as any;
+        await schemas.params.parseAsync(req.params);
       }
       
       next();
     } catch (error) {
       if (error instanceof ZodError) {
         // Format Zod validation errors
-        return res.status(400).json({
+        res.status(400).json({
           message: 'Validation error',
           errors: error.issues.map((err: any) => ({
             path: err.path.join('.'),
             message: err.message
           }))
         });
+        return;
       }
       
       // Pass other errors to error handler

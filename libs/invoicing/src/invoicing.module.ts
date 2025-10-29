@@ -8,7 +8,7 @@ import { Router } from 'express';
 import { createModuleLogger } from "@common/logger/loki-logger";
 
 const logger = createModuleLogger('InvoicingModule');
-import { InvoiceNumberingRoutes } from './routes/invoice-numbering.routes';
+import { createInvoiceNumberingRoutes } from './routes/invoice-numbering.routes';
 
 export class InvoicingModule {
   private router: Router;
@@ -20,8 +20,7 @@ export class InvoicingModule {
 
   private setupRoutes(): void {
     // Invoice Numbering Routes
-    const invoiceNumberingRoutes = new InvoiceNumberingRoutes();
-    this.router.use('/numbering-settings', invoiceNumberingRoutes.getRouter());
+    this.router.use('/numbering-settings', createInvoiceNumberingRoutes());
 
     // Log the setup
     logger.info('[InvoicingModule] Invoice numbering routes registered at /api/invoicing/numbering-settings');

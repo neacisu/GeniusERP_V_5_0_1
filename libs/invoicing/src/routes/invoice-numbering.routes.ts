@@ -76,5 +76,8 @@ export class InvoiceNumberingRoutes {
   }
 }
 
-// Export instance for easy import
-export const invoiceNumberingRoutes = new InvoiceNumberingRoutes().getRouter();
+// Export a factory function instead of singleton instance
+export const createInvoiceNumberingRoutes = (): Router => {
+  const routes = new InvoiceNumberingRoutes();
+  return routes.getRouter();
+};

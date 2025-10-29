@@ -5,16 +5,17 @@
  * Prevents cross-company data access vulnerabilities
  */
 
-import { Response, NextFunction } from 'express';
-import { AuthenticatedRequest } from '../../../types/express';
+import { Request, Response, NextFunction } from 'express';
 import { createModuleLogger } from "@common/logger/loki-logger";
+import { JwtPayload } from '@geniuserp/shared';
 
 const logger = createModuleLogger('CompanyAccessMiddleware');
 
 /**
- * Extended authenticated request with company filter
+ * Authenticated request interface
  */
-interface CompanyFilteredRequest extends AuthenticatedRequest {
+interface AuthenticatedRequest extends Request {
+  user?: JwtPayload;
   companyId?: string;
 }
 
@@ -66,8 +67,8 @@ export const validateCompanyAccess = (options: {
       // Check if user has admin privileges for cross-company access
       if (allowAdminCrossAccess) {
         const userRoles = user.roles || [user.role];
-        const isAdmin = userRoles.some((role: string) => 
-          ['admin', 'ADMIN', 'system_admin', 'SYSTEM_ADMIN'].includes(role)
+        const isAdmin = userRoles.some((role) => 
+          role && ['admin', 'ADMIN', 'system_admin', 'SYSTEM_ADMIN'].includes(role)
         );
         
         if (isAdmin) {
@@ -100,17 +101,19 @@ export const validateCompanyAccess = (options: {
  * Automatically adds the company ID to the request body if not present
  */
 export const ensureCompanyId = (bodyField: string = 'companyId') => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     try {
       const user = req.user;
       
       if (!user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const userCompanyId = user.companyId;
       if (!userCompanyId) {
-        return res.status(403).json({ error: 'User not associated with any company' });
+        res.status(403).json({ error: 'User not associated with any company' });
+        return;
       }
 
       // Add company ID to request body if not present
@@ -122,7 +125,7 @@ export const ensureCompanyId = (bodyField: string = 'companyId') => {
       next();
     } catch (error) {
       logger.error('Error in ensureCompanyId middleware', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Internal server error' });
     }
   };
 };
@@ -131,31 +134,32 @@ export const ensureCompanyId = (bodyField: string = 'companyId') => {
  * Middleware to filter query results by company ID
  * Adds company filter to database queries
  */
-export const addCompanyFilter = (req: CompanyFilteredRequest, res: Response, next: NextFunction) => {
+export const addCompanyFilter = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
   try {
     const user = req.user;
     
     if (!user) {
-      return res.status(401).json({ error: 'Authentication required' });
+      res.status(401).json({ error: 'Authentication required' });
+      return;
     }
 
     const userCompanyId = user.companyId;
     if (!userCompanyId) {
-      return res.status(403).json({ error: 'User not associated with any company' });
-    }
-
-    // Add company filter to query parameters
-    if (!req.query.companyId) {
-      req.query.companyId = userCompanyId;
+      res.status(403).json({ error: 'User not associated with any company' });
+      return;
     }
 
     // Store company ID in request for easy access by controllers
+    // DO NOT modify req.query directly - it's a getter-only property
     req.companyId = userCompanyId;
+
+    // If needed in query params, controllers should read from req.companyId
+    logger.debug(`Company filter applied: ${userCompanyId}`);
 
     next();
   } catch (error) {
     logger.error('Error in addCompanyFilter middleware', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 

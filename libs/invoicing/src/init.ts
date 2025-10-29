@@ -5,19 +5,18 @@
  * routes, and controllers needed for invoice management.
  */
 
-import { Express, Router } from 'express';
+import { Express, Router, Request, Response } from 'express';
 import { InvoiceService } from './services/invoice.service';
 import { CreateInvoiceService } from './services/create-invoice.service';
-import { ExchangeRateService } from '../integrations/services/exchange-rate.service';
+import { ExchangeRateService } from '../../integrations/src/services/exchange-rate.service';
 import { router as invoiceRoutes } from './routes/invoice.routes';
 import validateInvoiceRoute from './routes/validate-invoice.route';
 import devalidateInvoiceRoute from './routes/devalidate-invoice.route';
-import { invoiceNumberingRoutes } from './routes/invoice-numbering.routes';
+import { createInvoiceNumberingRoutes } from './routes/invoice-numbering.routes';
 import { customerRoutes } from './routes/customer.routes';
 import { ValidateInvoiceService } from './services/validate-invoice.service';
 import { DevalidateInvoiceService } from './services/devalidate-invoice.service';
 import { InvoiceNumberingService } from './services/invoice-numbering.service';
-import { Router, Request, Response } from 'express';
 import { AuthGuard } from '../../auth/src/guards/auth.guard';
 import { JwtAuthMode } from '../../auth/src/constants/auth-mode.enum';
 
@@ -58,7 +57,7 @@ export function initInvoicingModule(app: Express) {
   router.use(
     '/invoice-numbering',
     AuthGuard.protect(JwtAuthMode.REQUIRED),
-    invoiceNumberingRoutes
+    createInvoiceNumberingRoutes()
   );
   
   // Register customer routes for invoicing
@@ -90,7 +89,7 @@ export const InvoicingModule = {
     invoiceRoutes,
     validateInvoiceRoute,
     devalidateInvoiceRoute,
-    invoiceNumberingRoutes,
+    createInvoiceNumberingRoutes(),
     customerRoutes
   ]
 };
