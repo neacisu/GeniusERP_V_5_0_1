@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Invoice Numbering Schema
  * 
  * Defines the database schema for storing invoice numbering settings and sequences
@@ -123,6 +127,6 @@ export const updateInvoiceNumberingSettingsSchema = createInsertSchema(invoice_n
 /**
  * Types
  */
-export type InvoiceNumberingSetting = typeof invoiceNumberingSettings.$inferSelect;
+export type InvoiceNumberingSetting = typeof invoice_numbering_settings.$inferSelect;
 export type InsertInvoiceNumberingSetting = z.infer<typeof insertInvoiceNumberingSettingsSchema>;
 export type UpdateInvoiceNumberingSetting = z.infer<typeof updateInvoiceNumberingSettingsSchema>;

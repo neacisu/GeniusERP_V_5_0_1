@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Inventory Schema
  * 
  * Core inventory management tables for product catalog, stock tracking, and movements.
@@ -27,6 +31,10 @@ import {
   unique
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
+
+// Forward references (resolved when schemas combined)
+declare const companies: any;
+declare const users: any;
 
 // ============================================================================
 // INVENTORY TABLES

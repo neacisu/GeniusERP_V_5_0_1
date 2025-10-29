@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Purchasing Schema
  * 
  * Complete purchasing and goods receipt management.
@@ -28,6 +32,13 @@ import {
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 import { po_status, nir_status, gestiune_type } from './enums';
+
+// Forward references (resolved when schemas combined)
+declare const companies: any;
+declare const users: any;
+declare const crm_customers: any;
+declare const inventory_warehouses: any;
+declare const inventory_products: any;
 
 // ============================================================================
 // PURCHASING TABLES

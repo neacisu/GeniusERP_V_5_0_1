@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Financial Data Schema
  * 
  * Stochează datele financiare obținute de la ANAF pentru fiecare companie și an fiscal
@@ -80,24 +84,24 @@ export const financial_data_jobs = pgTable('financial_data_jobs', {
 });
 
 // Type-uri pentru Drizzle ORM
-export type FinancialData = typeof financialData.$inferSelect;
-export type FinancialDataInsert = typeof financialData.$inferInsert;
-export type FinancialDataError = typeof financialDataErrors.$inferSelect;
-export type FinancialDataErrorInsert = typeof financialDataErrors.$inferInsert;
-export type FinancialDataJob = typeof financialDataJobs.$inferSelect;
-export type FinancialDataJobInsert = typeof financialDataJobs.$inferInsert;
+export type FinancialData = typeof financial_data.$inferSelect;
+export type FinancialDataInsert = typeof financial_data.$inferInsert;
+export type FinancialDataError = typeof financial_data_errors.$inferSelect;
+export type FinancialDataErrorInsert = typeof financial_data_errors.$inferInsert;
+export type FinancialDataJob = typeof financial_data_jobs.$inferSelect;
+export type FinancialDataJobInsert = typeof financial_data_jobs.$inferInsert;
 
 // Scheme Zod pentru validare
 export const insertFinancialDataSchema = createInsertSchema(financial_data, {
   indicators: z.array(financialIndicator)
 });
 
-export const selectFinancialDataSchema = createSelectSchema(financialData, {
+export const selectFinancialDataSchema = createSelectSchema(financial_data, {
   indicators: z.array(financialIndicator)
 });
 
-export const insertFinancialDataJobSchema = createInsertSchema(financial_dataJobs);
-export const selectFinancialDataJobSchema = createSelectSchema(financialDataJobs);
+export const insertFinancialDataJobSchema = createInsertSchema(financial_data_jobs);
+export const selectFinancialDataJobSchema = createSelectSchema(financial_data_jobs);
 
 // Schema pentru request-ul de creare a unui job
 export const createFinancialDataJobSchema = z.object({

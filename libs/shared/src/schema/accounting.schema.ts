@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Accounting Schema
  * 
  * Database schema for the accounting module.
@@ -126,7 +130,7 @@ export const accounting_ledger_lines = pgTable('accounting_ledger_lines', {
 });
 
 /**
- * @deprecated Use accountingLedgerEntries instead
+ * @deprecated Use accounting_ledger_entries instead
  * Legacy schema for backward compatibility
  */
 export const ledger_entries = pgTable('ledger_entries', {
@@ -147,12 +151,12 @@ export const ledger_entries = pgTable('ledger_entries', {
 });
 
 /**
- * @deprecated Use accountingLedgerLines instead
+ * @deprecated Use accounting_ledger_lines instead
  * Legacy schema for backward compatibility
  */
 export const ledger_lines = pgTable('ledger_lines', {
   id: uuid('id').primaryKey().notNull(),
-  ledgerEntryId: uuid('ledger_entry_id').notNull().references(() => ledgerEntries.id, { onDelete: 'cascade' }),
+  ledgerEntryId: uuid('ledger_entry_id').notNull().references(() => ledger_entries.id, { onDelete: 'cascade' }),
   accountId: text('account_id').notNull(),
   debitAmount: numeric('debit_amount').notNull().default('0'),
   creditAmount: numeric('credit_amount').notNull().default('0'),
@@ -247,16 +251,16 @@ export const chart_of_accounts = pgTable('chart_of_accounts', {
 /**
  * Relations for accounting ledger entries
  */
-export const accounting_ledger_entriesRelations = relations(accountingLedgerEntries, ({ many }) => ({
+export const accounting_ledger_entriesRelations = relations(accounting_ledger_entries, ({ many }) => ({
   lines: many(accounting_ledger_lines)
 }));
 
 /**
  * Relations for accounting ledger lines
  */
-export const accounting_ledger_linesRelations = relations(accountingLedgerLines, ({ one }) => ({
+export const accounting_ledger_linesRelations = relations(accounting_ledger_lines, ({ one }) => ({
   entry: one(accounting_ledger_entries, {
-    fields: [accountingLedgerLines.ledgerEntryId],
+    fields: [accounting_ledger_lines.ledgerEntryId],
     references: [accounting_ledger_entries.id]
   })
 }));
@@ -264,56 +268,56 @@ export const accounting_ledger_linesRelations = relations(accountingLedgerLines,
 /**
  * @deprecated Use accounting_ledger_entriesRelations instead
  */
-export const ledgerEntriesRelations = relations(ledgerEntries, ({ many }) => ({
-  lines: many(ledgerLines)
+export const ledger_entriesRelations = relations(ledger_entries, ({ many }) => ({
+  lines: many(ledger_lines)
 }));
 
 /**
  * @deprecated Use accounting_ledger_linesRelations instead
  */
-export const ledgerLinesRelations = relations(ledgerLines, ({ one }) => ({
-  entry: one(ledgerEntries, {
-    fields: [ledgerLines.ledgerEntryId],
-    references: [ledgerEntries.id]
+export const ledger_linesRelations = relations(ledger_lines, ({ one }) => ({
+  entry: one(ledger_entries, {
+    fields: [ledger_lines.ledgerEntryId],
+    references: [ledger_entries.id]
   })
 }));
 
 /**
  * Relations for chart of accounts
  */
-export const chart_of_accountsRelations = relations(chartOfAccounts, ({ one, many }) => ({
+export const chart_of_accountsRelations = relations(chart_of_accounts, ({ one, many }) => ({
   parent: one(chart_of_accounts, {
-    fields: [chartOfAccounts.parentId],
+    fields: [chart_of_accounts.parentId],
     references: [chart_of_accounts.id]
   }),
   children: many(chart_of_accounts)
 }));
 
 // Export types for accounting ledger entries
-export type AccountingLedgerEntry = typeof accountingLedgerEntries.$inferSelect;
-export type InsertAccountingLedgerEntry = typeof accountingLedgerEntries.$inferInsert;
+export type AccountingLedgerEntry = typeof accounting_ledger_entries.$inferSelect;
+export type InsertAccountingLedgerEntry = typeof accounting_ledger_entries.$inferInsert;
 
-export type AccountingLedgerLine = typeof accountingLedgerLines.$inferSelect;
-export type InsertAccountingLedgerLine = typeof accountingLedgerLines.$inferInsert;
+export type AccountingLedgerLine = typeof accounting_ledger_lines.$inferSelect;
+export type InsertAccountingLedgerLine = typeof accounting_ledger_lines.$inferInsert;
 
 // Export types for legacy tables (deprecated)
-export type LedgerEntry = typeof ledgerEntries.$inferSelect;
-export type InsertLedgerEntry = typeof ledgerEntries.$inferInsert;
+export type LedgerEntry = typeof ledger_entries.$inferSelect;
+export type InsertLedgerEntry = typeof ledger_entries.$inferInsert;
 
-export type LedgerLine = typeof ledgerLines.$inferSelect;
-export type InsertLedgerLine = typeof ledgerLines.$inferInsert;
+export type LedgerLine = typeof ledger_lines.$inferSelect;
+export type InsertLedgerLine = typeof ledger_lines.$inferInsert;
 
-export type JournalType = typeof journalTypes.$inferSelect;
-export type InsertJournalType = typeof journalTypes.$inferInsert;
+export type JournalType = typeof journal_types.$inferSelect;
+export type InsertJournalType = typeof journal_types.$inferInsert;
 
-export type AccountBalance = typeof accountBalances.$inferSelect;
-export type InsertAccountBalance = typeof accountBalances.$inferInsert;
+export type AccountBalance = typeof account_balances.$inferSelect;
+export type InsertAccountBalance = typeof account_balances.$inferInsert;
 
-export type FiscalPeriod = typeof fiscalPeriods.$inferSelect;
-export type InsertFiscalPeriod = typeof fiscalPeriods.$inferInsert;
+export type FiscalPeriod = typeof fiscal_periods.$inferSelect;
+export type InsertFiscalPeriod = typeof fiscal_periods.$inferInsert;
 
-export type ChartOfAccount = typeof chartOfAccounts.$inferSelect;
-export type InsertChartOfAccount = typeof chartOfAccounts.$inferInsert;
+export type ChartOfAccount = typeof chart_of_accounts.$inferSelect;
+export type InsertChartOfAccount = typeof chart_of_accounts.$inferInsert;
 
 // ============================================================================
 // ADDITIONAL ACCOUNTING TABLES (Previously missing)
@@ -420,20 +424,20 @@ export const stocks = pgTable("stocks", {
 
 export default {
   // Current tables
-  accountingLedgerEntries,
-  accountingLedgerLines,
+  accounting_ledger_entries,
+  accounting_ledger_lines,
   accounting_ledger_entriesRelations,
   accounting_ledger_linesRelations,
   // Legacy tables (deprecated)
-  ledgerEntries,
-  ledgerLines,
-  ledgerEntriesRelations,
-  ledgerLinesRelations,
+  ledger_entries,
+  ledger_lines,
+  ledger_entriesRelations,
+  ledger_linesRelations,
   // Other tables
-  journalTypes,
-  accountBalances,
-  fiscalPeriods,
-  chartOfAccounts,
+  journal_types,
+  account_balances,
+  fiscal_periods,
+  chart_of_accounts,
   chart_of_accountsRelations,
   // Newly added tables
   accounting_account_balances,

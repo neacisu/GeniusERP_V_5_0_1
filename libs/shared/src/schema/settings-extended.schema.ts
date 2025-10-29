@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Settings Extended Schema
  * 
  * Application-wide settings, feature toggles, and user preferences.
@@ -24,6 +28,10 @@ import {
   unique
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
+
+// Forward references (resolved when schemas combined)
+declare const companies: any;
+declare const users: any;
 
 // ============================================================================
 // SETTINGS TABLES

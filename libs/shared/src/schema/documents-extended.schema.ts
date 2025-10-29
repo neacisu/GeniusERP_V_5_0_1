@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Documents Extended Schema
  * 
  * Document management and foreign exchange rates.
@@ -23,6 +27,9 @@ import {
   unique
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
+
+// Forward references (resolved when schemas combined)
+declare const companies: any;
 
 // ============================================================================
 // DOCUMENT TABLES

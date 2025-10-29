@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Integrations Schema - Drizzle ORM Definitions
  * 
  * This file defines the schema for the Integrations module tables using Drizzle ORM.

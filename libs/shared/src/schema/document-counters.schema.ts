@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Document Counters Schema
  * 
  * Tabel pentru generare automată de numere secvențiale pentru documente
@@ -30,5 +34,5 @@ export const document_counters = pgTable('document_counters', {
 /**
  * Types
  */
-export type DocumentCounter = typeof documentCounters.$inferSelect;
-export type InsertDocumentCounter = typeof documentCounters.$inferInsert;
+export type DocumentCounter = typeof document_counters.$inferSelect;
+export type InsertDocumentCounter = typeof document_counters.$inferInsert;

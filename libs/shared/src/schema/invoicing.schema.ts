@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Invoicing Schema
  * 
  * Complete invoicing system for Romanian accounting standards.
@@ -27,6 +31,14 @@ import {
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 import { invoice_status } from './enums';
+
+// Forward references (resolved when schemas combined)
+declare const companies: any;
+declare const users: any;
+declare const crm_customers: any;
+declare const invoice_items: any;
+declare const bank_transactions: any;
+declare const cash_transactions: any;
 
 // ============================================================================
 // INVOICING TABLES

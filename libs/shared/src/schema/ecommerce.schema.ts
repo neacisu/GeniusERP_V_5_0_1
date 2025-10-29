@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * E-Commerce Module Schema - Drizzle ORM Definitions
  * 
  * This file defines the database schema for the E-Commerce module tables
@@ -231,7 +235,7 @@ export const ecommerce_transactions = pgTable("ecommerce_transactions", {
 }));
 
 /**
- * Shopping carts table
+ * Shopping ecommerce_carts table
  */
 export const ecommerce_carts = pgTable("ecommerce_carts", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -366,19 +370,19 @@ export const insertEcommerceIntegrationSchema = createInsertSchema(ecommerce_int
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
 // Export types
-export type EcommerceOrder = typeof ecommerceOrders.$inferSelect;
+export type EcommerceOrder = typeof ecommerce_orders.$inferSelect;
 export type InsertEcommerceOrder = z.infer<typeof insertEcommerceOrderSchema>;
 
-export type EcommerceTransaction = typeof ecommerceTransactions.$inferSelect;
+export type EcommerceTransaction = typeof ecommerce_transactions.$inferSelect;
 export type InsertEcommerceTransaction = z.infer<typeof insertEcommerceTransactionSchema>;
 
-export type Cart = typeof carts.$inferSelect;
+export type Cart = typeof ecommerce_carts.$inferSelect;
 export type InsertCart = z.infer<typeof insertCartSchema>;
 
-export type CartItem = typeof cartItems.$inferSelect;
+export type CartItem = typeof ecommerce_cart_items.$inferSelect;
 export type InsertCartItem = z.infer<typeof insertCartItemSchema>;
 
-export type EcommerceIntegration = typeof ecommerceIntegrations.$inferSelect;
+export type EcommerceIntegration = typeof ecommerce_integrations.$inferSelect;
 export type InsertEcommerceIntegration = z.infer<typeof insertEcommerceIntegrationSchema>;
 
 // ============================================================================
@@ -467,7 +471,7 @@ export const ecommerce_shopify_variants = pgTable("ecommerce_shopify_variants", 
   compareAtPrice: numeric("compare_at_price", { precision: 15, scale: 2 }),
   inventoryQuantity: integer("inventory_quantity").default(0),
   weight: numeric("weight", { precision: 10, scale: 3 }),
-  weightUnit: varchar("weight_unit", { length: 10 }),
+  weightUnit: text("weight_unit"),
   localProductId: uuid("local_product_id"),
   isActive: boolean("is_active").default(true),
   lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),

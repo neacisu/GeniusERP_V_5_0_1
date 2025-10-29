@@ -1,9 +1,13 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * CRM Schema - Drizzle ORM Definitions
  * 
  * This file defines the schema for the CRM module tables using Drizzle ORM.
  * These tables implement a comprehensive CRM system with a Kanban-based sales pipeline
- * featuring contacts, customers, deals, activities, and more.
+ * featuring crm_contacts, crm_customers, crm_deals, crm_activities, and more.
  */
 
 import { 
@@ -32,7 +36,7 @@ import { companies, users } from "../schema";
 export const anaf_company_data = pgTable("anaf_company_data", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").references(() => companies.id), // Eliminat notNull() pentru a permite salvarea de date ANAF independente
-  customerId: uuid("customer_id").references(() => crm_crm_customers.id),
+  customerId: uuid("customer_id").references(() => crm_customers.id),
   
   // Date generale
   cui: text("cui").notNull(),
@@ -209,7 +213,7 @@ export const crm_customers = pgTable("crm_customers", {
  */
 export const crm_contacts = pgTable("crm_contacts", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  customerId: uuid("customer_id").references(() => crm_crm_customers.id),
+  customerId: uuid("customer_id").references(() => crm_customers.id),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
@@ -233,7 +237,7 @@ export const crm_contacts = pgTable("crm_contacts", {
 });
 
 /**
- * Sales Pipelines - Define different sales processes for different business segments
+ * Sales Pipelines - Define different sales processes for different business crm_segments
  */
 export const crm_pipelines = pgTable("crm_pipelines", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -257,7 +261,7 @@ export const crm_pipelines = pgTable("crm_pipelines", {
  */
 export const crm_stages = pgTable("crm_stages", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  pipelineId: uuid("pipeline_id").notNull().references(() => crm_crm_pipelines.id, { onDelete: 'cascade' }),
+  pipelineId: uuid("pipeline_id").notNull().references(() => crm_pipelines.id, { onDelete: 'cascade' }),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   name: text("name").notNull(),
   description: text("description"),
@@ -281,8 +285,8 @@ export const crm_stages = pgTable("crm_stages", {
 export const crm_deals = pgTable("crm_deals", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull().references(() => companies.id),
-  customerId: uuid("customer_id").references(() => crm_crm_customers.id),
-  pipelineId: uuid("pipeline_id").notNull().references(() => crm_crm_pipelines.id),
+  customerId: uuid("customer_id").references(() => crm_customers.id),
+  pipelineId: uuid("pipeline_id").notNull().references(() => crm_pipelines.id),
   stageId: uuid("stage_id").notNull().references(() => crm_stages.id),
   name: text("name").notNull(), // Keep for backward compatibility
   title: text("title").notNull(),
@@ -326,7 +330,7 @@ export const crm_stage_history = pgTable("crm_stage_history", {
 });
 
 /**
- * Activities - Calls, meetings, emails, tasks associated with deals and contacts
+ * Activities - Calls, meetings, emails, tasks associated with crm_deals and crm_contacts
  */
 export const crm_activities = pgTable("crm_activities", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -366,19 +370,19 @@ export const crm_tags = pgTable("crm_tags", {
 });
 
 /**
- * Tag relationships for customers
+ * Tag relationships for crm_customers
  */
 export const crm_customer_tags = pgTable("crm_customer_tags", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  customerId: uuid("customer_id").notNull().references(() => crm_crm_customers.id, { onDelete: 'cascade' }),
-  tagId: uuid("tag_id").notNull().references(() => crm_crm_tags.id, { onDelete: 'cascade' }),
+  customerId: uuid("customer_id").notNull().references(() => crm_customers.id, { onDelete: 'cascade' }),
+  tagId: uuid("tag_id").notNull().references(() => crm_tags.id, { onDelete: 'cascade' }),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   createdBy: uuid("created_by").references(() => users.id)
 });
 
 /**
- * Tag relationships for deals
+ * Tag relationships for crm_deals
  */
 export const crm_deal_tags = pgTable("crm_deal_tags", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -397,11 +401,11 @@ export const crm_revenue_forecasts = pgTable("crm_revenue_forecasts", {
   companyId: uuid("company_id").notNull().references(() => companies.id),
   year: integer("year").notNull(),
   month: integer("month").notNull(),
-  pipeline: numeric("pipeline", { precision: 20, scale: 2 }), // Total value of all deals
+  pipeline: numeric("pipeline", { precision: 20, scale: 2 }), // Total value of all crm_deals
   weighted: numeric("weighted", { precision: 20, scale: 2 }), // Probability-weighted value
   bestCase: numeric("best_case", { precision: 20, scale: 2 }), // Best case scenario
   commit: numeric("commit", { precision: 20, scale: 2 }), // Committed forecast
-  closed: numeric("closed", { precision: 20, scale: 2 }), // Already closed deals
+  closed: numeric("closed", { precision: 20, scale: 2 }), // Already closed crm_deals
   forecastAccuracy: numeric("forecast_accuracy", { precision: 5, scale: 2 }),
   currency: text("currency").default("RON"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -439,7 +443,7 @@ export const crm_segments = pgTable("crm_segments", {
   companyId: uuid("company_id").notNull().references(() => companies.id),
   name: text("name").notNull(),
   description: text("description"),
-  entityType: text("entity_type").notNull(), // customers, contacts, deals
+  entityType: text("entity_type").notNull(), // crm_customers, crm_contacts, crm_deals
   criteria: json("criteria").notNull(), // JSON with filter criteria
   isPublic: boolean("is_public").default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -490,21 +494,21 @@ export const crm_email_templates = pgTable("crm_email_templates", {
 
 // Define relations for Drizzle ORM
 
-export const anafCompanyDataRelations = relations(anafCompanyData, ({ one }) => ({
+export const anafCompanyDataRelations = relations(anaf_company_data, ({ one }) => ({
   company: one(companies, {
-    fields: [anafCompanyData.companyId],
+    fields: [anaf_company_data.companyId],
     references: [companies.id]
   }),
   customer: one(crm_customers, {
-    fields: [anafCompanyData.customerId],
+    fields: [anaf_company_data.customerId],
     references: [crm_customers.id]
   }),
   createdByUser: one(users, {
-    fields: [anafCompanyData.createdBy],
+    fields: [anaf_company_data.createdBy],
     references: [users.id]
   }),
   updatedByUser: one(users, {
-    fields: [anafCompanyData.updatedBy],
+    fields: [anaf_company_data.updatedBy],
     references: [users.id]
   })
 }));
@@ -526,219 +530,219 @@ export const crmCompaniesRelations = relations(crm_companies, ({ one, many }) =>
     fields: [crm_companies.updatedBy],
     references: [users.id]
   }),
-  activities: many(crm_activities)
+  crm_activities: many(crm_activities)
 }));
 
-export const customerRelations = relations(customers, ({ one, many }) => ({
+export const customerRelations = relations(crm_customers, ({ one, many }) => ({
   company: one(companies, {
-    fields: [customers.companyId],
+    fields: [crm_customers.companyId],
     references: [companies.id]
   }),
   owner: one(users, {
-    fields: [customers.ownerId],
+    fields: [crm_customers.ownerId],
     references: [users.id]
   }),
-  contacts: many(crm_contacts),
-  deals: many(crm_deals),
-  activities: many(crm_activities),
-  tags: many(customerTags)
+  crm_contacts: many(crm_contacts),
+  crm_deals: many(crm_deals),
+  crm_activities: many(crm_activities),
+  crm_tags: many(crm_customer_tags)
 }));
 
-export const contactRelations = relations(contacts, ({ one, many }) => ({
+export const contactRelations = relations(crm_contacts, ({ one, many }) => ({
   company: one(companies, {
-    fields: [contacts.companyId],
+    fields: [crm_contacts.companyId],
     references: [companies.id]
   }),
   customer: one(crm_customers, {
-    fields: [contacts.customerId],
+    fields: [crm_contacts.customerId],
     references: [crm_customers.id]
   }),
-  activities: many(crm_activities)
+  crm_activities: many(crm_activities)
 }));
 
-export const pipelineRelations = relations(pipelines, ({ one, many }) => ({
+export const pipelineRelations = relations(crm_pipelines, ({ one, many }) => ({
   company: one(companies, {
-    fields: [pipelines.companyId],
+    fields: [crm_pipelines.companyId],
     references: [companies.id]
   }),
   stages: many(crm_stages),
-  deals: many(crm_deals)
+  crm_deals: many(crm_deals)
 }));
 
-export const pipelineStageRelations = relations(pipelineStages, ({ one, many }) => ({
+export const pipelineStageRelations = relations(crm_stages, ({ one, many }) => ({
   company: one(companies, {
-    fields: [pipelineStages.companyId],
+    fields: [crm_stages.companyId],
     references: [companies.id]
   }),
   pipeline: one(crm_pipelines, {
-    fields: [pipelineStages.pipelineId],
+    fields: [crm_stages.pipelineId],
     references: [crm_pipelines.id]
   }),
-  deals: many(crm_deals),
-  stageTransitionsTo: many(dealStageHistory, { relationName: "toStage" }),
-  stageTransitionsFrom: many(dealStageHistory, { relationName: "fromStage" })
+  crm_deals: many(crm_deals),
+  stageTransitionsTo: many(crm_stage_history, { relationName: "toStage" }),
+  stageTransitionsFrom: many(crm_stage_history, { relationName: "fromStage" })
 }));
 
-export const dealRelations = relations(deals, ({ one, many }) => ({
+export const dealRelations = relations(crm_deals, ({ one, many }) => ({
   company: one(companies, {
-    fields: [deals.companyId],
+    fields: [crm_deals.companyId],
     references: [companies.id]
   }),
   customer: one(crm_customers, {
-    fields: [deals.customerId],
+    fields: [crm_deals.customerId],
     references: [crm_customers.id]
   }),
   pipeline: one(crm_pipelines, {
-    fields: [deals.pipelineId],
+    fields: [crm_deals.pipelineId],
     references: [crm_pipelines.id]
   }),
   stage: one(crm_stages, {
-    fields: [deals.stageId],
+    fields: [crm_deals.stageId],
     references: [crm_stages.id]
   }),
   owner: one(users, {
-    fields: [deals.ownerId],
+    fields: [crm_deals.ownerId],
     references: [users.id]
   }),
-  activities: many(crm_activities),
-  stageHistory: many(dealStageHistory),
-  tags: many(dealTags)
+  crm_activities: many(crm_activities),
+  stageHistory: many(crm_stage_history),
+  crm_tags: many(crm_deal_tags)
 }));
 
-export const dealStageHistoryRelations = relations(dealStageHistory, ({ one }) => ({
+export const dealStageHistoryRelations = relations(crm_stage_history, ({ one }) => ({
   company: one(companies, {
-    fields: [dealStageHistory.companyId],
+    fields: [crm_stage_history.companyId],
     references: [companies.id]
   }),
   deal: one(crm_deals, {
-    fields: [dealStageHistory.dealId],
+    fields: [crm_stage_history.dealId],
     references: [crm_deals.id]
   }),
   fromStage: one(crm_stages, {
-    fields: [dealStageHistory.fromStageId],
+    fields: [crm_stage_history.fromStageId],
     references: [crm_stages.id],
     relationName: "fromStage"
   }),
   toStage: one(crm_stages, {
-    fields: [dealStageHistory.toStageId],
+    fields: [crm_stage_history.toStageId],
     references: [crm_stages.id],
     relationName: "toStage"
   }),
   user: one(users, {
-    fields: [dealStageHistory.changedBy],
+    fields: [crm_stage_history.changedBy],
     references: [users.id]
   })
 }));
 
-export const activityRelations = relations(activities, ({ one }) => ({
+export const activityRelations = relations(crm_activities, ({ one }) => ({
   company: one(companies, {
-    fields: [activities.companyId],
+    fields: [crm_activities.companyId],
     references: [companies.id]
   }),
   deal: one(crm_deals, {
-    fields: [activities.dealId],
+    fields: [crm_activities.dealId],
     references: [crm_deals.id]
   }),
   clientCompany: one(crm_companies, {
-    fields: [activities.clientCompanyId],
+    fields: [crm_activities.clientCompanyId],
     references: [crm_companies.id]
   }),
   contact: one(crm_contacts, {
-    fields: [activities.contactId],
+    fields: [crm_activities.contactId],
     references: [crm_contacts.id]
   }),
   assignedUser: one(users, {
-    fields: [activities.assignedTo],
+    fields: [crm_activities.assignedTo],
     references: [users.id]
   }),
   createdByUser: one(users, {
-    fields: [activities.createdBy],
+    fields: [crm_activities.createdBy],
     references: [users.id]
   })
 }));
 
-export const tagRelations = relations(tags, ({ one, many }) => ({
+export const tagRelations = relations(crm_tags, ({ one, many }) => ({
   company: one(companies, {
-    fields: [tags.companyId],
+    fields: [crm_tags.companyId],
     references: [companies.id]
   }),
-  customerTags: many(customerTags),
-  dealTags: many(dealTags)
+  crm_customer_tags: many(crm_customer_tags),
+  crm_deal_tags: many(crm_deal_tags)
 }));
 
-export const customerTagRelations = relations(customerTags, ({ one }) => ({
+export const customerTagRelations = relations(crm_customer_tags, ({ one }) => ({
   company: one(companies, {
-    fields: [customerTags.companyId],
+    fields: [crm_customer_tags.companyId],
     references: [companies.id]
   }),
   customer: one(crm_customers, {
-    fields: [customerTags.customerId],
+    fields: [crm_customer_tags.customerId],
     references: [crm_customers.id]
   }),
   tag: one(crm_tags, {
-    fields: [customerTags.tagId],
+    fields: [crm_customer_tags.tagId],
     references: [crm_tags.id]
   })
 }));
 
-export const dealTagRelations = relations(dealTags, ({ one }) => ({
+export const dealTagRelations = relations(crm_deal_tags, ({ one }) => ({
   company: one(companies, {
-    fields: [dealTags.companyId],
+    fields: [crm_deal_tags.companyId],
     references: [companies.id]
   }),
   deal: one(crm_deals, {
-    fields: [dealTags.dealId],
+    fields: [crm_deal_tags.dealId],
     references: [crm_deals.id]
   }),
   tag: one(crm_tags, {
-    fields: [dealTags.tagId],
+    fields: [crm_deal_tags.tagId],
     references: [crm_tags.id]
   })
 }));
 
-export const revenueForecastRelations = relations(revenueForecasts, ({ one }) => ({
+export const revenueForecastRelations = relations(crm_revenue_forecasts, ({ one }) => ({
   company: one(companies, {
-    fields: [revenueForecasts.companyId],
+    fields: [crm_revenue_forecasts.companyId],
     references: [companies.id]
   }),
   calculator: one(users, {
-    fields: [revenueForecasts.calculatedBy],
+    fields: [crm_revenue_forecasts.calculatedBy],
     references: [users.id]
   })
 }));
 
-export const salesQuotaRelations = relations(salesQuotas, ({ one }) => ({
+export const salesQuotaRelations = relations(crm_sales_quotas, ({ one }) => ({
   company: one(companies, {
-    fields: [salesQuotas.companyId],
+    fields: [crm_sales_quotas.companyId],
     references: [companies.id]
   }),
   user: one(users, {
-    fields: [salesQuotas.userId],
+    fields: [crm_sales_quotas.userId],
     references: [users.id]
   })
 }));
 
-export const segmentRelations = relations(segments, ({ one }) => ({
+export const segmentRelations = relations(crm_segments, ({ one }) => ({
   company: one(companies, {
-    fields: [segments.companyId],
+    fields: [crm_segments.companyId],
     references: [companies.id]
   }),
   creator: one(users, {
-    fields: [segments.createdBy],
+    fields: [crm_segments.createdBy],
     references: [users.id]
   })
 }));
 
-export const scoringRuleRelations = relations(scoringRules, ({ one }) => ({
+export const scoringRuleRelations = relations(crm_scoring_rules, ({ one }) => ({
   company: one(companies, {
-    fields: [scoringRules.companyId],
+    fields: [crm_scoring_rules.companyId],
     references: [companies.id]
   })
 }));
 
-export const emailTemplateRelations = relations(emailTemplates, ({ one }) => ({
+export const emailTemplateRelations = relations(crm_email_templates, ({ one }) => ({
   company: one(companies, {
-    fields: [emailTemplates.companyId],
+    fields: [crm_email_templates.companyId],
     references: [companies.id]
   })
 }));
@@ -755,13 +759,13 @@ export const insertActivitySchema = createInsertSchema(crm_activities);
 export const insertTagSchema = createInsertSchema(crm_tags);
 export const insertCustomerTagSchema = createInsertSchema(crm_customer_tags);
 export const insertDealTagSchema = createInsertSchema(crm_deal_tags);
-export const insertRevenueForecastSchema = createInsertSchema(revenueForecasts);
-export const insertSalesQuotaSchema = createInsertSchema(salesQuotas);
+export const insertRevenueForecastSchema = createInsertSchema(crm_revenue_forecasts);
+export const insertSalesQuotaSchema = createInsertSchema(crm_sales_quotas);
 export const insertSegmentSchema = createInsertSchema(crm_segments);
-export const insertScoringRuleSchema = createInsertSchema(scoringRules);
+export const insertScoringRuleSchema = createInsertSchema(crm_scoring_rules);
 export const insertEmailTemplateSchema = createInsertSchema(crm_email_templates);
 // Fix for drizzle-zod compatibility issue - remove omit() completely
-export const insertAnafCompanyDataSchema = createInsertSchema(anafCompanyData);
+export const insertAnafCompanyDataSchema = createInsertSchema(anaf_company_data);
 
 // Types
 
@@ -770,17 +774,17 @@ export type Contact = typeof crm_contacts.$inferSelect;
 export type Pipeline = typeof crm_pipelines.$inferSelect;
 export type PipelineStage = typeof crm_stages.$inferSelect;
 export type Deal = typeof crm_deals.$inferSelect;
-export type DealStageHistory = typeof dealStageHistory.$inferSelect;
+export type DealStageHistory = typeof crm_stage_history.$inferSelect;
 export type Activity = typeof crm_activities.$inferSelect;
 export type Tag = typeof crm_tags.$inferSelect;
-export type CustomerTag = typeof customerTags.$inferSelect;
-export type DealTag = typeof dealTags.$inferSelect;
-export type RevenueForecast = typeof revenueForecasts.$inferSelect;
-export type SalesQuota = typeof salesQuotas.$inferSelect;
-export type Segment = typeof segments.$inferSelect;
-export type ScoringRule = typeof scoringRules.$inferSelect;
-export type EmailTemplate = typeof emailTemplates.$inferSelect;
-export type AnafCompanyData = typeof anafCompanyData.$inferSelect;
+export type CustomerTag = typeof crm_customer_tags.$inferSelect;
+export type DealTag = typeof crm_deal_tags.$inferSelect;
+export type RevenueForecast = typeof crm_revenue_forecasts.$inferSelect;
+export type SalesQuota = typeof crm_sales_quotas.$inferSelect;
+export type Segment = typeof crm_segments.$inferSelect;
+export type ScoringRule = typeof crm_scoring_rules.$inferSelect;
+export type EmailTemplate = typeof crm_email_templates.$inferSelect;
+export type AnafCompanyData = typeof anaf_company_data.$inferSelect;
 
 export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
 export type InsertContact = z.infer<typeof insertContactSchema>;
@@ -833,7 +837,7 @@ export const crm_custom_fields = pgTable("crm_custom_fields", {
 
 /**
  * CRM Deal Products
- * Products/services associated with deals
+ * Products/services associated with crm_deals
  */
 export const crm_deal_products = pgTable("crm_deal_products", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -883,7 +887,7 @@ export const crm_forecasts = pgTable("crm_forecasts", {
 
 /**
  * CRM Notes
- * Notes attached to CRM entities (deals, contacts, companies)
+ * Notes attached to CRM entities (crm_deals, crm_contacts, companies)
  */
 export const crm_notes = pgTable("crm_notes", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),

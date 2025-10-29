@@ -1,4 +1,6 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Inventory Assessment Schema
  * 
  * This schema defines the data model for the Romanian "Inventariere" process
@@ -162,27 +164,27 @@ export const inventory_batches = pgTable('inventory_batches', {
 
 // Setup relations
 // Note: Relations la companies vor fi stabilite în schema principală
-export const warehouseRelations = relations(inventoryWarehouses, ({ one, many }) => ({
+export const warehouseRelations = relations(inventory_warehouses, ({ one, many }) => ({
   parent: one(inventory_warehouses, {
-    fields: [inventoryWarehouses.parentId],
+    fields: [inventory_warehouses.parentId],
     references: [inventory_warehouses.id]
   }),
   children: many(inventory_warehouses),
   assessments: many(inventory_assessments)
 }));
 
-export const assessmentRelations = relations(inventoryAssessments, ({ one, many }) => ({
+export const assessmentRelations = relations(inventory_assessments, ({ one, many }) => ({
   warehouse: one(inventory_warehouses, {
-    fields: [inventoryAssessments.warehouseId],
+    fields: [inventory_assessments.warehouseId],
     references: [inventory_warehouses.id]
   }),
   items: many(inventory_assessment_items),
   valuations: many(inventory_valuations)
 }));
 
-export const assessmentItemRelations = relations(inventoryAssessmentItems, ({ one }) => ({
+export const assessmentItemRelations = relations(inventory_assessment_items, ({ one }) => ({
   assessment: one(inventory_assessments, {
-    fields: [inventoryAssessmentItems.assessmentId],
+    fields: [inventory_assessment_items.assessmentId],
     references: [inventory_assessments.id]
   })
   // Note: Relația la product va fi stabilită în schema principală
@@ -246,17 +248,17 @@ export const insertBatchSchema = createInsertSchema(inventory_batches)
 // Create types
 // Notă: Tipurile Warehouse și InsertWarehouse sunt exportate din warehouse.ts
 // pentru a evita conflicte de export. Folosim tipuri locale aici dacă e necesar.
-type WarehouseLocal = typeof inventoryWarehouses.$inferSelect;
+type WarehouseLocal = typeof inventory_warehouses.$inferSelect;
 type InsertWarehouseLocal = z.infer<typeof insertWarehouseSchemaLocal>;
 
-export type InventoryAssessment = typeof inventoryAssessments.$inferSelect;
+export type InventoryAssessment = typeof inventory_assessments.$inferSelect;
 export type InsertInventoryAssessment = z.infer<typeof insertAssessmentSchema>;
 
-export type InventoryAssessmentItem = typeof inventoryAssessmentItems.$inferSelect;
+export type InventoryAssessmentItem = typeof inventory_assessment_items.$inferSelect;
 export type InsertInventoryAssessmentItem = z.infer<typeof insertAssessmentItemSchema>;
 
-export type InventoryValuation = typeof inventoryValuations.$inferSelect;
+export type InventoryValuation = typeof inventory_valuations.$inferSelect;
 export type InsertInventoryValuation = z.infer<typeof insertValuationSchema>;
 
-export type InventoryBatch = typeof inventoryBatches.$inferSelect;
+export type InventoryBatch = typeof inventory_batches.$inferSelect;
 export type InsertInventoryBatch = z.infer<typeof insertBatchSchema>;

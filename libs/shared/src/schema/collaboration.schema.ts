@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Collaboration Module Schema - Drizzle ORM Definitions
  * 
  * This file defines the database schema for the Collaboration module tables
@@ -326,16 +330,16 @@ export const insertCollaborationMessageSchema = createInsertSchema(collaboration
 });
 
 // Type definitions for inference
-export type CollaborationTask = typeof collaborationTasks.$inferSelect;
+export type CollaborationTask = typeof collaboration_tasks.$inferSelect;
 export type NewCollaborationTask = z.infer<typeof insertCollaborationTaskSchema>;
 
-export type CollaborationNote = typeof collaborationNotes.$inferSelect;
+export type CollaborationNote = typeof collaboration_notes.$inferSelect;
 export type NewCollaborationNote = z.infer<typeof insertCollaborationNoteSchema>;
 
-export type CollaborationThread = typeof collaborationThreads.$inferSelect;
+export type CollaborationThread = typeof collaboration_threads.$inferSelect;
 export type NewCollaborationThread = z.infer<typeof insertCollaborationThreadSchema>;
 
-export type CollaborationMessage = typeof collaborationMessages.$inferSelect;
+export type CollaborationMessage = typeof collaboration_messages.$inferSelect;
 export type NewCollaborationMessage = z.infer<typeof insertCollaborationMessageSchema>;
 
 export const insertTaskWatcherSchema = createInsertSchema(collaboration_task_watchers, {
@@ -344,9 +348,9 @@ export const insertTaskWatcherSchema = createInsertSchema(collaboration_task_wat
   notificationPreference: z.record(z.string(), z.any()).optional()
 });
 
-export type TaskAssignmentHistoryRecord = typeof taskAssignmentHistory.$inferSelect;
-export type TaskStatusHistoryRecord = typeof taskStatusHistory.$inferSelect;
-export type TaskWatcher = typeof taskWatchers.$inferSelect;
+export type TaskAssignmentHistoryRecord = typeof collaboration_task_assignments.$inferSelect;
+export type TaskStatusHistoryRecord = typeof collaboration_task_status_history.$inferSelect;
+export type TaskWatcher = typeof collaboration_task_watchers.$inferSelect;
 export type NewTaskWatcher = z.infer<typeof insertTaskWatcherSchema>;
 
 /**
@@ -403,8 +407,8 @@ export const collaboration_notifications = pgTable('collaboration_notifications'
 }));
 
 // Type definitions for activities and notifications
-export type CollaborationActivity = typeof collaborationActivities.$inferSelect;
-export type Notification = typeof collaborationNotifications.$inferSelect;
+export type CollaborationActivity = typeof collaboration_activities.$inferSelect;
+export type Notification = typeof collaboration_notifications.$inferSelect;
 
 export const insertCollaborationActivitySchema = createInsertSchema(collaboration_activities, {
   id: z.string().uuid().optional(),

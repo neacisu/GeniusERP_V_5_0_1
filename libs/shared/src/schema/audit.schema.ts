@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Audit Schema
  * 
  * Database schema for audit logs.
@@ -21,8 +25,8 @@ export const audit_logs = pgTable('audit_logs', {
   createdAt: timestamp('created_at').notNull()
 });
 
-export type AuditLog = typeof auditLogs.$inferSelect;
-export type InsertAuditLog = typeof auditLogs.$inferInsert;
+export type AuditLog = typeof audit_logs.$inferSelect;
+export type InsertAuditLog = typeof audit_logs.$inferInsert;
 
 /**
  * Interface for audit log data provided to AuditService.console.log() method
@@ -40,4 +44,4 @@ export interface AuditLogData {
   userAgent?: string;
 }
 
-export default auditLogs;
+export default audit_logs;

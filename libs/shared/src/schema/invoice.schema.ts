@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Invoice Schema
  * 
  * Database schema for invoices and related tables.
@@ -40,14 +44,14 @@ export const invoice_items = pgTable('invoice_items', {
   updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
 
-// Note: Relations for invoices and invoiceItems are defined in shared/schema.ts
+// Note: Relations for invoices and invoice_items are defined in shared/schema.ts
 // to avoid circular dependency issues
 
 // Re-export Invoice types from shared schema for consistency
 export type { Invoice, InsertInvoice } from '@geniuserp/shared';
 
-export type InvoiceItem = typeof invoiceItems.$inferSelect;
-export type InsertInvoiceItem = typeof invoiceItems.$inferInsert;
+export type InvoiceItem = typeof invoice_items.$inferSelect;
+export type InsertInvoiceItem = typeof invoice_items.$inferInsert;
 
 /**
  * Extended Invoice type with relations
@@ -61,5 +65,5 @@ export interface InvoiceWithRelations extends Invoice {
 }
 
 export default {
-  invoiceItems
+  invoice_items
 };

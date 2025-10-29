@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * HR Documents Schema
  * 
  * This schema defines the tables for HR document management:
@@ -38,14 +42,14 @@ export const hr_employee_drafts = pgTable('hr_employee_drafts', {
 
 // Zod schemas for validation
 export const insertHrDocumentSchema = createInsertSchema(hr_documents);
-export const selectHrDocumentSchema = createSelectSchema(hrDocuments);
+export const selectHrDocumentSchema = createSelectSchema(hr_documents);
 
 export const insertHrEmployeeDraftSchema = createInsertSchema(hr_employee_drafts);
-export const selectHrEmployeeDraftSchema = createSelectSchema(hrEmployeeDrafts);
+export const selectHrEmployeeDraftSchema = createSelectSchema(hr_employee_drafts);
 
 // Export types
-export type HrDocument = typeof hrDocuments.$inferSelect;
-export type InsertHrDocument = typeof hrDocuments.$inferInsert;
+export type HrDocument = typeof hr_documents.$inferSelect;
+export type InsertHrDocument = typeof hr_documents.$inferInsert;
 
-export type HrEmployeeDraft = typeof hrEmployeeDrafts.$inferSelect;
-export type InsertHrEmployeeDraft = typeof hrEmployeeDrafts.$inferInsert;
+export type HrEmployeeDraft = typeof hr_employee_drafts.$inferSelect;
+export type InsertHrEmployeeDraft = typeof hr_employee_drafts.$inferInsert;

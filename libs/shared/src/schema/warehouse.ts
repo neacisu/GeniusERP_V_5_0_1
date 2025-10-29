@@ -1,4 +1,6 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Warehouse Schema Definition
  * 
  * This file defines the schema for the warehouses table, which is the main

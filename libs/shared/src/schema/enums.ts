@@ -1,4 +1,6 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Centralized Enum Definitions for GeniusERP
  * 
  * All PostgreSQL enum types defined in one place for consistency.

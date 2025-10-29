@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Predictive Analytics Schema
  * 
  * This file defines the database schema for the predictive analytics functionality
@@ -350,16 +354,16 @@ export const insertInventoryOptimizationSchema = createInsertSchema(analytics_in
 export const insertPurchasingRecommendationSchema = createInsertSchema(analytics_purchasing_recommendations);
 
 // Export types
-export type PredictiveModel = typeof analyticsPredictiveModels.$inferSelect;
-export type PredictionResult = typeof analyticsPredictionResults.$inferSelect;
-export type TimeSeriesData = typeof analyticsTimeSeriesData.$inferSelect;
-export type AnomalyRule = typeof analyticsAnomalyRules.$inferSelect;
-export type Anomaly = typeof analyticsAnomalies.$inferSelect;
-export type SeasonalPattern = typeof analyticsSeasonalPatterns.$inferSelect;
-export type Scenario = typeof analyticsScenarios.$inferSelect;
-export type ScenarioResult = typeof analyticsScenarioResults.$inferSelect;
-export type InventoryOptimization = typeof analyticsInventoryOptimization.$inferSelect;
-export type PurchasingRecommendation = typeof analyticsPurchasingRecommendations.$inferSelect;
+export type PredictiveModel = typeof analytics_predictive_models.$inferSelect;
+export type PredictionResult = typeof analytics_prediction_results.$inferSelect;
+export type TimeSeriesData = typeof analytics_time_series_data.$inferSelect;
+export type AnomalyRule = typeof analytics_anomaly_rules.$inferSelect;
+export type Anomaly = typeof analytics_anomalies.$inferSelect;
+export type SeasonalPattern = typeof analytics_seasonal_patterns.$inferSelect;
+export type Scenario = typeof analytics_scenarios.$inferSelect;
+export type ScenarioResult = typeof analytics_scenario_results.$inferSelect;
+export type InventoryOptimization = typeof analytics_inventory_optimization.$inferSelect;
+export type PurchasingRecommendation = typeof analytics_purchasing_recommendations.$inferSelect;
 
 // Insert types
 export type InsertPredictiveModel = z.infer<typeof insertPredictiveModelSchema>;

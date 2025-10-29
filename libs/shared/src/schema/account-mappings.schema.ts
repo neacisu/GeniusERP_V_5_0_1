@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Account Mappings Schema
  * 
  * RECOMANDARE 5: Conturi contabile configurabile în DB
@@ -85,12 +89,12 @@ export const account_mappings = pgTable('account_mappings', {
   createdBy: uuid('created_by'),
 });
 
-export const account_mappingsRelations = relations(accountMappings, ({ one }) => ({
+export const account_mappingsRelations = relations(account_mappings, ({ one }) => ({
   company: one(companies, {
-    fields: [accountMappings.companyId],
+    fields: [account_mappings.companyId],
     references: [companies.id],
   }),
 }));
 
-export type AccountMapping = typeof accountMappings.$inferSelect;
-export type InsertAccountMapping = typeof accountMappings.$inferInsert;
+export type AccountMapping = typeof account_mappings.$inferSelect;
+export type InsertAccountMapping = typeof account_mappings.$inferInsert;

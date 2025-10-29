@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * HR Schema - Romanian Labor and Payroll Compliance
  * 
  * This schema implements HR data structures in compliance with:
@@ -234,7 +238,7 @@ export const hr_payroll_logs = pgTable("hr_payroll_logs", {
  * - Annual leave (CO - concediu de odihna)
  * - Medical leave (CM - concediu medical)
  * - Unpaid leave
- * - Other types of absences
+ * - Other types of hr_absences
  */
 export const hr_absences = pgTable("hr_absences", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -560,10 +564,10 @@ export const hr_revisal_export_logs = pgTable("hr_revisal_export_logs", {
 // ============================================================================
 
 /**
- * Employees (Legacy - without hr_ prefix)
+ * Employees Legacy (without hr_ prefix)
  * @deprecated Use hr_employees instead. Kept for backward compatibility.
  */
-export const hr_employees = pgTable("employees", {
+export const employees = pgTable("employees", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull(),
   firstName: varchar("first_name", { length: 100 }).notNull(),
@@ -589,10 +593,10 @@ export const hr_employees = pgTable("employees", {
 }));
 
 /**
- * Employee Contracts (Legacy)
+ * Employee Contracts Legacy
  * @deprecated Use hr_employment_contracts instead
  */
-export const employee_contracts = pgTable("employee_contracts", {
+export const employee_contracts_legacy = pgTable("employee_contracts", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   employeeId: uuid("employee_id").notNull(),
   contractType: varchar("contract_type", { length: 50 }).notNull(),
@@ -608,10 +612,10 @@ export const employee_contracts = pgTable("employee_contracts", {
 });
 
 /**
- * Employee Documents (Legacy)
+ * Employee Documents Legacy
  * @deprecated Use hr_documents instead
  */
-export const employee_documents = pgTable("employee_documents", {
+export const employee_documents_legacy = pgTable("employee_documents", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   employeeId: uuid("employee_id").notNull(),
   documentType: varchar("document_type", { length: 50 }).notNull(),

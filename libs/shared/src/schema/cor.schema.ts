@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * COR Schema - Clasificarea Ocupatiilor din Romania (Romanian Occupation Classification)
  * 
  * This schema implements the COR table structure following the official Romanian standards:

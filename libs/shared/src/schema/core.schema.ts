@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Core Schema - Fundamental Tables
  * 
  * Contains essential tables for system operation:
@@ -21,6 +25,9 @@ import {
   primaryKey
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
+
+// Forward references (resolved when all schemas combined)
+declare const companies: any;
 
 // ============================================================================
 // RBAC TABLES

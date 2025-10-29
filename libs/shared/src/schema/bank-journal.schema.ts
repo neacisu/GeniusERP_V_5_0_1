@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Bank Journal Schema - Romanian Accounting Standards
  * 
  * Cont 5121 - Conturi la bănci în lei
@@ -110,21 +114,21 @@ export const bank_transactions = pgTable('bank_transactions', {
   dateIdx: index('bank_transactions_date_idx').on(table.transactionDate),
 }));
 
-export const bankAccountRelations = relations(bankAccounts, ({ one, many }) => ({
+export const bankAccountRelations = relations(bank_accounts, ({ one, many }) => ({
   company: one(companies, {
-    fields: [bankAccounts.companyId],
+    fields: [bank_accounts.companyId],
     references: [companies.id],
   }),
   transactions: many(bank_transactions),
 }));
 
-export const bankTransactionRelations = relations(bankTransactions, ({ one }) => ({
+export const bankTransactionRelations = relations(bank_transactions, ({ one }) => ({
   company: one(companies, {
-    fields: [bankTransactions.companyId],
+    fields: [bank_transactions.companyId],
     references: [companies.id],
   }),
   bankAccount: one(bank_accounts, {
-    fields: [bankTransactions.bankAccountId],
+    fields: [bank_transactions.bankAccountId],
     references: [bank_accounts.id],
   }),
 }));
@@ -133,9 +137,9 @@ export const insertBankAccountSchema = createInsertSchema(bank_accounts); // Fix
 
 export const insertBankTransactionSchema = createInsertSchema(bank_transactions); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export type BankAccount = typeof bankAccounts.$inferSelect;
+export type BankAccount = typeof bank_accounts.$inferSelect;
 export type InsertBankAccount = typeof insertBankAccountSchema.type;
 
-export type BankTransaction = typeof bankTransactions.$inferSelect;
+export type BankTransaction = typeof bank_transactions.$inferSelect;
 export type InsertBankTransaction = typeof insertBankTransactionSchema.type;
 

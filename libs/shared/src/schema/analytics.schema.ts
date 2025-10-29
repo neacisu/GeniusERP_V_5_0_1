@@ -16,16 +16,19 @@ import {
   boolean, 
   pgEnum, 
   integer,
-  serial
+  serial,
+  numeric,
+  json,
+  index,
+  unique
 } from 'drizzle-orm/pg-core';
-import { createId } from '../utils/id';
+import { sql, relations } from 'drizzle-orm';
+import { createInsertSchema } from 'drizzle-zod';
+import { z } from 'zod';
 
-// Reference to shared schema - to be replaced with actual imports in final implementation
-// Temporary solution for this module's isolated development
-const users = {
-  id: 'id',
-  companyId: 'company_id'
-};
+// Forward references (resolved when schemas combined)
+declare const companies: any;
+declare const users: any;
 
 /**
  * Report types enum
@@ -95,7 +98,7 @@ export const predictiveScenarioTypeEnum = pgEnum('predictive_scenario_type', [
  * Stores dashboard definitions and metadata
  */
 export const analytics_dashboards = pgTable('analytics_dashboards', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
   description: text('description'),
@@ -116,7 +119,7 @@ export const analytics_dashboards = pgTable('analytics_dashboards', {
  * Stores report definitions and metadata
  */
 export const analytics_reports = pgTable('analytics_reports', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
   description: text('description'),
@@ -137,7 +140,7 @@ export const analytics_reports = pgTable('analytics_reports', {
  * Tracks when reports are run and their results
  */
 export const report_execution_history = pgTable('report_execution_history', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   reportId: varchar('report_id').notNull().references(() => analytics_reports.id),
   companyId: varchar('company_id').notNull(), // References company ID
   executedBy: varchar('executed_by').notNull(), // References user ID
@@ -154,7 +157,7 @@ export const report_execution_history = pgTable('report_execution_history', {
  * Tracks dashboard usage statistics
  */
 export const dashboard_views = pgTable('dashboard_views', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   dashboardId: varchar('dashboard_id').notNull().references(() => analytics_dashboards.id),
   userId: varchar('user_id').notNull(), // References user ID
   viewedAt: timestamp('viewed_at').defaultNow().notNull(),
@@ -167,7 +170,7 @@ export const dashboard_views = pgTable('dashboard_views', {
  * Stores metric definitions and current values
  */
 export const analytics_metrics = pgTable('analytics_metrics', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
   description: text('description'),
@@ -192,7 +195,7 @@ export const analytics_metrics = pgTable('analytics_metrics', {
  * Tracks historical values of metrics over time
  */
 export const metrics_history = pgTable('metrics_history', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   metricId: varchar('metric_id').notNull().references(() => analytics_metrics.id),
   companyId: varchar('company_id').notNull(), // References company ID
   value: text('value').notNull(),
@@ -206,7 +209,7 @@ export const metrics_history = pgTable('metrics_history', {
  * Stores alert definitions and current status
  */
 export const analytics_alerts = pgTable('analytics_alerts', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
   description: text('description'),
@@ -234,7 +237,7 @@ export const analytics_alerts = pgTable('analytics_alerts', {
  * Tracks alert status changes and notifications
  */
 export const alert_history = pgTable('alert_history', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   alertId: varchar('alert_id').notNull().references(() => analytics_alerts.id),
   companyId: varchar('company_id').notNull(), // References company ID
   previousStatus: alertStatusEnum('previous_status'),
@@ -253,7 +256,7 @@ export const alert_history = pgTable('alert_history', {
  * Business intelligence cost centers table
  */
 export const bi_cost_centers = pgTable('bi_cost_centers', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
   code: varchar('code', { length: 50 }).notNull(),
@@ -272,7 +275,7 @@ export const bi_cost_centers = pgTable('bi_cost_centers', {
  * Business intelligence business units table
  */
 export const bi_business_units = pgTable('bi_business_units', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
   code: varchar('code', { length: 50 }).notNull(),
@@ -291,7 +294,7 @@ export const bi_business_units = pgTable('bi_business_units', {
  * Business intelligence cost allocations table
  */
 export const bi_cost_allocations = pgTable('bi_cost_allocations', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
   description: text('description'),
@@ -313,7 +316,7 @@ export const bi_cost_allocations = pgTable('bi_cost_allocations', {
  * Cost allocation history table
  */
 export const cost_allocation_history = pgTable('cost_allocation_history', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   costAllocationId: varchar('cost_allocation_id').notNull().references(() => bi_cost_allocations.id),
   companyId: varchar('company_id').notNull(), // References company ID
   periodStart: timestamp('period_start').notNull(),
@@ -328,7 +331,7 @@ export const cost_allocation_history = pgTable('cost_allocation_history', {
  * Predictive models table
  */
 export const predictive_models = pgTable('predictive_models', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
   description: text('description'),
@@ -350,7 +353,7 @@ export const predictive_models = pgTable('predictive_models', {
  * Model training history table
  */
 export const model_training_history = pgTable('model_training_history', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   modelId: varchar('model_id').notNull().references(() => predictive_models.id),
   companyId: varchar('company_id').notNull(), // References company ID
   trainedAt: timestamp('trained_at').defaultNow().notNull(),
@@ -368,7 +371,7 @@ export const model_training_history = pgTable('model_training_history', {
  * Predictive scenarios table
  */
 export const predictive_scenarios = pgTable('predictive_scenarios', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
   description: text('description'),
@@ -387,7 +390,7 @@ export const predictive_scenarios = pgTable('predictive_scenarios', {
  * Scenario results table
  */
 export const scenario_results = pgTable('scenario_results', {
-  id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
+  id: varchar('id').primaryKey().notNull().$defaultFn(() => sql`gen_random_uuid()`),
   scenarioId: varchar('scenario_id').notNull().references(() => predictive_scenarios.id),
   companyId: varchar('company_id').notNull(), // References company ID
   runAt: timestamp('run_at').defaultNow().notNull(),
@@ -400,24 +403,24 @@ export const scenario_results = pgTable('scenario_results', {
 });
 
 // Type exports for TypeScript
-export type Dashboard = typeof analyticsDashboards.$inferSelect;
-export type InsertDashboard = typeof analyticsDashboards.$inferInsert;
-export type Report = typeof analyticsReports.$inferSelect;
-export type InsertReport = typeof analyticsReports.$inferInsert;
-export type Metric = typeof analyticsMetrics.$inferSelect;
-export type InsertMetric = typeof analyticsMetrics.$inferInsert;
-export type Alert = typeof analyticsAlerts.$inferSelect;
-export type InsertAlert = typeof analyticsAlerts.$inferInsert;
-export type AlertHistory = typeof alertHistory.$inferSelect;
-export type InsertAlertHistory = typeof alertHistory.$inferInsert;
-export type CostCenter = typeof biCostCenters.$inferSelect;
-export type InsertCostCenter = typeof biCostCenters.$inferInsert;
-export type BusinessUnit = typeof biBusinessUnits.$inferSelect;
-export type InsertBusinessUnit = typeof biBusinessUnits.$inferInsert;
-export type CostAllocation = typeof biCostAllocations.$inferSelect;
-export type InsertCostAllocation = typeof biCostAllocations.$inferInsert;
-export type CostAllocationHistory = typeof costAllocationHistory.$inferSelect;
-export type InsertCostAllocationHistory = typeof costAllocationHistory.$inferInsert;
+export type Dashboard = typeof analytics_dashboards.$inferSelect;
+export type InsertDashboard = typeof analytics_dashboards.$inferInsert;
+export type Report = typeof analytics_reports.$inferSelect;
+export type InsertReport = typeof analytics_reports.$inferInsert;
+export type Metric = typeof analytics_metrics.$inferSelect;
+export type InsertMetric = typeof analytics_metrics.$inferInsert;
+export type Alert = typeof analytics_alerts.$inferSelect;
+export type InsertAlert = typeof analytics_alerts.$inferInsert;
+export type AlertHistory = typeof alert_history.$inferSelect;
+export type InsertAlertHistory = typeof alert_history.$inferInsert;
+export type CostCenter = typeof bi_cost_centers.$inferSelect;
+export type InsertCostCenter = typeof bi_cost_centers.$inferInsert;
+export type BusinessUnit = typeof bi_business_units.$inferSelect;
+export type InsertBusinessUnit = typeof bi_business_units.$inferInsert;
+export type CostAllocation = typeof bi_cost_allocations.$inferSelect;
+export type InsertCostAllocation = typeof bi_cost_allocations.$inferInsert;
+export type CostAllocationHistory = typeof cost_allocation_history.$inferSelect;
+export type InsertCostAllocationHistory = typeof cost_allocation_history.$inferInsert;
 
 // Additional types
 export type ReportType = typeof reportTypeEnum.enumValues[number];

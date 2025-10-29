@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Communications Module Schema - Drizzle ORM Definitions
  * 
  * This file defines the database schema for the Communications module tables
@@ -111,7 +115,7 @@ export const communications_threads = pgTable('communications_threads', {
 /**
  * Messages Table
  * 
- * This table stores individual messages within threads.
+ * This table stores individual communications_messages within threads.
  */
 export const communications_messages = pgTable('communications_messages', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -218,7 +222,7 @@ export const communications_channel_configs = pgTable('communications_channel_co
 /**
  * Message Access Control Table
  * 
- * This table controls user access to specific messages.
+ * This table controls user access to specific communications_messages.
  */
 export const communications_message_access = pgTable('communications_message_access', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -300,13 +304,13 @@ export const insertChannelConfigSchema = createInsertSchema(communications_chann
 // Type definitions for inference
 
 export type MessageThreadInsert = z.infer<typeof insertMessageThreadSchema>;
-export type MessageThread = typeof messageThreads.$inferSelect;
+export type MessageThread = typeof communications_threads.$inferSelect;
 
 export type MessageInsert = z.infer<typeof insertMessageSchema>;
-export type Message = typeof messages.$inferSelect;
+export type Message = typeof communications_messages.$inferSelect;
 
 export type ContactInsert = z.infer<typeof insertContactSchema>;
 export type Contact = typeof contacts.$inferSelect;
 
 export type ChannelConfigInsert = z.infer<typeof insertChannelConfigSchema>;
-export type ChannelConfig = typeof channelConfigurations.$inferSelect;
+export type ChannelConfig = typeof communications_channel_configs.$inferSelect;

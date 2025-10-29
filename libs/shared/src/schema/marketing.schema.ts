@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Marketing Module Schema - Drizzle ORM Definitions
  * 
  * This file defines the database schema for the Marketing module tables
@@ -75,7 +79,7 @@ export const audienceTypeEnum = pgEnum('audience_type', [
 /**
  * Campaigns Table
  * 
- * This table stores marketing campaigns that can send messages through
+ * This table stores marketing marketing_campaigns that can send messages through
  * various communication channels.
  */
 export const marketing_campaigns = pgTable('marketing_campaigns', {
@@ -142,7 +146,7 @@ export const marketing_campaigns = pgTable('marketing_campaigns', {
 /**
  * Campaign Messages Table
  * 
- * This table links messages from the communications module to campaigns,
+ * This table links messages from the communications module to marketing_campaigns,
  * allowing tracking of which messages were sent as part of which campaign.
  */
 export const marketing_campaign_messages = pgTable('marketing_campaign_messages', {
@@ -175,7 +179,7 @@ export const marketing_campaign_messages = pgTable('marketing_campaign_messages'
 /**
  * Campaign Segments Table
  * 
- * This table defines customer segments for targeted marketing campaigns.
+ * This table defines customer segments for targeted marketing marketing_campaigns.
  */
 export const marketing_campaign_segments = pgTable('marketing_campaign_segments', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -201,7 +205,7 @@ export const marketing_campaign_segments = pgTable('marketing_campaign_segments'
 /**
  * Campaign Templates Table
  * 
- * This table stores reusable content templates for marketing campaigns.
+ * This table stores reusable content templates for marketing marketing_campaigns.
  */
 export const marketing_campaign_templates = pgTable('marketing_campaign_templates', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -262,13 +266,13 @@ export const insertCampaignTemplateSchema = createInsertSchema(marketing_campaig
 // Type definitions for inference
 
 export type CampaignInsert = z.infer<typeof insertCampaignSchema>;
-export type Campaign = typeof campaigns.$inferSelect;
+export type Campaign = typeof marketing_campaigns.$inferSelect;
 
 export type CampaignMessageInsert = z.infer<typeof insertCampaignMessageSchema>;
-export type CampaignMessage = typeof campaignMessages.$inferSelect;
+export type CampaignMessage = typeof marketing_campaign_messages.$inferSelect;
 
 export type CampaignSegmentInsert = z.infer<typeof insertCampaignSegmentSchema>;
-export type CampaignSegment = typeof campaignSegments.$inferSelect;
+export type CampaignSegment = typeof marketing_campaign_segments.$inferSelect;
 
 export type CampaignTemplateInsert = z.infer<typeof insertCampaignTemplateSchema>;
-export type CampaignTemplate = typeof campaignTemplates.$inferSelect;
+export type CampaignTemplate = typeof marketing_campaign_templates.$inferSelect;

@@ -56,13 +56,13 @@ export const accounting_settings = pgTable('accounting_settings', {
   companyIdx: index('idx_accounting_settings_company_id').on(table.companyId)
 }));
 
-export const accounting_settingsRelations = relations(accountingSettings, ({ one }) => ({
+export const accounting_settingsRelations = relations(accounting_settings, ({ one }) => ({
   company: one(companies, {
-    fields: [accountingSettings.companyId],
+    fields: [accounting_settings.companyId],
     references: [companies.id],
   }),
   creator: one(users, {
-    fields: [accountingSettings.createdBy],
+    fields: [accounting_settings.createdBy],
     references: [users.id],
   }),
 }));
@@ -105,9 +105,9 @@ export const vat_settings = pgTable('vat_settings', {
   companyIdx: index('idx_vat_settings_company_id').on(table.companyId)
 }));
 
-export const vat_settingsRelations = relations(vatSettings, ({ one }) => ({
+export const vat_settingsRelations = relations(vat_settings, ({ one }) => ({
   company: one(companies, {
-    fields: [vatSettings.companyId],
+    fields: [vat_settings.companyId],
     references: [companies.id],
   }),
 }));
@@ -149,9 +149,9 @@ export const account_relationships = pgTable('account_relationships', {
   priorityIdx: index('idx_account_relationships_priority').on(table.priority),
 }));
 
-export const account_relationshipsRelations = relations(accountRelationships, ({ one }) => ({
+export const account_relationshipsRelations = relations(account_relationships, ({ one }) => ({
   company: one(companies, {
-    fields: [accountRelationships.companyId],
+    fields: [account_relationships.companyId],
     references: [companies.id],
   }),
 }));
@@ -193,17 +193,17 @@ export const opening_balances = pgTable('opening_balances', {
   accountCodeIdx: index('idx_opening_balances_account_code').on(table.accountCode),
 }));
 
-export const opening_balancesRelations = relations(openingBalances, ({ one }) => ({
+export const opening_balancesRelations = relations(opening_balances, ({ one }) => ({
   company: one(companies, {
-    fields: [openingBalances.companyId],
+    fields: [opening_balances.companyId],
     references: [companies.id],
   }),
   validator: one(users, {
-    fields: [openingBalances.validatedBy],
+    fields: [opening_balances.validatedBy],
     references: [users.id],
   }),
   creator: one(users, {
-    fields: [openingBalances.createdBy],
+    fields: [opening_balances.createdBy],
     references: [users.id],
   }),
 }));
@@ -219,7 +219,7 @@ export const insertAccountingSettingsSchema = createInsertSchema(accounting_sett
   accountingStartDate: z.date().optional().nullable(),
 });
 
-export const selectAccountingSettingsSchema = createSelectSchema(accountingSettings);
+export const selectAccountingSettingsSchema = createSelectSchema(accounting_settings);
 
 export const updateAccountingSettingsSchema = insertAccountingSettingsSchema.partial().omit({
   id: true,
@@ -238,7 +238,7 @@ export const insertVatSettingsSchema = createInsertSchema(vat_settings, {
   declarationFrequency: z.enum(['monthly', 'quarterly']),
 });
 
-export const selectVatSettingsSchema = createSelectSchema(vatSettings);
+export const selectVatSettingsSchema = createSelectSchema(vat_settings);
 
 export const updateVatSettingsSchema = insertVatSettingsSchema.partial().omit({
   id: true,
@@ -256,7 +256,7 @@ export const insertAccountRelationshipsSchema = createInsertSchema(account_relat
   conditions: z.record(z.string(), z.any()).optional().nullable(),
 });
 
-export const selectAccountRelationshipsSchema = createSelectSchema(accountRelationships);
+export const selectAccountRelationshipsSchema = createSelectSchema(account_relationships);
 
 export const updateAccountRelationshipsSchema = insertAccountRelationshipsSchema.partial().omit({
   id: true,
@@ -275,7 +275,7 @@ export const insertOpeningBalancesSchema = createInsertSchema(opening_balances, 
   importSource: z.enum(['MANUAL', 'CSV', 'EXCEL', 'API']).optional().nullable(),
 });
 
-export const selectOpeningBalancesSchema = createSelectSchema(openingBalances);
+export const selectOpeningBalancesSchema = createSelectSchema(opening_balances);
 
 export const updateOpeningBalancesSchema = insertOpeningBalancesSchema.partial().omit({
   id: true,
@@ -289,19 +289,19 @@ export const updateOpeningBalancesSchema = insertOpeningBalancesSchema.partial()
 // TYPESCRIPT TYPES
 // ============================================================
 
-export type AccountingSettings = typeof accountingSettings.$inferSelect;
+export type AccountingSettings = typeof accounting_settings.$inferSelect;
 export type InsertAccountingSettings = z.infer<typeof insertAccountingSettingsSchema>;
 export type UpdateAccountingSettings = z.infer<typeof updateAccountingSettingsSchema>;
 
-export type VatSettings = typeof vatSettings.$inferSelect;
+export type VatSettings = typeof vat_settings.$inferSelect;
 export type InsertVatSettings = z.infer<typeof insertVatSettingsSchema>;
 export type UpdateVatSettings = z.infer<typeof updateVatSettingsSchema>;
 
-export type AccountRelationship = typeof accountRelationships.$inferSelect;
+export type AccountRelationship = typeof account_relationships.$inferSelect;
 export type InsertAccountRelationship = z.infer<typeof insertAccountRelationshipsSchema>;
 export type UpdateAccountRelationship = z.infer<typeof updateAccountRelationshipsSchema>;
 
-export type OpeningBalance = typeof openingBalances.$inferSelect;
+export type OpeningBalance = typeof opening_balances.$inferSelect;
 export type InsertOpeningBalance = z.infer<typeof insertOpeningBalancesSchema>;
 export type UpdateOpeningBalance = z.infer<typeof updateOpeningBalancesSchema>;
 
@@ -334,10 +334,10 @@ export const RELATIONSHIP_TYPES = {
 
 // Export all
 export default {
-  accountingSettings,
-  vatSettings,
-  accountRelationships,
-  openingBalances,
+  accounting_settings,
+  vat_settings,
+  account_relationships,
+  opening_balances,
   accounting_settingsRelations,
   vat_settingsRelations,
   account_relationshipsRelations,

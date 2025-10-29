@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Business Process Automation (BPM) Schema
  * 
  * This schema defines the database structure for the Business Process Automation module.
@@ -272,26 +276,26 @@ export const insertBpmApiConnectionSchema = createInsertSchema(bpm_api_connectio
 export const insertBpmScheduledJobSchema = createInsertSchema(bpm_scheduled_jobs);
 
 // Export types
-export type BpmProcess = typeof bpmProcesses.$inferSelect;
-export type NewBpmProcess = typeof bpmProcesses.$inferInsert;
+export type BpmProcess = typeof bpm_processes.$inferSelect;
+export type NewBpmProcess = typeof bpm_processes.$inferInsert;
 
-export type BpmTrigger = typeof bpmTriggers.$inferSelect;
-export type NewBpmTrigger = typeof bpmTriggers.$inferInsert;
+export type BpmTrigger = typeof bpm_triggers.$inferSelect;
+export type NewBpmTrigger = typeof bpm_triggers.$inferInsert;
 
-export type BpmProcessInstance = typeof bpmProcessInstances.$inferSelect;
-export type NewBpmProcessInstance = typeof bpmProcessInstances.$inferInsert;
+export type BpmProcessInstance = typeof bpm_process_instances.$inferSelect;
+export type NewBpmProcessInstance = typeof bpm_process_instances.$inferInsert;
 
-export type BpmStepTemplate = typeof bpmStepTemplates.$inferSelect;
-export type NewBpmStepTemplate = typeof bpmStepTemplates.$inferInsert;
+export type BpmStepTemplate = typeof bpm_step_templates.$inferSelect;
+export type NewBpmStepTemplate = typeof bpm_step_templates.$inferInsert;
 
-export type BpmStepExecution = typeof bpmStepExecutions.$inferSelect;
-export type NewBpmStepExecution = typeof bpmStepExecutions.$inferInsert;
+export type BpmStepExecution = typeof bpm_step_executions.$inferSelect;
+export type NewBpmStepExecution = typeof bpm_step_executions.$inferInsert;
 
-export type BpmApproval = typeof bpmApprovals.$inferSelect;
-export type NewBpmApproval = typeof bpmApprovals.$inferInsert;
+export type BpmApproval = typeof bpm_approvals.$inferSelect;
+export type NewBpmApproval = typeof bpm_approvals.$inferInsert;
 
-export type BpmApiConnection = typeof bpmApiConnections.$inferSelect;
-export type NewBpmApiConnection = typeof bpmApiConnections.$inferInsert;
+export type BpmApiConnection = typeof bpm_api_connections.$inferSelect;
+export type NewBpmApiConnection = typeof bpm_api_connections.$inferInsert;
 
-export type BpmScheduledJob = typeof bpmScheduledJobs.$inferSelect;
-export type NewBpmScheduledJob = typeof bpmScheduledJobs.$inferInsert;
+export type BpmScheduledJob = typeof bpm_scheduled_jobs.$inferSelect;
+export type NewBpmScheduledJob = typeof bpm_scheduled_jobs.$inferInsert;

@@ -1,4 +1,8 @@
 /**
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { numeric, json } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
  * Cash Register Schema - Romanian Accounting Standards
  * 
  * Implementează Registrul de Casă conform:
@@ -213,29 +217,29 @@ export const cash_transactions = pgTable('cash_transactions', {
 /**
  * Relations
  */
-export const cashRegisterRelations = relations(cashRegisters, ({ one, many }) => ({
+export const cashRegisterRelations = relations(cash_registers, ({ one, many }) => ({
   company: one(companies, {
-    fields: [cashRegisters.companyId],
+    fields: [cash_registers.companyId],
     references: [companies.id],
   }),
   responsiblePerson: one(users, {
-    fields: [cashRegisters.responsiblePersonId],
+    fields: [cash_registers.responsiblePersonId],
     references: [users.id],
   }),
   transactions: many(cash_transactions),
 }));
 
-export const cashTransactionRelations = relations(cashTransactions, ({ one }) => ({
+export const cashTransactionRelations = relations(cash_transactions, ({ one }) => ({
   company: one(companies, {
-    fields: [cashTransactions.companyId],
+    fields: [cash_transactions.companyId],
     references: [companies.id],
   }),
   cashRegister: one(cash_registers, {
-    fields: [cashTransactions.cashRegisterId],
+    fields: [cash_transactions.cashRegisterId],
     references: [cash_registers.id],
   }),
   createdByUser: one(users, {
-    fields: [cashTransactions.createdBy],
+    fields: [cash_transactions.createdBy],
     references: [users.id],
   }),
 }));
@@ -250,9 +254,9 @@ export const insertCashTransactionSchema = createInsertSchema(cash_transactions)
 /**
  * Types
  */
-export type CashRegister = typeof cashRegisters.$inferSelect;
+export type CashRegister = typeof cash_registers.$inferSelect;
 export type InsertCashRegister = z.infer<typeof insertCashRegisterSchema>;
 
-export type CashTransaction = typeof cashTransactions.$inferSelect;
+export type CashTransaction = typeof cash_transactions.$inferSelect;
 export type InsertCashTransaction = z.infer<typeof insertCashTransactionSchema>;
 
