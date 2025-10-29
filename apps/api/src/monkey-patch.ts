@@ -13,4 +13,4 @@ console.warn = function(...args: unknown[]) {
 };
 
 // This will help silence eviction policy warnings from BullMQ
-process.env.BULLMQ_IGNORE_EVICTION_POLICY = "true";
+process.env['BULLMQ_IGNORE_EVICTION_POLICY'] = "true";

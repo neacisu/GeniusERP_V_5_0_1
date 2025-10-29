@@ -12,7 +12,7 @@ const logger = createModuleLogger('sentry-middleware');
  */
 export function initializeSentry(app: Express): void {
   // Verifică dacă SENTRY_DSN este configurat
-  if (!process.env.SENTRY_DSN) {
+  if (!process.env['SENTRY_DSN']) {
     logger.warn('SENTRY_DSN nu este configurat - Sentry error tracking disabled');
     logger.warn('Pentru a activa Sentry, configurează SENTRY_DSN în fișierul .env');
     logger.warn('Vizitează https://sentry.io pentru a crea un cont și a obține DSN-ul');
@@ -24,11 +24,11 @@ export function initializeSentry(app: Express): void {
 
   // Configurare Sentry v10+ API
   Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV || 'development',
+    dsn: process.env['SENTRY_DSN'],
+    environment: process.env['NODE_ENV'] || 'development',
     
     // Performance Monitoring
-    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    tracesSampleRate: process.env['NODE_ENV'] === 'production' ? 0.1 : 1.0,
     
     // Integrations (API v10+)
     integrations: [
@@ -40,7 +40,7 @@ export function initializeSentry(app: Express): void {
     ],
 
     // Release tracking
-    release: process.env.npm_package_version || '1.0.0',
+    release: process.env['npm_package_version'] || '1.0.0',
 
     // Ignore specific errors
     ignoreErrors: [
@@ -54,7 +54,7 @@ export function initializeSentry(app: Express): void {
     // Before send hook - pentru filtrare suplimentară
     beforeSend(event) {
       // Nu trimite erori din development dacă nu vrei
-      if (process.env.NODE_ENV === 'development' && process.env.SENTRY_SKIP_DEV === 'true') {
+      if (process.env['NODE_ENV'] === 'development' && process.env['SENTRY_SKIP_DEV'] === 'true') {
         return null;
       }
       
@@ -79,7 +79,7 @@ export function initializeSentry(app: Express): void {
  */
 export function sentryErrorHandler(app: Express) {
   // Dacă SENTRY_DSN nu e configurat, returnează un middleware gol
-  if (!process.env.SENTRY_DSN) {
+  if (!process.env['SENTRY_DSN']) {
     return (err: any, req: any, res: any, next: any) => next(err);
   }
 

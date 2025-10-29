@@ -70,7 +70,7 @@ export function csrfSetup() {
     // Setează cookie-ul CSRF (httpOnly: false pentru access JavaScript)
     res.cookie(CSRF_COOKIE_NAME, token, {
       httpOnly: false, // Trebuie să fie false pentru a putea fi citit de frontend
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env['NODE_ENV'] === 'production',
       sameSite: 'strict',
       maxAge: CSRF_TOKEN_EXPIRY
     });

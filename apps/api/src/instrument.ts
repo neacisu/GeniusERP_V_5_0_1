@@ -14,15 +14,15 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 // Only initialize if SENTRY_DSN is configured
-if (process.env.SENTRY_DSN) {
+if (process.env['SENTRY_DSN']) {
   console.log('[Sentry] Initializing Sentry instrumentation...');
   
   Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV || 'development',
+    dsn: process.env['SENTRY_DSN'],
+    environment: process.env['NODE_ENV'] || 'development',
     
     // Performance Monitoring
-    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    tracesSampleRate: process.env['NODE_ENV'] === 'production' ? 0.1 : 1.0,
     
     // Integrations for Express and HTTP
     integrations: [
@@ -37,7 +37,7 @@ if (process.env.SENTRY_DSN) {
     ],
 
     // Release tracking
-    release: process.env.npm_package_version || '1.0.0',
+    release: process.env['npm_package_version'] || '1.0.0',
 
     // Ignore specific errors
     ignoreErrors: [
@@ -50,7 +50,7 @@ if (process.env.SENTRY_DSN) {
     // Before send hook
     beforeSend(event) {
       // Don't send errors from development if configured
-      if (process.env.NODE_ENV === 'development' && process.env.SENTRY_SKIP_DEV === 'true') {
+      if (process.env['NODE_ENV'] === 'development' && process.env['SENTRY_SKIP_DEV'] === 'true') {
         return null;
       }
       

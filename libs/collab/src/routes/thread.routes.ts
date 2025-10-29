@@ -31,7 +31,7 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
   app.get(BASE_PATH, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       // const companyId = req.user.companyId;  // Unused variable
       
@@ -75,7 +75,7 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
   app.get(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       const { id } = req.params;
       // const companyId = req.user.companyId;  // Unused variable
@@ -83,7 +83,7 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
       const thread = await threadService.getThreadById(id, companyId);
       
       if (!thread) {
-        return return res.status(404).json({ message: 'Thread not found' });
+        return res.status(404).json({ message: 'Thread not found' });
       }
       
       return res.status(200).json(thread);
@@ -101,7 +101,7 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
   app.post(BASE_PATH, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       // const userId = req.user.id;  // Unused variable
       // const companyId = req.user.companyId;  // Unused variable
@@ -139,7 +139,7 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
   app.patch(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       const { id } = req.params;
       // const userId = req.user.id;  // Unused variable
@@ -170,7 +170,7 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
   app.delete(`${BASE_PATH}/:id`, AuthGuard.requireAuth(), AuthGuard.requireCompanyAccess(), async (req: Request, res: Response) => {
     try {
       if (!req.user || !req.user.companyId) {
-        return return res.status(401).json({ message: 'User not authenticated or missing company' });
+        return res.status(401).json({ message: 'User not authenticated or missing company' });
       }
       const { id } = req.params;
       // const companyId = req.user.companyId;  // Unused variable
@@ -178,7 +178,7 @@ export function registerThreadRoutes(app: Express, threadService: ThreadService)
       const success = await threadService.deleteThread(id, companyId);
       
       if (!success) {
-        return return res.status(404).json({ message: 'Thread not found' });
+        return res.status(404).json({ message: 'Thread not found' });
       }
       
       return res.status(204).send();
