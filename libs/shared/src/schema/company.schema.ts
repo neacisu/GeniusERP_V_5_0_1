@@ -1,8 +1,4 @@
 /**
-import { numeric, json } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
-import { numeric, json } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
  * Company Schema
  * 
  * Schema definition for companies and their configurations.
@@ -16,7 +12,9 @@ import {
   text, 
   varchar,
   pgEnum,
-  decimal
+  decimal,
+  boolean,
+  integer
 } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
@@ -55,6 +53,12 @@ export const companies = pgTable('companies', {
   bankName: varchar('bank_name', { length: 100 }),
   bankAccount: varchar('bank_account', { length: 50 }),
   socialCapital: decimal('social_capital', { precision: 15, scale: 2 }),
+  
+  // VAT settings (missing columns)
+  vatPayer: boolean('vat_payer').default(true),
+  vatRate: integer('vat_rate').default(19),
+  useCashVAT: boolean('use_cash_vat').default(false),
+  
   logo: text('logo_url'), // Coloana din baza de date este 'logo_url'
   settings: text('settings'),
   createdAt: timestamp('created_at', { mode: 'string' }).notNull().defaultNow(),

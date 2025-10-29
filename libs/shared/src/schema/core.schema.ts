@@ -59,6 +59,13 @@ export const users = pgTable('users', {
   two_factor_enabled: boolean('two_factor_enabled').default(false),
   two_factor_secret: text('two_factor_secret'),
   backup_codes: text('backup_codes'),
+  
+  // MFA fields (missing from schema)
+  mfa_enabled: boolean('mfa_enabled').default(false),
+  mfa_secret: text('mfa_secret'),
+  mfa_backup_codes: text('mfa_backup_codes'),
+  role: text('role').notNull().default('user'),
+  
   preferences: text('preferences'),
   locale: varchar('locale', { length: 10 }).default('ro'),
   timezone: varchar('timezone', { length: 50 }).default('Europe/Bucharest'),

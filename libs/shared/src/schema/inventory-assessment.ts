@@ -61,6 +61,7 @@ export const countResultEnumType = pgEnum('inventory_count_result', ['MATCH', 'S
 export const inventory_warehouses = pgTable('inventory_warehouses', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
+  franchiseId: uuid('franchise_id'),
   parentId: uuid('parent_id'),
   name: text('name').notNull(),
   code: text('code').notNull().unique(),
