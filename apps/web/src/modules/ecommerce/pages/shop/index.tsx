@@ -622,10 +622,10 @@ export default function ShopPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Input value={item.title} className="h-8" />
+                          <Input value={item.title} className="h-8" readOnly />
                         </TableCell>
                         <TableCell>
-                          <Input value={item.url} className="h-8" />
+                          <Input value={item.url} className="h-8" readOnly />
                         </TableCell>
                         <TableCell>
                           <Switch checked={item.visible} />
