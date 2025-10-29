@@ -15,7 +15,7 @@ export enum LogLevel {
 /**
  * Default log level
  */
-export const DEFAULT_LOG_LEVEL = process.env.NODE_ENV === 'production' 
+export const DEFAULT_LOG_LEVEL = process.env['NODE_ENV'] === 'production' 
   ? LogLevel.INFO 
   : LogLevel.DEBUG;
 

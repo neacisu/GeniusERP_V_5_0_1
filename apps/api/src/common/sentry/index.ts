@@ -17,7 +17,7 @@ let isSentryActive = false;
  * Verifică dacă Sentry e activ
  */
 export function isSentryEnabled(): boolean {
-  return isSentryActive && !!process.env.SENTRY_DSN;
+  return isSentryActive && !!process.env['SENTRY_DSN'];
 }
 
 /**

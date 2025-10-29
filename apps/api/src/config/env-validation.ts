@@ -130,13 +130,13 @@ export function getEnvVar(key: keyof ValidatedEnv): string | undefined {
  * Verifică dacă aplicația rulează în producție
  */
 export function isProduction(): boolean {
-  return process.env.NODE_ENV === 'production';
+  return process.env['NODE_ENV'] === 'production';
 }
 
 /**
  * Verifică dacă aplicația rulează în development
  */
 export function isDevelopment(): boolean {
-  return process.env.NODE_ENV === 'development';
+  return process.env['NODE_ENV'] === 'development';
 }
 

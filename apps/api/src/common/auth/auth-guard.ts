@@ -48,7 +48,7 @@ export const authGuard = (req: Request, res: Response, next: NextFunction) => {
     const token = tokenParts[1];
     
     // Verify the token
-    const jwtSecret = process.env.JWT_SECRET;
+    const jwtSecret = process.env['JWT_SECRET'];
     if (!jwtSecret) {
       logger.error('JWT_SECRET environment variable is not set');
       throw new Error('JWT_SECRET environment variable is required for authentication');
@@ -149,7 +149,7 @@ export const companyGuard = (req: Request, res: Response, next: NextFunction) =>
     }
     
     // Get company ID from URL parameters or query string
-    const urlCompanyId = req.params.companyId || req.query.companyId as string;
+    const urlCompanyId = req.params['companyId'] || req.query['companyId'] as string;
     
     // If no company ID is specified in the URL, continue
     if (!urlCompanyId) {

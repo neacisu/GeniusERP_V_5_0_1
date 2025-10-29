@@ -122,7 +122,7 @@ export class ElevenLabsClient extends BaseIntegrationClient {
       }
       
       const config = integration.config as Record<string, any>;
-      const apiKey = config.apiKey;
+      const apiKey = config['apiKey'];
       
       if (!apiKey) {
         return false;
@@ -193,7 +193,7 @@ export class ElevenLabsClient extends BaseIntegrationClient {
       }
       
       const config = integration.config as Record<string, any>;
-      const apiKey = config.apiKey;
+      const apiKey = config['apiKey'];
       
       if (!apiKey) {
         throw new Error('API key not configured');
@@ -226,7 +226,7 @@ export class ElevenLabsClient extends BaseIntegrationClient {
       }
       
       const config = integration.config as Record<string, any>;
-      const apiKey = config.apiKey;
+      const apiKey = config['apiKey'];
       
       if (!apiKey) {
         throw new Error('API key not configured');
@@ -273,8 +273,8 @@ export class ElevenLabsClient extends BaseIntegrationClient {
       }
       
       const config = integration.config as Record<string, any>;
-      const apiKey = config.apiKey;
-      const defaultVoiceId = config.defaultVoiceId;
+      const apiKey = config['apiKey'];
+      const defaultVoiceId = config['defaultVoiceId'];
       
       if (!apiKey) {
         throw new Error('API key not configured');
@@ -330,7 +330,7 @@ export class ElevenLabsClient extends BaseIntegrationClient {
       }
       
       const config = integration.config as Record<string, any>;
-      const apiKey = config.apiKey;
+      const apiKey = config['apiKey'];
       
       if (!apiKey) {
         throw new Error('API key not configured');
@@ -366,7 +366,7 @@ export class ElevenLabsClient extends BaseIntegrationClient {
       }
       
       const config = integration.config as Record<string, any>;
-      const apiKey = config.apiKey;
+      const apiKey = config['apiKey'];
       
       if (!apiKey) {
         throw new Error('API key not configured');
@@ -415,8 +415,8 @@ export class ElevenLabsClient extends BaseIntegrationClient {
     }
     
     const config = integration.config as Record<string, any>;
-    const apiKey = config.apiKey;
-    const defaultVoiceId = config.defaultVoiceId;
+    const apiKey = config['apiKey'];
+    const defaultVoiceId = config['defaultVoiceId'];
     
     if (!apiKey) {
       throw new Error('API key not configured');

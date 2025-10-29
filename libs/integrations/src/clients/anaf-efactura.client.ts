@@ -116,7 +116,7 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
       }
       
       // Test the connection by getting account info
-      const response = await axios.get(`${config.apiUrl}/account/info`, {
+      const response = await axios.get(`${config['apiUrl']}/account/info`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json'
@@ -143,25 +143,25 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
       
       // Check if the token is still valid
       if (
-        config.accessToken &&
-        config.tokenExpiresAt &&
-        new Date(config.tokenExpiresAt) > new Date()
+        config['accessToken'] &&
+        config['tokenExpiresAt'] &&
+        new Date(config['tokenExpiresAt']) > new Date()
       ) {
-        return config.accessToken;
+        return config['accessToken'];
       }
       
       // Get a new token
       const response = await axios.post(
-        `${config.apiUrl}/oauth2/token`,
+        `${config['apiUrl']}/oauth2/token`,
         {
           grant_type: 'client_credentials',
-          client_id: config.clientId,
-          client_secret: config.clientSecret
+          client_id: config['clientId'],
+          client_secret: config['clientSecret']
         },
         {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'x-api-key': config.apiKey
+            'x-api-key': config['apiKey']
           }
         }
       );
@@ -211,7 +211,7 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
       
       // Send the invoice
       const response = await axios.post(
-        `${config.apiUrl}/upload`,
+        `${config['apiUrl']}/upload`,
         {
           xml_data: invoiceXml
         },
@@ -219,7 +219,7 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
-            'x-api-key': config.apiKey
+            'x-api-key': config['apiKey']
           }
         }
       );
@@ -268,7 +268,7 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
       
       // Get invoices
       const response = await axios.get(
-        `${config.apiUrl}/invoices`,
+        `${config['apiUrl']}/invoices`,
         {
           params: {
             startDate,
@@ -277,7 +277,7 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
-            'x-api-key': config.apiKey
+            'x-api-key': config['apiKey']
           }
         }
       );
@@ -325,12 +325,12 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
       
       // Get invoice
       const response = await axios.get(
-        `${config.apiUrl}/invoices/${invoiceId}`,
+        `${config['apiUrl']}/invoices/${invoiceId}`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
-            'x-api-key': config.apiKey
+            'x-api-key': config['apiKey']
           }
         }
       );
@@ -371,12 +371,12 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
       
       // Get invoice status
       const response = await axios.get(
-        `${config.apiUrl}/invoices/${invoiceId}/status`,
+        `${config['apiUrl']}/invoices/${invoiceId}/status`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
-            'x-api-key': config.apiKey
+            'x-api-key': config['apiKey']
           }
         }
       );
@@ -417,12 +417,12 @@ export class AnafEfacturaClient extends BaseIntegrationClient {
       
       // Download invoice XML
       const response = await axios.get(
-        `${config.apiUrl}/invoices/${invoiceId}/download`,
+        `${config['apiUrl']}/invoices/${invoiceId}/download`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
-            'x-api-key': config.apiKey
+            'x-api-key': config['apiKey']
           }
         }
       );

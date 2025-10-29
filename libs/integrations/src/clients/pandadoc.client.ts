@@ -221,7 +221,7 @@ export class PandaDocClient extends BaseIntegrationClient {
         }
         
         this.integration = integration;
-        apiKey = (integration.config as Record<string, any>).apiKey;
+        apiKey = (integration.config as Record<string, any>)['apiKey'];
       }
       
       if (!apiKey) {
@@ -252,7 +252,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.get('/templates', {
         headers: {
-          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`
+          'Authorization': `API-Key ${(integration.config as Record<string, any>)['apiKey']}`
         }
       });
       
@@ -275,7 +275,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.get(`/templates/${templateId}`, {
         headers: {
-          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`
+          'Authorization': `API-Key ${(integration.config as Record<string, any>)['apiKey']}`
         }
       });
       
@@ -326,7 +326,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.post('/documents', payload, {
         headers: {
-          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`
+          'Authorization': `API-Key ${(integration.config as Record<string, any>)['apiKey']}`
         }
       });
       
@@ -381,7 +381,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.post('/documents', formData, {
         headers: {
-          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`,
+          'Authorization': `API-Key ${(integration.config as Record<string, any>)['apiKey']}`,
           'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
         }
       });
@@ -439,7 +439,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.post('/documents', formData, {
         headers: {
-          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`,
+          'Authorization': `API-Key ${(integration.config as Record<string, any>)['apiKey']}`,
           'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
         }
       });
@@ -465,7 +465,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.get(`/documents/${documentId}`, {
         headers: {
-          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`
+          'Authorization': `API-Key ${(integration.config as Record<string, any>)['apiKey']}`
         }
       });
       
@@ -511,7 +511,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.get(`/documents/${documentId}/download`, {
         headers: {
-          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`
+          'Authorization': `API-Key ${(integration.config as Record<string, any>)['apiKey']}`
         },
         responseType: 'arraybuffer'
       });
@@ -550,7 +550,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.post(`/documents/${documentId}/send`, payload, {
         headers: {
-          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`
+          'Authorization': `API-Key ${(integration.config as Record<string, any>)['apiKey']}`
         }
       });
       
@@ -587,7 +587,7 @@ export class PandaDocClient extends BaseIntegrationClient {
       
       const response = await this.axios.post(`/documents/${documentId}/session`, payload, {
         headers: {
-          'Authorization': `API-Key ${(integration.config as Record<string, any>).apiKey}`
+          'Authorization': `API-Key ${(integration.config as Record<string, any>)['apiKey']}`
         }
       });
       

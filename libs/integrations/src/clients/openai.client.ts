@@ -104,13 +104,13 @@ export class OpenAIClient extends BaseIntegrationClient {
     try {
       const integration = await this.getIntegrationRecord();
       
-      if (!integration || !integration.config) {
+      if (!integration) {
         return false;
       }
       
       const config = integration.config as Record<string, any>;
-      const apiKey = config.apiKey;
-      const organization = config.organization;
+      const apiKey = config['apiKey'];
+      const organization = config['organization'];
       
       if (!apiKey) {
         return false;
@@ -181,13 +181,13 @@ export class OpenAIClient extends BaseIntegrationClient {
     try {
       const integration = await this.getIntegrationRecord();
       
-      if (!integration || !integration.config) {
+      if (!integration) {
         throw new Error('Integration not configured');
       }
       
       const config = integration.config as Record<string, any>;
-      const apiKey = config.apiKey;
-      const organization = config.organization;
+      const apiKey = config['apiKey'];
+      const organization = config['organization'];
       
       if (!apiKey) {
         throw new Error('API key not configured');
@@ -207,7 +207,7 @@ export class OpenAIClient extends BaseIntegrationClient {
       
       await this.updateLastSynced(integration.id, 'system');
       
-      return response.data.data;
+      return response.data['data'];
     } catch (error) {
       throw new Error(`Failed to get OpenAI models: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -234,9 +234,9 @@ export class OpenAIClient extends BaseIntegrationClient {
       }
       
       const config = integration.config as Record<string, any>;
-      const apiKey = config.apiKey;
-      const organization = config.organization;
-      const defaultModel = config.defaultModel || OpenAIModel.GPT_3_5_TURBO;
+      const apiKey = config['apiKey'];
+      const organization = config['organization'];
+      const defaultModel = config['defaultModel'] || OpenAIModel.GPT_3_5_TURBO;
       
       if (!apiKey) {
         throw new Error('API key not configured');
@@ -268,7 +268,7 @@ export class OpenAIClient extends BaseIntegrationClient {
       
       await this.updateLastSynced(integration.id, 'system');
       
-      return response.data.choices[0]?.message?.content || '';
+      return response.data['choices'][0]?.message?.content || '';
     } catch (error) {
       throw new Error(`Failed to create OpenAI completion: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -291,8 +291,8 @@ export class OpenAIClient extends BaseIntegrationClient {
       }
       
       const config = integration.config as Record<string, any>;
-      const apiKey = config.apiKey;
-      const organization = config.organization;
+      const apiKey = config['apiKey'];
+      const organization = config['organization'];
       
       if (!apiKey) {
         throw new Error('API key not configured');
@@ -322,7 +322,7 @@ export class OpenAIClient extends BaseIntegrationClient {
       
       await this.updateLastSynced(integration.id, 'system');
       
-      return response.data.data.map((item: any) => item.embedding);
+      return response.data['data'].map((item: any) => item.embedding);
     } catch (error) {
       throw new Error(`Failed to create OpenAI embedding: ${error instanceof Error ? error.message : String(error)}`);
     }

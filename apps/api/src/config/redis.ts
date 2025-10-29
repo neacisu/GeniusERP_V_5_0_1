@@ -23,14 +23,14 @@ const DEFAULT_REDIS_PREFIX = 'anaf:';
  */
 export function getRedisConfig(withPrefix: boolean = false) {
   // Extrage valorile din variabilele de mediu sau folosește valorile implicite
-  const host = process.env.REDIS_HOST || DEFAULT_REDIS_HOST;
-  const port = parseInt(process.env.REDIS_PORT || DEFAULT_REDIS_PORT.toString(), 10);
-  const password = process.env.REDIS_PASSWORD || DEFAULT_REDIS_PASSWORD;
-  const db = parseInt(process.env.REDIS_DB || DEFAULT_REDIS_DB.toString(), 10);
-  const prefix = process.env.REDIS_PREFIX || DEFAULT_REDIS_PREFIX;
+  const host = process.env['REDIS_HOST'] || DEFAULT_REDIS_HOST;
+  const port = parseInt(process.env['REDIS_PORT'] || DEFAULT_REDIS_PORT.toString(), 10);
+  const password = process.env['REDIS_PASSWORD'] || DEFAULT_REDIS_PASSWORD;
+  const db = parseInt(process.env['REDIS_DB'] || DEFAULT_REDIS_DB.toString(), 10);
+  const prefix = process.env['REDIS_PREFIX'] || DEFAULT_REDIS_PREFIX;
   
   // Construiește URL-ul Redis pentru conexiuni cloud (opțional)
-  const redisUrl = process.env.REDIS_URL;
+  const redisUrl = process.env['REDIS_URL'];
   
   // Configurație de bază
   const baseConfig = {
@@ -78,7 +78,7 @@ export function getBullMQRedisConfig() {
   const baseConfig = getRedisConfig(false);
   
   // Obține prefixul pentru a-l folosi în opțiunile BullMQ
-  const prefix = process.env.REDIS_PREFIX || DEFAULT_REDIS_PREFIX;
+  const prefix = process.env['REDIS_PREFIX'] || DEFAULT_REDIS_PREFIX;
   
   return {
     connection: baseConfig,
@@ -91,8 +91,8 @@ export function getBullMQRedisConfig() {
  * Returnează un URL Redis bazat pe configurație
  */
 export function getRedisUrl(): string {
-  if (process.env.REDIS_URL) {
-    return process.env.REDIS_URL;
+  if (process.env['REDIS_URL']) {
+    return process.env['REDIS_URL'];
   }
   
   const config = getRedisConfig();

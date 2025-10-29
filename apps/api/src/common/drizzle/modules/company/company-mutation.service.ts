@@ -140,20 +140,20 @@ export class CompanyMutationService extends BaseDrizzleService {
         };
         
         // Add standard fields if they are provided
-        if (data.name !== undefined) updates.name = data.name;
-        if (data.fiscalCode !== undefined) updates.fiscalCode = data.fiscalCode;
-        if (data.registrationNumber !== undefined) updates.registrationNumber = data.registrationNumber;
-        if (data.address !== undefined) updates.address = data.address;
-        if (data.city !== undefined) updates.city = data.city;
-        if (data.county !== undefined) updates.county = data.county;
-        if (data.country !== undefined) updates.country = data.country;
-        if (data.phone !== undefined) updates.phone = data.phone;
-        if (data.email !== undefined) updates.email = data.email;
-        if (data.bankAccount !== undefined) updates.bankAccount = data.bankAccount;
-        if (data.bankName !== undefined) updates.bankName = data.bankName;
-        if (data.vatPayer !== undefined) updates.vatPayer = data.vatPayer;
-        if (data.vatRate !== undefined) updates.vatRate = data.vatRate;
-        if (data.logoUrl !== undefined) updates.logoUrl = data.logoUrl;
+        if (data['name'] !== undefined) updates['name'] = data['name'];
+        if (data['fiscalCode'] !== undefined) updates['fiscalCode'] = data['fiscalCode'];
+        if (data['registrationNumber'] !== undefined) updates['registrationNumber'] = data['registrationNumber'];
+        if (data['address'] !== undefined) updates['address'] = data['address'];
+        if (data['city'] !== undefined) updates['city'] = data['city'];
+        if (data['county'] !== undefined) updates['county'] = data['county'];
+        if (data['country'] !== undefined) updates['country'] = data['country'];
+        if (data['phone'] !== undefined) updates['phone'] = data['phone'];
+        if (data['email'] !== undefined) updates['email'] = data['email'];
+        if (data['bankAccount'] !== undefined) updates['bankAccount'] = data['bankAccount'];
+        if (data['bankName'] !== undefined) updates['bankName'] = data['bankName'];
+        if (data['vatPayer'] !== undefined) updates['vatPayer'] = data['vatPayer'];
+        if (data['vatRate'] !== undefined) updates['vatRate'] = data['vatRate'];
+        if (data['logoUrl'] !== undefined) updates['logoUrl'] = data['logoUrl'];
         
         // Update standard fields first
         if (Object.keys(updates).length > 1) { // More than just updatedAt
@@ -166,11 +166,11 @@ export class CompanyMutationService extends BaseDrizzleService {
         // Update custom fields through raw SQL
         const customUpdates: Record<string, any> = {};
         
-        if (data.type !== undefined) customUpdates.type = data.type;
-        if (data.parentId !== undefined) customUpdates.parent_id = data.parentId;
+        if (data['type'] !== undefined) customUpdates['type'] = data['type'];
+        if (data['parentId'] !== undefined) customUpdates['parent_id'] = data['parentId'];
         
         // Always set updated_by
-        customUpdates.updated_by = updatedBy;
+        customUpdates['updated_by'] = updatedBy;
         
         if (Object.keys(customUpdates).length > 0) {
           const fieldsToUpdate = Object.entries(customUpdates)

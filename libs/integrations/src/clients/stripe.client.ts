@@ -597,8 +597,8 @@ export class StripeClient extends BaseIntegrationClient {
       }
       
       // If not found in database, check environment variables
-      const envApiKey = process.env.STRIPE_SECRET_KEY;
-      const envWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+      const envApiKey = process.env['STRIPE_SECRET_KEY'];
+      const envWebhookSecret = process.env['STRIPE_WEBHOOK_SECRET'];
       
       if (envApiKey) {
         logger.info('Using Stripe API key from environment variables', { 

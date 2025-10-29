@@ -122,9 +122,9 @@ export class MicrosoftGraphClient extends BaseIntegrationClient {
       }
       
       const config = integration.config as Record<string, any>;
-      const clientId = config.clientId;
-      const clientSecret = config.clientSecret;
-      const redirectUri = config.redirectUri;
+      const clientId = config['clientId'];
+      const clientSecret = config['clientSecret'];
+      const redirectUri = config['redirectUri'];
       
       if (!clientId || !clientSecret || !redirectUri) {
         throw new Error('Microsoft Graph credentials not configured');
@@ -194,9 +194,9 @@ export class MicrosoftGraphClient extends BaseIntegrationClient {
       }
       
       const config = integration.config as Record<string, any>;
-      const clientId = config.clientId;
-      const redirectUri = config.redirectUri;
-      const scopes = config.scopes || [MicrosoftGraphScope.EMAIL, MicrosoftGraphScope.USER_INFO];
+      const clientId = config['clientId'];
+      const redirectUri = config['redirectUri'];
+      const scopes = config['scopes'] || [MicrosoftGraphScope.EMAIL, MicrosoftGraphScope.USER_INFO];
       
       if (!clientId || !redirectUri) {
         throw new Error('Microsoft Graph credentials not configured');
@@ -243,9 +243,9 @@ export class MicrosoftGraphClient extends BaseIntegrationClient {
       }
       
       const config = integration.config as Record<string, any>;
-      const clientId = config.clientId;
-      const clientSecret = config.clientSecret;
-      const refreshToken = config.refreshToken;
+      const clientId = config['clientId'];
+      const clientSecret = config['clientSecret'];
+      const refreshToken = config['refreshToken'];
       
       if (!clientId || !clientSecret || !refreshToken) {
         throw new Error('Microsoft Graph credentials or refresh token not configured');
@@ -253,7 +253,7 @@ export class MicrosoftGraphClient extends BaseIntegrationClient {
       
       // Request new access token
       const tokenResponse = await axios.post(
-        MicrosoftGraphClient.TOKEN_URL,
+        `https://login.microsoftonline.com/common/oauth2/v2.0/token`,
         new URLSearchParams({
           client_id: clientId,
           client_secret: clientSecret,
@@ -278,7 +278,7 @@ export class MicrosoftGraphClient extends BaseIntegrationClient {
           config: {
             ...config,
             accessToken: access_token,
-            refreshToken: refresh_token || config.refreshToken,
+            refreshToken: refresh_token || config['refreshToken'],
             expiresAt: expiresAt.toISOString(),
             lastTokenRefresh: new Date().toISOString()
           },
@@ -321,8 +321,8 @@ export class MicrosoftGraphClient extends BaseIntegrationClient {
     }
     
     const config = integration.config as Record<string, any>;
-    const accessToken = config.accessToken;
-    const expiresAt = config.expiresAt ? new Date(config.expiresAt) : null;
+    const accessToken = config['accessToken'];
+    const expiresAt = config['expiresAt'] ? new Date(config['expiresAt']) : null;
     
     if (!accessToken) {
       throw new Error('Microsoft Graph access token not available');
@@ -344,7 +344,7 @@ export class MicrosoftGraphClient extends BaseIntegrationClient {
       }
       
       const updatedConfig = updatedIntegration.config as Record<string, any>;
-      return updatedConfig.accessToken;
+      return updatedConfig['accessToken'];
     }
     
     return accessToken;
@@ -363,7 +363,7 @@ export class MicrosoftGraphClient extends BaseIntegrationClient {
       
       const config = integration.config as Record<string, any>;
       
-      if (!config.accessToken) {
+      if (!config['accessToken']) {
         return false;
       }
       
