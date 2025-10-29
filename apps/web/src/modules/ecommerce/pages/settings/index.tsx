@@ -744,32 +744,32 @@ export default function SettingsPage() {
                   
                   <div className="border rounded-md">
                     <Table>
-                      <TableHead>
-                        <tr>
-                          <th className="px-4 py-3 text-left font-medium">Nume</th>
-                          <th className="px-4 py-3 text-left font-medium">Preț</th>
-                          <th className="px-4 py-3 text-left font-medium">Timp Estimat</th>
-                          <th className="px-4 py-3 text-center font-medium">Status</th>
-                          <th className="px-4 py-3 text-right font-medium">Acțiuni</th>
-                        </tr>
-                      </TableHead>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="px-4 py-3">Nume</TableHead>
+                          <TableHead className="px-4 py-3">Preț</TableHead>
+                          <TableHead className="px-4 py-3">Timp Estimat</TableHead>
+                          <TableHead className="px-4 py-3 text-center">Status</TableHead>
+                          <TableHead className="px-4 py-3 text-right">Acțiuni</TableHead>
+                        </TableRow>
+                      </TableHeader>
                       <TableBody>
                         {shippingMethods.map((method) => (
-                          <tr key={method.id} className="border-t">
-                            <td className="px-4 py-3">
+                          <TableRow key={method.id}>
+                            <TableCell className="px-4 py-3">
                               <div className="font-medium">{method.name}</div>
-                            </td>
-                            <td className="px-4 py-3">{method.price} RON</td>
-                            <td className="px-4 py-3">{method.estimatedDelivery}</td>
-                            <td className="px-4 py-3 text-center">
+                            </TableCell>
+                            <TableCell className="px-4 py-3">{method.price} RON</TableCell>
+                            <TableCell className="px-4 py-3">{method.estimatedDelivery}</TableCell>
+                            <TableCell className="px-4 py-3 text-center">
                               <Switch checked={method.active} />
-                            </td>
-                            <td className="px-4 py-3 text-right">
+                            </TableCell>
+                            <TableCell className="px-4 py-3 text-right">
                               <Button variant="ghost" size="sm">
                                 Editează
                               </Button>
-                            </td>
-                          </tr>
+                            </TableCell>
+                          </TableRow>
                         ))}
                       </TableBody>
                     </Table>
@@ -932,24 +932,24 @@ export default function SettingsPage() {
                   
                   <div className="border rounded-md">
                     <Table>
-                      <TableHead>
-                        <tr>
-                          <th className="px-4 py-3 text-left font-medium">Nume</th>
-                          <th className="px-4 py-3 text-left font-medium">Rată (%)</th>
-                          <th className="px-4 py-3 text-left font-medium">Țări</th>
-                          <th className="px-4 py-3 text-center font-medium">Implicit</th>
-                          <th className="px-4 py-3 text-right font-medium">Acțiuni</th>
-                        </tr>
-                      </TableHead>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="px-4 py-3">Nume</TableHead>
+                          <TableHead className="px-4 py-3">Rată (%)</TableHead>
+                          <TableHead className="px-4 py-3">Țări</TableHead>
+                          <TableHead className="px-4 py-3 text-center">Implicit</TableHead>
+                          <TableHead className="px-4 py-3 text-right">Acțiuni</TableHead>
+                        </TableRow>
+                      </TableHeader>
                       <TableBody>
                         {Object.values(taxSettings).map((tax, index) => (
-                          <tr key={index} className="border-t">
-                            <td className="px-4 py-3">
+                          <TableRow key={index}>
+                            <TableCell className="px-4 py-3">
                               <div className="font-medium">{tax.name}</div>
-                            </td>
-                            <td className="px-4 py-3">{tax.rate}%</td>
-                            <td className="px-4 py-3">{tax.countries.join(', ')}</td>
-                            <td className="px-4 py-3 text-center">
+                            </TableCell>
+                            <TableCell className="px-4 py-3">{tax.rate}%</TableCell>
+                            <TableCell className="px-4 py-3">{tax.countries.join(', ')}</TableCell>
+                            <TableCell className="px-4 py-3 text-center">
                               <div className="flex justify-center">
                                 <RadioGroupItem
                                   value={`tax-${index}`}
@@ -957,13 +957,13 @@ export default function SettingsPage() {
                                   id={`tax-${index}`}
                                 />
                               </div>
-                            </td>
-                            <td className="px-4 py-3 text-right">
+                            </TableCell>
+                            <TableCell className="px-4 py-3 text-right">
                               <Button variant="ghost" size="sm">
                                 Editează
                               </Button>
-                            </td>
-                          </tr>
+                            </TableCell>
+                          </TableRow>
                         ))}
                       </TableBody>
                     </Table>
@@ -1102,14 +1102,14 @@ export default function SettingsPage() {
                       <Label>Template-uri Email</Label>
                       <div className="border rounded-md">
                         <Table>
-                          <TableHead>
-                            <tr>
-                              <th className="px-4 py-2 text-left font-medium">Tipul Notificării</th>
-                              <th className="px-4 py-2 text-center font-medium">Client</th>
-                              <th className="px-4 py-2 text-center font-medium">Administrator</th>
-                              <th className="px-4 py-2 text-right font-medium">Acțiuni</th>
-                            </tr>
-                          </TableHead>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="px-4 py-2">Tipul Notificării</TableHead>
+                              <TableHead className="px-4 py-2 text-center">Client</TableHead>
+                              <TableHead className="px-4 py-2 text-center">Administrator</TableHead>
+                              <TableHead className="px-4 py-2 text-right">Acțiuni</TableHead>
+                            </TableRow>
+                          </TableHeader>
                           <TableBody>
                             {[
                               { name: 'Comandă Nouă', customerEnabled: true, adminEnabled: true },
@@ -1118,20 +1118,20 @@ export default function SettingsPage() {
                               { name: 'Comandă Livrată', customerEnabled: true, adminEnabled: false },
                               { name: 'Comandă Anulată', customerEnabled: true, adminEnabled: true },
                             ].map((template, i) => (
-                              <tr key={i} className="border-t">
-                                <td className="px-4 py-2">{template.name}</td>
-                                <td className="px-4 py-2 text-center">
+                              <TableRow key={i}>
+                                <TableCell className="px-4 py-2">{template.name}</TableCell>
+                                <TableCell className="px-4 py-2 text-center">
                                   <Switch checked={template.customerEnabled} />
-                                </td>
-                                <td className="px-4 py-2 text-center">
+                                </TableCell>
+                                <TableCell className="px-4 py-2 text-center">
                                   <Switch checked={template.adminEnabled} />
-                                </td>
-                                <td className="px-4 py-2 text-right">
+                                </TableCell>
+                                <TableCell className="px-4 py-2 text-right">
                                   <Button variant="ghost" size="sm">
                                     Editează
                                   </Button>
-                                </td>
-                              </tr>
+                                </TableCell>
+                              </TableRow>
                             ))}
                           </TableBody>
                         </Table>
@@ -1381,34 +1381,34 @@ export default function SettingsPage() {
                       
                       <div className="border rounded-md">
                         <Table>
-                          <TableHead>
-                            <tr>
-                              <th className="px-4 py-2 text-left font-medium">Nume</th>
-                              <th className="px-4 py-2 text-left font-medium">Cheie</th>
-                              <th className="px-4 py-2 text-left font-medium">Permisiuni</th>
-                              <th className="px-4 py-2 text-center font-medium">Status</th>
-                              <th className="px-4 py-2 text-right font-medium">Acțiuni</th>
-                            </tr>
-                          </TableHead>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="px-4 py-2">Nume</TableHead>
+                              <TableHead className="px-4 py-2">Cheie</TableHead>
+                              <TableHead className="px-4 py-2">Permisiuni</TableHead>
+                              <TableHead className="px-4 py-2 text-center">Status</TableHead>
+                              <TableHead className="px-4 py-2 text-right">Acțiuni</TableHead>
+                            </TableRow>
+                          </TableHeader>
                           <TableBody>
                             {[
                               { name: 'Integrare Shopify', key: '••••••••••••••••', permissions: 'Read/Write', active: true },
                               { name: 'Analiză Date', key: '••••••••••••••••', permissions: 'Read-only', active: true },
                               { name: 'Backup Automat', key: '••••••••••••••••', permissions: 'Read-only', active: false },
                             ].map((apiKey, i) => (
-                              <tr key={i} className="border-t">
-                                <td className="px-4 py-2">{apiKey.name}</td>
-                                <td className="px-4 py-2 font-mono text-sm">{apiKey.key}</td>
-                                <td className="px-4 py-2">{apiKey.permissions}</td>
-                                <td className="px-4 py-2 text-center">
+                              <TableRow key={i}>
+                                <TableCell className="px-4 py-2">{apiKey.name}</TableCell>
+                                <TableCell className="px-4 py-2 font-mono text-sm">{apiKey.key}</TableCell>
+                                <TableCell className="px-4 py-2">{apiKey.permissions}</TableCell>
+                                <TableCell className="px-4 py-2 text-center">
                                   <Switch checked={apiKey.active} />
-                                </td>
-                                <td className="px-4 py-2 text-right">
+                                </TableCell>
+                                <TableCell className="px-4 py-2 text-right">
                                   <Button variant="ghost" size="sm">
                                     Revocă
                                   </Button>
-                                </td>
-                              </tr>
+                                </TableCell>
+                              </TableRow>
                             ))}
                           </TableBody>
                         </Table>
