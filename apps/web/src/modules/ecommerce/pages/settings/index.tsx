@@ -951,11 +951,13 @@ export default function SettingsPage() {
                             <TableCell className="px-4 py-3">{tax.countries.join(', ')}</TableCell>
                             <TableCell className="px-4 py-3 text-center">
                               <div className="flex justify-center">
-                                <RadioGroupItem
-                                  value={`tax-${index}`}
-                                  checked={tax.default}
-                                  id={`tax-${index}`}
-                                />
+                                {tax.default ? (
+                                  <Badge variant="default">Implicit</Badge>
+                                ) : (
+                                  <Button variant="ghost" size="sm">
+                                    Setează implicit
+                                  </Button>
+                                )}
                               </div>
                             </TableCell>
                             <TableCell className="px-4 py-3 text-right">
