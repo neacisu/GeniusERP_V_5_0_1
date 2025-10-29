@@ -817,4 +817,88 @@ export class InvoiceService {
       throw new Error('Failed to generate invoice PDF');
     }
   }
+
+  /**
+   * Get invoice statistics for a company
+   * Returns aggregated data about invoices grouped by status
+   */
+  static async getInvoiceStatistics(companyId: string): Promise<any> {
+    try {
+      const query = `
+        SELECT 
+          COUNT(*) FILTER (WHERE status = 'draft') as total_drafts,
+          COUNT(*) FILTER (WHERE status = 'issued') as total_issued,
+          COUNT(*) FILTER (WHERE status = 'sent') as total_sent,
+          COUNT(*) FILTER (WHERE status = 'paid') as total_paid,
+          COUNT(*) FILTER (WHERE status = 'canceled') as total_canceled,
+          COUNT(*) FILTER (WHERE status IN ('issued', 'sent')) as total_pending,
+          COUNT(*) FILTER (WHERE is_validated = true) as total_validated,
+          COUNT(*) FILTER (WHERE due_date < NOW() AND status NOT IN ('paid', 'canceled')) as total_overdue,
+          COUNT(*) as total_invoices,
+          COALESCE(SUM(total_amount) FILTER (WHERE status IN ('issued', 'sent', 'paid')), 0) as total_invoice_amount,
+          COALESCE(SUM(total_amount) FILTER (WHERE status = 'paid'), 0) as total_paid_amount,
+          COALESCE(SUM(total_amount) FILTER (WHERE status IN ('issued', 'sent')), 0) as total_outstanding_amount,
+          COALESCE(SUM(total_amount) FILTER (WHERE status IN ('issued', 'sent')), 0) as pending_amount,
+          COALESCE(SUM(total_amount) FILTER (WHERE due_date < NOW() AND status NOT IN ('paid', 'canceled')), 0) as overdue_amount,
+          COALESCE(SUM(total_amount), 0) as total_amount,
+          COALESCE(SUM(vat_amount), 0) as total_vat,
+          COALESCE(AVG(EXTRACT(EPOCH FROM (CASE WHEN status = 'paid' THEN updated_at ELSE NOW() END) - issue_date) / 86400), 0) as avg_payment_delay,
+          COALESCE(MAX(currency), 'RON') as currency
+        FROM invoices
+        WHERE company_id = $1
+          AND deleted_at IS NULL
+      `;
+      
+      const result = await this.drizzle.base.executeQuery(query, [companyId]);
+      
+      if (!result || result.length === 0) {
+        return {
+          totalInvoices: 0,
+          totalPending: 0,
+          totalValidated: 0,
+          totalIssued: 0,
+          totalPaid: 0,
+          totalOverdue: 0,
+          totalAmount: 0,
+          totalVat: 0,
+          pendingAmount: 0,
+          overdueAmount: 0,
+          avgPaymentDelay: 0,
+          totalDrafts: 0,
+          totalSent: 0,
+          totalCanceled: 0,
+          totalInvoiceAmount: 0,
+          totalPaidAmount: 0,
+          totalOutstandingAmount: 0,
+          currency: 'RON'
+        };
+      }
+      
+      const stats = result[0];
+      
+      return {
+        totalInvoices: Number(stats.total_invoices) || 0,
+        totalPending: Number(stats.total_pending) || 0,
+        totalValidated: Number(stats.total_validated) || 0,
+        totalIssued: Number(stats.total_issued) || 0,
+        totalPaid: Number(stats.total_paid) || 0,
+        totalOverdue: Number(stats.total_overdue) || 0,
+        totalAmount: Number(stats.total_amount) || 0,
+        totalVat: Number(stats.total_vat) || 0,
+        pendingAmount: Number(stats.pending_amount) || 0,
+        overdueAmount: Number(stats.overdue_amount) || 0,
+        avgPaymentDelay: Math.round(Number(stats.avg_payment_delay) || 0),
+        totalDrafts: Number(stats.total_drafts) || 0,
+        totalSent: Number(stats.total_sent) || 0,
+        totalCanceled: Number(stats.total_canceled) || 0,
+        totalInvoiceAmount: Number(stats.total_invoice_amount) || 0,
+        totalPaidAmount: Number(stats.total_paid_amount) || 0,
+        totalOutstandingAmount: Number(stats.total_outstanding_amount) || 0,
+        currency: stats.currency || 'RON'
+      };
+    } catch (error) {
+      console.error('[InvoiceService] Error getting invoice statistics:', error);
+      throw new Error('Failed to get invoice statistics');
+    }
+  }
 }

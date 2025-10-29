@@ -45,6 +45,22 @@ router.get('/',
   }
 );
 
+// Get invoice statistics (MUST be before /:id route to avoid route matching conflicts)
+router.get('/stats',
+  AuthGuard.protect(JwtAuthMode.REQUIRED),
+  AuthGuard.roleGuard([UserRole.ACCOUNTANT, UserRole.FINANCE_MANAGER, UserRole.ADMIN]),
+  async (req: Request, res: Response) => {
+    try {
+      const companyId = req.user?.companyId || '';
+      const stats = await InvoiceService.getInvoiceStatistics(companyId);
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching invoice statistics:', error);
+      res.status(500).json({ message: 'Failed to fetch invoice statistics' });
+    }
+  }
+);
+
 // Get invoice by ID
 router.get('/:id',
   AuthGuard.protect(JwtAuthMode.REQUIRED),
