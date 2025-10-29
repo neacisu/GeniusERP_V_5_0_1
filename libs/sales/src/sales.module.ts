@@ -1,8 +1,8 @@
 import { Express } from 'express';
 import { CustomerService } from "./customer.service";
-import { JwtService } from '../auth/services/jwt.service';
+import { JwtService } from '../../auth/src/services/jwt.service';
 import { createModuleLogger } from "@common/logger/loki-logger";
-import { DrizzleService } from '../../common/drizzle/drizzle.service';
+import { DrizzleService } from '@common/drizzle/drizzle.service';
 import salesRoutes from './sales.controller';
 
 const logger = createModuleLogger('SalesModule');

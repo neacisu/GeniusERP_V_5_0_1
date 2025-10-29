@@ -3,6 +3,8 @@
  * 
  * This page displays key metrics and overview of e-commerce operations,
  * including sales data, order stats, and performance indicators.
+ * 
+ * @fixed Recharts minHeight warning by adding minHeight prop to ResponsiveContainer
  */
 
 import React from 'react';

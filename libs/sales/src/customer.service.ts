@@ -1,5 +1,5 @@
-import { DrizzleService } from "../../common/drizzle/drizzle.service";
-import { customers } from "../crm/schema/crm.schema";
+import { DrizzleService } from "@common/drizzle/drizzle.service";
+import { customers } from "../../crm/src/schema/crm.schema";
 import { eq } from "drizzle-orm";
 import { createModuleLogger } from "@common/logger/loki-logger";
 

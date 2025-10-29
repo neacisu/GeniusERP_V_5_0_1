@@ -30,7 +30,7 @@ export class CompanyController {
    */
   async getAllCompanies(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const parentId = req.query.parentId as string | undefined;
+      const parentId = req.query['parentId'] as string | undefined;
       const companies = await this.companyService.getAllCompanies(parentId);
       
       res.status(200).json({
@@ -54,7 +54,7 @@ export class CompanyController {
    */
   async getCompanyById(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const id = req.params.id;
+      const id = req.params['id'];
       
       if (!id) {
         res.status(400).json({
@@ -79,7 +79,7 @@ export class CompanyController {
         data: company
       });
     } catch (error) {
-      logger.error(`Failed to get company with ID ${req.params.id}`, error);
+      logger.error(`Failed to get company with ID ${req.params['id']}`, error);
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve company'
@@ -118,8 +118,14 @@ export class CompanyController {
         return;
       }
       
+      // Transform validated data to match service interface (convert null to undefined)
+      // Zod generates types with nullable fields, but Drizzle expects undefined for optional fields
+      const companyData = Object.fromEntries(
+        Object.entries(validationResult.data).map(([key, value]) => [key, value ?? undefined])
+      ) as typeof validationResult.data;
+      
       const company = await this.companyService.createCompany(
-        validationResult.data,
+        companyData as any, // Type assertion needed due to Zod/Drizzle type mismatch
         userId
       );
       
@@ -144,7 +150,7 @@ export class CompanyController {
    */
   async updateCompany(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const id = req.params.id;
+      const id = req.params['id'];
       
       if (!id) {
         res.status(400).json({
@@ -178,9 +184,15 @@ export class CompanyController {
         return;
       }
       
+      // Transform validated data to match service interface (convert null to undefined)
+      // Zod generates types with nullable fields, but Drizzle expects undefined for optional fields
+      const updateData = Object.fromEntries(
+        Object.entries(validationResult.data).map(([key, value]) => [key, value ?? undefined])
+      );
+      
       const updatedCompany = await this.companyService.updateCompany(
         id,
-        validationResult.data,
+        updateData as any, // Type assertion needed due to Zod/Drizzle type mismatch
         userId
       );
       
@@ -197,7 +209,7 @@ export class CompanyController {
         data: updatedCompany
       });
     } catch (error) {
-      logger.error(`Failed to update company with ID ${req.params.id}`, error);
+      logger.error(`Failed to update company with ID ${req.params['id']}`, error);
       res.status(500).json({
         success: false,
         message: 'Failed to update company'
@@ -213,7 +225,7 @@ export class CompanyController {
    */
   async deleteCompany(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const id = req.params.id;
+      const id = req.params['id'];
       
       if (!id) {
         res.status(400).json({
@@ -249,7 +261,7 @@ export class CompanyController {
         message: 'Company deleted successfully'
       });
     } catch (error) {
-      logger.error(`Failed to delete company with ID ${req.params.id}`, error);
+      logger.error(`Failed to delete company with ID ${req.params['id']}`, error);
       res.status(500).json({
         success: false,
         message: 'Failed to delete company'
@@ -265,8 +277,8 @@ export class CompanyController {
    */
   async searchCompanies(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const searchTerm = req.query.term as string;
-      const limit = parseInt(req.query.limit as string) || 10;
+      const searchTerm = req.query['term'] as string;
+      const limit = parseInt(req.query['limit'] as string) || 10;
       
       if (!searchTerm) {
         res.status(400).json({
@@ -283,7 +295,7 @@ export class CompanyController {
         data: companies
       });
     } catch (error) {
-      logger.error(`Failed to search companies with term "${req.query.term}"`, error);
+      logger.error(`Failed to search companies with term "${req.query['term']}"`, error);
       res.status(500).json({
         success: false,
         message: 'Failed to search companies'
@@ -326,7 +338,7 @@ export class CompanyController {
       console.log(`[CompanyController] Getting franchises, auth user:`, req.user);
       console.log(`[CompanyController] Query params:`, req.query);
       
-      const companyId = req.query.companyId as string | undefined;
+      const companyId = req.query['companyId'] as string | undefined;
       const franchises = await this.companyService.getFranchises(companyId);
       
       console.log(`[CompanyController] Found ${franchises?.length || 0} franchises`);

@@ -21,6 +21,11 @@ import {
 // Import setup routes
 import setupRoutes from './setup.routes';
 
+// Import CompanyService for company profile endpoint
+import { CompanyService } from '../../../../libs/company/src/services/company.service';
+import { DrizzleService } from '@common/drizzle/drizzle.service';
+import type { AuthenticatedRequest } from '@geniuserp/auth';
+
 // Create the router
 const router = Router();
 
@@ -31,12 +36,98 @@ const featureToggleService = FeatureToggleService.getInstance();
 const moduleSettingsService = ModuleSettingsService.getInstance();
 const uiThemeService = UiThemeService.getInstance();
 
+// Initialize DrizzleService and CompanyService for company profile endpoint
+const drizzleService = new DrizzleService();
+const companyService = new CompanyService(drizzleService);
+
 // Apply authentication middleware to all settings routes
 // This is the correct way to register middleware for all routes in the router
 router.use(AuthGuard.protect(JwtAuthMode.REQUIRED));
 
 // Mount setup routes
 router.use('/setup', setupRoutes);
+
+// Company Profile Routes - Get/Update company by ID (din user session sau din params)
+// GET /api/settings/company/:id - Get company by ID
+router.get('/company/:id', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const requestedCompanyId = req.params['id'];
+    const userCompanyId = req.user?.companyId;
+    
+    // Verifică dacă userul încearcă să acceseze propria companie sau altă companie
+    // În general, userul poate accesa doar propria companie, cu excepția admin-ilor
+    if (requestedCompanyId !== userCompanyId && req.user?.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied: You can only view your own company data'
+      });
+    }
+    
+    const company = await companyService.getCompanyById(requestedCompanyId);
+    
+    if (!company) {
+      return res.status(404).json({
+        success: false,
+        error: 'Company not found'
+      });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      data: company
+    });
+  } catch (error) {
+    console.error('Error retrieving company profile:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve company profile'
+    });
+  }
+});
+
+// PUT /api/settings/company/:id - Update company by ID
+router.put('/company/:id', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const requestedCompanyId = req.params['id'];
+    const userCompanyId = req.user?.companyId;
+    const userId = req.user?.id || req.user?.userId;
+    
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated'
+      });
+    }
+    
+    // Verifică dacă userul încearcă să modifice propria companie sau altă companie
+    if (requestedCompanyId !== userCompanyId && req.user?.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied: You can only update your own company data'
+      });
+    }
+    
+    const updatedCompany = await companyService.updateCompany(requestedCompanyId, req.body, userId);
+    
+    if (!updatedCompany) {
+      return res.status(404).json({
+        success: false,
+        error: 'Company not found'
+      });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      data: updatedCompany
+    });
+  } catch (error) {
+    console.error('Error updating company profile:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to update company profile'
+    });
+  }
+});
 
 // Global Settings Routes
 router.get('/global', async (req: Request, res: Response) => {

@@ -10,7 +10,7 @@ import { CustomerService } from './customer.service';
 import { AuthGuard } from '@geniuserp/auth/guards/auth.guard';
 import { JwtAuthMode } from '@geniuserp/auth/constants/auth-mode.enum';
 import { createModuleLogger } from "@common/logger/loki-logger";
-import { DrizzleService } from '../../common/drizzle/drizzle.service';
+import { DrizzleService } from '@common/drizzle/drizzle.service';
 
 // Initialize logger
 const logger = createModuleLogger('SalesController');
@@ -83,7 +83,7 @@ router.get('/customer/:id',
   AuthGuard.roleGuard(['sales_team', 'SALES_TEAM', 'sales_manager', 'SALES_MANAGER']),
   async (req: Request, res: Response) => {
     try {
-      const customerId = req.params.id;
+      const customerId = req.params['id'];
       const companyId = req.user?.companyId;
       
       if (!companyId) {
@@ -134,8 +134,8 @@ router.get('/customers',
       }
       
       // Get pagination parameters with defaults
-      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 50;
-      const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
+      const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 50;
+      const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;
       
       const customers = await customerService.getCustomersByCompany(companyId, limit, offset);
       

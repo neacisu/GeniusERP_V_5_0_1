@@ -53,6 +53,9 @@ export const ANALYTICS_ROLES = [
   AnalyticsRole.PRODUCT_MANAGER
 ];
 
+// Add lowercase versions for case-insensitive matching
+const ANALYTICS_ROLES_LOWERCASE = ANALYTICS_ROLES.map(role => role.toLowerCase());
+
 /**
  * Roles with full access to all analytics features
  * including predictive analytics and business intelligence
@@ -67,6 +70,8 @@ export const ANALYTICS_FULL_ACCESS_ROLES = [
   AnalyticsRole.CFO,
   AnalyticsRole.CTO
 ];
+
+const ANALYTICS_FULL_ACCESS_ROLES_LOWERCASE = ANALYTICS_FULL_ACCESS_ROLES.map(role => role.toLowerCase());
 
 /**
  * Roles with access to business intelligence features
@@ -83,6 +88,8 @@ export const BI_ROLES = [
   AnalyticsRole.FINANCE_MANAGER
 ];
 
+const BI_ROLES_LOWERCASE = BI_ROLES.map(role => role.toLowerCase());
+
 /**
  * Roles with access to predictive analytics features
  */
@@ -97,6 +104,8 @@ export const PREDICTIVE_ROLES = [
   AnalyticsRole.PRODUCT_MANAGER
 ];
 
+const PREDICTIVE_ROLES_LOWERCASE = PREDICTIVE_ROLES.map(role => role.toLowerCase());
+
 /**
  * Checks if a user has analytics access
  * 
@@ -104,7 +113,10 @@ export const PREDICTIVE_ROLES = [
  * @returns Boolean indicating if user has access
  */
 export function hasAnalyticsAccess(userRoles: string[]): boolean {
-  return userRoles.some(role => ANALYTICS_ROLES.includes(role as AnalyticsRole));
+  // Case-insensitive comparison to support both 'admin' and 'ADMIN' formats
+  return userRoles.some(role => 
+    ANALYTICS_ROLES_LOWERCASE.includes(role.toLowerCase())
+  );
 }
 
 /**
@@ -114,7 +126,9 @@ export function hasAnalyticsAccess(userRoles: string[]): boolean {
  * @returns Boolean indicating if user has full access
  */
 export function hasFullAnalyticsAccess(userRoles: string[]): boolean {
-  return userRoles.some(role => ANALYTICS_FULL_ACCESS_ROLES.includes(role as AnalyticsRole));
+  return userRoles.some(role => 
+    ANALYTICS_FULL_ACCESS_ROLES_LOWERCASE.includes(role.toLowerCase())
+  );
 }
 
 /**
@@ -124,7 +138,9 @@ export function hasFullAnalyticsAccess(userRoles: string[]): boolean {
  * @returns Boolean indicating if user has BI access
  */
 export function hasBusinessIntelligenceAccess(userRoles: string[]): boolean {
-  return userRoles.some(role => BI_ROLES.includes(role as AnalyticsRole));
+  return userRoles.some(role => 
+    BI_ROLES_LOWERCASE.includes(role.toLowerCase())
+  );
 }
 
 /**
@@ -134,5 +150,7 @@ export function hasBusinessIntelligenceAccess(userRoles: string[]): boolean {
  * @returns Boolean indicating if user has predictive analytics access
  */
 export function hasPredictiveAnalyticsAccess(userRoles: string[]): boolean {
-  return userRoles.some(role => PREDICTIVE_ROLES.includes(role as AnalyticsRole));
+  return userRoles.some(role => 
+    PREDICTIVE_ROLES_LOWERCASE.includes(role.toLowerCase())
+  );
 }

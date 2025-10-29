@@ -8,8 +8,8 @@
 
 import { Express } from 'express';
 import { createModuleLogger } from "@common/logger/loki-logger";
-import { BaseModule } from '../../types/module';
-import { DrizzleService } from '../../common/drizzle';
+import { BaseModule } from '@geniuserp/shared/types/module';
+import { DrizzleService } from '@common/drizzle/drizzle.service';
 import { UserService } from './services/user.service';
 import { RoleService } from './services/role.service';
 import { SetupService } from './services/setup.service';

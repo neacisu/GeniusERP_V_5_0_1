@@ -317,8 +317,7 @@ export default function ReportsPage() {
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[300px]">Nume raport</TableHead>
+                  <TableRow><TableHead className="w-[300px]">Nume raport</TableHead>
                     <TableHead>Tip</TableHead>
                     <TableHead>Creat de</TableHead>
                     <TableHead>Data creării</TableHead>
@@ -328,8 +327,7 @@ export default function ReportsPage() {
                 </TableHeader>
                 <TableBody>
                   {reports.map((report: AnalyticsReport) => (
-                    <TableRow key={report.id}>
-                      <TableCell className="font-medium">
+                    <TableRow key={report.id}><TableCell className="font-medium">
                         <Link href={`/analytics/reports/${report.id}`} className="hover:underline flex items-center">
                           {getReportTypeIcon(report.type)}
                           <span className="ml-2">{report.name}</span>
@@ -414,8 +412,7 @@ export default function ReportsPage() {
                           </DropdownMenu>
                         </div>
                       </TableCell>
-                    </TableRow>
-                  ))}
+                    </TableRow>))}
                 </TableBody>
               </Table>
             </div>

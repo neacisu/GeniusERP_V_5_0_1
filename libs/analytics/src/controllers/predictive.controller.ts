@@ -29,8 +29,11 @@ const predictiveRoleGuard = (req: any, res: Response, next: any): void => {
     return;
   }
 
+  // Get user roles - support both single role and roles array
+  const userRoles = req.user.roles || (req.user.role ? [req.user.role] : []);
+
   // Check if user has predictive analytics access
-  if (!hasPredictiveAnalyticsAccess(req.user.roles)) {
+  if (!hasPredictiveAnalyticsAccess(userRoles)) {
     res.status(403).json({ 
       error: 'Forbidden', 
       message: 'You do not have permission to access Predictive Analytics features' 

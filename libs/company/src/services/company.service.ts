@@ -6,7 +6,8 @@
  */
 
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { companies, Company, InsertCompany } from '../schema/company.schema';
+// Import from shared schema to ensure consistency with DB
+import { companies, Company, InsertCompany } from '@geniuserp/shared';
 import { eq, and, isNull } from 'drizzle-orm';
 import { createModuleLogger } from "@common/logger/loki-logger";
 
@@ -273,7 +274,7 @@ export class CompanyService {
    */
   async getFranchises(companyId?: string): Promise<Company[]> {
     try {
-      logger.debug(`Getting franchises with filter:`, companyId || 'all');
+      logger.debug(`Getting franchises with filter: ${companyId || 'all'}`);
       
       // Utilizăm serviciul Drizzle modular dedicat pentru companii
       const result = await this.drizzleService.company.getFranchises(companyId);

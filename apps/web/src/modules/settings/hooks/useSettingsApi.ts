@@ -75,19 +75,38 @@ export const useSettingsApi = () => {
   const useCompanyProfile = () => 
     useQuery({
       queryKey: ['/api/settings/company'],
+      select: (response: any) => response?.data || response,
     });
 
   // Global Settings
   const useGlobalSettings = (category?: string, companyId?: string) => 
     useQuery<GlobalSetting[]>({
       queryKey: ['/api/settings/global', category, companyId],
-      enabled: !!companyId,
+      queryFn: async () => {
+        const params = new URLSearchParams();
+        if (category) params.append('category', category);
+        if (companyId) params.append('companyId', companyId);
+        
+        const url = `/api/settings/global?${params.toString()}`;
+        const response = await apiRequest(url);
+        return response?.data || response;
+      },
+      enabled: !!category || !!companyId,
     });
 
   // Module Settings
   const useModuleSettings = (moduleId: string, companyId?: string) => 
     useQuery<GlobalSetting[]>({
-      queryKey: ['/api/settings/module', moduleId, companyId],
+      queryKey: ['/api/settings/global', moduleId, companyId],
+      queryFn: async () => {
+        const params = new URLSearchParams();
+        if (moduleId) params.append('module', moduleId);
+        if (companyId) params.append('companyId', companyId);
+        
+        const url = `/api/settings/global?${params.toString()}`;
+        const response = await apiRequest(url);
+        return response?.data || response;
+      },
       enabled: !!moduleId,
     });
 
@@ -146,7 +165,15 @@ export const useSettingsApi = () => {
   // User Preferences
   const useUserPreferences = (userId: string, category?: string) => 
     useQuery<UserPreference[]>({
-      queryKey: ['/api/settings/preferences', userId, category],
+      queryKey: ['/api/settings/user-preferences', userId, category],
+      queryFn: async () => {
+        let url = `/api/settings/user-preferences/${userId}`;
+        if (category) {
+          url += `/category/${category}`;
+        }
+        const response = await apiRequest(url);
+        return response?.data || response;
+      },
       enabled: !!userId,
     });
 
@@ -154,13 +181,13 @@ export const useSettingsApi = () => {
   const useCreateUserPreference = () => 
     useMutation({
       mutationFn: (preference: Partial<UserPreference>) => 
-        apiRequest('/api/settings/preferences', {
+        apiRequest('/api/settings/user-preferences', {
           method: 'POST',
           body: preference
         }),
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ 
-          queryKey: ['/api/settings/preferences', variables.userId, variables.category] 
+          queryKey: ['/api/settings/user-preferences', variables.userId, variables.category] 
         });
       }
     });
@@ -169,13 +196,13 @@ export const useSettingsApi = () => {
   const useUpdateUserPreference = () => 
     useMutation({
       mutationFn: ({ id, data }: { id: string, data: Partial<UserPreference> }) => 
-        apiRequest(`/api/settings/preferences/${id}`, {
-          method: 'PATCH',
+        apiRequest(`/api/settings/user-preferences/${id}`, {
+          method: 'PUT',
           body: data
         }),
       onSuccess: (_, variables) => {
         const cache = queryClient.getQueryCache();
-        const queries = cache.findAll({ queryKey: ['/api/settings/preferences'] });
+        const queries = cache.findAll({ queryKey: ['/api/settings/user-preferences'] });
         
         queries.forEach(query => {
           queryClient.invalidateQueries({ queryKey: query.queryKey });

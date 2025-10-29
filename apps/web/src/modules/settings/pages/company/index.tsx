@@ -12,6 +12,7 @@ import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Building, FileText, Phone, Globe, CreditCard } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 import PageHeader from "../../components/common/PageHeader";
 import TabsNav, { TabItem } from "../../components/common/TabsNav";
@@ -65,10 +66,23 @@ function CompanyProfilePageContent() {
   const [activeTab, setActiveTab] = useState("general");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
-  // Fetch company settings
+  // Obține company ID din utilizatorul autentificat
+  const companyId = user?.companyId;
+
+  // Fetch company settings folosind ID-ul din user
   const { data: company, isLoading } = useQuery<Company>({
-    queryKey: ['/api/settings/company'],
+    queryKey: ['/api/settings/company', companyId],
+    queryFn: async () => {
+      if (!companyId) {
+        throw new Error('Company ID not found in user session');
+      }
+      const response = await apiRequest(`/api/settings/company/${companyId}`, { method: 'GET' });
+      // Backend returnează { success: true, data: {...} }
+      return response?.data || response;
+    },
+    enabled: !!companyId, // Execută query doar dacă avem companyId
   });
 
   // Company form
@@ -117,17 +131,18 @@ function CompanyProfilePageContent() {
   // Handle company settings update
   const updateCompanyMutation = useMutation({
     mutationFn: async (data: CompanyFormData) => {
-      const endpoint = company 
-        ? `/api/settings/company/${company.id}` 
-        : '/api/settings/company';
-      const method = company ? "PATCH" : "POST";
-      return await apiRequest(endpoint, {
-        method,
+      if (!companyId) {
+        throw new Error('Company ID not found in user session');
+      }
+      // Folosim endpoint-ul cu ID
+      const response = await apiRequest(`/api/settings/company/${companyId}`, {
+        method: "PUT",
         body: data
       });
+      return response?.data || response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/settings/company'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/settings/company', companyId] });
       toast({
         title: "Setări actualizate",
         description: "Setările companiei au fost actualizate cu succes.",

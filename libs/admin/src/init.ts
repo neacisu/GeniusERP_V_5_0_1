@@ -6,7 +6,7 @@
  */
 
 import { Express } from 'express';
-import { DrizzleService } from '../../common/drizzle';
+import { DrizzleService } from '@common/drizzle/drizzle.service';
 import { AdminModule } from './admin.module';
 import { createModuleLogger } from "@common/logger/loki-logger";
 

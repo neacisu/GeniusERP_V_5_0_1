@@ -28,6 +28,9 @@ import integrationsRouter from '../../../../libs/integrations/src/index';
 // Import Collaboration module
 import { CollabModule } from '../../../../libs/collab/src/index';
 
+// Import Sales module
+import { salesRouter } from '../../../../libs/sales/src/index';
+
 // Import AI routes (individual routers)
 import {
   aiRouter,
@@ -52,11 +55,14 @@ import {
 import { setupInventoryRoutes } from '../../../../libs/inventory/src/index';
 import { setupUserRoutes } from '../../../../libs/users/src/index';
 import { setupCrmRoutes } from '../../../../libs/crm/src/index';
-import { setupAnalyticsRoutes, setupPredictiveAnalyticsRoutes } from '../../../../libs/analytics/src/index';
+import { setupAnalyticsRoutes, setupPredictiveAnalyticsRoutes, initAnalyticsModule } from '../../../../libs/analytics/src/index';
 import { createCompanyRouter } from '../../../../libs/company/src/index';
 import { CompanyController } from '../../../../libs/company/src/controllers/company.controller';
 import { CompanyService } from '../../../../libs/company/src/services/company.service';
 import { DrizzleService } from '@common/drizzle/drizzle.service';
+
+// Import Admin module
+import { initAdminModule } from '../../../../libs/admin/src/index';
 
 export async function initializeModules(app: Express): Promise<void> {
   console.log('Initializing modules from NX libraries...');
@@ -64,6 +70,9 @@ export async function initializeModules(app: Express): Promise<void> {
   // Setup session store (using MemoryStore for development)
   // TODO: Use Redis in production
   const sessionStore = new session.MemoryStore();
+  
+  // Initialize DrizzleService once for all services
+  const drizzleService = new DrizzleService();
   
   // ===== AUTH ROUTES =====
   const authRouter = setupAuthRoutes(app, sessionStore);
@@ -108,14 +117,25 @@ export async function initializeModules(app: Express): Promise<void> {
   app.use('/api/users', setupUserRoutes());
   console.log('✅ User routes registered at /api/users');
   
+  // ===== ADMIN ROUTES =====
+  // Initialize and register the Admin module
+  initAdminModule(app);
+  console.log('✅ Admin module initialized and routes registered at /api/admin');
+  
   // ===== CRM ROUTES =====
   app.use('/api/crm', setupCrmRoutes());
   console.log('✅ CRM routes registered at /api/crm');
   
+  // ===== SALES ROUTES =====
+  app.use('/api/sales', salesRouter);
+  console.log('✅ Sales routes registered at /api/sales');
+  
   // ===== ANALYTICS ROUTES =====
+  // Initialize analytics module to setup req.services middleware
+  initAnalyticsModule(app, drizzleService);
   app.use('/api/analytics', setupAnalyticsRoutes());
   app.use('/api/analytics/predictive', setupPredictiveAnalyticsRoutes());
-  console.log('✅ Analytics routes registered at /api/analytics');
+  console.log('✅ Analytics module initialized and routes registered at /api/analytics');
   
   // ===== AI ROUTES =====
   app.use('/api/ai', aiRouter);
@@ -127,7 +147,6 @@ export async function initializeModules(app: Express): Promise<void> {
   console.log('✅ AI routes registered at /api/ai');
   
   // ===== COMPANY ROUTES =====
-  const drizzleService = new DrizzleService();
   const companyService = new CompanyService(drizzleService);
   const companyController = new CompanyController(companyService);
   app.use('/api/companies', createCompanyRouter(companyController));

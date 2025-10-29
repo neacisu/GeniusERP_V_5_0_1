@@ -29,8 +29,11 @@ const analyticsRoleGuard = (req: any, res: Response, next: any): void => {
     return;
   }
 
+  // Get user roles - support both single role and roles array
+  const userRoles = req.user.roles || (req.user.role ? [req.user.role] : []);
+
   // Check if user has analytics access
-  if (!hasAnalyticsAccess(req.user.roles)) {
+  if (!hasAnalyticsAccess(userRoles)) {
     res.status(403).json({ 
       error: 'Forbidden', 
       message: 'You do not have permission to access Analytics features' 
