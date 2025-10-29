@@ -1,0 +1,16 @@
+# ESLint ignore file for GeniusERP Web App
+# Ignore minified and bundled files
+public/
+*.min.js
+*.bundle.js
+dist/
+build/
+.nx/
+node_modules/
+
+# Build outputs
+*.map
+coverage/
+
+# Generated files
+vite.config.ts.timestamp-*
