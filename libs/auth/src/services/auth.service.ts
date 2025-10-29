@@ -55,14 +55,11 @@ export class AuthService {
   generateToken(user: SelectUser): string {
     console.log(`User object for token: ${JSON.stringify(user)}`, 'auth-service');
     
-    // Handle both camelCase and snake_case for companyId - type safe access
+    // Handle extended user properties - companyId is already mapped by Drizzle
     const userWithExtras = user as SelectUser & { 
-      companyId?: string | null; 
-      company_id?: string | null;
       permissions?: string[];
       franchiseId?: string | null;
     };
-    const companyId = userWithExtras.companyId || userWithExtras.company_id;
     
     const payload: JwtPayload = {
       id: user.id,
@@ -70,8 +67,7 @@ export class AuthService {
       username: user.username,
       role: user.role,
       roles: [user.role],
-      companyId: companyId ?? null,
-      company_id: companyId ?? null, // Pentru compatibilitate snake_case
+      companyId: user.companyId ?? null, // Drizzle already maps company_id to companyId
       permissions: userWithExtras.permissions || [],
       franchiseId: userWithExtras.franchiseId || null,
       email: user.email || undefined,

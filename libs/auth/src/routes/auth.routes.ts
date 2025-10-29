@@ -42,11 +42,11 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
         if (!user || !(await authService.comparePasswords(password, user.password))) {
           return done(null, false, { message: "Nume de utilizator sau parolă incorecte" });
         } else {
-          // Transform SelectUser to AuthUser by adding roles array and ensuring companyId
+          // Transform SelectUser to AuthUser by adding roles array
+          // Note: companyId is already mapped by Drizzle (companyId in TS, company_id in DB)
           const authUser = { 
             ...user, 
-            roles: [user.role],
-            companyId: user.company_id || null // Map company_id to companyId
+            roles: [user.role]
           };
           return done(null, authUser);
         }
@@ -82,11 +82,11 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
   passport.deserializeUser(async (id: string, done) => {
     try {
       const user = await authService.getUserById(id);
-      // Transform SelectUser to AuthUser by adding roles array and companyId
+      // Transform SelectUser to AuthUser by adding roles array
+      // Note: companyId is already mapped by Drizzle
       const authUser = user ? { 
         ...user, 
-        roles: [user.role],
-        companyId: user.company_id || null
+        roles: [user.role]
       } : null;
       done(null, authUser);
     } catch (error) {
@@ -124,8 +124,10 @@ export function setupAuthRoutes(app: Router, sessionStore: session.Store) {
       }
       
       // Generate token and return user without using req.login
-      // Passport LocalStrategy returns SelectUser from our getUserByUsername
+      // Note: user here is the AuthUser from LocalStrategy (with companyId already mapped)
       const token = authService.generateToken(user as SelectUser);
+      
+      // Return user with token - ensure companyId is present (already mapped in LocalStrategy)
       return res.status(200).json({ ...user, token });
     })(req, res, next);
   });

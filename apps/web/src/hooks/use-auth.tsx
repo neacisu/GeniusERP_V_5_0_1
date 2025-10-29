@@ -117,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    onSuccess: (user: SelectUser & { token?: string, company_id?: string, first_name?: string, last_name?: string }) => {
+    onSuccess: (user: SelectUser & { token?: string }) => {
       logger.info('Login successful, storing user data');
       
       // Make sure we have all required fields before storing
@@ -131,8 +131,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Verifică dacă există companyId sau company_id
-      if (!user.companyId && !user.company_id) {
+      // Verifică dacă există companyId (already mapped by Drizzle from company_id column)
+      if (!user.companyId) {
         logger.error('No companyId in user response - this is required');
         toast({
           title: "Eroare",
@@ -140,21 +140,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           variant: "destructive",
         });
         return;
-      }
-      
-      // Folosește company_id pentru a seta companyId (dacă lipsește)
-      if (!user.companyId && user.company_id) {
-        logger.debug('Converting company_id to companyId for consistency');
-        user.companyId = user.company_id;
-      }
-      
-      // Convertește first_name și last_name în firstName și lastName
-      if (user.first_name && !user.firstName) {
-        user.firstName = user.first_name;
-      }
-      
-      if (user.last_name && !user.lastName) {
-        user.lastName = user.last_name;
       }
       
       logger.debug('Using company ID', { companyId: maskUUID(user.companyId) });

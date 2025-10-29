@@ -140,77 +140,17 @@ export const company_licenses = pgTable('company_licenses', {
 });
 
 /**
- * Users Table
- * Stores user account information
+ * IMPORTANT: Users, Roles, Permissions tables are now defined in ../schema.ts
+ * This file previously had duplicate definitions that caused mapping inconsistencies.
+ * All user-related tables now use camelCase in TypeScript with snake_case mapping to PostgreSQL.
+ * 
+ * Import from '@geniuserp/shared' to use:
+ * - users (table)
+ * - roles (table)  
+ * - userRoles (table)
+ * - permissions (table)
+ * - rolePermissions (table)
  */
-export const users = pgTable('users', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  username: varchar('username', { length: 100 }).notNull().unique(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  password: varchar('password', { length: 255 }).notNull(),
-  first_name: varchar('first_name', { length: 100 }),
-  last_name: varchar('last_name', { length: 100 }),
-  role: text('role').notNull().default('user'), // Adăugare câmp role care există în baza de date
-  company_id: varchar('company_id', { length: 36 }),
-  // franchise_id a fost eliminat, deoarece nu există în baza de date reală
-  // last_login_at a fost eliminat, deoarece nu există în baza de date reală
-  // status a fost eliminat, deoarece nu există în baza de date reală
-  created_at: timestamp('created_at').defaultNow().notNull(),
-  updated_at: timestamp('updated_at').defaultNow().notNull(),
-});
-
-/**
- * Roles Table
- * Defines available roles in the system
- */
-export const roles = pgTable('roles', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  company_id: uuid('company_id').notNull(), // Câmp obligatoriu care exista deja în BD
-  name: varchar('name', { length: 100 }).notNull(),
-  description: varchar('description', { length: 255 }),
-  is_system: boolean('is_system').default(false),
-  created_at: timestamp('created_at').defaultNow().notNull(),
-  updated_at: timestamp('updated_at').defaultNow().notNull(),
-});
-
-/**
- * User Roles Junction Table
- * Connects users to their assigned roles
- */
-export const userRoles = pgTable('user_roles', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  user_id: varchar('user_id', { length: 36 }).notNull(),
-  role_id: varchar('role_id', { length: 36 }).notNull(),
-  assigned_at: timestamp('assigned_at').defaultNow().notNull(),
-  assigned_by: varchar('assigned_by', { length: 36 }).notNull(),
-});
-
-/**
- * Permissions Table
- * Defines individual permissions in the system
- */
-export const permissions = pgTable('permissions', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  name: text('name').notNull().unique(),
-  description: text('description'),
-  resource: text('resource').notNull(),
-  action: text('action').notNull(),
-  created_at: timestamp('created_at').defaultNow().notNull(),
-  updated_at: timestamp('updated_at').defaultNow().notNull(),
-});
-
-/**
- * Role Permissions Junction Table
- * Associates roles with their assigned permissions
- */
-export const rolePermissions = pgTable('role_permissions', {
-  role_id: uuid('role_id').notNull().references(() => roles.id, { onDelete: 'cascade' }),
-  permission_id: uuid('permission_id').notNull().references(() => permissions.id, { onDelete: 'cascade' }),
-}, (table) => {
-  return {
-    pk: primaryKey({ columns: [table.role_id, table.permission_id] }),
-  };
-});
 
 /**
  * System Configurations Table
@@ -249,9 +189,7 @@ export const insertConfigurationSchema = createInsertSchema(configurations); // 
 
 export const insertLicenseSchema = createInsertSchema(licenses); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertPermissionSchema = createInsertSchema(permissions); // Fixed: removed omit() for drizzle-zod compatibility;
-
-export const insertRolePermissionSchema = createInsertSchema(rolePermissions);
+// Note: Permission and RolePermission schemas are in ../schema.ts
 
 // TypeScript types for insert operations
 export type InsertSetupStep = z.infer<typeof insertSetupStepSchema>;
@@ -262,8 +200,8 @@ export type InsertAdminAction = z.infer<typeof insertAdminActionSchema>;
 export type InsertCompanyLicense = z.infer<typeof insertCompanyLicenseSchema>;
 export type InsertConfiguration = z.infer<typeof insertConfigurationSchema>;
 export type InsertLicense = z.infer<typeof insertLicenseSchema>;
-export type InsertPermission = z.infer<typeof insertPermissionSchema>;
-export type InsertRolePermission = z.infer<typeof insertRolePermissionSchema>;
+
+// Note: InsertPermission and InsertRolePermission types are in ../schema.ts
 
 // TypeScript types for select operations
 export type SetupStep = typeof setup_steps.$inferSelect;
@@ -274,8 +212,6 @@ export type AdminAction = typeof admin_actions.$inferSelect;
 export type CompanyLicense = typeof company_licenses.$inferSelect;
 export type Configuration = typeof configurations.$inferSelect;
 export type License = typeof licenses.$inferSelect;
-export type User = typeof users.$inferSelect;
-export type Role = typeof roles.$inferSelect;
-export type UserRole = typeof userRoles.$inferSelect;
-export type Permission = typeof permissions.$inferSelect;
-export type RolePermission = typeof rolePermissions.$inferSelect;
+
+// Note: User, Role, UserRole, Permission, RolePermission types are exported from ../schema.ts
+// to avoid duplicate type definitions and ensure consistent camelCase/snake_case mapping
