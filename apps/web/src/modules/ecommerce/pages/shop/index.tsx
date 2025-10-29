@@ -707,19 +707,19 @@ export default function ShopPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>Numele magazinului</Label>
-                          <Input value="Magazin Demo" />
+                          <Input value="Magazin Demo" readOnly />
                         </div>
                         <div className="space-y-2">
                           <Label>Email contact</Label>
-                          <Input value="contact@magazindemo.ro" />
+                          <Input value="contact@magazindemo.ro" readOnly />
                         </div>
                         <div className="space-y-2">
                           <Label>Telefon</Label>
-                          <Input value="+40 722 123 456" />
+                          <Input value="+40 722 123 456" readOnly />
                         </div>
                         <div className="space-y-2">
                           <Label>Adresă</Label>
-                          <Input value="Str. Exemplu 123, București" />
+                          <Input value="Str. Exemplu 123, București" readOnly />
                         </div>
                       </div>
                     </AccordionContent>
