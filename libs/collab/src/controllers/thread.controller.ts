@@ -46,10 +46,31 @@ export class ThreadController {
       // Parse query parameters
       const limit = req.query['limit'] ? parseInt(req.query['limit'] as string, 10) : 20;
       const offset = req.query['offset'] ? parseInt(req.query['offset'] as string, 10) : 0;
+      const search = req.query['search'] as string | undefined;
+      const category = req.query['category'] as string | undefined;
+      const sort = (req.query['sort'] as 'newest' | 'oldest' | 'lastActivity') || 'newest';
       
-      const { threads } = await this.threadService.getThreads(companyId, { limit, offset });
+      const { threads, total } = await this.threadService.getThreads(companyId, { 
+        limit, 
+        offset,
+        search,
+        category,
+        sort
+      });
       
-      res.status(200).json(threads);
+      // Calculate pagination metadata
+      const currentPage = Math.floor(offset / limit) + 1;
+      const totalPages = Math.ceil(total / limit);
+      
+      res.status(200).json({
+        threads,
+        pagination: {
+          totalItems: total,
+          totalPages,
+          currentPage,
+          pageSize: limit
+        }
+      });
     } catch (error) {
       logger.error(`Error in GET /threads - CompanyId: ${req.user?.companyId}`, error);
       res.status(500).json({ message: 'Internal server error' });
