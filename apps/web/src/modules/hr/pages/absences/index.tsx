@@ -338,7 +338,7 @@ const AbsencesPage: React.FC = () => {
                   <TableRow>
                     <TableCell colSpan={6} className="text-center">Se încarcă absențele...</TableCell>
                   </TableRow>
-                ) : absences.length === 0 ? (
+                ) : hr_absences.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center">Nu au fost găsite absențe</TableCell>
                   </TableRow>

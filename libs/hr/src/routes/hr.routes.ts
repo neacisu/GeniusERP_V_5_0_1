@@ -365,7 +365,7 @@ router.get('/absences',
         success: true, 
         data: {
           items: paginatedAbsences,
-          total: absences.length,
+          total: hr_absences.length,
           page: pageNum,
           limit: limitNum
         }

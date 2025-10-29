@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { AuthenticatedRequest } from "@common/middleware/auth-types";
 import { db } from '@api/db';
 import { createModuleLogger } from '@common/logger/loki-logger';
-import { accountingLedgerEntries, accountingLedgerLines } from '../schema/accounting.schema';
+import { accounting_ledger_entries, accounting_ledger_lines } from '../schema/accounting.schema';
 import { eq, and, desc } from 'drizzle-orm';
 
 const logger = createModuleLogger('MetricsController');
@@ -38,10 +38,10 @@ export class MetricsController {
       // Query ledger lines to calculate metrics using Drizzle ORM
       const result = await db
         .select({
-          accountClass: accountingLedgerLines.accountClass,
-          debitAmount: accountingLedgerLines.debitAmount,
-          creditAmount: accountingLedgerLines.creditAmount,
-          fullAccountNumber: accountingLedgerLines.fullAccountNumber
+          accountClass: accounting_ledger_lines.accountClass,
+          debitAmount: accounting_ledger_lines.debitAmount,
+          creditAmount: accounting_ledger_lines.creditAmount,
+          fullAccountNumber: accounting_ledger_lines.fullAccountNumber
         })
         .from(accountingLedgerLines)
         .innerJoin(
@@ -190,12 +190,12 @@ export class MetricsController {
 
       const result = await db
         .select({
-          id: accountingLedgerEntries.id,
-          date: accountingLedgerEntries.transactionDate,
-          description: accountingLedgerEntries.description,
-          amount: accountingLedgerEntries.totalAmount,
-          type: accountingLedgerEntries.type,
-          documentNumber: accountingLedgerEntries.documentNumber
+          id: accounting_ledger_entries.id,
+          date: accounting_ledger_entries.transactionDate,
+          description: accounting_ledger_entries.description,
+          amount: accounting_ledger_entries.totalAmount,
+          type: accounting_ledger_entries.type,
+          documentNumber: accounting_ledger_entries.documentNumber
         })
         .from(accountingLedgerEntries)
         .where(

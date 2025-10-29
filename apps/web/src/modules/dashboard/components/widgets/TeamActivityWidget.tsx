@@ -213,7 +213,7 @@ export default function TeamActivityWidget({ limit = 7 }: TeamActivityWidgetProp
               Încearcă din nou
             </Button>
           </div>
-        ) : activities.length === 0 ? (
+        ) : crm_activities.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <p>Nu există activități recente.</p>
           </div>

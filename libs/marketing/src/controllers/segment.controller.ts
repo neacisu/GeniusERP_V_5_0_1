@@ -132,7 +132,7 @@ export class SegmentController {
       const { page, pageSize, isActive, search } = validation.data;
 
       // Get segments
-      const { segments, total } = await this._segmentService.listSegments(
+      const { crm_segments, total } = await this._segmentService.listSegments(
         companyId,
         { isActive, search },
         page,

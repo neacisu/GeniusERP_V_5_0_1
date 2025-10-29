@@ -2,7 +2,7 @@
  * CRM Module
  * 
  * This module integrates all CRM-related services and controllers.
- * It provides functionality for managing customers, contacts, deals, and activities
+ * It provides functionality for managing customers, crm_contacts, crm_deals, and activities
  * with a Kanban-based sales pipeline.
  */
 import { Express } from 'express';

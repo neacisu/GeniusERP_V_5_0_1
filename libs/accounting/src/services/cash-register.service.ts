@@ -1544,7 +1544,7 @@ export class CashRegisterService {
       amount: Math.abs(amount),
       description: entryDescription,
       userId,
-      lines: ledgerLines
+      lines: ledger_lines
     });
     
     return entry;

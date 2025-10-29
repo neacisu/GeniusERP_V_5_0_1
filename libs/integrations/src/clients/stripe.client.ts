@@ -430,7 +430,7 @@ export class StripeClient extends BaseIntegrationClient {
       }
       
       // Create customer using Stripe SDK
-      const customer = await stripe.customers.create(params);
+      const customer = await stripe$.crm_customers.create(params);
       
       // Update last sync time in our database
       if (userId) {
@@ -494,7 +494,7 @@ export class StripeClient extends BaseIntegrationClient {
       const stripe = await this.getStripeInstance();
       
       // Retrieve customer using Stripe SDK
-      const customer = await stripe.customers.retrieve(customerId);
+      const customer = await stripe$.crm_customers.retrieve(customerId);
       
       if (customer.deleted) {
         throw new Error('Customer has been deleted');

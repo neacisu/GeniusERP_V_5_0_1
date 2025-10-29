@@ -6,7 +6,7 @@
 import { BaseDrizzleService } from "@common/drizzle/modules/core/base-drizzle.service";
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { AuditService } from '@geniuserp/audit';
-import { customers, Customer, InsertCustomer } from '../schema/crm.schema';
+import { crm_customers, Customer, InsertCustomer } from '../schema/crm.schema';
 import { eq, and, sql, desc, asc } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
@@ -130,13 +130,13 @@ export class CustomerService extends BaseDrizzleService {
 
       // Mapare explicită pentru coloanele permise la sortare
       const sortColumns: Record<string, any> = {
-        name: customers.name,
-        createdAt: customers.createdAt,
-        updatedAt: customers.updatedAt,
-        email: customers.email,
-        type: customers.type,
-        segment: customers.segment,
-        industry: customers.industry,
+        name: crm_customers.name,
+        createdAt: crm_customers.createdAt,
+        updatedAt: crm_customers.updatedAt,
+        email: crm_customers.email,
+        type: crm_customers.type,
+        segment: crm_customers.segment,
+        industry: crm_customers.industry,
       };
 
       let orderByColumn = customers.createdAt; // default
@@ -146,37 +146,37 @@ export class CustomerService extends BaseDrizzleService {
 
       const customersList = await db
         .select({
-          id: customers.id,
-          companyId: customers.companyId,
-          name: customers.name,
-          email: customers.email,
-          phone: customers.phone,
-          address: customers.address,
-          city: customers.city,
-          county: customers.county,
-          country: customers.country,
-          postalCode: customers.postalCode,
-          type: customers.type,
-          segment: customers.segment,
-          industry: customers.industry,
-          source: customers.source,
-          leadScore: customers.leadScore,
-          leadStatus: customers.leadStatus,
-          leadQualificationDate: customers.leadQualificationDate,
-          ownerId: customers.ownerId,
-          fiscalCode: customers.fiscalCode,
-          registrationNumber: customers.registrationNumber,
-          vatPayer: customers.vatPayer,
-          website: customers.website,
-          notes: customers.notes,
-          annualRevenue: customers.annualRevenue,
-          employeeCount: customers.employeeCount,
-          createdAt: customers.createdAt,
-          updatedAt: customers.updatedAt,
-          createdBy: customers.createdBy,
-          updatedBy: customers.updatedBy,
-          isActive: customers.isActive,
-          customFields: customers.customFields,
+          id: crm_customers.id,
+          companyId: crm_customers.companyId,
+          name: crm_customers.name,
+          email: crm_customers.email,
+          phone: crm_customers.phone,
+          address: crm_customers.address,
+          city: crm_customers.city,
+          county: crm_customers.county,
+          country: crm_customers.country,
+          postalCode: crm_customers.postalCode,
+          type: crm_customers.type,
+          segment: crm_customers.segment,
+          industry: crm_customers.industry,
+          source: crm_customers.source,
+          leadScore: crm_customers.leadScore,
+          leadStatus: crm_customers.leadStatus,
+          leadQualificationDate: crm_customers.leadQualificationDate,
+          ownerId: crm_customers.ownerId,
+          fiscalCode: crm_customers.fiscalCode,
+          registrationNumber: crm_customers.registrationNumber,
+          vatPayer: crm_customers.vatPayer,
+          website: crm_customers.website,
+          notes: crm_customers.notes,
+          annualRevenue: crm_customers.annualRevenue,
+          employeeCount: crm_customers.employeeCount,
+          createdAt: crm_customers.createdAt,
+          updatedAt: crm_customers.updatedAt,
+          createdBy: crm_customers.createdBy,
+          updatedBy: crm_customers.updatedBy,
+          isActive: crm_customers.isActive,
+          customFields: crm_customers.customFields,
         })
         .from(customers)
         .where(and(...whereConditions))
@@ -245,7 +245,7 @@ export class CustomerService extends BaseDrizzleService {
         .where(and(...whereConditions));
 
       const byType = await db.select({
-        type: customers.type,
+        type: crm_customers.type,
         count: sql`count(*)`
       })
         .from(customers)
@@ -253,7 +253,7 @@ export class CustomerService extends BaseDrizzleService {
         .groupBy(customers.type);
 
       const bySegment = await db.select({
-        segment: customers.segment,
+        segment: crm_customers.segment,
         count: sql`count(*)`
       })
         .from(customers)
@@ -261,7 +261,7 @@ export class CustomerService extends BaseDrizzleService {
         .groupBy(customers.segment);
 
       const byIndustry = await db.select({
-        industry: customers.industry,
+        industry: crm_customers.industry,
         count: sql`count(*)`
       })
         .from(customers)

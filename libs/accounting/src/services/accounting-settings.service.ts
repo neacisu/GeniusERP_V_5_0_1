@@ -33,8 +33,8 @@ import {
 } from '@geniuserp/shared';
 import { accountMappings, AccountMapping, InsertAccountMapping } from '@geniuserp/shared';
 import { documentCounters, DocumentCounter } from '../schema/accounting.schema';
-import { fiscalPeriods, FiscalPeriod } from '../schema/accounting.schema';
-import { ledgerEntries } from '../schema/accounting.schema';
+import { fiscal_periods, FiscalPeriod } from '../schema/accounting.schema';
+import { ledger_entries } from '../schema/accounting.schema';
 import { syntheticAccounts, SyntheticAccount } from '@geniuserp/shared';
 import { invoices } from '@geniuserp/shared';
 

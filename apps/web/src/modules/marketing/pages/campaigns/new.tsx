@@ -100,7 +100,7 @@ type FormValues = z.infer<typeof formSchema>;
 const NewCampaignPage: React.FC = () => {
   const [_, setLocation] = useLocation();
   const { createCampaign } = useCampaigns();
-  const { segments } = useSegments();
+  const { crm_segments } = useSegments();
   const { templates } = useTemplates();
   
   // Get template ID from query params if provided

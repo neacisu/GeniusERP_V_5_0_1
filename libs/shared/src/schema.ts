@@ -95,7 +95,7 @@ export * from "./schema/bank-journal.schema";
 export * from "./schema/document-counters.schema";
 
 // Export Communications models for shared usage across the application
-// Notă: contacts redenumit în communicationsContacts pentru a evita conflicte cu CRM
+// Notă: crm_contacts redenumit în communicationsContacts pentru a evita conflicte cu CRM
 export {
   CommunicationChannel,
   MessageDirection,

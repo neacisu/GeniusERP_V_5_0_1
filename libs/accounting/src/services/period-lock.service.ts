@@ -9,7 +9,7 @@
 import { getDrizzle } from "@common/drizzle";
 import { eq, and, gte, lte } from 'drizzle-orm';
 import { RedisService } from '@common/services/redis.service';
-import { fiscalPeriods } from '../schema/accounting.schema';
+import { fiscal_periods } from '../schema/accounting.schema';
 import { createModuleLogger } from "@common/logger/loki-logger";
 
 const logger = createModuleLogger('period-lock');
@@ -49,8 +49,8 @@ export class PeriodLockService {
       // Verifică în tabelul fiscal_periods cu Drizzle ORM
       const result = await db
         .select({
-          status: fiscalPeriods.status,
-          isClosed: fiscalPeriods.isClosed
+          status: fiscal_periods.status,
+          isClosed: fiscal_periods.isClosed
         })
         .from(fiscalPeriods)
         .where(

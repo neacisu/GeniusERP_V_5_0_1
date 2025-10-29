@@ -1,7 +1,7 @@
 /**
  * Sales Module Routes
  * 
- * Defines all routes for the sales module including overview, deals, opportunities, quotes,
+ * Defines all routes for the sales module including overview, crm_deals, opportunities, quotes,
  * customers, pipeline, and products with integration to the existing invoicing module.
  */
 

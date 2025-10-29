@@ -2,8 +2,8 @@
  * CRM Module - Main Entry Point
  * 
  * This is the main entry point for the CRM module which provides routes
- * for all CRM functionality including dashboard, customers, contacts,
- * deals, pipelines, activities, and settings.
+ * for all CRM functionality including dashboard, crm_customers, crm_contacts,
+ * deals, crm_pipelines, crm_activities, and settings.
  */
 
 import React, { lazy, Suspense } from 'react';

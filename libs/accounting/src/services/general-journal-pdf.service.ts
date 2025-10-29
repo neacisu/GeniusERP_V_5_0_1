@@ -11,7 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import { getDrizzle } from "@common/drizzle";
 import { eq, and, gte, lte, inArray, ne, sql as drizzleSql } from 'drizzle-orm';
-import { ledgerEntries, ledgerLines, chartOfAccounts } from '../schema/accounting.schema';
+import { ledger_entries, ledger_lines, chart_of_accounts } from '../schema/accounting.schema';
 import { RedisService } from '@common/services/redis.service';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import type { ColumnWidths, TableRowData, TableHeader, TableValue } from '../types/general-journal-pdf-types';
@@ -190,7 +190,7 @@ export class GeneralJournalPDFService {
       lte(ledgerEntries.entryDate, options.endDate)
     ];
 
-    if (options.journalTypes && options.journalTypes.length > 0) {
+    if (options.journalTypes && options$.journal_types.length > 0) {
       conditions.push(inArray(ledgerEntries.type, options.journalTypes));
     }
 
@@ -201,15 +201,15 @@ export class GeneralJournalPDFService {
     // Query folosind Drizzle ORM cu agregare pentru lines
     const results = await db
       .select({
-        entry_id: ledgerEntries.id,
-        journal_number: ledgerEntries.journalNumber,
-        entry_date: ledgerEntries.entryDate,
-        document_date: ledgerEntries.documentDate,
-        document_number: ledgerEntries.referenceNumber,
-        document_type: ledgerEntries.type,
-        entry_description: ledgerEntries.description,
+        entry_id: ledger_entries.id,
+        journal_number: ledger_entries.journalNumber,
+        entry_date: ledger_entries.entryDate,
+        document_date: ledger_entries.documentDate,
+        document_number: ledger_entries.referenceNumber,
+        document_type: ledger_entries.type,
+        entry_description: ledger_entries.description,
         entry_amount: drizzleSql<string>`${ledgerEntries.amount}::numeric`,
-        entry_type: ledgerEntries.type,
+        entry_type: ledger_entries.type,
         // Agregare JSON pentru lines
         lines: drizzleSql<Array<{
           accountCode: string;
@@ -292,8 +292,8 @@ export class GeneralJournalPDFService {
     const periodText = `Perioada: ${options.startDate.toLocaleDateString('ro-RO')} - ${options.endDate.toLocaleDateString('ro-RO')}`;
     doc.text(periodText, { align: 'center' });
     
-    if (options.journalTypes && options.journalTypes.length > 0) {
-      doc.text(`Jurnale: ${options.journalTypes.join(', ')}`, { align: 'center' });
+    if (options.journalTypes && options$.journal_types.length > 0) {
+      doc.text(`Jurnale: ${options$.journal_types.join(', ')}`, { align: 'center' });
     }
     
     doc.moveDown(1);

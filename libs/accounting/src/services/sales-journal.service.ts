@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { getDrizzle } from "@common/drizzle";
 import { and, desc, eq, gte, lte, isNotNull } from 'drizzle-orm';
 import { invoices, invoiceItems, invoiceDetails, invoicePayments, users, companies, type InvoicePayment, type InvoiceDetail } from '@geniuserp/shared';
-import { accountingLedgerEntries, accountingLedgerLines } from '../schema/accounting.schema';
+import { accounting_ledger_entries, accounting_ledger_lines } from '../schema/accounting.schema';
 import { VATCategory, determineVATCategory } from '../types/vat-categories';
 import { 
   SalesJournalReport, 
@@ -441,7 +441,7 @@ export class SalesJournalService {
       
       // Get total count
       const totalCountResult = await db
-        .select({ id: accountingLedgerEntries.id })
+        .select({ id: accounting_ledger_entries.id })
         .from(accountingLedgerEntries)
         .where(and(
           eq(accountingLedgerEntries.companyId, companyId),
@@ -1021,7 +1021,7 @@ export class SalesJournalService {
       amount,
       description: description || `Sales invoice ${invoiceNumber} to ${customerName}`,
       userId,
-      lines: ledgerLines
+      lines: ledger_lines
     });
     
     return entry;
@@ -1180,7 +1180,7 @@ export class SalesJournalService {
         amount: vatToTransfer,
         description: `Transfer TVA la încasare pentru factura ${invoice.invoiceNumber} - plată ${paymentAmount} RON`,
         userId,
-        lines: ledgerLines
+        lines: ledger_lines
       });
       
       return entry;
@@ -1245,7 +1245,7 @@ export class SalesJournalService {
       amount: creditNoteData.amount,
       description: creditNoteData.description,
       userId: creditNoteData.userId,
-      lines: ledgerLines
+      lines: ledger_lines
     });
     
     return entry;

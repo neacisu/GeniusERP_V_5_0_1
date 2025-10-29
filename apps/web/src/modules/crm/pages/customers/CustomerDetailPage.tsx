@@ -2,7 +2,7 @@
  * Customer Detail Page
  * 
  * Displays detailed information about a specific customer including
- * contact information, activity history, deals, and related data.
+ * contact information, activity history, crm_deals, and related data.
  */
 
 import React, { useState } from 'react';

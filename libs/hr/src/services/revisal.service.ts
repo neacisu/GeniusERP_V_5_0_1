@@ -7,7 +7,7 @@
  */
 
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { employees, employmentContracts, revisalExportLogs } from '../schema';
+import { employees, hr_employment_contracts, hr_revisal_export_logs } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditService } from '@geniuserp/audit';
 import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";

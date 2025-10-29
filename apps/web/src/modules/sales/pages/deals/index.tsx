@@ -79,7 +79,7 @@ const DealsPage: React.FC = () => {
   };
   
   // Query for deals
-  const { data: deals, isLoading } = useQuery({
+  const { data: crm_deals, isLoading } = useQuery({
     queryKey: ['/api/sales/deals', activeView, currentPage, searchTerm, sortBy, sortOrder, selectedFilters],
     queryFn: async () => {
       const queryOptions = getQueryOptions();

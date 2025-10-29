@@ -10,7 +10,7 @@
  */
 
 import { getDrizzle } from "@common/drizzle";
-import { absences, employees, employmentContracts, departments } from '@geniuserp/shared/schema/hr.schema';
+import { hr_absences, employees, hr_employment_contracts, hr_departments } from '@geniuserp/shared/schema/hr.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditService } from '@geniuserp/audit';
 import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";
@@ -361,26 +361,26 @@ export class AbsenceService {
       const result = await this.db
         .select({
           // Absence fields
-          id: absences.id,
-          companyId: absences.companyId,
-          employeeId: absences.employeeId,
-          startDate: absences.startDate,
-          endDate: absences.endDate,
-          workingDays: absences.workingDays,
-          absenceType: absences.absenceType,
-          absenceCode: absences.absenceCode,
-          status: absences.status,
-          approvedBy: absences.approvedBy,
-          approvedAt: absences.approvedAt,
-          rejectionReason: absences.rejectionReason,
-          medicalCertificateNumber: absences.medicalCertificateNumber,
-          medicalCertificateDate: absences.medicalCertificateDate,
-          medicalCertificateFilePath: absences.medicalCertificateFilePath,
-          notes: absences.notes,
-          createdAt: absences.createdAt,
-          updatedAt: absences.updatedAt,
-          createdBy: absences.createdBy,
-          updatedBy: absences.updatedBy,
+          id: hr_absences.id,
+          companyId: hr_absences.companyId,
+          employeeId: hr_absences.employeeId,
+          startDate: hr_absences.startDate,
+          endDate: hr_absences.endDate,
+          workingDays: hr_absences.workingDays,
+          absenceType: hr_absences.absenceType,
+          absenceCode: hr_absences.absenceCode,
+          status: hr_absences.status,
+          approvedBy: hr_absences.approvedBy,
+          approvedAt: hr_absences.approvedAt,
+          rejectionReason: hr_absences.rejectionReason,
+          medicalCertificateNumber: hr_absences.medicalCertificateNumber,
+          medicalCertificateDate: hr_absences.medicalCertificateDate,
+          medicalCertificateFilePath: hr_absences.medicalCertificateFilePath,
+          notes: hr_absences.notes,
+          createdAt: hr_absences.createdAt,
+          updatedAt: hr_absences.updatedAt,
+          createdBy: hr_absences.createdBy,
+          updatedBy: hr_absences.updatedBy,
           // Employee fields
           firstName: employees.firstName,
           lastName: employees.lastName
@@ -408,7 +408,7 @@ export class AbsenceService {
       // Get employee's annual vacation days from contract using Drizzle ORM
       const employeeContract = await this.db
         .select({
-          annualLeaveEntitlement: employmentContracts.annualLeaveEntitlement
+          annualLeaveEntitlement: hr_employment_contracts.annualLeaveEntitlement
         })
         .from(employmentContracts)
         .where(
@@ -474,21 +474,21 @@ export class AbsenceService {
       const result = await this.db
         .select({
           // Absence fields
-          id: absences.id,
-          companyId: absences.companyId,
-          employeeId: absences.employeeId,
-          startDate: absences.startDate,
-          endDate: absences.endDate,
-          workingDays: absences.workingDays,
-          absenceType: absences.absenceType,
-          status: absences.status,
-          notes: absences.notes,
+          id: hr_absences.id,
+          companyId: hr_absences.companyId,
+          employeeId: hr_absences.employeeId,
+          startDate: hr_absences.startDate,
+          endDate: hr_absences.endDate,
+          workingDays: hr_absences.workingDays,
+          absenceType: hr_absences.absenceType,
+          status: hr_absences.status,
+          notes: hr_absences.notes,
           // Employee fields  
           firstName: employees.firstName,
           lastName: employees.lastName,
           position: employees.position,
           // Department name
-          departmentName: departments.name
+          departmentName: hr_departments.name
         })
         .from(absences)
         .innerJoin(employees, eq(absences.employeeId, employees.id))

@@ -539,4 +539,4 @@ export class PipelineService {
 
 // Add missing import for the desc and deals
 import { desc } from "drizzle-orm";
-import { deals } from "../schema/crm.schema";
+import { crm_deals } from "../schema/crm.schema";

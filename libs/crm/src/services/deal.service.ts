@@ -554,7 +554,7 @@ export class DealService {
 
       // Get deal counts by stage
       const stageStats = await this.db.select({
-        stageId: deals.stageId,
+        stageId: crm_deals.stageId,
         count: sql`count(*)`,
         value: sql`sum(cast(${deals.amount} as numeric))`,
         averageValue: sql`avg(cast(${deals.amount} as numeric))`
@@ -565,7 +565,7 @@ export class DealService {
 
       // Get deal counts by status
       const statusStats = await this.db.select({
-        status: deals.status,
+        status: crm_deals.status,
         count: sql`count(*)`,
         value: sql`sum(cast(${deals.amount} as numeric))`
       })
@@ -575,7 +575,7 @@ export class DealService {
 
       // Get deal counts by owner
       const ownerStats = await this.db.select({
-        ownerId: deals.ownerId,
+        ownerId: crm_deals.ownerId,
         count: sql`count(*)`,
         value: sql`sum(cast(${deals.amount} as numeric))`
       })

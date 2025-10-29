@@ -117,7 +117,7 @@ segmentRoutes.get(
       const { page, pageSize, isActive, search } = validation.data;
       
       // Get segments
-      const { segments, total } = await segmentService.listSegments(
+      const { crm_segments, total } = await segmentService.listSegments(
         companyId,
         { isActive, search },
         page,

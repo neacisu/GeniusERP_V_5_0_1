@@ -2,7 +2,7 @@
  * Microsoft Graph Integration Client
  * 
  * Client for Microsoft Graph API integration.
- * Handles email, calendar, contacts, and other Microsoft 365 services.
+ * Handles email, calendar, crm_contacts, and other Microsoft 365 services.
  */
 
 import axios from 'axios';

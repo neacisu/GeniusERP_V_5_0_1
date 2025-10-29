@@ -108,7 +108,7 @@ const OverviewPage: React.FC = () => {
       description: 'Structura organizațională și ierarhia companiei',
       icon: <Building2 className="h-8 w-8 text-primary" />,
       path: '/hr/departments',
-      count: departments.length
+      count: hr_departments.length
     },
     { 
       title: 'Absențe', 
@@ -165,7 +165,7 @@ const OverviewPage: React.FC = () => {
           
           <StatsCard
             title="Departamente"
-            value={isLoadingDepartments ? "..." : departments.length.toString()}
+            value={isLoadingDepartments ? "..." : hr_departments.length.toString()}
             icon={<Building2 size={20} />}
             color="info"
           />

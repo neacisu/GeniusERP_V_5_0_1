@@ -8,7 +8,7 @@
  * - Employee search and filtering
  */
 
-import { employees, employmentContracts, departments } from '../schema';
+import { employees, hr_employment_contracts, hr_departments } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditService } from '@geniuserp/audit';
 import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";

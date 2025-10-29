@@ -269,7 +269,7 @@ const SegmentsPage: React.FC = () => {
                     <TableCell className="text-right"><Skeleton className="h-9 w-[50px] ml-auto" /></TableCell>
                   </TableRow>
                 ))
-              ) : segments.length === 0 ? (
+              ) : crm_segments.length === 0 ? (
                 // Empty state
                 <TableRow>
                   <TableCell colSpan={5} className="h-24 text-center">

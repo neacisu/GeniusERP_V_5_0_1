@@ -3,7 +3,7 @@
  * 
  * This file defines the schema for the CRM module tables using Drizzle ORM.
  * These tables implement a comprehensive CRM system with a Kanban-based sales pipeline
- * featuring contacts, customers, deals, activities, and more.
+ * featuring contacts, crm_customers, crm_deals, crm_activities, and more.
  */
 
 import { 
@@ -439,7 +439,7 @@ export const segments = pgTable("crm_segments", {
   companyId: uuid("company_id").notNull().references(() => companies.id),
   name: text("name").notNull(),
   description: text("description"),
-  entityType: text("entity_type").notNull(), // customers, contacts, deals
+  entityType: text("entity_type").notNull(), // customers, crm_contacts, deals
   criteria: json("criteria").notNull(), // JSON with filter criteria
   isPublic: boolean("is_public").default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),

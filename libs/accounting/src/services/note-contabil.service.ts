@@ -10,7 +10,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { getDrizzle } from "@common/drizzle";
 import { eq, desc } from 'drizzle-orm';
-import { ledgerEntries } from '../schema/accounting.schema';
+import { ledger_entries } from '../schema/accounting.schema';
 import { AuditService } from '@geniuserp/audit';
 import { RedisService } from '@common/services/redis.service';
 import { warehouses, companies } from '@geniuserp/shared';

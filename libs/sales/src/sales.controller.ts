@@ -141,7 +141,7 @@ router.get('/customers',
       
       return res.json({
         success: true,
-        data: customers
+        data: crm_customers
       });
     } catch (error) {
       logger.error('Error listing customers', error);

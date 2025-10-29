@@ -112,7 +112,7 @@ const CustomersPage: React.FC = () => {
   };
   
   // Query for customers
-  const { data: customers, isLoading } = useQuery({
+  const { data: crm_customers, isLoading } = useQuery({
     queryKey: ['/api/sales/customers', activeView, currentPage, searchTerm, sortBy, sortOrder, selectedFilters],
     queryFn: async () => {
       const queryOptions = getQueryOptions();

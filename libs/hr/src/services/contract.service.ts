@@ -7,7 +7,7 @@
  * - Contract status management
  */
 
-import { employees, employmentContracts } from '../schema';
+import { employees, hr_employment_contracts } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditService } from '@geniuserp/audit';
 import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";

@@ -8,7 +8,7 @@
 
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
-import { fiscalPeriods, FiscalPeriod, InsertFiscalPeriod } from '../schema/accounting.schema';
+import { fiscal_periods, FiscalPeriod, InsertFiscalPeriod } from '../schema/accounting.schema';
 import { AuditLogService } from './audit-log.service';
 import { PeriodLockService } from './period-lock.service';
 import { RedisService } from '@common/services/redis.service';

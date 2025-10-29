@@ -2,7 +2,7 @@
  * E-commerce Module
  * 
  * This module provides e-commerce functionality for the ERP application,
- * including product management, orders, customers, and Shopify integration.
+ * including product management, orders, crm_customers, and Shopify integration.
  */
 
 import React from 'react';

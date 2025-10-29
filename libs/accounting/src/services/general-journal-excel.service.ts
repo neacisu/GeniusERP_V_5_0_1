@@ -10,7 +10,7 @@ import fs from 'fs';
 import path from 'path';
 import { getDrizzle } from "@common/drizzle";
 import { eq, and, gte, lte, inArray, ne, sql as drizzleSql } from 'drizzle-orm';
-import { ledgerEntries, ledgerLines, chartOfAccounts } from '../schema/accounting.schema';
+import { ledger_entries, ledger_lines, chart_of_accounts } from '../schema/accounting.schema';
 import { RedisService } from '@common/services/redis.service';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import type {
@@ -140,7 +140,7 @@ export class GeneralJournalExcelService {
       lte(ledgerEntries.entryDate, options.endDate)
     ];
 
-    if (options.journalTypes && options.journalTypes.length > 0) {
+    if (options.journalTypes && options$.journal_types.length > 0) {
       conditions.push(inArray(ledgerEntries.type, options.journalTypes));
     }
 
@@ -151,19 +151,19 @@ export class GeneralJournalExcelService {
     // Execute Drizzle query with proper joins
     const result = await db
       .select({
-        entry_id: ledgerEntries.id,
-        journal_number: ledgerEntries.journalNumber,
-        entry_date: ledgerEntries.entryDate,
-        document_date: ledgerEntries.documentDate,
-        document_number: ledgerEntries.referenceNumber,
-        journal_type: ledgerEntries.type,
-        entry_description: ledgerEntries.description,
-        entry_amount: ledgerEntries.amount,
-        account_id: ledgerLines.accountId,
+        entry_id: ledger_entries.id,
+        journal_number: ledger_entries.journalNumber,
+        entry_date: ledger_entries.entryDate,
+        document_date: ledger_entries.documentDate,
+        document_number: ledger_entries.referenceNumber,
+        journal_type: ledger_entries.type,
+        entry_description: ledger_entries.description,
+        entry_amount: ledger_entries.amount,
+        account_id: ledger_lines.accountId,
         account_name: drizzleSql<string>`COALESCE(${chartOfAccounts.name}, ${ledgerLines.accountId})`,
         debit_amount: drizzleSql<string>`${ledgerLines.debitAmount}::numeric`,
         credit_amount: drizzleSql<string>`${ledgerLines.creditAmount}::numeric`,
-        line_description: ledgerLines.description,
+        line_description: ledger_lines.description,
         row_number: drizzleSql<number>`ROW_NUMBER() OVER (ORDER BY ${ledgerEntries.entryDate}, ${ledgerEntries.journalNumber}, ${ledgerLines.createdAt})`
       })
       .from(ledgerEntries)

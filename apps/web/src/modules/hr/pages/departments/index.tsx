@@ -266,7 +266,7 @@ const DepartmentsPage: React.FC = () => {
                   <TableRow>
                     <TableCell colSpan={5} className="text-center">Se încarcă departamentele...</TableCell>
                   </TableRow>
-                ) : departments.length === 0 ? (
+                ) : hr_departments.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center">Nu au fost găsite departamente</TableCell>
                   </TableRow>

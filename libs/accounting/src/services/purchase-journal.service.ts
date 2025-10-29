@@ -13,7 +13,7 @@
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
 import { getDrizzle } from "@common/drizzle";
 import { and, desc, eq, gte, lte, isNotNull, sql } from 'drizzle-orm';
-import { invoices, invoiceItems, invoiceDetails, invoicePayments, companies, users, ledgerEntries, ledgerLines } from '@geniuserp/shared';
+import { invoices, invoiceItems, invoiceDetails, invoicePayments, companies, users, ledger_entries, ledger_lines } from '@geniuserp/shared';
 import { crm_companies } from '@geniuserp/crm/schema';
 
 import { v4 as uuidv4 } from 'uuid';
@@ -585,7 +585,7 @@ export class PurchaseJournalService {
       amount,
       description: description || `Purchase invoice ${invoiceNumber} from ${supplierName}`,
       userId,
-      lines: ledgerLines
+      lines: ledger_lines
     });
     
     return entry;

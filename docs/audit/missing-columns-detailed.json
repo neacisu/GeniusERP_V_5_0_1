@@ -1,0 +1,5992 @@
+{
+  "total_tables": 113,
+  "tables_complete": 49,
+  "tables_incomplete": 64,
+  "total_missing_columns": 668,
+  "details": {
+    "users": {
+      "file": "core.schema.ts",
+      "db_columns": 13,
+      "drizzle_columns": 0,
+      "missing_count": 13,
+      "missing_columns": [
+        "company_id",
+        "created_at",
+        "email",
+        "first_name",
+        "id",
+        "last_name",
+        "mfa_backup_codes",
+        "mfa_enabled",
+        "mfa_secret",
+        "password",
+        "role",
+        "updated_at",
+        "username"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "username",
+          "position": 2,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "password",
+          "position": 3,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "email",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "first_name",
+          "position": 5,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "last_name",
+          "position": 6,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "role",
+          "position": 7,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": "'user'::text"
+        },
+        {
+          "name": "company_id",
+          "position": 8,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 9,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 10,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "mfa_enabled",
+          "position": 11,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "false"
+        },
+        {
+          "name": "mfa_secret",
+          "position": 12,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "mfa_backup_codes",
+          "position": 13,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "roles": {
+      "file": "core.schema.ts",
+      "db_columns": 6,
+      "drizzle_columns": 0,
+      "missing_count": 6,
+      "missing_columns": [
+        "company_id",
+        "created_at",
+        "description",
+        "id",
+        "name",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "company_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 5,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 6,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "permissions": {
+      "file": "core.schema.ts",
+      "db_columns": 7,
+      "drizzle_columns": 0,
+      "missing_count": 7,
+      "missing_columns": [
+        "action",
+        "created_at",
+        "description",
+        "id",
+        "name",
+        "resource",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "name",
+          "position": 2,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 3,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "resource",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "action",
+          "position": 5,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 6,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 7,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "user_roles": {
+      "file": "core.schema.ts",
+      "db_columns": 2,
+      "drizzle_columns": 0,
+      "missing_count": 2,
+      "missing_columns": [
+        "role_id",
+        "user_id"
+      ],
+      "missing_with_types": [
+        {
+          "name": "user_id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "role_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        }
+      ]
+    },
+    "role_permissions": {
+      "file": "core.schema.ts",
+      "db_columns": 2,
+      "drizzle_columns": 0,
+      "missing_count": 2,
+      "missing_columns": [
+        "permission_id",
+        "role_id"
+      ],
+      "missing_with_types": [
+        {
+          "name": "role_id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "permission_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        }
+      ]
+    },
+    "account_classes": {
+      "file": "core.schema.ts",
+      "db_columns": 7,
+      "drizzle_columns": 0,
+      "missing_count": 7,
+      "missing_columns": [
+        "code",
+        "created_at",
+        "default_account_function",
+        "description",
+        "id",
+        "name",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "code",
+          "position": 2,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "default_account_function",
+          "position": 5,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 6,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 7,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "account_groups": {
+      "file": "core.schema.ts",
+      "db_columns": 7,
+      "drizzle_columns": 0,
+      "missing_count": 7,
+      "missing_columns": [
+        "class_id",
+        "code",
+        "created_at",
+        "description",
+        "id",
+        "name",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "code",
+          "position": 2,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "class_id",
+          "position": 5,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 6,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 7,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "synthetic_accounts": {
+      "file": "core.schema.ts",
+      "db_columns": 11,
+      "drizzle_columns": 0,
+      "missing_count": 11,
+      "missing_columns": [
+        "account_function",
+        "code",
+        "created_at",
+        "description",
+        "grade",
+        "group_id",
+        "id",
+        "is_active",
+        "name",
+        "parent_id",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "code",
+          "position": 2,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "account_function",
+          "position": 5,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "grade",
+          "position": 6,
+          "data_type": "integer",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "group_id",
+          "position": 7,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "parent_id",
+          "position": 8,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_active",
+          "position": 9,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "true"
+        },
+        {
+          "name": "created_at",
+          "position": 10,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 11,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "analytic_accounts": {
+      "file": "core.schema.ts",
+      "db_columns": 9,
+      "drizzle_columns": 0,
+      "missing_count": 9,
+      "missing_columns": [
+        "account_function",
+        "code",
+        "created_at",
+        "description",
+        "id",
+        "is_active",
+        "name",
+        "synthetic_id",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "code",
+          "position": 2,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "synthetic_id",
+          "position": 5,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "account_function",
+          "position": 6,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "is_active",
+          "position": 7,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "true"
+        },
+        {
+          "name": "created_at",
+          "position": 8,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 9,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "accounts": {
+      "file": "core.schema.ts",
+      "db_columns": 12,
+      "drizzle_columns": 0,
+      "missing_count": 12,
+      "missing_columns": [
+        "analytic_id",
+        "class_id",
+        "code",
+        "created_at",
+        "description",
+        "id",
+        "is_active",
+        "name",
+        "parent_id",
+        "synthetic_id",
+        "type",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "code",
+          "position": 2,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "type",
+          "position": 5,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "class_id",
+          "position": 6,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "parent_id",
+          "position": 7,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_active",
+          "position": 8,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "true"
+        },
+        {
+          "name": "synthetic_id",
+          "position": 9,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "analytic_id",
+          "position": 10,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 11,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 12,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "inventory_categories": {
+      "file": "inventory.schema.ts",
+      "db_columns": 7,
+      "drizzle_columns": 0,
+      "missing_count": 7,
+      "missing_columns": [
+        "created_at",
+        "description",
+        "id",
+        "is_active",
+        "name",
+        "parent_id",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "name",
+          "position": 2,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 3,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "parent_id",
+          "position": 4,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 5,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 6,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "is_active",
+          "position": 7,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "true"
+        }
+      ]
+    },
+    "inventory_units": {
+      "file": "inventory.schema.ts",
+      "db_columns": 5,
+      "drizzle_columns": 0,
+      "missing_count": 5,
+      "missing_columns": [
+        "abbreviation",
+        "created_at",
+        "id",
+        "name",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "name",
+          "position": 2,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "abbreviation",
+          "position": 3,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 4,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 5,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "inventory_products": {
+      "file": "inventory.schema.ts",
+      "db_columns": 15,
+      "drizzle_columns": 0,
+      "missing_count": 15,
+      "missing_columns": [
+        "barcode",
+        "category_id",
+        "created_at",
+        "description",
+        "id",
+        "is_active",
+        "name",
+        "price_includes_vat",
+        "purchase_price",
+        "selling_price",
+        "sku",
+        "stock_alert",
+        "unit_id",
+        "updated_at",
+        "vat_rate"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "sku",
+          "position": 2,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "category_id",
+          "position": 5,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "unit_id",
+          "position": 6,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "purchase_price",
+          "position": 7,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "'0'::numeric"
+        },
+        {
+          "name": "selling_price",
+          "position": 8,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "'0'::numeric"
+        },
+        {
+          "name": "price_includes_vat",
+          "position": 9,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "true"
+        },
+        {
+          "name": "vat_rate",
+          "position": 10,
+          "data_type": "integer",
+          "is_nullable": true,
+          "column_default": "19"
+        },
+        {
+          "name": "stock_alert",
+          "position": 11,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "'0'::numeric"
+        },
+        {
+          "name": "is_active",
+          "position": 12,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "true"
+        },
+        {
+          "name": "barcode",
+          "position": 13,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 14,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 15,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "inventory_stock": {
+      "file": "inventory.schema.ts",
+      "db_columns": 7,
+      "drizzle_columns": 0,
+      "missing_count": 7,
+      "missing_columns": [
+        "average_cost",
+        "company_id",
+        "id",
+        "last_updated",
+        "product_id",
+        "quantity",
+        "total_value"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "product_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "company_id",
+          "position": 3,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "quantity",
+          "position": 4,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "'0'::numeric"
+        },
+        {
+          "name": "average_cost",
+          "position": 5,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "'0'::numeric"
+        },
+        {
+          "name": "total_value",
+          "position": 6,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "'0'::numeric"
+        },
+        {
+          "name": "last_updated",
+          "position": 7,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "inventory_stock_movements": {
+      "file": "inventory.schema.ts",
+      "db_columns": 12,
+      "drizzle_columns": 0,
+      "missing_count": 12,
+      "missing_columns": [
+        "created_at",
+        "created_by",
+        "date",
+        "document_number",
+        "document_type",
+        "id",
+        "notes",
+        "product_id",
+        "quantity",
+        "total_value",
+        "unit_price",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "product_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "date",
+          "position": 3,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "document_number",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "document_type",
+          "position": 5,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "quantity",
+          "position": 6,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "unit_price",
+          "position": 7,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "total_value",
+          "position": 8,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "notes",
+          "position": 9,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_by",
+          "position": 10,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 11,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 12,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "invoices": {
+      "file": "invoicing.schema.ts",
+      "db_columns": 36,
+      "drizzle_columns": 0,
+      "missing_count": 36,
+      "missing_columns": [
+        "amount",
+        "company_id",
+        "created_at",
+        "created_by",
+        "currency",
+        "customer_id",
+        "customer_name",
+        "date",
+        "deleted_at",
+        "description",
+        "due_date",
+        "exchange_rate",
+        "franchise_id",
+        "gross_total",
+        "id",
+        "invoice_number",
+        "is_cash_vat",
+        "is_validated",
+        "issue_date",
+        "ledger_entry_id",
+        "net_amount",
+        "net_total",
+        "notes",
+        "number",
+        "related_invoice_id",
+        "series",
+        "status",
+        "total_amount",
+        "type",
+        "updated_at",
+        "updated_by",
+        "validated_at",
+        "validated_by",
+        "vat_amount",
+        "vat_total",
+        "version"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "company_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "franchise_id",
+          "position": 3,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "invoice_number",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "series",
+          "position": 5,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "number",
+          "position": 6,
+          "data_type": "integer",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "customer_id",
+          "position": 7,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "customer_name",
+          "position": 8,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "date",
+          "position": 9,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "issue_date",
+          "position": 10,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "due_date",
+          "position": 11,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "amount",
+          "position": 12,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "total_amount",
+          "position": 13,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "net_amount",
+          "position": 14,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "vat_amount",
+          "position": 15,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "currency",
+          "position": 16,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": "'RON'::character varying"
+        },
+        {
+          "name": "exchange_rate",
+          "position": 17,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "1.0000"
+        },
+        {
+          "name": "status",
+          "position": 18,
+          "data_type": "USER-DEFINED",
+          "is_nullable": false,
+          "column_default": "'draft'::invoice_status"
+        },
+        {
+          "name": "type",
+          "position": 19,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_cash_vat",
+          "position": 20,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "false"
+        },
+        {
+          "name": "related_invoice_id",
+          "position": 21,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 22,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "notes",
+          "position": 23,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "version",
+          "position": 24,
+          "data_type": "integer",
+          "is_nullable": false,
+          "column_default": "1"
+        },
+        {
+          "name": "is_validated",
+          "position": 25,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "false"
+        },
+        {
+          "name": "validated_at",
+          "position": 26,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "ledger_entry_id",
+          "position": 27,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_by",
+          "position": 28,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "updated_by",
+          "position": 29,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 30,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 31,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "deleted_at",
+          "position": 32,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "net_total",
+          "position": 33,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "vat_total",
+          "position": 34,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "gross_total",
+          "position": 35,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "validated_by",
+          "position": 36,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "invoice_details": {
+      "file": "invoicing.schema.ts",
+      "db_columns": 16,
+      "drizzle_columns": 0,
+      "missing_count": 16,
+      "missing_columns": [
+        "created_at",
+        "id",
+        "invoice_id",
+        "notes",
+        "partner_address",
+        "partner_city",
+        "partner_country",
+        "partner_county",
+        "partner_fiscal_code",
+        "partner_id",
+        "partner_name",
+        "partner_registration_number",
+        "payment_due_date",
+        "payment_due_days",
+        "payment_method",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "invoice_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "partner_id",
+          "position": 3,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "partner_name",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "partner_fiscal_code",
+          "position": 5,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "partner_registration_number",
+          "position": 6,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "partner_address",
+          "position": 7,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "partner_city",
+          "position": 8,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "partner_county",
+          "position": 9,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "partner_country",
+          "position": 10,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": "'Romania'::text"
+        },
+        {
+          "name": "payment_method",
+          "position": 11,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "payment_due_days",
+          "position": 12,
+          "data_type": "integer",
+          "is_nullable": false,
+          "column_default": "30"
+        },
+        {
+          "name": "payment_due_date",
+          "position": 13,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "notes",
+          "position": 14,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 15,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 16,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "invoice_payments": {
+      "file": "invoicing.schema.ts",
+      "db_columns": 16,
+      "drizzle_columns": 0,
+      "missing_count": 16,
+      "missing_columns": [
+        "amount",
+        "bank_transaction_id",
+        "cash_transaction_id",
+        "company_id",
+        "created_at",
+        "created_by",
+        "id",
+        "invoice_id",
+        "metadata",
+        "notes",
+        "payment_date",
+        "payment_method",
+        "payment_reference",
+        "updated_at",
+        "vat_amount_transferred",
+        "vat_transfer_ledger_id"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "invoice_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "company_id",
+          "position": 3,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "payment_date",
+          "position": 4,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "amount",
+          "position": 5,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "payment_method",
+          "position": 6,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "payment_reference",
+          "position": 7,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "bank_transaction_id",
+          "position": 8,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "cash_transaction_id",
+          "position": 9,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "vat_transfer_ledger_id",
+          "position": 10,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "vat_amount_transferred",
+          "position": 11,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "notes",
+          "position": 12,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "metadata",
+          "position": 13,
+          "data_type": "jsonb",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_by",
+          "position": 14,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 15,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 16,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "purchase_orders": {
+      "file": "purchasing.schema.ts",
+      "db_columns": 22,
+      "drizzle_columns": 0,
+      "missing_count": 22,
+      "missing_columns": [
+        "approved_at",
+        "approved_by",
+        "company_id",
+        "created_at",
+        "currency",
+        "exchange_rate",
+        "exchange_rate_date",
+        "exchange_rate_source",
+        "expected_date",
+        "franchise_id",
+        "id",
+        "is_custody",
+        "nir_id",
+        "notes",
+        "po_number",
+        "status",
+        "supplier_id",
+        "total_value_no_vat",
+        "total_value_with_vat",
+        "total_vat",
+        "updated_at",
+        "warehouse_id"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "company_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "franchise_id",
+          "position": 3,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "po_number",
+          "position": 4,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "supplier_id",
+          "position": 5,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "warehouse_id",
+          "position": 6,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "status",
+          "position": 7,
+          "data_type": "USER-DEFINED",
+          "is_nullable": true,
+          "column_default": "'draft'::po_status"
+        },
+        {
+          "name": "is_custody",
+          "position": 8,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "false"
+        },
+        {
+          "name": "expected_date",
+          "position": 9,
+          "data_type": "date",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "approved_by",
+          "position": 10,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "approved_at",
+          "position": 11,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "notes",
+          "position": 12,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "total_value_no_vat",
+          "position": 13,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "total_vat",
+          "position": 14,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "total_value_with_vat",
+          "position": 15,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "nir_id",
+          "position": 16,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 17,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 18,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": "now()"
+        },
+        {
+          "name": "currency",
+          "position": 19,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": "'RON'::character varying"
+        },
+        {
+          "name": "exchange_rate",
+          "position": 20,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "1"
+        },
+        {
+          "name": "exchange_rate_source",
+          "position": 21,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": "'BNR'::character varying"
+        },
+        {
+          "name": "exchange_rate_date",
+          "position": 22,
+          "data_type": "date",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "purchase_order_items": {
+      "file": "purchasing.schema.ts",
+      "db_columns": 16,
+      "drizzle_columns": 0,
+      "missing_count": 16,
+      "missing_columns": [
+        "created_at",
+        "currency",
+        "exchange_rate",
+        "exchange_rate_date",
+        "exchange_rate_source",
+        "id",
+        "po_id",
+        "product_id",
+        "quantity",
+        "quantity_received",
+        "total_value_no_vat",
+        "total_value_with_vat",
+        "unit_price",
+        "updated_at",
+        "vat_rate",
+        "vat_value"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "po_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "product_id",
+          "position": 3,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "quantity",
+          "position": 4,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "quantity_received",
+          "position": 5,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "unit_price",
+          "position": 6,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "vat_rate",
+          "position": 7,
+          "data_type": "integer",
+          "is_nullable": true,
+          "column_default": "19"
+        },
+        {
+          "name": "vat_value",
+          "position": 8,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "total_value_no_vat",
+          "position": 9,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "total_value_with_vat",
+          "position": 10,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "created_at",
+          "position": 11,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 12,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": "now()"
+        },
+        {
+          "name": "currency",
+          "position": 13,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": "'RON'::character varying"
+        },
+        {
+          "name": "exchange_rate",
+          "position": 14,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "1"
+        },
+        {
+          "name": "exchange_rate_source",
+          "position": 15,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": "'BNR'::character varying"
+        },
+        {
+          "name": "exchange_rate_date",
+          "position": 16,
+          "data_type": "date",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "nir_documents": {
+      "file": "purchasing.schema.ts",
+      "db_columns": 23,
+      "drizzle_columns": 0,
+      "missing_count": 23,
+      "missing_columns": [
+        "approved_at",
+        "approved_by",
+        "company_id",
+        "created_at",
+        "currency",
+        "exchange_rate",
+        "exchange_rate_date",
+        "exchange_rate_source",
+        "franchise_id",
+        "id",
+        "is_custody",
+        "nir_number",
+        "notes",
+        "receipt_date",
+        "status",
+        "supplier_id",
+        "supplier_invoice_number",
+        "total_value_no_vat",
+        "total_value_with_vat",
+        "total_vat",
+        "updated_at",
+        "warehouse_id",
+        "warehouse_type"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "company_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "franchise_id",
+          "position": 3,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "nir_number",
+          "position": 4,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "supplier_invoice_number",
+          "position": 5,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "supplier_id",
+          "position": 6,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "warehouse_id",
+          "position": 7,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "warehouse_type",
+          "position": 8,
+          "data_type": "USER-DEFINED",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "is_custody",
+          "position": 9,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "false"
+        },
+        {
+          "name": "status",
+          "position": 10,
+          "data_type": "USER-DEFINED",
+          "is_nullable": true,
+          "column_default": "'draft'::nir_status"
+        },
+        {
+          "name": "receipt_date",
+          "position": 11,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "approved_by",
+          "position": 12,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "approved_at",
+          "position": 13,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "notes",
+          "position": 14,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "total_value_no_vat",
+          "position": 15,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "total_vat",
+          "position": 16,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "total_value_with_vat",
+          "position": 17,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "created_at",
+          "position": 18,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 19,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": "now()"
+        },
+        {
+          "name": "currency",
+          "position": 20,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": "'RON'::character varying"
+        },
+        {
+          "name": "exchange_rate",
+          "position": 21,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "1"
+        },
+        {
+          "name": "exchange_rate_source",
+          "position": 22,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": "'BNR'::character varying"
+        },
+        {
+          "name": "exchange_rate_date",
+          "position": 23,
+          "data_type": "date",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "nir_items": {
+      "file": "purchasing.schema.ts",
+      "db_columns": 20,
+      "drizzle_columns": 0,
+      "missing_count": 20,
+      "missing_columns": [
+        "batch_no",
+        "created_at",
+        "currency",
+        "exchange_rate",
+        "exchange_rate_date",
+        "exchange_rate_source",
+        "expiry_date",
+        "id",
+        "nir_id",
+        "product_id",
+        "purchase_price",
+        "purchase_price_with_vat",
+        "quantity",
+        "selling_price",
+        "selling_price_with_vat",
+        "total_value_no_vat",
+        "total_value_with_vat",
+        "updated_at",
+        "vat_rate",
+        "vat_value"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "nir_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "product_id",
+          "position": 3,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "quantity",
+          "position": 4,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "batch_no",
+          "position": 5,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "expiry_date",
+          "position": 6,
+          "data_type": "date",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "purchase_price",
+          "position": 7,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "purchase_price_with_vat",
+          "position": 8,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "selling_price",
+          "position": 9,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "selling_price_with_vat",
+          "position": 10,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "vat_rate",
+          "position": 11,
+          "data_type": "integer",
+          "is_nullable": true,
+          "column_default": "19"
+        },
+        {
+          "name": "vat_value",
+          "position": 12,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "total_value_no_vat",
+          "position": 13,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "total_value_with_vat",
+          "position": 14,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "created_at",
+          "position": 15,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 16,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": "now()"
+        },
+        {
+          "name": "currency",
+          "position": 17,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": "'RON'::character varying"
+        },
+        {
+          "name": "exchange_rate",
+          "position": 18,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "1"
+        },
+        {
+          "name": "exchange_rate_source",
+          "position": 19,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": "'BNR'::character varying"
+        },
+        {
+          "name": "exchange_rate_date",
+          "position": 20,
+          "data_type": "date",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "transfer_documents": {
+      "file": "transfer.schema.ts",
+      "db_columns": 21,
+      "drizzle_columns": 0,
+      "missing_count": 21,
+      "missing_columns": [
+        "approved_at",
+        "approved_by",
+        "company_id",
+        "created_at",
+        "currency",
+        "destination_warehouse_id",
+        "exchange_rate",
+        "exchange_rate_date",
+        "exchange_rate_source",
+        "franchise_id",
+        "id",
+        "nir_id",
+        "notes",
+        "received_at",
+        "received_by",
+        "source_warehouse_id",
+        "status",
+        "total_value",
+        "transfer_date",
+        "transfer_number",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "company_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "franchise_id",
+          "position": 3,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "transfer_number",
+          "position": 4,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "source_warehouse_id",
+          "position": 5,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "destination_warehouse_id",
+          "position": 6,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "status",
+          "position": 7,
+          "data_type": "USER-DEFINED",
+          "is_nullable": true,
+          "column_default": "'draft'::transfer_status"
+        },
+        {
+          "name": "transfer_date",
+          "position": 8,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "approved_by",
+          "position": 9,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "approved_at",
+          "position": 10,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "received_by",
+          "position": 11,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "received_at",
+          "position": 12,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "nir_id",
+          "position": 13,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "notes",
+          "position": 14,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "total_value",
+          "position": 15,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "created_at",
+          "position": 16,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 17,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": "now()"
+        },
+        {
+          "name": "currency",
+          "position": 18,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": "'RON'::character varying"
+        },
+        {
+          "name": "exchange_rate",
+          "position": 19,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "1"
+        },
+        {
+          "name": "exchange_rate_source",
+          "position": 20,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": "'BNR'::character varying"
+        },
+        {
+          "name": "exchange_rate_date",
+          "position": 21,
+          "data_type": "date",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "transfer_items": {
+      "file": "transfer.schema.ts",
+      "db_columns": 15,
+      "drizzle_columns": 0,
+      "missing_count": 15,
+      "missing_columns": [
+        "batch_no",
+        "created_at",
+        "currency",
+        "exchange_rate",
+        "exchange_rate_date",
+        "exchange_rate_source",
+        "expiry_date",
+        "id",
+        "product_id",
+        "quantity",
+        "quantity_received",
+        "total_value",
+        "transfer_id",
+        "unit_value",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "transfer_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "product_id",
+          "position": 3,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "quantity",
+          "position": 4,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "quantity_received",
+          "position": 5,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "batch_no",
+          "position": 6,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "expiry_date",
+          "position": 7,
+          "data_type": "date",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "unit_value",
+          "position": 8,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "total_value",
+          "position": 9,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "created_at",
+          "position": 10,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 11,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": "now()"
+        },
+        {
+          "name": "currency",
+          "position": 12,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": "'RON'::character varying"
+        },
+        {
+          "name": "exchange_rate",
+          "position": 13,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "1"
+        },
+        {
+          "name": "exchange_rate_source",
+          "position": 14,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": "'BNR'::character varying"
+        },
+        {
+          "name": "exchange_rate_date",
+          "position": 15,
+          "data_type": "date",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "stock_reservations": {
+      "file": "transfer.schema.ts",
+      "db_columns": 13,
+      "drizzle_columns": 0,
+      "missing_count": 13,
+      "missing_columns": [
+        "company_id",
+        "created_at",
+        "created_by",
+        "expiry_date",
+        "id",
+        "is_active",
+        "notes",
+        "reservation_date",
+        "reservation_quantity",
+        "source_id",
+        "source_type",
+        "stock_id",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "stock_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "reservation_quantity",
+          "position": 3,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "notes",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reservation_date",
+          "position": 5,
+          "data_type": "timestamp with time zone",
+          "is_nullable": true,
+          "column_default": "CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "expiry_date",
+          "position": 6,
+          "data_type": "timestamp with time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_active",
+          "position": 7,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "true"
+        },
+        {
+          "name": "created_by",
+          "position": 8,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 9,
+          "data_type": "timestamp with time zone",
+          "is_nullable": true,
+          "column_default": "CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "updated_at",
+          "position": 10,
+          "data_type": "timestamp with time zone",
+          "is_nullable": true,
+          "column_default": "CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "source_type",
+          "position": 11,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": "'other'::text"
+        },
+        {
+          "name": "source_id",
+          "position": 12,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "company_id",
+          "position": 13,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "settings_global": {
+      "file": "settings-extended.schema.ts",
+      "db_columns": 12,
+      "drizzle_columns": 0,
+      "missing_count": 12,
+      "missing_columns": [
+        "category",
+        "company_id",
+        "created_at",
+        "created_by",
+        "description",
+        "id",
+        "is_system_wide",
+        "key",
+        "module",
+        "updated_at",
+        "updated_by",
+        "value"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "company_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "key",
+          "position": 3,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "value",
+          "position": 4,
+          "data_type": "jsonb",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "category",
+          "position": 5,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "module",
+          "position": 6,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 7,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_system_wide",
+          "position": 8,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "false"
+        },
+        {
+          "name": "created_at",
+          "position": 9,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 10,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "created_by",
+          "position": 11,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "updated_by",
+          "position": 12,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "settings_feature_toggles": {
+      "file": "settings-extended.schema.ts",
+      "db_columns": 11,
+      "drizzle_columns": 0,
+      "missing_count": 11,
+      "missing_columns": [
+        "company_id",
+        "created_at",
+        "created_by",
+        "description",
+        "enabled",
+        "feature",
+        "id",
+        "metadata",
+        "module",
+        "updated_at",
+        "updated_by"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "company_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "feature",
+          "position": 3,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "enabled",
+          "position": 4,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "false"
+        },
+        {
+          "name": "module",
+          "position": 5,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 6,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "metadata",
+          "position": 7,
+          "data_type": "jsonb",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 8,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 9,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "created_by",
+          "position": 10,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "updated_by",
+          "position": 11,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "settings_ui_themes": {
+      "file": "settings-extended.schema.ts",
+      "db_columns": 13,
+      "drizzle_columns": 0,
+      "missing_count": 13,
+      "missing_columns": [
+        "colors",
+        "company_id",
+        "created_at",
+        "created_by",
+        "custom_css",
+        "description",
+        "fonts",
+        "id",
+        "is_default",
+        "logos",
+        "name",
+        "updated_at",
+        "updated_by"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "company_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "is_default",
+          "position": 4,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "false"
+        },
+        {
+          "name": "colors",
+          "position": 5,
+          "data_type": "jsonb",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "fonts",
+          "position": 6,
+          "data_type": "jsonb",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "logos",
+          "position": 7,
+          "data_type": "jsonb",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "custom_css",
+          "position": 8,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 9,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 10,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "created_by",
+          "position": 11,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "updated_by",
+          "position": 12,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 13,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "settings_user_preferences": {
+      "file": "settings-extended.schema.ts",
+      "db_columns": 9,
+      "drizzle_columns": 0,
+      "missing_count": 9,
+      "missing_columns": [
+        "category",
+        "company_id",
+        "created_at",
+        "id",
+        "key",
+        "module",
+        "updated_at",
+        "user_id",
+        "value"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "user_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "company_id",
+          "position": 3,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "key",
+          "position": 4,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "value",
+          "position": 5,
+          "data_type": "jsonb",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "category",
+          "position": 6,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "module",
+          "position": 7,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 8,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 9,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "documents": {
+      "file": "documents-extended.schema.ts",
+      "db_columns": 8,
+      "drizzle_columns": 0,
+      "missing_count": 8,
+      "missing_columns": [
+        "company_id",
+        "created_at",
+        "file_path",
+        "franchise_id",
+        "id",
+        "ocr_text",
+        "type",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "company_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "franchise_id",
+          "position": 3,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "file_path",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "type",
+          "position": 5,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "ocr_text",
+          "position": 6,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 7,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 8,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "document_versions": {
+      "file": "documents-extended.schema.ts",
+      "db_columns": 7,
+      "drizzle_columns": 0,
+      "missing_count": 7,
+      "missing_columns": [
+        "change_description",
+        "content",
+        "created_at",
+        "document_id",
+        "id",
+        "tag",
+        "version"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "document_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "content",
+          "position": 3,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "version",
+          "position": 4,
+          "data_type": "integer",
+          "is_nullable": false,
+          "column_default": "1"
+        },
+        {
+          "name": "tag",
+          "position": 5,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "change_description",
+          "position": 6,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 7,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "fx_rates": {
+      "file": "documents-extended.schema.ts",
+      "db_columns": 8,
+      "drizzle_columns": 0,
+      "missing_count": 8,
+      "missing_columns": [
+        "base_currency",
+        "created_at",
+        "currency",
+        "date",
+        "id",
+        "rate",
+        "source",
+        "updated_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "id",
+          "position": 1,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": "gen_random_uuid()"
+        },
+        {
+          "name": "currency",
+          "position": 2,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "rate",
+          "position": 3,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "source",
+          "position": 4,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": "'BNR'::character varying"
+        },
+        {
+          "name": "base_currency",
+          "position": 5,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": "'RON'::character varying"
+        },
+        {
+          "name": "date",
+          "position": 6,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "created_at",
+          "position": 7,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "position": 8,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        }
+      ]
+    },
+    "crm_forecasts": {
+      "file": "crm.schema.ts",
+      "db_columns": 16,
+      "drizzle_columns": 229,
+      "missing_count": 6,
+      "missing_columns": [
+        "confidence_level",
+        "end_date",
+        "forecast_amount",
+        "forecast_period",
+        "forecast_type",
+        "start_date"
+      ],
+      "missing_with_types": [
+        {
+          "name": "forecast_period",
+          "position": 2,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "start_date",
+          "position": 3,
+          "data_type": "date",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "end_date",
+          "position": 4,
+          "data_type": "date",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "forecast_amount",
+          "position": 5,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "confidence_level",
+          "position": 14,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "forecast_type",
+          "position": 15,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": "'revenue'::text"
+        }
+      ]
+    },
+    "employee_documents": {
+      "file": "hr.schema.ts",
+      "db_columns": 18,
+      "drizzle_columns": 212,
+      "missing_count": 8,
+      "missing_columns": [
+        "document_number",
+        "file_size",
+        "is_verified",
+        "issue_date",
+        "mime_type",
+        "uploaded_by",
+        "verified_at",
+        "verified_by"
+      ],
+      "missing_with_types": [
+        {
+          "name": "document_number",
+          "position": 6,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "file_size",
+          "position": 8,
+          "data_type": "integer",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "mime_type",
+          "position": 9,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "issue_date",
+          "position": 10,
+          "data_type": "date",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_verified",
+          "position": 12,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "false"
+        },
+        {
+          "name": "verified_by",
+          "position": 13,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "verified_at",
+          "position": 14,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "uploaded_by",
+          "position": 18,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "attendance_records": {
+      "file": "hr.schema.ts",
+      "db_columns": 21,
+      "drizzle_columns": 212,
+      "missing_count": 11,
+      "missing_columns": [
+        "break_end",
+        "break_minutes",
+        "break_start",
+        "clock_in",
+        "clock_out",
+        "is_holiday",
+        "is_overtime",
+        "is_remote",
+        "is_weekend",
+        "location",
+        "scheduled_hours"
+      ],
+      "missing_with_types": [
+        {
+          "name": "clock_in",
+          "position": 5,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "clock_out",
+          "position": 6,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "break_start",
+          "position": 7,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "break_end",
+          "position": 8,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "scheduled_hours",
+          "position": 9,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "break_minutes",
+          "position": 12,
+          "data_type": "integer",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "is_overtime",
+          "position": 14,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "false"
+        },
+        {
+          "name": "is_holiday",
+          "position": 15,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "false"
+        },
+        {
+          "name": "is_weekend",
+          "position": 16,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "false"
+        },
+        {
+          "name": "location",
+          "position": 17,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_remote",
+          "position": 18,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "false"
+        }
+      ]
+    },
+    "accounting_ledger_entries": {
+      "file": "accounting.schema.ts",
+      "db_columns": 37,
+      "drizzle_columns": 50,
+      "missing_count": 25,
+      "missing_columns": [
+        "document_date",
+        "document_number",
+        "document_type",
+        "exchange_rate",
+        "exchange_rate_date",
+        "is_draft",
+        "is_posted",
+        "is_reversal",
+        "is_system_generated",
+        "metadata",
+        "notes",
+        "original_entry_id",
+        "posted_at",
+        "posted_by",
+        "posting_date",
+        "reference_id",
+        "reference_table",
+        "reversal_entry_id",
+        "reversal_reason",
+        "reversed_at",
+        "reversed_by",
+        "total_credit",
+        "total_debit",
+        "transaction_date",
+        "type"
+      ],
+      "missing_with_types": [
+        {
+          "name": "transaction_date",
+          "position": 4,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "posting_date",
+          "position": 5,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "document_date",
+          "position": 6,
+          "data_type": "date",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "type",
+          "position": 7,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "document_number",
+          "position": 8,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "document_type",
+          "position": 9,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reference_id",
+          "position": 10,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reference_table",
+          "position": 11,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "notes",
+          "position": 13,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_posted",
+          "position": 14,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "false"
+        },
+        {
+          "name": "is_draft",
+          "position": 15,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "true"
+        },
+        {
+          "name": "is_system_generated",
+          "position": 16,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "false"
+        },
+        {
+          "name": "total_debit",
+          "position": 18,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "total_credit",
+          "position": 19,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "exchange_rate",
+          "position": 21,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "1"
+        },
+        {
+          "name": "exchange_rate_date",
+          "position": 22,
+          "data_type": "date",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "posted_by",
+          "position": 29,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "posted_at",
+          "position": 30,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reversed_by",
+          "position": 31,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reversed_at",
+          "position": 32,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_reversal",
+          "position": 33,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "false"
+        },
+        {
+          "name": "original_entry_id",
+          "position": 34,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reversal_reason",
+          "position": 35,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "metadata",
+          "position": 36,
+          "data_type": "jsonb",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reversal_entry_id",
+          "position": 37,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "accounting_ledger_lines": {
+      "file": "accounting.schema.ts",
+      "db_columns": 38,
+      "drizzle_columns": 50,
+      "missing_count": 27,
+      "missing_columns": [
+        "amount",
+        "cost_center_id",
+        "credit_amount",
+        "debit_amount",
+        "department_id",
+        "due_date",
+        "exchange_rate",
+        "is_reconciled",
+        "item_id",
+        "item_quantity",
+        "item_type",
+        "item_unit_price",
+        "ledger_entry_id",
+        "line_number",
+        "metadata",
+        "original_amount",
+        "partner_id",
+        "partner_type",
+        "project_id",
+        "reconciled_at",
+        "reconciled_by",
+        "reconciliation_id",
+        "reference_id",
+        "reference_table",
+        "vat_amount",
+        "vat_code",
+        "vat_percentage"
+      ],
+      "missing_with_types": [
+        {
+          "name": "ledger_entry_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "line_number",
+          "position": 4,
+          "data_type": "integer",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "amount",
+          "position": 11,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "debit_amount",
+          "position": 12,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "0"
+        },
+        {
+          "name": "credit_amount",
+          "position": 13,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "0"
+        },
+        {
+          "name": "original_amount",
+          "position": 15,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "exchange_rate",
+          "position": 16,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "1"
+        },
+        {
+          "name": "department_id",
+          "position": 17,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "project_id",
+          "position": 18,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "cost_center_id",
+          "position": 19,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "vat_code",
+          "position": 20,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "vat_percentage",
+          "position": 21,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "vat_amount",
+          "position": 22,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "item_type",
+          "position": 23,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "item_id",
+          "position": 24,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "item_quantity",
+          "position": 25,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "item_unit_price",
+          "position": 26,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "partner_id",
+          "position": 27,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "partner_type",
+          "position": 28,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "due_date",
+          "position": 29,
+          "data_type": "date",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reference_id",
+          "position": 30,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reference_table",
+          "position": 31,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_reconciled",
+          "position": 32,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "false"
+        },
+        {
+          "name": "reconciliation_id",
+          "position": 33,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reconciled_at",
+          "position": 34,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reconciled_by",
+          "position": 35,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "metadata",
+          "position": 36,
+          "data_type": "jsonb",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "account_balances": {
+      "file": "accounting.schema.ts",
+      "db_columns": 13,
+      "drizzle_columns": 50,
+      "missing_count": 1,
+      "missing_columns": [
+        "account_id"
+      ],
+      "missing_with_types": [
+        {
+          "name": "account_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        }
+      ]
+    },
+    "fiscal_periods": {
+      "file": "accounting.schema.ts",
+      "db_columns": 15,
+      "drizzle_columns": 50,
+      "missing_count": 10,
+      "missing_columns": [
+        "closed_at",
+        "closed_by",
+        "end_date",
+        "is_closed",
+        "month",
+        "reopened_at",
+        "reopened_by",
+        "reopening_reason",
+        "start_date",
+        "year"
+      ],
+      "missing_with_types": [
+        {
+          "name": "year",
+          "position": 3,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "month",
+          "position": 4,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "start_date",
+          "position": 5,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "end_date",
+          "position": 6,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "is_closed",
+          "position": 8,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "false"
+        },
+        {
+          "name": "closed_at",
+          "position": 9,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "closed_by",
+          "position": 10,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reopened_at",
+          "position": 11,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reopened_by",
+          "position": 12,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reopening_reason",
+          "position": 13,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "chart_of_accounts": {
+      "file": "accounting.schema.ts",
+      "db_columns": 12,
+      "drizzle_columns": 50,
+      "missing_count": 2,
+      "missing_columns": [
+        "account_type",
+        "parent_id"
+      ],
+      "missing_with_types": [
+        {
+          "name": "account_type",
+          "position": 8,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "parent_id",
+          "position": 10,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "journal_entries": {
+      "file": "accounting.schema.ts",
+      "db_columns": 23,
+      "drizzle_columns": 50,
+      "missing_count": 16,
+      "missing_columns": [
+        "cancellation_reason",
+        "cancelled_at",
+        "cancelled_by",
+        "currency_code",
+        "date",
+        "document_id",
+        "document_type",
+        "exchange_rate",
+        "number",
+        "posted_at",
+        "reference",
+        "total_credit",
+        "total_debit",
+        "validated",
+        "validated_at",
+        "validated_by"
+      ],
+      "missing_with_types": [
+        {
+          "name": "date",
+          "position": 3,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "number",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reference",
+          "position": 5,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "total_debit",
+          "position": 7,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "'0'::numeric"
+        },
+        {
+          "name": "total_credit",
+          "position": 8,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "'0'::numeric"
+        },
+        {
+          "name": "document_type",
+          "position": 10,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "document_id",
+          "position": 11,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "validated",
+          "position": 12,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "false"
+        },
+        {
+          "name": "validated_at",
+          "position": 13,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "validated_by",
+          "position": 14,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "currency_code",
+          "position": 15,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": "'RON'::character varying"
+        },
+        {
+          "name": "exchange_rate",
+          "position": 16,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "1.0000"
+        },
+        {
+          "name": "posted_at",
+          "position": 17,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "cancelled_at",
+          "position": 18,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "cancelled_by",
+          "position": 19,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "cancellation_reason",
+          "position": 20,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "journal_lines": {
+      "file": "accounting.schema.ts",
+      "db_columns": 8,
+      "drizzle_columns": 50,
+      "missing_count": 2,
+      "missing_columns": [
+        "account_id",
+        "journal_id"
+      ],
+      "missing_with_types": [
+        {
+          "name": "journal_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "account_id",
+          "position": 3,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        }
+      ]
+    },
+    "ledger_entries": {
+      "file": "accounting.schema.ts",
+      "db_columns": 23,
+      "drizzle_columns": 50,
+      "missing_count": 14,
+      "missing_columns": [
+        "amount",
+        "document_date",
+        "is_posted",
+        "is_reversed",
+        "journal_number",
+        "metadata",
+        "original_entry_id",
+        "posted_at",
+        "posted_by",
+        "reversal_entry_id",
+        "reversal_reason",
+        "reversed_at",
+        "reversed_by",
+        "type"
+      ],
+      "missing_with_types": [
+        {
+          "name": "type",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "journal_number",
+          "position": 6,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "document_date",
+          "position": 8,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "amount",
+          "position": 9,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "metadata",
+          "position": 11,
+          "data_type": "jsonb",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_posted",
+          "position": 15,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "false"
+        },
+        {
+          "name": "posted_at",
+          "position": 16,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "posted_by",
+          "position": 17,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_reversed",
+          "position": 18,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "false"
+        },
+        {
+          "name": "reversed_at",
+          "position": 19,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reversed_by",
+          "position": 20,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "original_entry_id",
+          "position": 21,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reversal_entry_id",
+          "position": 22,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "reversal_reason",
+          "position": 23,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "ledger_lines": {
+      "file": "accounting.schema.ts",
+      "db_columns": 9,
+      "drizzle_columns": 50,
+      "missing_count": 5,
+      "missing_columns": [
+        "account_id",
+        "credit_amount",
+        "debit_amount",
+        "ledger_entry_id",
+        "metadata"
+      ],
+      "missing_with_types": [
+        {
+          "name": "ledger_entry_id",
+          "position": 2,
+          "data_type": "uuid",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "account_id",
+          "position": 3,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "debit_amount",
+          "position": 4,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "'0'::numeric"
+        },
+        {
+          "name": "credit_amount",
+          "position": 5,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "'0'::numeric"
+        },
+        {
+          "name": "metadata",
+          "position": 7,
+          "data_type": "jsonb",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "stocks": {
+      "file": "accounting.schema.ts",
+      "db_columns": 13,
+      "drizzle_columns": 50,
+      "missing_count": 5,
+      "missing_columns": [
+        "batch_no",
+        "expiry_date",
+        "purchase_price",
+        "quantity_reserved",
+        "selling_price"
+      ],
+      "missing_with_types": [
+        {
+          "name": "quantity_reserved",
+          "position": 7,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "batch_no",
+          "position": 8,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "expiry_date",
+          "position": 9,
+          "data_type": "date",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "purchase_price",
+          "position": 10,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        },
+        {
+          "name": "selling_price",
+          "position": 11,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": "0"
+        }
+      ]
+    },
+    "analytics_dashboards": {
+      "file": "analytics.schema.ts",
+      "db_columns": 11,
+      "drizzle_columns": 36,
+      "missing_count": 7,
+      "missing_columns": [
+        "description",
+        "is_public",
+        "layout",
+        "name",
+        "refresh_interval",
+        "updated_at",
+        "updated_by"
+      ],
+      "missing_with_types": [
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "layout",
+          "position": 5,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "updated_at",
+          "position": 7,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_by",
+          "position": 9,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_public",
+          "position": 10,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "false"
+        },
+        {
+          "name": "refresh_interval",
+          "position": 11,
+          "data_type": "integer",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "analytics_reports": {
+      "file": "analytics.schema.ts",
+      "db_columns": 14,
+      "drizzle_columns": 36,
+      "missing_count": 8,
+      "missing_columns": [
+        "dashboard_id",
+        "description",
+        "is_public",
+        "name",
+        "schedule",
+        "type",
+        "updated_at",
+        "updated_by"
+      ],
+      "missing_with_types": [
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "type",
+          "position": 5,
+          "data_type": "USER-DEFINED",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "updated_at",
+          "position": 9,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_by",
+          "position": 11,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_public",
+          "position": 12,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "false"
+        },
+        {
+          "name": "dashboard_id",
+          "position": 13,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "schedule",
+          "position": 14,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "report_execution_history": {
+      "file": "analytics.schema.ts",
+      "db_columns": 10,
+      "drizzle_columns": 36,
+      "missing_count": 4,
+      "missing_columns": [
+        "executed_at",
+        "executed_by",
+        "execution_time",
+        "report_id"
+      ],
+      "missing_with_types": [
+        {
+          "name": "report_id",
+          "position": 2,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "executed_by",
+          "position": 4,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "executed_at",
+          "position": 5,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "execution_time",
+          "position": 8,
+          "data_type": "integer",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "dashboard_views": {
+      "file": "analytics.schema.ts",
+      "db_columns": 6,
+      "drizzle_columns": 36,
+      "missing_count": 4,
+      "missing_columns": [
+        "dashboard_id",
+        "user_id",
+        "view_duration",
+        "viewed_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "dashboard_id",
+          "position": 2,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "user_id",
+          "position": 3,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "viewed_at",
+          "position": 4,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "view_duration",
+          "position": 5,
+          "data_type": "integer",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "analytics_metrics": {
+      "file": "analytics.schema.ts",
+      "db_columns": 17,
+      "drizzle_columns": 36,
+      "missing_count": 13,
+      "missing_columns": [
+        "aggregation_type",
+        "description",
+        "format",
+        "metadata",
+        "name",
+        "period",
+        "query",
+        "schedule",
+        "source",
+        "timestamp",
+        "type",
+        "unit",
+        "value"
+      ],
+      "missing_with_types": [
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "type",
+          "position": 5,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "value",
+          "position": 6,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "unit",
+          "position": 7,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "timestamp",
+          "position": 8,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "period",
+          "position": 9,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "source",
+          "position": 10,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "metadata",
+          "position": 11,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "format",
+          "position": 12,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "aggregation_type",
+          "position": 13,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "query",
+          "position": 14,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "schedule",
+          "position": 16,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "metrics_history": {
+      "file": "analytics.schema.ts",
+      "db_columns": 7,
+      "drizzle_columns": 36,
+      "missing_count": 5,
+      "missing_columns": [
+        "metadata",
+        "metric_id",
+        "period",
+        "timestamp",
+        "value"
+      ],
+      "missing_with_types": [
+        {
+          "name": "metric_id",
+          "position": 2,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "value",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "timestamp",
+          "position": 5,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "period",
+          "position": 6,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "metadata",
+          "position": 7,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "analytics_alerts": {
+      "file": "analytics.schema.ts",
+      "db_columns": 20,
+      "drizzle_columns": 36,
+      "missing_count": 15,
+      "missing_columns": [
+        "condition",
+        "description",
+        "is_active",
+        "last_triggered_at",
+        "message",
+        "metric_id",
+        "name",
+        "notification_channels",
+        "report_id",
+        "severity",
+        "source",
+        "threshold",
+        "updated_at",
+        "updated_by",
+        "value"
+      ],
+      "missing_with_types": [
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "metric_id",
+          "position": 5,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "condition",
+          "position": 6,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "severity",
+          "position": 7,
+          "data_type": "USER-DEFINED",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "updated_at",
+          "position": 10,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_by",
+          "position": 12,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "last_triggered_at",
+          "position": 13,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "notification_channels",
+          "position": 14,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_active",
+          "position": 15,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "true"
+        },
+        {
+          "name": "report_id",
+          "position": 16,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "threshold",
+          "position": 17,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "source",
+          "position": 18,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "value",
+          "position": 19,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "message",
+          "position": 20,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "alert_history": {
+      "file": "analytics.schema.ts",
+      "db_columns": 13,
+      "drizzle_columns": 36,
+      "missing_count": 11,
+      "missing_columns": [
+        "acknowledged_at",
+        "acknowledged_by",
+        "alert_id",
+        "message",
+        "metric_value",
+        "new_status",
+        "notification_sent",
+        "previous_status",
+        "resolved_at",
+        "resolved_by",
+        "triggered_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "alert_id",
+          "position": 2,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "previous_status",
+          "position": 4,
+          "data_type": "USER-DEFINED",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "new_status",
+          "position": 5,
+          "data_type": "USER-DEFINED",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "triggered_at",
+          "position": 6,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "acknowledged_by",
+          "position": 7,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "acknowledged_at",
+          "position": 8,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "resolved_by",
+          "position": 9,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "resolved_at",
+          "position": 10,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "metric_value",
+          "position": 11,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "message",
+          "position": 12,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "notification_sent",
+          "position": 13,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "false"
+        }
+      ]
+    },
+    "bi_cost_centers": {
+      "file": "analytics.schema.ts",
+      "db_columns": 13,
+      "drizzle_columns": 36,
+      "missing_count": 9,
+      "missing_columns": [
+        "budget",
+        "code",
+        "description",
+        "is_active",
+        "manager_user_id",
+        "name",
+        "parent_cost_center_id",
+        "updated_at",
+        "updated_by"
+      ],
+      "missing_with_types": [
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "code",
+          "position": 4,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 5,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "budget",
+          "position": 6,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "manager_user_id",
+          "position": 7,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "parent_cost_center_id",
+          "position": 8,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "updated_at",
+          "position": 10,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_by",
+          "position": 12,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_active",
+          "position": 13,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "true"
+        }
+      ]
+    },
+    "bi_business_units": {
+      "file": "analytics.schema.ts",
+      "db_columns": 13,
+      "drizzle_columns": 36,
+      "missing_count": 9,
+      "missing_columns": [
+        "code",
+        "cost_center_id",
+        "description",
+        "is_active",
+        "manager_user_id",
+        "name",
+        "parent_business_unit_id",
+        "updated_at",
+        "updated_by"
+      ],
+      "missing_with_types": [
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "code",
+          "position": 4,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 5,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "manager_user_id",
+          "position": 6,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "parent_business_unit_id",
+          "position": 7,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "cost_center_id",
+          "position": 8,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "updated_at",
+          "position": 10,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_by",
+          "position": 12,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_active",
+          "position": 13,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "true"
+        }
+      ]
+    },
+    "bi_cost_allocations": {
+      "file": "analytics.schema.ts",
+      "db_columns": 16,
+      "drizzle_columns": 36,
+      "missing_count": 12,
+      "missing_columns": [
+        "allocation_method",
+        "allocation_value",
+        "description",
+        "end_date",
+        "frequency",
+        "is_active",
+        "name",
+        "source_cost_center_id",
+        "start_date",
+        "target_cost_center_id",
+        "updated_at",
+        "updated_by"
+      ],
+      "missing_with_types": [
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "source_cost_center_id",
+          "position": 5,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "target_cost_center_id",
+          "position": 6,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "allocation_method",
+          "position": 7,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "allocation_value",
+          "position": 8,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "start_date",
+          "position": 9,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "end_date",
+          "position": 10,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "frequency",
+          "position": 11,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "updated_at",
+          "position": 13,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_by",
+          "position": 15,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_active",
+          "position": 16,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "true"
+        }
+      ]
+    },
+    "cost_allocation_history": {
+      "file": "analytics.schema.ts",
+      "db_columns": 9,
+      "drizzle_columns": 36,
+      "missing_count": 7,
+      "missing_columns": [
+        "allocated_at",
+        "allocated_by",
+        "amount",
+        "cost_allocation_id",
+        "notes",
+        "period_end",
+        "period_start"
+      ],
+      "missing_with_types": [
+        {
+          "name": "cost_allocation_id",
+          "position": 2,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "period_start",
+          "position": 4,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "period_end",
+          "position": 5,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "amount",
+          "position": 6,
+          "data_type": "text",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "allocated_at",
+          "position": 7,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "allocated_by",
+          "position": 8,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "notes",
+          "position": 9,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "predictive_models": {
+      "file": "analytics.schema.ts",
+      "db_columns": 16,
+      "drizzle_columns": 36,
+      "missing_count": 10,
+      "missing_columns": [
+        "accuracy",
+        "algorithm",
+        "description",
+        "is_active",
+        "last_trained_at",
+        "model_data",
+        "name",
+        "type",
+        "updated_at",
+        "updated_by"
+      ],
+      "missing_with_types": [
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "type",
+          "position": 5,
+          "data_type": "USER-DEFINED",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "algorithm",
+          "position": 6,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "model_data",
+          "position": 8,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "accuracy",
+          "position": 9,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "last_trained_at",
+          "position": 10,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "updated_at",
+          "position": 12,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_by",
+          "position": 14,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_active",
+          "position": 15,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "true"
+        }
+      ]
+    },
+    "model_training_history": {
+      "file": "analytics.schema.ts",
+      "db_columns": 12,
+      "drizzle_columns": 36,
+      "missing_count": 5,
+      "missing_columns": [
+        "accuracy",
+        "duration",
+        "trained_at",
+        "trained_by",
+        "training_data_size"
+      ],
+      "missing_with_types": [
+        {
+          "name": "trained_at",
+          "position": 4,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "trained_by",
+          "position": 5,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "training_data_size",
+          "position": 7,
+          "data_type": "integer",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "accuracy",
+          "position": 8,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "duration",
+          "position": 10,
+          "data_type": "integer",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "predictive_scenarios": {
+      "file": "analytics.schema.ts",
+      "db_columns": 13,
+      "drizzle_columns": 36,
+      "missing_count": 7,
+      "missing_columns": [
+        "description",
+        "is_active",
+        "last_run_at",
+        "name",
+        "type",
+        "updated_at",
+        "updated_by"
+      ],
+      "missing_with_types": [
+        {
+          "name": "name",
+          "position": 3,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "description",
+          "position": 4,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "type",
+          "position": 5,
+          "data_type": "USER-DEFINED",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "updated_at",
+          "position": 9,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "updated_by",
+          "position": 11,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "last_run_at",
+          "position": 12,
+          "data_type": "timestamp without time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_active",
+          "position": 13,
+          "data_type": "boolean",
+          "is_nullable": false,
+          "column_default": "true"
+        }
+      ]
+    },
+    "scenario_results": {
+      "file": "analytics.schema.ts",
+      "db_columns": 10,
+      "drizzle_columns": 36,
+      "missing_count": 4,
+      "missing_columns": [
+        "duration",
+        "notes",
+        "run_at",
+        "run_by"
+      ],
+      "missing_with_types": [
+        {
+          "name": "run_at",
+          "position": 4,
+          "data_type": "timestamp without time zone",
+          "is_nullable": false,
+          "column_default": "now()"
+        },
+        {
+          "name": "run_by",
+          "position": 5,
+          "data_type": "character varying",
+          "is_nullable": false,
+          "column_default": null
+        },
+        {
+          "name": "duration",
+          "position": 8,
+          "data_type": "integer",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "notes",
+          "position": 10,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "analytics_scenario_executions": {
+      "file": "analytics.schema.ts",
+      "db_columns": 21,
+      "drizzle_columns": 36,
+      "missing_count": 9,
+      "missing_columns": [
+        "comparison_results",
+        "confidence_score",
+        "end_date",
+        "execution_environment",
+        "execution_type",
+        "input_values",
+        "is_baseline",
+        "log_details",
+        "start_date"
+      ],
+      "missing_with_types": [
+        {
+          "name": "input_values",
+          "position": 3,
+          "data_type": "jsonb",
+          "is_nullable": false,
+          "column_default": "'{}'::jsonb"
+        },
+        {
+          "name": "comparison_results",
+          "position": 10,
+          "data_type": "jsonb",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "start_date",
+          "position": 13,
+          "data_type": "timestamp with time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "end_date",
+          "position": 14,
+          "data_type": "timestamp with time zone",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "execution_environment",
+          "position": 15,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "log_details",
+          "position": 17,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "execution_type",
+          "position": 19,
+          "data_type": "character varying",
+          "is_nullable": true,
+          "column_default": "'manual'::character varying"
+        },
+        {
+          "name": "confidence_score",
+          "position": 20,
+          "data_type": "numeric",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "is_baseline",
+          "position": 21,
+          "data_type": "boolean",
+          "is_nullable": true,
+          "column_default": "false"
+        }
+      ]
+    },
+    "ecommerce_orders": {
+      "file": "ecommerce.schema.ts",
+      "db_columns": 32,
+      "drizzle_columns": 117,
+      "missing_count": 7,
+      "missing_columns": [
+        "external_id",
+        "external_order_number",
+        "franchise_id",
+        "integration_source",
+        "shipping_cost",
+        "source",
+        "synced_at"
+      ],
+      "missing_with_types": [
+        {
+          "name": "franchise_id",
+          "position": 3,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "external_id",
+          "position": 6,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "external_order_number",
+          "position": 7,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "source",
+          "position": 10,
+          "data_type": "USER-DEFINED",
+          "is_nullable": false,
+          "column_default": "'website'::order_source"
+        },
+        {
+          "name": "shipping_cost",
+          "position": 17,
+          "data_type": "numeric",
+          "is_nullable": false,
+          "column_default": "'0'::numeric"
+        },
+        {
+          "name": "integration_source",
+          "position": 27,
+          "data_type": "text",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "synced_at",
+          "position": 28,
+          "data_type": "timestamp with time zone",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    },
+    "ecommerce_shopify_variants": {
+      "file": "ecommerce.schema.ts",
+      "db_columns": 17,
+      "drizzle_columns": 117,
+      "missing_count": 2,
+      "missing_columns": [
+        "inventory",
+        "local_inventory_item_id"
+      ],
+      "missing_with_types": [
+        {
+          "name": "inventory",
+          "position": 11,
+          "data_type": "integer",
+          "is_nullable": true,
+          "column_default": null
+        },
+        {
+          "name": "local_inventory_item_id",
+          "position": 12,
+          "data_type": "uuid",
+          "is_nullable": true,
+          "column_default": null
+        }
+      ]
+    }
+  }
+}

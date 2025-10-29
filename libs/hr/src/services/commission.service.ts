@@ -5,7 +5,7 @@
  * It supports Romanian-specific commission structures and integrates with invoicing.
  */
 
-import { commissionStructures, employeeCommissions, employees } from '@geniuserp/shared/schema/hr.schema';
+import { hr_commission_structures, hr_employee_commissions, employees } from '@geniuserp/shared/schema/hr.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditService } from '@geniuserp/audit';
 import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";
@@ -109,25 +109,25 @@ export class CommissionService {
       const commissions = await this.db
         .select({
           // Commission fields
-          id: employeeCommissions.id,
-          companyId: employeeCommissions.companyId,
-          employeeId: employeeCommissions.employeeId,
-          commissionStructureId: employeeCommissions.commissionStructureId,
-          year: employeeCommissions.year,
-          month: employeeCommissions.month,
-          targetAmount: employeeCommissions.targetAmount,
-          achievedAmount: employeeCommissions.achievedAmount,
-          calculatedCommission: employeeCommissions.calculatedCommission,
-          finalCommissionAmount: employeeCommissions.finalCommissionAmount,
-          status: employeeCommissions.status,
-          createdAt: employeeCommissions.createdAt,
-          updatedAt: employeeCommissions.updatedAt,
+          id: hr_employee_commissions.id,
+          companyId: hr_employee_commissions.companyId,
+          employeeId: hr_employee_commissions.employeeId,
+          commissionStructureId: hr_employee_commissions.commissionStructureId,
+          year: hr_employee_commissions.year,
+          month: hr_employee_commissions.month,
+          targetAmount: hr_employee_commissions.targetAmount,
+          achievedAmount: hr_employee_commissions.achievedAmount,
+          calculatedCommission: hr_employee_commissions.calculatedCommission,
+          finalCommissionAmount: hr_employee_commissions.finalCommissionAmount,
+          status: hr_employee_commissions.status,
+          createdAt: hr_employee_commissions.createdAt,
+          updatedAt: hr_employee_commissions.updatedAt,
           // Employee fields
           employeeFirstName: employees.firstName,
           employeeLastName: employees.lastName,
           // Structure fields
-          structureName: commissionStructures.name,
-          structureType: commissionStructures.structureType
+          structureName: hr_commission_structures.name,
+          structureType: hr_commission_structures.structureType
         })
         .from(employeeCommissions)
         .leftJoin(employees, eq(employeeCommissions.employeeId, employees.id))
@@ -802,7 +802,7 @@ export class CommissionService {
       // Query using Drizzle ORM with GROUP BY
       const summary = await this.db
         .select({
-          status: employeeCommissions.status,
+          status: hr_employee_commissions.status,
           count: count(employeeCommissions.id),
           totalAmount: sql<number>`COALESCE(SUM(CAST(${employeeCommissions.finalCommissionAmount} AS numeric)), 0)`
         })

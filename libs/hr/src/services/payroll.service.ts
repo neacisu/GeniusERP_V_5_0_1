@@ -10,7 +10,7 @@
  * - Year-to-date totals
  */
 
-import { employees, payrollLogs, employmentContracts } from '@geniuserp/shared/schema/hr.schema';
+import { employees, hr_payroll_logs, hr_employment_contracts } from '@geniuserp/shared/schema/hr.schema';
 import { v4 as uuidv4 } from 'uuid';
 import AuditService from '@geniuserp/audit';
 import { AuditAction, AuditResourceType } from "@common/enums/audit.enum";
@@ -46,9 +46,9 @@ export class PayrollService {
           employeeId: employees.id,
           firstName: employees.firstName,
           lastName: employees.lastName,
-          baseSalaryGross: employmentContracts.baseSalaryGross,
-          contractType: employmentContracts.contractType,
-          contractId: employmentContracts.id
+          baseSalaryGross: hr_employment_contracts.baseSalaryGross,
+          contractType: hr_employment_contracts.contractType,
+          contractId: hr_employment_contracts.id
         })
         .from(employees)
         .innerJoin(employmentContracts, eq(employees.id, employmentContracts.employeeId))
@@ -285,23 +285,23 @@ export class PayrollService {
       const payrollRecords = await this.db
         .select({
           // Payroll fields
-          id: payrollLogs.id,
-          companyId: payrollLogs.companyId,
-          employeeId: payrollLogs.employeeId,
-          employmentContractId: payrollLogs.employmentContractId,
-          year: payrollLogs.year,
-          month: payrollLogs.month,
-          baseSalaryGross: payrollLogs.baseSalaryGross,
-          grossTotal: payrollLogs.grossTotal,
-          netSalary: payrollLogs.netSalary,
-          casEmployeeAmount: payrollLogs.casEmployeeAmount,
-          cassEmployeeAmount: payrollLogs.cassEmployeeAmount,
-          incomeTaxAmount: payrollLogs.incomeTaxAmount,
-          camEmployerAmount: payrollLogs.camEmployerAmount,
-          personalDeduction: payrollLogs.personalDeduction,
-          status: payrollLogs.status,
-          createdAt: payrollLogs.createdAt,
-          updatedAt: payrollLogs.updatedAt,
+          id: hr_payroll_logs.id,
+          companyId: hr_payroll_logs.companyId,
+          employeeId: hr_payroll_logs.employeeId,
+          employmentContractId: hr_payroll_logs.employmentContractId,
+          year: hr_payroll_logs.year,
+          month: hr_payroll_logs.month,
+          baseSalaryGross: hr_payroll_logs.baseSalaryGross,
+          grossTotal: hr_payroll_logs.grossTotal,
+          netSalary: hr_payroll_logs.netSalary,
+          casEmployeeAmount: hr_payroll_logs.casEmployeeAmount,
+          cassEmployeeAmount: hr_payroll_logs.cassEmployeeAmount,
+          incomeTaxAmount: hr_payroll_logs.incomeTaxAmount,
+          camEmployerAmount: hr_payroll_logs.camEmployerAmount,
+          personalDeduction: hr_payroll_logs.personalDeduction,
+          status: hr_payroll_logs.status,
+          createdAt: hr_payroll_logs.createdAt,
+          updatedAt: hr_payroll_logs.updatedAt,
           // Employee fields
           firstName: employees.firstName,
           lastName: employees.lastName
@@ -401,28 +401,28 @@ export class PayrollService {
       const payrollData = await this.db
         .select({
           // Payroll log fields
-          id: payrollLogs.id,
-          companyId: payrollLogs.companyId,
-          employeeId: payrollLogs.employeeId,
-          employmentContractId: payrollLogs.employmentContractId,
-          year: payrollLogs.year,
-          month: payrollLogs.month,
-          baseSalaryGross: payrollLogs.baseSalaryGross,
-          grossTotal: payrollLogs.grossTotal,
-          netSalary: payrollLogs.netSalary,
-          casEmployeeAmount: payrollLogs.casEmployeeAmount,
-          cassEmployeeAmount: payrollLogs.cassEmployeeAmount,
-          incomeTaxAmount: payrollLogs.incomeTaxAmount,
-          camEmployerAmount: payrollLogs.camEmployerAmount,
-          personalDeduction: payrollLogs.personalDeduction,
-          status: payrollLogs.status,
-          createdAt: payrollLogs.createdAt,
+          id: hr_payroll_logs.id,
+          companyId: hr_payroll_logs.companyId,
+          employeeId: hr_payroll_logs.employeeId,
+          employmentContractId: hr_payroll_logs.employmentContractId,
+          year: hr_payroll_logs.year,
+          month: hr_payroll_logs.month,
+          baseSalaryGross: hr_payroll_logs.baseSalaryGross,
+          grossTotal: hr_payroll_logs.grossTotal,
+          netSalary: hr_payroll_logs.netSalary,
+          casEmployeeAmount: hr_payroll_logs.casEmployeeAmount,
+          cassEmployeeAmount: hr_payroll_logs.cassEmployeeAmount,
+          incomeTaxAmount: hr_payroll_logs.incomeTaxAmount,
+          camEmployerAmount: hr_payroll_logs.camEmployerAmount,
+          personalDeduction: hr_payroll_logs.personalDeduction,
+          status: hr_payroll_logs.status,
+          createdAt: hr_payroll_logs.createdAt,
           // Employee fields
           firstName: employees.firstName,
           lastName: employees.lastName,
           cnp: employees.cnp,
           // Contract fields
-          contractNumber: employmentContracts.contractNumber
+          contractNumber: hr_employment_contracts.contractNumber
         })
         .from(payrollLogs)
         .innerJoin(employees, eq(payrollLogs.employeeId, employees.id))
@@ -467,28 +467,28 @@ export class PayrollService {
       const history = await this.db
         .select({
           // Payroll log fields
-          id: payrollLogs.id,
-          companyId: payrollLogs.companyId,
-          employeeId: payrollLogs.employeeId,
-          employmentContractId: payrollLogs.employmentContractId,
-          year: payrollLogs.year,
-          month: payrollLogs.month,
-          baseSalaryGross: payrollLogs.baseSalaryGross,
-          grossTotal: payrollLogs.grossTotal,
-          netSalary: payrollLogs.netSalary,
-          casEmployeeAmount: payrollLogs.casEmployeeAmount,
-          cassEmployeeAmount: payrollLogs.cassEmployeeAmount,
-          incomeTaxAmount: payrollLogs.incomeTaxAmount,
-          camEmployerAmount: payrollLogs.camEmployerAmount,
-          personalDeduction: payrollLogs.personalDeduction,
-          status: payrollLogs.status,
-          createdAt: payrollLogs.createdAt,
-          updatedAt: payrollLogs.updatedAt,
+          id: hr_payroll_logs.id,
+          companyId: hr_payroll_logs.companyId,
+          employeeId: hr_payroll_logs.employeeId,
+          employmentContractId: hr_payroll_logs.employmentContractId,
+          year: hr_payroll_logs.year,
+          month: hr_payroll_logs.month,
+          baseSalaryGross: hr_payroll_logs.baseSalaryGross,
+          grossTotal: hr_payroll_logs.grossTotal,
+          netSalary: hr_payroll_logs.netSalary,
+          casEmployeeAmount: hr_payroll_logs.casEmployeeAmount,
+          cassEmployeeAmount: hr_payroll_logs.cassEmployeeAmount,
+          incomeTaxAmount: hr_payroll_logs.incomeTaxAmount,
+          camEmployerAmount: hr_payroll_logs.camEmployerAmount,
+          personalDeduction: hr_payroll_logs.personalDeduction,
+          status: hr_payroll_logs.status,
+          createdAt: hr_payroll_logs.createdAt,
+          updatedAt: hr_payroll_logs.updatedAt,
           // Employee fields
           firstName: employees.firstName,
           lastName: employees.lastName,
           // Contract fields
-          contractNumber: employmentContracts.contractNumber
+          contractNumber: hr_employment_contracts.contractNumber
         })
         .from(payrollLogs)
         .innerJoin(employees, eq(payrollLogs.employeeId, employees.id))

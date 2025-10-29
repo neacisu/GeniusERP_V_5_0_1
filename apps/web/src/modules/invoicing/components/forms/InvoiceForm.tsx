@@ -71,7 +71,7 @@ interface InvoiceFormProps {
 
 export function InvoiceForm({ defaultValues, onSubmit, isSubmitting = false }: InvoiceFormProps) {
   // Use our customer API hook
-  const { customers, isLoading: isLoadingCustomers } = useInvoiceCustomers();
+  const { crm_customers, isLoading: isLoadingCustomers } = useInvoiceCustomers();
   
   // State for customer search
   const [searchQuery, setSearchQuery] = useState("");

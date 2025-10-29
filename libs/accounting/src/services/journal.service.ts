@@ -11,7 +11,7 @@
  */
 
 import { getDrizzle } from "@common/drizzle";
-import { accountingLedgerEntries, accountingLedgerLines } from '../schema/accounting.schema';
+import { accounting_ledger_entries, accounting_ledger_lines } from '../schema/accounting.schema';
 import { eq } from 'drizzle-orm';
 import { AuditService, AuditAction } from '@geniuserp/audit';
 import { JournalNumberingService } from './journal-numbering.service';
@@ -227,7 +227,7 @@ export class JournalService {
           updatedAt: now,
           createdBy: userId || null,
           metadata: null
-        }).returning({ id: accountingLedgerEntries.id });
+        }).returning({ id: accounting_ledger_entries.id });
         
         const actualEntryId = createdEntry.id;
         
@@ -648,13 +648,13 @@ export class JournalService {
     // Get the entry to validate it exists and is not already posted
     const [entry] = await db
       .select({
-        id: accountingLedgerEntries.id,
-        companyId: accountingLedgerEntries.companyId,
-        type: accountingLedgerEntries.type,
-        isPosted: accountingLedgerEntries.isPosted,
-        isReversed: accountingLedgerEntries.isReversal,
-        amount: accountingLedgerEntries.totalAmount,
-        description: accountingLedgerEntries.description
+        id: accounting_ledger_entries.id,
+        companyId: accounting_ledger_entries.companyId,
+        type: accounting_ledger_entries.type,
+        isPosted: accounting_ledger_entries.isPosted,
+        isReversed: accounting_ledger_entries.isReversal,
+        amount: accounting_ledger_entries.totalAmount,
+        description: accounting_ledger_entries.description
       })
       .from(accountingLedgerEntries)
       .where(eq(accountingLedgerEntries.id, ledgerEntryId))
@@ -675,8 +675,8 @@ export class JournalService {
     // Validate that lines are balanced
     const lines = await db
       .select({
-        debitAmount: accountingLedgerLines.debitAmount,
-        creditAmount: accountingLedgerLines.creditAmount
+        debitAmount: accounting_ledger_lines.debitAmount,
+        creditAmount: accounting_ledger_lines.creditAmount
       })
       .from(accountingLedgerLines)
       .where(eq(accountingLedgerLines.ledgerEntryId, ledgerEntryId));
@@ -746,12 +746,12 @@ export class JournalService {
     // Get the entry to validate
     const [entry] = await db
       .select({
-        id: accountingLedgerEntries.id,
-        companyId: accountingLedgerEntries.companyId,
-        type: accountingLedgerEntries.type,
-        isPosted: accountingLedgerEntries.isPosted,
-        isReversed: accountingLedgerEntries.isReversal,
-        reversalEntryId: accountingLedgerEntries.reversalEntryId
+        id: accounting_ledger_entries.id,
+        companyId: accounting_ledger_entries.companyId,
+        type: accounting_ledger_entries.type,
+        isPosted: accounting_ledger_entries.isPosted,
+        isReversed: accounting_ledger_entries.isReversal,
+        reversalEntryId: accounting_ledger_entries.reversalEntryId
       })
       .from(accountingLedgerEntries)
       .where(eq(accountingLedgerEntries.id, ledgerEntryId))
