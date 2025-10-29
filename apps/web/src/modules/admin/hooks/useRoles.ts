@@ -39,7 +39,7 @@ export function useRoles(params?: RoleParams) {
         }
         
         // Adaugă companyId la URL pentru a face request-ul corect
-        const response = await apiRequest<any>(`/api/admin/roles/${companyId}${queryString}`);
+        const response = await apiRequest<any>(`/api/admin/roles/by-company/${companyId}${queryString}`);
         
         // Transformăm snake_case în camelCase pentru a se potrivi cu interfața
         const transformedRoles = response.data.map((role: any) => ({
@@ -116,7 +116,7 @@ export function useRole(id: string) {
     queryKey: ["/api/admin/roles", id],
     queryFn: async () => {
       // Încercăm să obținem rolul direct din lista de roluri a companiei
-      const rolesResponse = await apiRequest<any>(`/api/admin/roles/${companyId}`);
+      const rolesResponse = await apiRequest<any>(`/api/admin/roles/by-company/${companyId}`);
       
       if (rolesResponse.success && Array.isArray(rolesResponse.data)) {
         // Căutăm rolul după ID
@@ -140,9 +140,9 @@ export function useRole(id: string) {
         }
       }
       
-      // Fallback la endpoint-ul original - poate funcționează acum
+      // Fallback la endpoint-ul standard - folosește direct ID-ul rolului
       try {
-        const response = await apiRequest<{ data: any; success: boolean }>(`/api/admin/roles/detail/${id}`);
+        const response = await apiRequest<{ data: any; success: boolean }>(`/api/admin/roles/${id}`);
         
         // Transformăm datele din snake_case în camelCase
         if (response.data) {
@@ -199,7 +199,7 @@ export function useUpdateRole() {
   return useMutation({
     mutationFn: async ({ id, role }: { id: string; role: RoleFormData }) => {
       return await apiRequest<any>(`/api/admin/roles/${id}`, {
-        method: "PUT",
+        method: "PATCH",
         body: role,
       });
     },
