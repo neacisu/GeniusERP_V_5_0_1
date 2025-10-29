@@ -166,7 +166,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minHeight={300}>
                   <LineChart data={revenueData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                     <XAxis dataKey="name" />
                     <YAxis />
@@ -188,7 +188,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="h-[300px] flex items-center justify-center">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minHeight={300}>
                   <PieChart>
                     <Pie
                       data={salesByCategory}
