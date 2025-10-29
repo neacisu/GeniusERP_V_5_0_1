@@ -432,7 +432,7 @@ export default function ShopPage() {
                         <Label>Culoare primară</Label>
                         <div className="flex items-center space-x-2">
                           <div className="w-10 h-10 rounded-md bg-primary" />
-                          <Input value="#4F46E5" className="w-32" />
+                          <Input value="#4F46E5" className="w-32" readOnly />
                         </div>
                       </div>
                       
@@ -440,7 +440,7 @@ export default function ShopPage() {
                         <Label>Culoare secundară</Label>
                         <div className="flex items-center space-x-2">
                           <div className="w-10 h-10 rounded-md bg-secondary" />
-                          <Input value="#F9FAFB" className="w-32" />
+                          <Input value="#F9FAFB" className="w-32" readOnly />
                         </div>
                       </div>
                       
@@ -448,7 +448,7 @@ export default function ShopPage() {
                         <Label>Culoare accent</Label>
                         <div className="flex items-center space-x-2">
                           <div className="w-10 h-10 rounded-md bg-blue-500" />
-                          <Input value="#3B82F6" className="w-32" />
+                          <Input value="#3B82F6" className="w-32" readOnly />
                         </div>
                       </div>
                       
@@ -456,7 +456,7 @@ export default function ShopPage() {
                         <Label>Culoare text</Label>
                         <div className="flex items-center space-x-2">
                           <div className="w-10 h-10 rounded-md bg-gray-900" />
-                          <Input value="#111827" className="w-32" />
+                          <Input value="#111827" className="w-32" readOnly />
                         </div>
                       </div>
                     </div>
