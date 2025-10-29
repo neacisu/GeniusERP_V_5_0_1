@@ -115,12 +115,12 @@ const ProductsPage: React.FC = () => {
       options.search = searchTerm;
     }
     
-    if (selectedFilters.type) {
-      options.type = selectedFilters.type as ProductType;
+    if (selectedFilters['type']) {
+      options.type = selectedFilters['type'] as ProductType;
     }
     
-    if (selectedFilters.category) {
-      options.category = selectedFilters.category;
+    if (selectedFilters['category']) {
+      options.category = selectedFilters['category'];
     }
     
     // Handle different views
@@ -272,14 +272,14 @@ const ProductsPage: React.FC = () => {
       icon={<ShoppingBag className="h-10 w-10" />}
       title="Niciun produs găsit"
       description={
-        searchTerm || selectedFilters.type || selectedFilters.category
+        searchTerm || selectedFilters['type'] || selectedFilters['category']
           ? 'Încearcă să ajustezi filtrele de căutare'
           : 'Adaugă primul produs pentru a începe să-ți gestionezi oferta'
       }
       actionLabel="Produs Nou"
       actionHref="/sales/products/new"
       actionIcon={<Plus className="mr-2 h-4 w-4" />}
-      filterActive={!!(searchTerm || selectedFilters.type || selectedFilters.category)}
+      filterActive={!!(searchTerm || selectedFilters['type'] || selectedFilters['category'])}
     />
   );
   

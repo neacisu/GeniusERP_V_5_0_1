@@ -128,14 +128,14 @@ const PipelinePage: React.FC = () => {
       icon={<FileCheck className="h-10 w-10" />}
       title="Nicio oportunitate în pipeline"
       description={
-        searchTerm || selectedFilters.priority
+        searchTerm || selectedFilters['priority']
           ? 'Încearcă să ajustezi filtrele de căutare'
           : 'Adaugă o nouă oportunitate pentru a începe să urmărești procesul de vânzare'
       }
       actionLabel="Oportunitate Nouă"
       actionHref="/sales/opportunities/new"
       actionIcon={<Plus className="mr-2 h-4 w-4" />}
-      filterActive={!!(searchTerm || selectedFilters.priority)}
+      filterActive={!!(searchTerm || selectedFilters['priority'])}
     />
   );
   

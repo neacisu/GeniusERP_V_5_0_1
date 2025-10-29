@@ -10,7 +10,7 @@ import { ArrowLeft } from 'lucide-react';
  */
 const EmployeeDetailsPage: React.FC = () => {
   const params = useParams();
-  const employeeId = params.id;
+  const employeeId = params['id'];
   const isNewEmployee = !employeeId;
   const [_, navigate] = useLocation();
 

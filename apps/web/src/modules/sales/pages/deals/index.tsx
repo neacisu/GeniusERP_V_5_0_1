@@ -49,12 +49,12 @@ const DealsPage: React.FC = () => {
       options.search = searchTerm;
     }
     
-    if (selectedFilters.status) {
-      options.status = selectedFilters.status as DealStatus;
+    if (selectedFilters['status']) {
+      options.status = selectedFilters['status'] as DealStatus;
     }
     
-    if (selectedFilters.priority) {
-      options.priority = selectedFilters.priority as DealPriority;
+    if (selectedFilters['priority']) {
+      options.priority = selectedFilters['priority'] as DealPriority;
     }
     
     // Handle different views
@@ -150,14 +150,14 @@ const DealsPage: React.FC = () => {
       icon={<FileText className="h-10 w-10" />}
       title="Niciun contract găsit"
       description={
-        searchTerm || selectedFilters.status || selectedFilters.priority
+        searchTerm || selectedFilters['status'] || selectedFilters['priority']
           ? 'Încearcă să ajustezi filtrele de căutare'
           : 'Adaugă primul contract pentru a începe să monitorizezi vânzările'
       }
       actionLabel="Contract Nou"
       actionHref="/sales/deals/new"
       actionIcon={<Plus className="mr-2 h-4 w-4" />}
-      filterActive={!!(searchTerm || selectedFilters.status || selectedFilters.priority)}
+      filterActive={!!(searchTerm || selectedFilters['status'] || selectedFilters['priority'])}
     />
   );
   

@@ -27,7 +27,7 @@ import { useHrApi } from '../../hooks/useHrApi';
  */
 const DepartmentDetailsPage: React.FC = () => {
   const params = useParams();
-  const departmentId = params.id;
+  const departmentId = params['id'];
   const isNewDepartment = !departmentId;
   const [_, navigate] = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);

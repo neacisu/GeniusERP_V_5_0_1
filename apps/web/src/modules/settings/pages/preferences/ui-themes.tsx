@@ -198,11 +198,11 @@ export default function UIThemesPage() {
   React.useEffect(() => {
     if (editingTheme) {
       themeForm.reset({
-        name: editingTheme.name,
-        description: editingTheme.description || "",
-        isDefault: editingTheme.isDefault,
+        name: editingTheme['name'],
+        description: editingTheme['description'] || "",
+        isDefault: editingTheme['isDefault'],
       });
-      setSelectedColor(editingTheme.colors.primary || "#1e40af");
+      setSelectedColor(editingTheme['colors']['primary'] || "#1e40af");
     } else {
       themeForm.reset({
         name: "",
@@ -235,18 +235,18 @@ export default function UIThemesPage() {
 
     if (editingTheme) {
       updateThemeMutation.mutate({
-        id: editingTheme.id,
+        id: editingTheme['id'],
         data: {
           name: data.name,
           description: data.description,
           isDefault: data.isDefault,
           colors: themeColors,
-          fonts: editingTheme.fonts || {
+          fonts: editingTheme['fonts'] || {
             sans: "Inter, sans-serif",
             serif: "Georgia, serif",
             mono: "Menlo, monospace",
           },
-          logos: editingTheme.logos || {
+          logos: editingTheme['logos'] || {
             main: "/logo.svg",
             alt: "/logo-alt.svg",
           },
@@ -279,7 +279,7 @@ export default function UIThemesPage() {
   // Handle setting a theme as default
   const handleSetDefault = (theme: UITheme) => {
     if (!companyId) return;
-    setDefaultThemeMutation.mutate({ id: theme.id, companyId });
+    setDefaultThemeMutation.mutate({ id: theme['id'], companyId });
   };
 
   // Open dialog for creating a new theme
@@ -294,7 +294,7 @@ export default function UIThemesPage() {
     setEditingTheme(theme);
     setIsDialogOpen(true);
     setSelectedPreset(null);
-    setSelectedColor(theme.colors.primary || "#1e40af");
+    setSelectedColor(theme['colors']['primary'] || "#1e40af");
   };
 
   // Select a color preset
@@ -510,19 +510,19 @@ export default function UIThemesPage() {
           {themes && themes.length > 0 ? (
             themes.map((theme: any) => (
               <div
-                key={theme.id}
+                key={theme['id']}
                 className="border rounded-lg p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="font-medium text-base">{theme.name}</h3>
-                    {theme.description && (
+                    <h3 className="font-medium text-base">{theme['name']}</h3>
+                    {theme['description'] && (
                       <p className="text-muted-foreground text-sm">
-                        {theme.description}
+                        {theme['description']}
                       </p>
                     )}
                   </div>
-                  {theme.isDefault && (
+                  {theme['isDefault'] && (
                     <Badge variant="outline" className="text-green-600 bg-green-50 hover:bg-green-100">
                       <CheckCircle className="mr-1 h-3 w-3" />
                       Implicit
@@ -534,20 +534,20 @@ export default function UIThemesPage() {
                   <div
                     className="w-full p-2 flex flex-col justify-between"
                     style={{
-                      backgroundColor: theme.colors.background || "#ffffff",
-                      color: theme.colors.foreground || "#0f172a",
+                      backgroundColor: theme['colors'].background || "#ffffff",
+                      color: theme['colors'].foreground || "#0f172a",
                     }}
                   >
                     <div className="text-xs">Previzualizare</div>
                     <div
                       className="w-24 h-5 rounded-sm"
-                      style={{ backgroundColor: theme.colors.primary }}
+                      style={{ backgroundColor: theme['colors'].primary }}
                     ></div>
                   </div>
                 </div>
 
                 <div className="flex space-x-2 justify-end">
-                  {!theme.isDefault && (
+                  {!theme['isDefault'] && (
                     <Button
                       variant="outline"
                       size="sm"

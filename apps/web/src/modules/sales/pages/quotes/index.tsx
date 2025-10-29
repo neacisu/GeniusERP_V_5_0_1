@@ -53,8 +53,8 @@ const QuotesPage: React.FC = () => {
       options.search = searchTerm;
     }
     
-    if (selectedFilters.status) {
-      options.status = selectedFilters.status as QuoteStatus;
+    if (selectedFilters['status']) {
+      options.status = selectedFilters['status'] as QuoteStatus;
     }
     
     // Handle different views
@@ -153,14 +153,14 @@ const QuotesPage: React.FC = () => {
       icon={<FileSpreadsheet className="h-10 w-10" />}
       title="Nicio ofertă găsită"
       description={
-        searchTerm || selectedFilters.status
+        searchTerm || selectedFilters['status']
           ? 'Încearcă să ajustezi filtrele de căutare'
           : 'Adaugă prima ofertă pentru a începe să faci propuneri clienților'
       }
       actionLabel="Ofertă Nouă"
       actionHref="/sales/quotes/new"
       actionIcon={<Plus className="mr-2 h-4 w-4" />}
-      filterActive={!!(searchTerm || selectedFilters.status)}
+      filterActive={!!(searchTerm || selectedFilters['status'])}
     />
   );
   

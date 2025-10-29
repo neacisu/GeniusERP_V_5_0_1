@@ -54,12 +54,12 @@ const OpportunitiesPage: React.FC = () => {
       options.search = searchTerm;
     }
     
-    if (selectedFilters.stage) {
-      options.stage = selectedFilters.stage as OpportunityStage;
+    if (selectedFilters['stage']) {
+      options.stage = selectedFilters['stage'] as OpportunityStage;
     }
     
-    if (selectedFilters.priority) {
-      options.priority = selectedFilters.priority as DealPriority;
+    if (selectedFilters['priority']) {
+      options.priority = selectedFilters['priority'] as DealPriority;
     }
     
     // Handle different views
@@ -177,14 +177,14 @@ const OpportunitiesPage: React.FC = () => {
       icon={<TrendingUp className="h-10 w-10" />}
       title="Nicio oportunitate găsită"
       description={
-        searchTerm || selectedFilters.stage || selectedFilters.priority
+        searchTerm || selectedFilters['stage'] || selectedFilters['priority']
           ? 'Încearcă să ajustezi filtrele de căutare'
           : 'Adaugă prima oportunitate pentru a începe să-ți crești vânzările'
       }
       actionLabel="Oportunitate Nouă"
       actionHref="/sales/opportunities/new"
       actionIcon={<Plus className="mr-2 h-4 w-4" />}
-      filterActive={!!(searchTerm || selectedFilters.stage || selectedFilters.priority)}
+      filterActive={!!(searchTerm || selectedFilters['stage'] || selectedFilters['priority'])}
     />
   );
   

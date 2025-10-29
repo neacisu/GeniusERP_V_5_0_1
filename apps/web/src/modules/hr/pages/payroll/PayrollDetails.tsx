@@ -10,7 +10,7 @@ import { ArrowLeft, Printer, Download } from 'lucide-react';
  */
 const PayrollDetailsPage: React.FC = () => {
   const params = useParams();
-  const payrollId = params.id;
+  const payrollId = params['id'];
   const [_, navigate] = useLocation();
 
   return (

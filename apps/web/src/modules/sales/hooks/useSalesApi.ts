@@ -39,13 +39,13 @@ export const useSalesApi = () => {
       const queryParams: Record<string, string> = {};
       
       if (options) {
-        if (options.page) queryParams.page = options.page.toString();
-        if (options.limit) queryParams.limit = options.limit.toString();
-        if (options.search) queryParams.search = options.search;
-        if (options.sortBy) queryParams.sortBy = options.sortBy;
-        if (options.sortOrder) queryParams.sortOrder = options.sortOrder;
-        if (options.filter) queryParams.filter = options.filter;
-        if (options.count) queryParams.count = 'true';
+        if (options.page) queryParams['page'] = options.page.toString();
+        if (options.limit) queryParams['limit'] = options.limit.toString();
+        if (options.search) queryParams['search'] = options.search;
+        if (options.sortBy) queryParams['sortBy'] = options.sortBy;
+        if (options.sortOrder) queryParams['sortOrder'] = options.sortOrder;
+        if (options.filter) queryParams['filter'] = options.filter;
+        if (options.count) queryParams['count'] = 'true';
       }
       
       const requestOptions: ApiRequestOptions = {
@@ -150,25 +150,25 @@ export const useSalesApi = () => {
       const queryParams: Record<string, string> = {};
       
       if (options) {
-        if (options.page) queryParams.page = options.page.toString();
-        if (options.limit) queryParams.limit = options.limit.toString();
-        if (options.search) queryParams.search = options.search;
-        if (options.customerId) queryParams.customerId = options.customerId;
+        if (options.page) queryParams['page'] = options.page.toString();
+        if (options.limit) queryParams['limit'] = options.limit.toString();
+        if (options.search) queryParams['search'] = options.search;
+        if (options.customerId) queryParams['customerId'] = options.customerId;
         if (options.status) {
           if (Array.isArray(options.status)) {
-            queryParams.status = options.status.join(',');
+            queryParams['status'] = options.status.join(',');
           } else {
-            queryParams.status = options.status;
+            queryParams['status'] = options.status;
           }
         }
-        if (options.priority) queryParams.priority = options.priority;
-        if (options.sortBy) queryParams.sortBy = options.sortBy;
-        if (options.sortOrder) queryParams.sortOrder = options.sortOrder;
-        if (options.startDate) queryParams.startDate = options.startDate;
-        if (options.endDate) queryParams.endDate = options.endDate;
-        if (options.minValue) queryParams.minValue = options.minValue.toString();
-        if (options.maxValue) queryParams.maxValue = options.maxValue.toString();
-        if (options.count) queryParams.count = 'true';
+        if (options.priority) queryParams['priority'] = options.priority;
+        if (options.sortBy) queryParams['sortBy'] = options.sortBy;
+        if (options.sortOrder) queryParams['sortOrder'] = options.sortOrder;
+        if (options.startDate) queryParams['startDate'] = options.startDate;
+        if (options.endDate) queryParams['endDate'] = options.endDate;
+        if (options.minValue) queryParams['minValue'] = options.minValue.toString();
+        if (options.maxValue) queryParams['maxValue'] = options.maxValue.toString();
+        if (options.count) queryParams['count'] = 'true';
       }
       
       const requestOptions: ApiRequestOptions = {
@@ -259,23 +259,23 @@ export const useSalesApi = () => {
       const queryParams: Record<string, string> = {};
       
       if (options) {
-        if (options.page) queryParams.page = options.page.toString();
-        if (options.limit) queryParams.limit = options.limit.toString();
-        if (options.search) queryParams.search = options.search;
-        if (options.customerId) queryParams.customerId = options.customerId;
+        if (options.page) queryParams['page'] = options.page.toString();
+        if (options.limit) queryParams['limit'] = options.limit.toString();
+        if (options.search) queryParams['search'] = options.search;
+        if (options.customerId) queryParams['customerId'] = options.customerId;
         if (options.stage) {
           if (Array.isArray(options.stage)) {
-            queryParams.stage = options.stage.join(',');
+            queryParams['stage'] = options.stage.join(',');
           } else {
-            queryParams.stage = options.stage;
+            queryParams['stage'] = options.stage;
           }
         }
-        if (options.priority) queryParams.priority = options.priority;
-        if (options.sortBy) queryParams.sortBy = options.sortBy;
-        if (options.sortOrder) queryParams.sortOrder = options.sortOrder;
-        if (options.minProbability) queryParams.minProbability = options.minProbability.toString();
-        if (options.maxProbability) queryParams.maxProbability = options.maxProbability.toString();
-        if (options.count) queryParams.count = 'true';
+        if (options.priority) queryParams['priority'] = options.priority;
+        if (options.sortBy) queryParams['sortBy'] = options.sortBy;
+        if (options.sortOrder) queryParams['sortOrder'] = options.sortOrder;
+        if (options.minProbability) queryParams['minProbability'] = options.minProbability.toString();
+        if (options.maxProbability) queryParams['maxProbability'] = options.maxProbability.toString();
+        if (options.count) queryParams['count'] = 'true';
       }
       
       const requestOptions: ApiRequestOptions = {
@@ -368,22 +368,22 @@ export const useSalesApi = () => {
       const queryParams: Record<string, string> = {};
       
       if (options) {
-        if (options.page) queryParams.page = options.page.toString();
-        if (options.limit) queryParams.limit = options.limit.toString();
-        if (options.search) queryParams.search = options.search;
-        if (options.customerId) queryParams.customerId = options.customerId;
+        if (options.page) queryParams['page'] = options.page.toString();
+        if (options.limit) queryParams['limit'] = options.limit.toString();
+        if (options.search) queryParams['search'] = options.search;
+        if (options.customerId) queryParams['customerId'] = options.customerId;
         if (options.status) {
           if (Array.isArray(options.status)) {
-            queryParams.status = options.status.join(',');
+            queryParams['status'] = options.status.join(',');
           } else {
-            queryParams.status = options.status;
+            queryParams['status'] = options.status;
           }
         }
-        if (options.sortBy) queryParams.sortBy = options.sortBy;
-        if (options.sortOrder) queryParams.sortOrder = options.sortOrder;
-        if (options.issueDate) queryParams.issueDate = options.issueDate;
-        if (options.validUntil) queryParams.validUntil = options.validUntil;
-        if (options.count) queryParams.count = 'true';
+        if (options.sortBy) queryParams['sortBy'] = options.sortBy;
+        if (options.sortOrder) queryParams['sortOrder'] = options.sortOrder;
+        if (options.issueDate) queryParams['issueDate'] = options.issueDate;
+        if (options.validUntil) queryParams['validUntil'] = options.validUntil;
+        if (options.count) queryParams['count'] = 'true';
       }
       
       const requestOptions: ApiRequestOptions = {
@@ -539,13 +539,13 @@ export const useSalesApi = () => {
       const queryParams: Record<string, string> = {};
       
       if (options) {
-        if (options.page) queryParams.page = options.page.toString();
-        if (options.limit) queryParams.limit = options.limit.toString();
-        if (options.search) queryParams.search = options.search;
-        if (options.sortBy) queryParams.sortBy = options.sortBy;
-        if (options.sortOrder) queryParams.sortOrder = options.sortOrder;
-        if (options.category) queryParams.category = options.category;
-        if (options.count) queryParams.count = 'true';
+        if (options.page) queryParams['page'] = options.page.toString();
+        if (options.limit) queryParams['limit'] = options.limit.toString();
+        if (options.search) queryParams['search'] = options.search;
+        if (options.sortBy) queryParams['sortBy'] = options.sortBy;
+        if (options.sortOrder) queryParams['sortOrder'] = options.sortOrder;
+        if (options.category) queryParams['category'] = options.category;
+        if (options.count) queryParams['count'] = 'true';
       }
       
       const requestOptions: ApiRequestOptions = {

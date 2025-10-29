@@ -89,12 +89,12 @@ const CustomersPage: React.FC = () => {
       options.search = searchTerm;
     }
     
-    if (selectedFilters.type) {
-      options.type = selectedFilters.type;
+    if (selectedFilters['type']) {
+      options.type = selectedFilters['type'];
     }
     
-    if (selectedFilters.category) {
-      options.category = selectedFilters.category;
+    if (selectedFilters['category']) {
+      options.category = selectedFilters['category'];
     }
     
     // Handle different views
@@ -234,14 +234,14 @@ const CustomersPage: React.FC = () => {
       icon={<Users className="h-10 w-10" />}
       title="Niciun client găsit"
       description={
-        searchTerm || selectedFilters.type || selectedFilters.category
+        searchTerm || selectedFilters['type'] || selectedFilters['category']
           ? 'Încearcă să ajustezi filtrele de căutare'
           : 'Adaugă primul client pentru a începe să gestionezi relațiile cu clienții'
       }
       actionLabel="Client Nou"
       actionHref="/sales/customers/new"
       actionIcon={<UserPlus className="mr-2 h-4 w-4" />}
-      filterActive={!!(searchTerm || selectedFilters.type || selectedFilters.category)}
+      filterActive={!!(searchTerm || selectedFilters['type'] || selectedFilters['category'])}
     />
   );
   

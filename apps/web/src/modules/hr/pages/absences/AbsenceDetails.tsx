@@ -19,7 +19,7 @@ import { ro } from 'date-fns/locale';
  */
 const AbsenceDetailsPage: React.FC = () => {
   const params = useParams();
-  const absenceId = params.id;
+  const absenceId = params['id'];
   const isNewAbsence = !absenceId;
   const [_, navigate] = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);

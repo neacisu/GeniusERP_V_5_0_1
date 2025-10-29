@@ -16,7 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
  */
 const ContractDetailsPage: React.FC = () => {
   const params = useParams();
-  const contractId = params.id;
+  const contractId = params['id'];
   const isNewContract = !contractId;
   const [_, navigate] = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
