@@ -151,7 +151,7 @@ function CompanyProfilePageContent() {
     onError: (error: Error) => {
       toast({
         title: "Eroare",
-        description: `Nu s-au putut actualiza setările: ${error.message}`,
+        description: `Nu s-au putut actualiza setările: ${error['message']}`,
         variant: "destructive",
       });
     }

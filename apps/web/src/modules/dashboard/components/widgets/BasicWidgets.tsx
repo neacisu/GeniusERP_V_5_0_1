@@ -117,13 +117,13 @@ export const StatsCardWidgetConfig: React.FC<WidgetConfigProps> = ({
 }) => {
   const { config, refreshInterval = 'none' } = widget;
   const [formState, setFormState] = useState({
-    title: config.title || 'Statistic',
-    value: config.value || '0',
-    change: config.change || 0,
-    changeType: config.changeType || 'percentage',
-    prefix: config.prefix || '',
-    suffix: config.suffix || '',
-    precision: config.precision || 0,
+    title: config['title'] || 'Statistic',
+    value: config['value'] || '0',
+    change: config['change'] || 0,
+    changeType: config['changeType'] || 'percentage',
+    prefix: config['prefix'] || '',
+    suffix: config['suffix'] || '',
+    precision: config['precision'] || 0,
   });
   const [selectedRefresh, setSelectedRefresh] = useState(refreshInterval);
 
@@ -283,6 +283,7 @@ export const AlertWidget: React.FC<WidgetProps> = ({
       
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [autoHide, hideAfter, visible]);
   
   if (!visible) {
@@ -382,13 +383,13 @@ export const AlertWidgetConfig: React.FC<WidgetConfigProps> = ({
 }) => {
   const { config, refreshInterval = 'none' } = widget;
   const [formState, setFormState] = useState({
-    title: config.title || 'Alert',
-    message: config.message || 'This is an alert message.',
-    severity: config.severity || 'info',
-    showIcon: config.showIcon !== undefined ? config.showIcon : true,
-    dismissable: config.dismissable || false,
-    autoHide: config.autoHide || false,
-    hideAfter: config.hideAfter || 10
+    title: config['title'] || 'Alert',
+    message: config['message'] || 'This is an alert message.',
+    severity: config['severity'] || 'info',
+    showIcon: config['showIcon'] !== undefined ? config['showIcon'] : true,
+    dismissable: config['dismissable'] || false,
+    autoHide: config['autoHide'] || false,
+    hideAfter: config['hideAfter'] || 10
   });
   
   const [selectedRefresh, setSelectedRefresh] = useState(refreshInterval);

@@ -42,15 +42,15 @@ export function useCampaigns(filters: CampaignFilters = {}) {
 
   // Construct query string
   const queryParams: Record<string, string> = {};
-  if (status) queryParams.status = status;
-  if (type) queryParams.type = type;
-  if (search) queryParams.search = search;
-  if (dateFrom) queryParams.dateFrom = dateFrom;
-  if (dateTo) queryParams.dateTo = dateTo;
-  queryParams.page = page.toString();
-  queryParams.pageSize = pageSize.toString();
-  queryParams.sortBy = sortBy;
-  queryParams.sortDir = sortDir;
+  if (status) queryParams['status'] = status;
+  if (type) queryParams['type'] = type;
+  if (search) queryParams['search'] = search;
+  if (dateFrom) queryParams['dateFrom'] = dateFrom;
+  if (dateTo) queryParams['dateTo'] = dateTo;
+  queryParams['page'] = page.toString();
+  queryParams['pageSize'] = pageSize.toString();
+  queryParams['sortBy'] = sortBy;
+  queryParams['sortDir'] = sortDir;
 
   const queryString = new URLSearchParams(queryParams).toString();
 
@@ -86,7 +86,7 @@ export function useCampaigns(filters: CampaignFilters = {}) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut crea campania",
+        description: error['message'] || "Nu s-a putut crea campania",
         variant: "destructive"
       });
     }
@@ -112,7 +112,7 @@ export function useCampaigns(filters: CampaignFilters = {}) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut actualiza campania",
+        description: error['message'] || "Nu s-a putut actualiza campania",
         variant: "destructive"
       });
     }
@@ -137,7 +137,7 @@ export function useCampaigns(filters: CampaignFilters = {}) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut șterge campania",
+        description: error['message'] || "Nu s-a putut șterge campania",
         variant: "destructive"
       });
     }
@@ -163,7 +163,7 @@ export function useCampaigns(filters: CampaignFilters = {}) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut programa campania",
+        description: error['message'] || "Nu s-a putut programa campania",
         variant: "destructive"
       });
     }
@@ -188,7 +188,7 @@ export function useCampaigns(filters: CampaignFilters = {}) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut porni campania",
+        description: error['message'] || "Nu s-a putut porni campania",
         variant: "destructive"
       });
     }
@@ -213,7 +213,7 @@ export function useCampaigns(filters: CampaignFilters = {}) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut pausa campania",
+        description: error['message'] || "Nu s-a putut pausa campania",
         variant: "destructive"
       });
     }
@@ -238,7 +238,7 @@ export function useCampaigns(filters: CampaignFilters = {}) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut relua campania",
+        description: error['message'] || "Nu s-a putut relua campania",
         variant: "destructive"
       });
     }
@@ -324,12 +324,12 @@ export function useSegments(filters: SegmentFilters = {}) {
 
   // Construct query string
   const queryParams: Record<string, string> = {};
-  if (isActive !== undefined) queryParams.isActive = isActive.toString();
-  if (search) queryParams.search = search;
-  queryParams.page = page.toString();
-  queryParams.pageSize = pageSize.toString();
-  queryParams.sortBy = sortBy;
-  queryParams.sortDir = sortDir;
+  if (isActive !== undefined) queryParams['isActive'] = isActive.toString();
+  if (search) queryParams['search'] = search;
+  queryParams['page'] = page.toString();
+  queryParams['pageSize'] = pageSize.toString();
+  queryParams['sortBy'] = sortBy;
+  queryParams['sortDir'] = sortDir;
 
   const queryString = new URLSearchParams(queryParams).toString();
 
@@ -365,7 +365,7 @@ export function useSegments(filters: SegmentFilters = {}) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut crea segmentul",
+        description: error['message'] || "Nu s-a putut crea segmentul",
         variant: "destructive"
       });
     }
@@ -391,7 +391,7 @@ export function useSegments(filters: SegmentFilters = {}) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut actualiza segmentul",
+        description: error['message'] || "Nu s-a putut actualiza segmentul",
         variant: "destructive"
       });
     }
@@ -416,7 +416,7 @@ export function useSegments(filters: SegmentFilters = {}) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut șterge segmentul",
+        description: error['message'] || "Nu s-a putut șterge segmentul",
         variant: "destructive"
       });
     }
@@ -482,14 +482,14 @@ export function useTemplates(filters: TemplateFilters = {}) {
 
   // Construct query string
   const queryParams: Record<string, string> = {};
-  if (type) queryParams.type = type;
-  if (category) queryParams.category = category;
-  if (isActive !== undefined) queryParams.isActive = isActive.toString();
-  if (search) queryParams.search = search;
-  queryParams.page = page.toString();
-  queryParams.pageSize = pageSize.toString();
-  queryParams.sortBy = sortBy;
-  queryParams.sortDir = sortDir;
+  if (type) queryParams['type'] = type;
+  if (category) queryParams['category'] = category;
+  if (isActive !== undefined) queryParams['isActive'] = isActive.toString();
+  if (search) queryParams['search'] = search;
+  queryParams['page'] = page.toString();
+  queryParams['pageSize'] = pageSize.toString();
+  queryParams['sortBy'] = sortBy;
+  queryParams['sortDir'] = sortDir;
 
   const queryString = new URLSearchParams(queryParams).toString();
 
@@ -525,7 +525,7 @@ export function useTemplates(filters: TemplateFilters = {}) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut crea șablonul",
+        description: error['message'] || "Nu s-a putut crea șablonul",
         variant: "destructive"
       });
     }
@@ -551,7 +551,7 @@ export function useTemplates(filters: TemplateFilters = {}) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut actualiza șablonul",
+        description: error['message'] || "Nu s-a putut actualiza șablonul",
         variant: "destructive"
       });
     }
@@ -576,7 +576,7 @@ export function useTemplates(filters: TemplateFilters = {}) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut șterge șablonul",
+        description: error['message'] || "Nu s-a putut șterge șablonul",
         variant: "destructive"
       });
     }
@@ -638,7 +638,7 @@ export function useTemplate(id: string | null) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut actualiza șablonul",
+        description: error['message'] || "Nu s-a putut actualiza șablonul",
         variant: "destructive"
       });
     }
@@ -664,7 +664,7 @@ export function useTemplate(id: string | null) {
     onError: (error: any) => {
       toast({
         title: "Eroare",
-        description: error.message || "Nu s-a putut șterge șablonul",
+        description: error['message'] || "Nu s-a putut șterge șablonul",
         variant: "destructive"
       });
     }

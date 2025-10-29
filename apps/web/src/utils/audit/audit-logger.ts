@@ -108,7 +108,7 @@ export class AuditLogger {
     };
     
     // Log to console in development
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env['NODE_ENV'] !== 'production') {
       this.logToConsole(auditEvent);
     }
     
@@ -165,7 +165,7 @@ export class AuditLogger {
     // to send the audit log to a server endpoint
     
     // For now, we'll just log that we would have sent it
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env['NODE_ENV'] === 'development') {
       logger.debug('Would send audit event to server', { 
         context: { endpoint: '/api/audit/log', eventType: event.action }
       });
@@ -183,7 +183,7 @@ export class AuditLogger {
       credentials: 'include',
     }).catch(error => {
       logger.error('Failed to send audit log to server', { 
-        context: { error: error.message, event } 
+        context: { error: error['message'], event } 
       });
     });
     */

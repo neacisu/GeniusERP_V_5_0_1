@@ -100,7 +100,7 @@ export function WidgetRegistryProvider({ children }: WidgetRegistryProviderProps
       type: 'collab',
       title: 'Sarcinile Mele',
       description: 'Afișează sarcinile atribuite ție, filtrate după prioritate și status',
-      component: (props) => <MyTasksWidget userId={props.widget.config.userId || ''} />,
+      component: (props) => <MyTasksWidget userId={props.widget.config['userId'] || ''} />,
       defaultSize: 'medium',
       defaultConfig: {
         userId: '' // Will be filled with current user ID
@@ -116,7 +116,7 @@ export function WidgetRegistryProvider({ children }: WidgetRegistryProviderProps
       type: 'collab',
       title: 'Activitatea Echipei',
       description: 'Afișează activitatea recentă din modulul de colaborare',
-      component: (props) => <TeamActivityWidget limit={props.widget.config.limit || 7} />,
+      component: (props) => <TeamActivityWidget limit={props.widget.config['limit'] || 7} />,
       defaultSize: 'medium',
       defaultConfig: {
         limit: 7
@@ -132,7 +132,7 @@ export function WidgetRegistryProvider({ children }: WidgetRegistryProviderProps
       type: 'collab',
       title: 'Comunitate',
       description: 'Afișează actualizări recente din comunitatea sistemului',
-      component: (props) => <CommunityUpdatesWidget limit={props.widget.config.limit || 5} />,
+      component: (props) => <CommunityUpdatesWidget limit={props.widget.config['limit'] || 5} />,
       defaultSize: 'medium',
       defaultConfig: {
         limit: 5
@@ -148,7 +148,7 @@ export function WidgetRegistryProvider({ children }: WidgetRegistryProviderProps
       type: 'collab',
       title: 'Notificări',
       description: 'Afișează notificările recente din modulul de colaborare',
-      component: (props) => <CollabNotificationsWidget limit={props.widget.config.limit || 6} />,
+      component: (props) => <CollabNotificationsWidget limit={props.widget.config['limit'] || 6} />,
       defaultSize: 'small',
       defaultConfig: {
         limit: 6

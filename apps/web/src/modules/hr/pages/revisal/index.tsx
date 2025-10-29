@@ -160,7 +160,7 @@ const RevisalPage: React.FC = () => {
     onError: (error: Error) => {
       toast({
         title: 'Eroare',
-        description: `Nu s-a putut încărca fișierul. ${error.message}`,
+        description: `Nu s-a putut încărca fișierul. ${error['message']}`,
         variant: 'destructive',
       });
     },

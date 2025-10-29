@@ -148,7 +148,7 @@ export default function TeamActivityWidget({ limit = 7 }: TeamActivityWidgetProp
       case 'thread':
         return `/collab/threads/${activity.targetId}`;
       case 'message':
-        return `/collab/threads/${activity.metadata?.threadId || ''}`;
+        return `/collab/threads/${activity.metadata?.['threadId'] || ''}`;
       default:
         return '/collab';
     }
@@ -257,9 +257,9 @@ export default function TeamActivityWidget({ limit = 7 }: TeamActivityWidgetProp
                       </p>
                     </div>
                     
-                    {activity.metadata?.tags && activity.metadata.tags.length > 0 && (
+                    {activity.metadata?.['tags'] && activity.metadata['tags'].length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {activity.metadata.tags.slice(0, 3).map((tag: string, i: number) => (
+                        {activity.metadata['tags'].slice(0, 3).map((tag: string, i: number) => (
                           <Badge 
                             key={i} 
                             variant="outline" 
@@ -268,12 +268,12 @@ export default function TeamActivityWidget({ limit = 7 }: TeamActivityWidgetProp
                             {tag}
                           </Badge>
                         ))}
-                        {activity.metadata.tags.length > 3 && (
+                        {activity.metadata['tags'].length > 3 && (
                           <Badge 
                             variant="outline" 
                             className="text-xs py-0 px-1.5 bg-gray-50"
                           >
-                            +{activity.metadata.tags.length - 3}
+                            +{activity.metadata['tags'].length - 3}
                           </Badge>
                         )}
                       </div>

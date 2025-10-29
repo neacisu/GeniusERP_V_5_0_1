@@ -46,7 +46,7 @@ export function useHrApi() {
       onError: (error: any) => {
         toast({
           title: 'Eroare',
-          description: `Nu s-a putut adăuga angajatul: ${error.message || 'Eroare necunoscută'}`,
+          description: `Nu s-a putut adăuga angajatul: ${error['message'] || 'Eroare necunoscută'}`,
           variant: 'destructive',
         });
       },
@@ -68,7 +68,7 @@ export function useHrApi() {
       onError: (error: any) => {
         toast({
           title: 'Eroare',
-          description: `Nu s-a putut actualiza angajatul: ${error.message || 'Eroare necunoscută'}`,
+          description: `Nu s-a putut actualiza angajatul: ${error['message'] || 'Eroare necunoscută'}`,
           variant: 'destructive',
         });
       },
@@ -89,7 +89,7 @@ export function useHrApi() {
       onError: (error: any) => {
         toast({
           title: 'Eroare',
-          description: `Nu s-a putut șterge angajatul: ${error.message || 'Eroare necunoscută'}`,
+          description: `Nu s-a putut șterge angajatul: ${error['message'] || 'Eroare necunoscută'}`,
           variant: 'destructive',
         });
       },
@@ -142,7 +142,7 @@ export function useHrApi() {
       onError: (error: any) => {
         toast({
           title: 'Eroare',
-          description: `Nu s-a putut adăuga contractul: ${error.message || 'Eroare necunoscută'}`,
+          description: `Nu s-a putut adăuga contractul: ${error['message'] || 'Eroare necunoscută'}`,
           variant: 'destructive',
         });
       },
@@ -164,7 +164,7 @@ export function useHrApi() {
       onError: (error: any) => {
         toast({
           title: 'Eroare',
-          description: `Nu s-a putut actualiza contractul: ${error.message || 'Eroare necunoscută'}`,
+          description: `Nu s-a putut actualiza contractul: ${error['message'] || 'Eroare necunoscută'}`,
           variant: 'destructive',
         });
       },
@@ -208,7 +208,7 @@ export function useHrApi() {
       onError: (error: any) => {
         toast({
           title: 'Eroare',
-          description: `Nu s-au putut actualiza setările: ${error.message || 'Eroare necunoscută'}`,
+          description: `Nu s-au putut actualiza setările: ${error['message'] || 'Eroare necunoscută'}`,
           variant: 'destructive',
         });
       },
@@ -229,7 +229,7 @@ export function useHrApi() {
       onError: (error: any) => {
         toast({
           title: 'Eroare',
-          description: `Nu s-a putut genera exportul Revisal: ${error.message || 'Eroare necunoscută'}`,
+          description: `Nu s-a putut genera exportul Revisal: ${error['message'] || 'Eroare necunoscută'}`,
           variant: 'destructive',
         });
       },
@@ -250,10 +250,10 @@ export function useHrApi() {
       pageSize
     };
     
-    if (search) params.search = search;
-    if (type) params.type = type;
-    if (employeeId) params.employeeId = employeeId;
-    if (status) params.status = status;
+    if (search) params['search'] = search;
+    if (type) params['type'] = type;
+    if (employeeId) params['employeeId'] = employeeId;
+    if (status) params['status'] = status;
     
     return apiRequest('/api/hr/absences', { params });
   };
@@ -294,7 +294,7 @@ export function useHrApi() {
       onError: (error: any) => {
         toast({
           title: 'Eroare',
-          description: `Nu s-a putut adăuga absența: ${error.message || 'Eroare necunoscută'}`,
+          description: `Nu s-a putut adăuga absența: ${error['message'] || 'Eroare necunoscută'}`,
           variant: 'destructive',
         });
       },
@@ -316,7 +316,7 @@ export function useHrApi() {
       onError: (error: any) => {
         toast({
           title: 'Eroare',
-          description: `Nu s-a putut actualiza absența: ${error.message || 'Eroare necunoscută'}`,
+          description: `Nu s-a putut actualiza absența: ${error['message'] || 'Eroare necunoscută'}`,
           variant: 'destructive',
         });
       },
@@ -337,7 +337,7 @@ export function useHrApi() {
       onError: (error: any) => {
         toast({
           title: 'Eroare',
-          description: `Nu s-a putut șterge absența: ${error.message || 'Eroare necunoscută'}`,
+          description: `Nu s-a putut șterge absența: ${error['message'] || 'Eroare necunoscută'}`,
           variant: 'destructive',
         });
       },
@@ -358,7 +358,7 @@ export function useHrApi() {
       onError: (error: any) => {
         toast({
           title: 'Eroare',
-          description: `Nu s-a putut genera exportul ANAF: ${error.message || 'Eroare necunoscută'}`,
+          description: `Nu s-a putut genera exportul ANAF: ${error['message'] || 'Eroare necunoscută'}`,
           variant: 'destructive',
         });
       },
@@ -380,7 +380,7 @@ export function useHrApi() {
       onError: (error: any) => {
         toast({
           title: 'Eroare',
-          description: `Nu s-a putut adăuga departamentul: ${error.message || 'Eroare necunoscută'}`,
+          description: `Nu s-a putut adăuga departamentul: ${error['message'] || 'Eroare necunoscută'}`,
           variant: 'destructive',
         });
       },
@@ -402,7 +402,7 @@ export function useHrApi() {
       onError: (error: any) => {
         toast({
           title: 'Eroare',
-          description: `Nu s-a putut actualiza departamentul: ${error.message || 'Eroare necunoscută'}`,
+          description: `Nu s-a putut actualiza departamentul: ${error['message'] || 'Eroare necunoscută'}`,
           variant: 'destructive',
         });
       },
@@ -423,7 +423,7 @@ export function useHrApi() {
       onError: (error: any) => {
         toast({
           title: 'Eroare',
-          description: `Nu s-a putut șterge departamentul: ${error.message || 'Eroare necunoscută'}`,
+          description: `Nu s-a putut șterge departamentul: ${error['message'] || 'Eroare necunoscută'}`,
           variant: 'destructive',
         });
       },

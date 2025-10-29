@@ -94,7 +94,7 @@ export default function CommunityUpdatesWidget({ limit = 5 }: CommunityUpdatesWi
       threadsData = data;
     }
     // Case 4: Response is a different format - log only in development
-    else if (process.env.NODE_ENV === 'development') {
+    else if (process.env['NODE_ENV'] === 'development') {
       console.warn('Community response does not contain expected array format:', data);
     }
     
@@ -243,10 +243,10 @@ export default function CommunityUpdatesWidget({ limit = 5 }: CommunityUpdatesWi
             <div className="space-y-3">
               {threads.map((thread: CommunityThread) => {
                 // Valori implicite pentru proprietăți opționale pentru siguranță
-                const viewCount = (thread.metadata && 'viewCount' in thread.metadata) ? thread.metadata.viewCount : 0;
+                const viewCount = (thread.metadata && 'viewCount' in thread.metadata) ? thread.metadata['viewCount'] : 0;
                 const replyCount = thread.replyCount || 0;
-                const authorName = thread.metadata?.authorName || 'Utilizator';
-                const authorAvatar = thread.metadata?.authorAvatar || '';
+                const authorName = thread.metadata?.['authorName'] || 'Utilizator';
+                const authorAvatar = thread.metadata?.['authorAvatar'] || '';
                 const authorInitials = authorName ? authorName.substring(0, 2).toUpperCase() : 'U';
                 
                 return (
