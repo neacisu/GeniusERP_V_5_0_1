@@ -3,6 +3,50 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
+// ============================================================================
+// CENTRALIZED ENUMS - All PostgreSQL enum types
+// ============================================================================
+export * from "./schema/enums";
+
+// ============================================================================
+// CORE SCHEMAS - Fundamental tables (RBAC, Chart of Accounts)
+// ============================================================================
+export * from "./schema/core.schema";
+
+// ============================================================================
+// INVENTORY MANAGEMENT - Product catalog and stock management
+// ============================================================================
+export * from "./schema/inventory.schema";
+
+// ============================================================================
+// INVOICING - Complete invoicing system
+// ============================================================================
+export * from "./schema/invoicing.schema";
+
+// ============================================================================
+// PURCHASING - Purchase orders and NIR (Goods Receipt)
+// ============================================================================
+export * from "./schema/purchasing.schema";
+
+// ============================================================================
+// TRANSFER - Warehouse transfers and stock reservations
+// ============================================================================
+export * from "./schema/transfer.schema";
+
+// ============================================================================
+// SETTINGS - Global settings, feature toggles, preferences
+// ============================================================================
+export * from "./schema/settings-extended.schema";
+
+// ============================================================================
+// DOCUMENTS - Document management and FX rates
+// ============================================================================
+export * from "./schema/documents-extended.schema";
+
+// ============================================================================
+// EXISTING SCHEMAS (Updated)
+// ============================================================================
+
 // Export CRM models for shared usage across the application
 // Notă: CRM Activity este exportat ca Activity principal
 export * from "./schema/crm.schema";

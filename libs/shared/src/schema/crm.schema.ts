@@ -798,3 +798,218 @@ export type InsertSegment = z.infer<typeof insertSegmentSchema>;
 export type InsertScoringRule = z.infer<typeof insertScoringRuleSchema>;
 export type InsertEmailTemplate = z.infer<typeof insertEmailTemplateSchema>;
 export type InsertAnafCompanyData = z.infer<typeof insertAnafCompanyDataSchema>;
+
+// ============================================================================
+// ADDITIONAL CRM TABLES (Previously missing from schema)
+// ============================================================================
+
+/**
+ * CRM Custom Fields
+ * Dynamic custom fields for CRM entities
+ */
+export const crm_custom_fields = pgTable("crm_custom_fields", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  label: text("label").notNull(),
+  fieldType: text("field_type").notNull(), // 'text', 'number', 'date', 'select', etc.
+  entityType: text("entity_type").notNull(), // 'customer', 'deal', 'contact'
+  options: json("options"),
+  isRequired: boolean("is_required").default(false),
+  defaultValue: text("default_value"),
+  placeholder: text("placeholder"),
+  helpText: text("help_text"),
+  sortOrder: integer("sort_order").default(0),
+  companyId: uuid("company_id").notNull(),
+  isActive: boolean("is_active").default(true),
+  validationRules: json("validation_rules"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  createdBy: uuid("created_by"),
+  updatedBy: uuid("updated_by"),
+}, (table) => ({
+  companyIdx: index("crm_custom_fields_company_idx").on(table.companyId),
+  entityTypeIdx: index("crm_custom_fields_entity_type_idx").on(table.entityType),
+}));
+
+/**
+ * CRM Deal Products
+ * Products/services associated with deals
+ */
+export const crm_deal_products = pgTable("crm_deal_products", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  dealId: uuid("deal_id").notNull(),
+  productId: uuid("product_id").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  price: numeric("price", { precision: 20, scale: 2 }).notNull(),
+  currency: text("currency").default('RON'),
+  discountPercentage: numeric("discount_percentage", { precision: 5, scale: 2 }).default('0'),
+  discountAmount: numeric("discount_amount", { precision: 20, scale: 2 }).default('0'),
+  totalPrice: numeric("total_price", { precision: 20, scale: 2 }).notNull(),
+  notes: text("notes"),
+  companyId: uuid("company_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  createdBy: uuid("created_by"),
+  updatedBy: uuid("updated_by"),
+}, (table) => ({
+  dealIdx: index("crm_deal_products_deal_idx").on(table.dealId),
+  productIdx: index("crm_deal_products_product_idx").on(table.productId),
+}));
+
+/**
+ * CRM Forecasts
+ * Sales forecasting and projections
+ */
+export const crm_forecasts = pgTable("crm_forecasts", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  pipelineId: uuid("pipeline_id").notNull(),
+  stageId: uuid("stage_id"),
+  period: text("period").notNull(), // 'month', 'quarter', 'year'
+  periodStart: date("period_start").notNull(),
+  periodEnd: date("period_end").notNull(),
+  forecastedValue: numeric("forecasted_value", { precision: 20, scale: 2 }).notNull(),
+  actualValue: numeric("actual_value", { precision: 20, scale: 2 }),
+  confidence: numeric("confidence", { precision: 5, scale: 2 }), // 0-100%
+  notes: text("notes"),
+  companyId: uuid("company_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  createdBy: uuid("created_by"),
+  updatedBy: uuid("updated_by"),
+}, (table) => ({
+  pipelineIdx: index("crm_forecasts_pipeline_idx").on(table.pipelineId),
+  periodIdx: index("crm_forecasts_period_idx").on(table.periodStart, table.periodEnd),
+}));
+
+/**
+ * CRM Notes
+ * Notes attached to CRM entities (deals, contacts, companies)
+ */
+export const crm_notes = pgTable("crm_notes", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  content: text("content").notNull(),
+  dealId: uuid("deal_id"),
+  contactId: uuid("contact_id"),
+  clientCompanyId: uuid("client_company_id"),
+  noteType: text("note_type").default('general'),
+  pinned: boolean("pinned").default(false),
+  companyId: uuid("company_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  createdBy: uuid("created_by"),
+  updatedBy: uuid("updated_by"),
+}, (table) => ({
+  dealIdx: index("crm_notes_deal_idx").on(table.dealId),
+  contactIdx: index("crm_notes_contact_idx").on(table.contactId),
+  companyIdx: index("crm_notes_company_idx").on(table.companyId),
+}));
+
+/**
+ * CRM Taggables
+ * Polymorphic tagging system for CRM entities
+ */
+export const crm_taggables = pgTable("crm_taggables", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  tagId: uuid("tag_id").notNull(),
+  taggableId: uuid("taggable_id").notNull(),
+  taggableType: text("taggable_type").notNull(), // 'customer', 'deal', 'contact'
+  companyId: uuid("company_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  tagIdx: index("crm_taggables_tag_idx").on(table.tagId),
+  taggableIdx: index("crm_taggables_taggable_idx").on(table.taggableId, table.taggableType),
+}));
+
+/**
+ * CRM Tasks
+ * Task management within CRM context
+ */
+export const crm_tasks = pgTable("crm_tasks", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").default('todo'), // 'todo', 'in_progress', 'done'
+  priority: text("priority").default('medium'), // 'low', 'medium', 'high', 'urgent'
+  dueDate: timestamp("due_date", { withTimezone: true }),
+  dealId: uuid("deal_id"),
+  contactId: uuid("contact_id"),
+  clientCompanyId: uuid("client_company_id"),
+  assignedTo: uuid("assigned_to"),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  reminderTime: timestamp("reminder_time", { withTimezone: true }),
+  companyId: uuid("company_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  createdBy: uuid("created_by"),
+  updatedBy: uuid("updated_by"),
+}, (table) => ({
+  dealIdx: index("crm_tasks_deal_idx").on(table.dealId),
+  contactIdx: index("crm_tasks_contact_idx").on(table.contactId),
+  assignedIdx: index("crm_tasks_assigned_idx").on(table.assignedTo),
+  statusIdx: index("crm_tasks_status_idx").on(table.status),
+  dueDateIdx: index("crm_tasks_due_date_idx").on(table.dueDate),
+}));
+
+// Relations for new tables
+
+export const crm_custom_fieldsRelations = relations(crm_custom_fields, ({ one }) => ({
+  company: one(companies, {
+    fields: [crm_custom_fields.companyId],
+    references: [companies.id],
+  }),
+}));
+
+export const crm_deal_productsRelations = relations(crm_deal_products, ({ one }) => ({
+  deal: one(deals, {
+    fields: [crm_deal_products.dealId],
+    references: [deals.id],
+  }),
+  company: one(companies, {
+    fields: [crm_deal_products.companyId],
+    references: [companies.id],
+  }),
+}));
+
+export const crm_forecastsRelations = relations(crm_forecasts, ({ one }) => ({
+  pipeline: one(pipelines, {
+    fields: [crm_forecasts.pipelineId],
+    references: [pipelines.id],
+  }),
+  stage: one(pipelineStages, {
+    fields: [crm_forecasts.stageId],
+    references: [pipelineStages.id],
+  }),
+}));
+
+export const crm_notesRelations = relations(crm_notes, ({ one }) => ({
+  deal: one(deals, {
+    fields: [crm_notes.dealId],
+    references: [deals.id],
+  }),
+  contact: one(contacts, {
+    fields: [crm_notes.contactId],
+    references: [contacts.id],
+  }),
+}));
+
+export const crm_taggablesRelations = relations(crm_taggables, ({ one }) => ({
+  tag: one(tags, {
+    fields: [crm_taggables.tagId],
+    references: [tags.id],
+  }),
+}));
+
+export const crm_tasksRelations = relations(crm_tasks, ({ one }) => ({
+  deal: one(deals, {
+    fields: [crm_tasks.dealId],
+    references: [deals.id],
+  }),
+  contact: one(contacts, {
+    fields: [crm_tasks.contactId],
+    references: [contacts.id],
+  }),
+  assignedToUser: one(users, {
+    fields: [crm_tasks.assignedTo],
+    references: [users.id],
+  }),
+}));
