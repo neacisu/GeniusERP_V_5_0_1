@@ -24,6 +24,7 @@ export class NoteController {
    */
   registerRoutes(router: Router): void {
     router.get('/', AuthGuard.protect(JwtAuthMode.REQUIRED), this.getAllNotes.bind(this));
+    router.get('/tags', AuthGuard.protect(JwtAuthMode.REQUIRED), this.getAllTags.bind(this));
     router.get('/task/:taskId', AuthGuard.protect(JwtAuthMode.REQUIRED), this.getNotesByTask.bind(this));
     router.get('/:id', AuthGuard.protect(JwtAuthMode.REQUIRED), this.getNoteById.bind(this));
     router.post('/', AuthGuard.protect(JwtAuthMode.REQUIRED), this.createNote.bind(this));
@@ -148,6 +149,27 @@ export class NoteController {
       }
       
       logger.error('Error in POST /notes', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  /**
+   * Get all unique tags from notes with their counts
+   */
+  async getAllTags(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.user || !req.user.companyId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+      
+      const companyId = req.user.companyId;
+      
+      const result = await this.noteService.getAllTags(companyId);
+      
+      res.status(200).json(result);
+    } catch (error) {
+      logger.error(`Error in GET /notes/tags - CompanyId: ${req.user?.companyId}`, error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }

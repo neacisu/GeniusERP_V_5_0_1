@@ -242,4 +242,46 @@ export class NoteService {
       throw error;
     }
   }
+
+  /**
+   * Get all unique tags from notes with their usage counts
+   * 
+   * @param companyId Company ID
+   * @returns Object with tags array and counts object
+   */
+  async getAllTags(companyId: string): Promise<{ tags: string[]; counts: Record<string, number> }> {
+    try {
+      // Get all notes for the company that have tags
+      const notesWithTags = await this.drizzleService.query(db =>
+        db.select({ tags: collaborationNotes.tags })
+          .from(collaborationNotes)
+          .where(eq(collaborationNotes.companyId, companyId))
+      );
+      
+      // Aggregate all tags and count occurrences
+      const tagCounts: Record<string, number> = {};
+      
+      for (const note of notesWithTags) {
+        if (note.tags && Array.isArray(note.tags)) {
+          for (const tag of note.tags) {
+            if (typeof tag === 'string' && tag.trim()) {
+              const normalizedTag = tag.trim();
+              tagCounts[normalizedTag] = (tagCounts[normalizedTag] || 0) + 1;
+            }
+          }
+        }
+      }
+      
+      // Get unique tags sorted by usage count (descending)
+      const tags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]);
+      
+      return {
+        tags,
+        counts: tagCounts
+      };
+    } catch (error) {
+      this._logger.error('Failed to fetch tags', { error, companyId });
+      throw error;
+    }
+  }
 }
