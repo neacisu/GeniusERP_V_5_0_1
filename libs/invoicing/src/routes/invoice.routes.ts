@@ -64,17 +64,19 @@ router.get('/stats',
 // Get invoice by ID
 router.get('/:id',
   AuthGuard.protect(JwtAuthMode.REQUIRED),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<void> => {
     try {
       const companyId = req.user?.companyId || '';
+      const invoiceId = req.params['id'];
       // Use enhanced service method that includes customer information
-      const invoice = await InvoiceService.getInvoiceById(req.params.id, companyId);
+      const invoice = await InvoiceService.getInvoiceById(invoiceId, companyId);
       
       if (!invoice) {
-        return res.status(404).json({ message: 'Invoice not found' });
+        res.status(404).json({ message: 'Invoice not found' });
+        return;
       }
       
-      console.log(`Retrieved invoice ${req.params.id} with customer information`);
+      console.log(`Retrieved invoice ${invoiceId} with customer information`);
       res.json(invoice);
     } catch (error) {
       console.error('Error fetching invoice:', error);
@@ -87,9 +89,10 @@ router.get('/:id',
 router.put('/:id',
   AuthGuard.protect(JwtAuthMode.REQUIRED),
   AuthGuard.roleGuard([UserRole.ACCOUNTANT, UserRole.FINANCE_MANAGER, UserRole.ADMIN]),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<void> => {
     try {
-      const updatedInvoice = await storage.updateInvoice(req.params.id, req.body);
+      const invoiceId = req.params['id'];
+      const updatedInvoice = await storage.updateInvoice(invoiceId, req.body);
       res.json(updatedInvoice);
     } catch (error) {
       console.error('Error updating invoice:', error);
@@ -102,11 +105,12 @@ router.put('/:id',
 router.delete('/:id',
   AuthGuard.protect(JwtAuthMode.REQUIRED),
   AuthGuard.roleGuard([UserRole.ADMIN, UserRole.FINANCE_MANAGER]),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<void> => {
     try {
       const userId = req.user?.id;
+      const invoiceId = req.params['id'];
       // Dacă ai companyId disponibil, folosește deleteInvoiceForCompany, altfel lasă apelul vechi pentru metoda cu 2 parametri
-      await InvoiceService.deleteInvoice(req.params.id, userId);
+      await InvoiceService.deleteInvoice(invoiceId, userId);
       res.status(204).end();
     } catch (error) {
       console.error('Error deleting invoice:', error);
