@@ -380,3 +380,98 @@ export type InsertCartItem = z.infer<typeof insertCartItemSchema>;
 
 export type EcommerceIntegration = typeof ecommerceIntegrations.$inferSelect;
 export type InsertEcommerceIntegration = z.infer<typeof insertEcommerceIntegrationSchema>;
+
+// ============================================================================
+// ADDITIONAL E-COMMERCE TABLES (Shopify Integration)
+// ============================================================================
+
+/**
+ * E-commerce Order Items
+ * Line items for e-commerce orders
+ */
+export const ecommerce_order_items = pgTable("ecommerce_order_items", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  orderId: uuid("order_id").notNull(),
+  companyId: uuid("company_id").notNull(),
+  productId: uuid("product_id"),
+  externalProductId: text("external_product_id"),
+  sku: text("sku"),
+  name: text("name").notNull(),
+  description: text("description"),
+  quantity: numeric("quantity", { precision: 10, scale: 2 }).notNull(),
+  unitPrice: numeric("unit_price", { precision: 15, scale: 2 }).notNull(),
+  taxRate: numeric("tax_rate", { precision: 5, scale: 2 }).notNull().default('19'),
+  taxAmount: numeric("tax_amount", { precision: 15, scale: 2 }).notNull().default('0'),
+  discountAmount: numeric("discount_amount", { precision: 15, scale: 2 }).notNull().default('0'),
+  totalAmount: numeric("total_amount", { precision: 15, scale: 2 }).notNull(),
+  metadata: json("metadata").default('{}'),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * E-commerce Shopify Collections
+ * Shopify collections synced to local categories
+ */
+export const ecommerce_shopify_collections = pgTable("ecommerce_shopify_collections", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: uuid("company_id").notNull(),
+  shopifyCollectionId: text("shopify_collection_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  handle: text("handle"),
+  localCategoryId: uuid("local_category_id"),
+  isActive: boolean("is_active").default(true),
+  lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),
+  metadata: json("metadata").default('{}'),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * E-commerce Shopify Products
+ * Shopify products synced to local inventory
+ */
+export const ecommerce_shopify_products = pgTable("ecommerce_shopify_products", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: uuid("company_id").notNull(),
+  shopifyProductId: text("shopify_product_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  handle: text("handle"),
+  productType: text("product_type"),
+  vendor: text("vendor"),
+  tags: json("tags").default('[]'),
+  localProductId: uuid("local_product_id"),
+  isActive: boolean("is_active").default(true),
+  lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),
+  metadata: json("metadata").default('{}'),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * E-commerce Shopify Variants
+ * Shopify product variants (size, color, etc.)
+ */
+export const ecommerce_shopify_variants = pgTable("ecommerce_shopify_variants", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: uuid("company_id").notNull(),
+  shopifyProductId: text("shopify_product_id").notNull(),
+  shopifyVariantId: text("shopify_variant_id").notNull(),
+  shopifyProductEntryId: uuid("shopify_product_entry_id").notNull(),
+  title: text("title").notNull(),
+  sku: text("sku"),
+  barcode: text("barcode"),
+  price: numeric("price", { precision: 15, scale: 2 }),
+  compareAtPrice: numeric("compare_at_price", { precision: 15, scale: 2 }),
+  inventoryQuantity: integer("inventory_quantity").default(0),
+  weight: numeric("weight", { precision: 10, scale: 3 }),
+  weightUnit: varchar("weight_unit", { length: 10 }),
+  localProductId: uuid("local_product_id"),
+  isActive: boolean("is_active").default(true),
+  lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),
+  metadata: json("metadata").default('{}'),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

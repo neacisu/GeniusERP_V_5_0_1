@@ -554,3 +554,143 @@ export const revisalExportLogs = pgTable("hr_revisal_export_logs", {
   companyRevisalIdx: index("hr_revisal_export_company_idx").on(table.companyId),
   dateRevisalIdx: index("hr_revisal_export_date_idx").on(table.exportDate)
 }));
+
+// ============================================================================
+// LEGACY AND ADDITIONAL HR TABLES
+// ============================================================================
+
+/**
+ * Employees (Legacy - without hr_ prefix)
+ * @deprecated Use hr_employees instead. Kept for backward compatibility.
+ */
+export const employees = pgTable("employees", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: uuid("company_id").notNull(),
+  firstName: varchar("first_name", { length: 100 }).notNull(),
+  lastName: varchar("last_name", { length: 100 }).notNull(),
+  cnp: varchar("cnp", { length: 13 }).notNull().unique(),
+  idCard: varchar("id_card", { length: 20 }),
+  email: varchar("email", { length: 255 }),
+  phone: varchar("phone", { length: 20 }),
+  address: text("address"),
+  city: varchar("city", { length: 100 }),
+  county: varchar("county", { length: 100 }),
+  country: varchar("country", { length: 100 }).default("Romania"),
+  postalCode: varchar("postal_code", { length: 10 }),
+  hireDate: date("hire_date"),
+  status: varchar("status", { length: 20 }).default("active"),
+  position: varchar("position", { length: 100 }),
+  department: varchar("department", { length: 100 }),
+  salary: numeric("salary", { precision: 15, scale: 2 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  cnpUnique: unique("employees_cnp_unique").on(table.cnp),
+}));
+
+/**
+ * Employee Contracts (Legacy)
+ * @deprecated Use hr_employment_contracts instead
+ */
+export const employee_contracts = pgTable("employee_contracts", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: uuid("employee_id").notNull(),
+  contractType: varchar("contract_type", { length: 50 }).notNull(),
+  contractNumber: varchar("contract_number", { length: 50 }).notNull(),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date"),
+  position: varchar("position", { length: 100 }),
+  baseSalary: numeric("base_salary", { precision: 15, scale: 2 }),
+  workSchedule: varchar("work_schedule", { length: 50 }),
+  status: varchar("status", { length: 20 }).default("active"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+/**
+ * Employee Documents (Legacy)
+ * @deprecated Use hr_documents instead
+ */
+export const employee_documents = pgTable("employee_documents", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: uuid("employee_id").notNull(),
+  documentType: varchar("document_type", { length: 50 }).notNull(),
+  documentName: varchar("document_name", { length: 255 }).notNull(),
+  filePath: text("file_path").notNull(),
+  expiryDate: date("expiry_date"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+/**
+ * Leave Requests
+ * Employee leave/absence requests and approvals
+ */
+export const leave_requests = pgTable("leave_requests", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: uuid("employee_id").notNull(),
+  companyId: uuid("company_id").notNull(),
+  leaveType: varchar("leave_type", { length: 50 }).notNull(), // 'CO', 'CM', 'CFS', etc.
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  days: integer("days").notNull(),
+  reason: text("reason"),
+  status: varchar("status", { length: 20 }).default("pending"), // 'pending', 'approved', 'rejected'
+  approvedBy: uuid("approved_by"),
+  approvedAt: timestamp("approved_at"),
+  rejectionReason: text("rejection_reason"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  employeeIdx: index("leave_requests_employee_idx").on(table.employeeId),
+  statusIdx: index("leave_requests_status_idx").on(table.status),
+}));
+
+/**
+ * Payroll Records
+ * Monthly payroll calculations and history
+ */
+export const payroll_records = pgTable("payroll_records", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: uuid("employee_id").notNull(),
+  companyId: uuid("company_id").notNull(),
+  month: integer("month").notNull(),
+  year: integer("year").notNull(),
+  baseSalary: numeric("base_salary", { precision: 15, scale: 2 }).notNull(),
+  bonuses: numeric("bonuses", { precision: 15, scale: 2 }).default('0'),
+  deductions: numeric("deductions", { precision: 15, scale: 2 }).default('0'),
+  netSalary: numeric("net_salary", { precision: 15, scale: 2 }).notNull(),
+  cas: numeric("cas", { precision: 15, scale: 2 }),
+  cass: numeric("cass", { precision: 15, scale: 2 }),
+  cam: numeric("cam", { precision: 15, scale: 2 }),
+  incomeTax: numeric("income_tax", { precision: 15, scale: 2 }),
+  status: varchar("status", { length: 20 }).default("calculated"),
+  paidDate: date("paid_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  employeeIdx: index("payroll_records_employee_idx").on(table.employeeId),
+  periodIdx: index("payroll_records_period_idx").on(table.year, table.month),
+}));
+
+/**
+ * Attendance Records
+ * Employee time tracking and attendance
+ */
+export const attendance_records = pgTable("attendance_records", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: uuid("employee_id").notNull(),
+  companyId: uuid("company_id").notNull(),
+  date: date("date").notNull(),
+  checkIn: timestamp("check_in"),
+  checkOut: timestamp("check_out"),
+  workedHours: numeric("worked_hours", { precision: 5, scale: 2 }),
+  overtimeHours: numeric("overtime_hours", { precision: 5, scale: 2 }).default('0'),
+  status: varchar("status", { length: 20 }).default("present"), // 'present', 'absent', 'leave', 'holiday'
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  employeeDateIdx: index("attendance_records_employee_date_idx").on(table.employeeId, table.date),
+}));

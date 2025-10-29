@@ -424,3 +424,78 @@ export type ReportType = typeof reportTypeEnum.enumValues[number];
 export type AlertSeverity = typeof alertSeverityEnum.enumValues[number];
 export type AlertStatus = typeof alertStatusEnum.enumValues[number];
 export type VisualizationType = 'bar' | 'line' | 'pie' | 'area' | 'table';
+
+// ============================================================================
+// ADDITIONAL ANALYTICS TABLES (Previously missing)
+// ============================================================================
+
+/**
+ * Analytics Inventory Optimizations
+ * Inventory optimization recommendations with EOQ calculations
+ */
+export const analytics_inventory_optimizations = pgTable("analytics_inventory_optimizations", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  productId: varchar("product_id", { length: 36 }).notNull(),
+  warehouseId: varchar("warehouse_id", { length: 36 }).notNull(),
+  companyId: varchar("company_id", { length: 36 }).notNull(),
+  currentStockLevel: integer("current_stock_level").notNull(),
+  recommendedStockLevel: integer("recommended_stock_level").notNull(),
+  reorderPoint: integer("reorder_point").notNull(),
+  safetyStock: integer("safety_stock").notNull(),
+  economicOrderQuantity: integer("economic_order_quantity"),
+  leadTimeDays: integer("lead_time_days"),
+  averageDailyDemand: numeric("average_daily_demand"),
+  seasonalityFactor: numeric("seasonality_factor"),
+  stockoutCost: numeric("stockout_cost"),
+  holdingCostPercentage: numeric("holding_cost_percentage"),
+  optimizationAlgorithm: varchar("optimization_algorithm", { length: 50 }),
+  algorithmParameters: json("algorithm_parameters"),
+  optimizationNotes: text("optimization_notes"),
+  confidenceLevel: numeric("confidence_level").notNull(),
+  calculationDate: timestamp("calculation_date", { withTimezone: true }).defaultNow(),
+  modelExecutionId: uuid("model_execution_id"),
+  status: varchar("status", { length: 20 }),
+  createdBy: varchar("created_by", { length: 36 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
+/**
+ * Analytics Model Executions
+ * Execution history for predictive models
+ */
+export const analytics_model_executions = pgTable("analytics_model_executions", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  modelId: uuid("model_id").notNull(),
+  companyId: varchar("company_id", { length: 36 }).notNull(),
+  executionDate: timestamp("execution_date", { withTimezone: true }).defaultNow(),
+  parameters: json("parameters").notNull().default('{}'),
+  result: json("result").notNull().default('{}'),
+  status: varchar("status", { length: 20 }).notNull().default('completed'),
+  executionTimeMs: integer("execution_time_ms"),
+  metrics: json("metrics"),
+  datasetId: varchar("dataset_id", { length: 36 }),
+  trainingMetrics: json("training_metrics"),
+  validationMetrics: json("validation_metrics"),
+  errorMessage: text("error_message"),
+  version: varchar("version", { length: 20 }),
+  createdBy: varchar("created_by", { length: 36 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
+/**
+ * Analytics Scenario Executions
+ * Scenario simulation execution history
+ */
+export const analytics_scenario_executions = pgTable("analytics_scenario_executions", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  scenarioId: uuid("scenario_id").notNull(),
+  companyId: varchar("company_id", { length: 36 }).notNull(),
+  executionDate: timestamp("execution_date", { withTimezone: true }).defaultNow(),
+  parameters: json("parameters").notNull().default('{}'),
+  results: json("results").notNull().default('{}'),
+  status: varchar("status", { length: 20 }).notNull().default('completed'),
+  executionTimeMs: integer("execution_time_ms"),
+  errorMessage: text("error_message"),
+  createdBy: varchar("created_by", { length: 36 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});

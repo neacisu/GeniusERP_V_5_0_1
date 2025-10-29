@@ -315,6 +315,109 @@ export type InsertFiscalPeriod = typeof fiscalPeriods.$inferInsert;
 export type ChartOfAccount = typeof chartOfAccounts.$inferSelect;
 export type InsertChartOfAccount = typeof chartOfAccounts.$inferInsert;
 
+// ============================================================================
+// ADDITIONAL ACCOUNTING TABLES (Previously missing)
+// ============================================================================
+
+/**
+ * Accounting Account Balances (Extended RAS structure)
+ * Detailed balances with full Romanian accounting standard structure
+ */
+export const accounting_account_balances = pgTable("accounting_account_balances", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: uuid("company_id").notNull(),
+  franchiseId: uuid("franchise_id"),
+  accountClass: integer("account_class").notNull(),
+  accountGroup: integer("account_group").notNull(),
+  accountNumber: varchar("account_number", { length: 20 }).notNull(),
+  accountSubNumber: varchar("account_sub_number", { length: 20 }),
+  fullAccountNumber: varchar("full_account_number", { length: 50 }).notNull(),
+  fiscalYear: integer("fiscal_year").notNull(),
+  fiscalMonth: integer("fiscal_month").notNull(),
+  openingDebit: numeric("opening_debit", { precision: 19, scale: 4 }).notNull().default('0'),
+  openingCredit: numeric("opening_credit", { precision: 19, scale: 4 }).notNull().default('0'),
+  periodDebit: numeric("period_debit", { precision: 19, scale: 4 }).notNull().default('0'),
+  periodCredit: numeric("period_credit", { precision: 19, scale: 4 }).notNull().default('0'),
+  closingDebit: numeric("closing_debit", { precision: 19, scale: 4 }).notNull().default('0'),
+  closingCredit: numeric("closing_credit", { precision: 19, scale: 4 }).notNull().default('0'),
+  currency: varchar("currency", { length: 3 }).notNull().default('RON'),
+  currencyClosingDebit: numeric("currency_closing_debit", { precision: 19, scale: 4 }).default('0'),
+  currencyClosingCredit: numeric("currency_closing_credit", { precision: 19, scale: 4 }).default('0'),
+  lastCalculatedAt: timestamp("last_calculated_at").notNull().defaultNow(),
+});
+
+/**
+ * Accounting Journal Types
+ * Different journal types for accounting operations
+ */
+export const accounting_journal_types = pgTable("accounting_journal_types", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: uuid("company_id").notNull(),
+  code: varchar("code", { length: 20 }).notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  defaultDebitAccount: varchar("default_debit_account", { length: 20 }),
+  defaultCreditAccount: varchar("default_credit_account", { length: 20 }),
+  isSystemJournal: boolean("is_system_journal").notNull().default(false),
+  isActive: boolean("is_active").notNull().default(true),
+  autoNumberPrefix: varchar("auto_number_prefix", { length: 20 }),
+  lastUsedNumber: integer("last_used_number").notNull().default(0),
+  createdBy: uuid("created_by"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedBy: uuid("updated_by"),
+  updatedAt: timestamp("updated_at"),
+});
+
+/**
+ * Journal Entries (Legacy)
+ * @deprecated Use accounting_ledger_entries
+ */
+export const journal_entries = pgTable("journal_entries", {
+  id: uuid("id").primaryKey().notNull(),
+  companyId: uuid("company_id").notNull(),
+  franchiseId: uuid("franchise_id"),
+  journalType: text("journal_type"),
+  referenceNumber: text("reference_number"),
+  entryDate: timestamp("entry_date"),
+  description: text("description").notNull(),
+  totalAmount: numeric("total_amount").notNull(),
+  status: varchar("status", { length: 20 }).default("draft"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdBy: uuid("created_by"),
+});
+
+/**
+ * Journal Lines (Legacy)
+ * @deprecated Use accounting_ledger_lines
+ */
+export const journal_lines = pgTable("journal_lines", {
+  id: uuid("id").primaryKey().notNull(),
+  journalEntryId: uuid("journal_entry_id").notNull(),
+  accountCode: varchar("account_code", { length: 20 }).notNull(),
+  description: text("description"),
+  debit: numeric("debit", { precision: 15, scale: 2 }).default('0'),
+  credit: numeric("credit", { precision: 15, scale: 2 }).default('0'),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+/**
+ * Stocks (Legacy)
+ * @deprecated Use inventory_stock from inventory.schema.ts
+ */
+export const stocks = pgTable("stocks", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  productId: uuid("product_id").notNull(),
+  warehouseId: uuid("warehouse_id"),
+  quantity: numeric("quantity", { precision: 15, scale: 3 }).notNull().default('0'),
+  reservedQuantity: numeric("reserved_quantity", { precision: 15, scale: 3 }).default('0'),
+  availableQuantity: numeric("available_quantity", { precision: 15, scale: 3 }).default('0'),
+  averageCost: numeric("average_cost", { precision: 15, scale: 2 }).default('0'),
+  totalValue: numeric("total_value", { precision: 15, scale: 2 }).default('0'),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+});
+
 export default {
   // Current tables
   accountingLedgerEntries,
@@ -331,5 +434,11 @@ export default {
   accountBalances,
   fiscalPeriods,
   chartOfAccounts,
-  chartOfAccountsRelations
+  chartOfAccountsRelations,
+  // Newly added tables
+  accounting_account_balances,
+  accounting_journal_types,
+  journal_entries,
+  journal_lines,
+  stocks
 };
