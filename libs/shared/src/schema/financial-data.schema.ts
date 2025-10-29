@@ -11,7 +11,7 @@ import { z } from 'zod';
 /**
  * Tabel pentru stocarea erorilor la interogarea bilanțurilor
  */
-export const financialDataErrors = pgTable('financial_data_errors', {
+export const financial_data_errors = pgTable('financial_data_errors', {
   id: serial('id').primaryKey(),
   cui: varchar('cui', { length: 20 }).notNull(),
   fiscalYear: integer('fiscal_year').notNull(),
@@ -34,7 +34,7 @@ export const financialIndicator = z.object({
 /**
  * Tabel principal pentru datele financiare
  */
-export const financialData = pgTable('financial_data', {
+export const financial_data = pgTable('financial_data', {
   id: serial('id').primaryKey(),
   cui: varchar('cui', { length: 20 }).notNull(),
   companyId: varchar('company_id', { length: 36 }).notNull(),
@@ -63,7 +63,7 @@ export const financialData = pgTable('financial_data', {
 /**
  * Tabel pentru stocarea job-urilor în așteptare
  */
-export const financialDataJobs = pgTable('financial_data_jobs', {
+export const financial_data_jobs = pgTable('financial_data_jobs', {
   id: serial('id').primaryKey(),
   cui: varchar('cui', { length: 20 }).notNull(),
   companyId: varchar('company_id', { length: 36 }).notNull(),
@@ -88,7 +88,7 @@ export type FinancialDataJob = typeof financialDataJobs.$inferSelect;
 export type FinancialDataJobInsert = typeof financialDataJobs.$inferInsert;
 
 // Scheme Zod pentru validare
-export const insertFinancialDataSchema = createInsertSchema(financialData, {
+export const insertFinancialDataSchema = createInsertSchema(financial_data, {
   indicators: z.array(financialIndicator)
 });
 
@@ -96,7 +96,7 @@ export const selectFinancialDataSchema = createSelectSchema(financialData, {
   indicators: z.array(financialIndicator)
 });
 
-export const insertFinancialDataJobSchema = createInsertSchema(financialDataJobs);
+export const insertFinancialDataJobSchema = createInsertSchema(financial_dataJobs);
 export const selectFinancialDataJobSchema = createSelectSchema(financialDataJobs);
 
 // Schema pentru request-ul de creare a unui job

@@ -11,7 +11,7 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
 // HR Documents Table
-export const hrDocuments = pgTable('hr_documents', {
+export const hr_documents = pgTable('hr_documents', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   employeeId: uuid('employee_id'),
@@ -25,7 +25,7 @@ export const hrDocuments = pgTable('hr_documents', {
 });
 
 // HR Employee Drafts Table
-export const hrEmployeeDrafts = pgTable('hr_employee_drafts', {
+export const hr_employee_drafts = pgTable('hr_employee_drafts', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   userData: jsonb('user_data').notNull(),
@@ -37,10 +37,10 @@ export const hrEmployeeDrafts = pgTable('hr_employee_drafts', {
 });
 
 // Zod schemas for validation
-export const insertHrDocumentSchema = createInsertSchema(hrDocuments);
+export const insertHrDocumentSchema = createInsertSchema(hr_documents);
 export const selectHrDocumentSchema = createSelectSchema(hrDocuments);
 
-export const insertHrEmployeeDraftSchema = createInsertSchema(hrEmployeeDrafts);
+export const insertHrEmployeeDraftSchema = createInsertSchema(hr_employee_drafts);
 export const selectHrEmployeeDraftSchema = createSelectSchema(hrEmployeeDrafts);
 
 // Export types

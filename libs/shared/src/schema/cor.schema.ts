@@ -27,7 +27,7 @@ import { sql } from "drizzle-orm";
  * COR Major Groups (1 digit)
  * The top level groups in COR classification (0-9)
  */
-export const corMajorGroups = pgTable("cor_major_groups", {
+export const cor_major_groups = pgTable("cor_major_groups", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   code: varchar("code", { length: 1 }).notNull(),
   name: text("name").notNull(),
@@ -46,7 +46,7 @@ export const corMajorGroups = pgTable("cor_major_groups", {
  * The second level groups in COR classification
  * First digit comes from major group, second digit is 0-9
  */
-export const corSubmajorGroups = pgTable("cor_submajor_groups", {
+export const cor_submajor_groups = pgTable("cor_submajor_groups", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   code: varchar("code", { length: 2 }).notNull(),
   name: text("name").notNull(),
@@ -67,7 +67,7 @@ export const corSubmajorGroups = pgTable("cor_submajor_groups", {
  * The third level groups in COR classification
  * First two digits from submajor group, third digit is 0-9
  */
-export const corMinorGroups = pgTable("cor_minor_groups", {
+export const cor_minor_groups = pgTable("cor_minor_groups", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   code: varchar("code", { length: 3 }).notNull(),
   name: text("name").notNull(),
@@ -88,7 +88,7 @@ export const corMinorGroups = pgTable("cor_minor_groups", {
  * The fourth level groups in COR classification
  * First three digits from minor group, fourth digit is 0-9
  */
-export const corSubminorGroups = pgTable("cor_subminor_groups", {
+export const cor_subminor_groups = pgTable("cor_subminor_groups", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   code: varchar("code", { length: 4 }).notNull(),
   name: text("name").notNull(),
@@ -109,7 +109,7 @@ export const corSubminorGroups = pgTable("cor_subminor_groups", {
  * The actual occupations in the COR classification
  * First 4 digits from the subminor group, last 2 digits are specific to the occupation
  */
-export const corOccupations = pgTable("cor_occupations", {
+export const cor_occupations = pgTable("cor_occupations", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   code: varchar("code", { length: 6 }).notNull(),
   name: text("name").notNull(),

@@ -78,7 +78,7 @@ export const audienceTypeEnum = pgEnum('audience_type', [
  * This table stores marketing campaigns that can send messages through
  * various communication channels.
  */
-export const campaigns = pgTable('marketing_campaigns', {
+export const marketing_campaigns = pgTable('marketing_campaigns', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   name: text('name').notNull(),
@@ -145,9 +145,9 @@ export const campaigns = pgTable('marketing_campaigns', {
  * This table links messages from the communications module to campaigns,
  * allowing tracking of which messages were sent as part of which campaign.
  */
-export const campaignMessages = pgTable('marketing_campaign_messages', {
+export const marketing_campaign_messages = pgTable('marketing_campaign_messages', {
   id: uuid('id').primaryKey().defaultRandom(),
-  campaignId: uuid('campaign_id').notNull().references(() => campaigns.id, { onDelete: 'cascade' }),
+  campaignId: uuid('campaign_id').notNull().references(() => marketing_campaigns.id, { onDelete: 'cascade' }),
   messageId: uuid('message_id').notNull(), // References communications_messages.id
   companyId: uuid('company_id').notNull(),
   recipientId: uuid('recipient_id').notNull(), // References communications_contacts.id
@@ -177,7 +177,7 @@ export const campaignMessages = pgTable('marketing_campaign_messages', {
  * 
  * This table defines customer segments for targeted marketing campaigns.
  */
-export const campaignSegments = pgTable('marketing_campaign_segments', {
+export const marketing_campaign_segments = pgTable('marketing_campaign_segments', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   name: text('name').notNull(),
@@ -203,7 +203,7 @@ export const campaignSegments = pgTable('marketing_campaign_segments', {
  * 
  * This table stores reusable content templates for marketing campaigns.
  */
-export const campaignTemplates = pgTable('marketing_campaign_templates', {
+export const marketing_campaign_templates = pgTable('marketing_campaign_templates', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   name: text('name').notNull(),
@@ -230,7 +230,7 @@ export const campaignTemplates = pgTable('marketing_campaign_templates', {
 
 // Create Zod schemas for validation and insertion
 
-export const insertCampaignSchema = createInsertSchema(campaigns, {
+export const insertCampaignSchema = createInsertSchema(marketing_campaigns, {
   id: z.string().uuid().optional(),
   type: z.nativeEnum(CampaignType),
   status: z.nativeEnum(CampaignStatus).optional(),
@@ -240,19 +240,19 @@ export const insertCampaignSchema = createInsertSchema(campaigns, {
   updatedAt: z.date().optional()
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertCampaignMessageSchema = createInsertSchema(campaignMessages, {
+export const insertCampaignMessageSchema = createInsertSchema(marketing_campaign_messages, {
   id: z.string().uuid().optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional()
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertCampaignSegmentSchema = createInsertSchema(campaignSegments, {
+export const insertCampaignSegmentSchema = createInsertSchema(marketing_campaign_segments, {
   id: z.string().uuid().optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional()
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertCampaignTemplateSchema = createInsertSchema(campaignTemplates, {
+export const insertCampaignTemplateSchema = createInsertSchema(marketing_campaign_templates, {
   id: z.string().uuid().optional(),
   type: z.nativeEnum(CampaignType),
   createdAt: z.date().optional(),

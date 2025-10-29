@@ -94,7 +94,7 @@ export const predictiveScenarioTypeEnum = pgEnum('predictive_scenario_type', [
  * Analytics dashboards table
  * Stores dashboard definitions and metadata
  */
-export const analyticsDashboards = pgTable('analytics_dashboards', {
+export const analytics_dashboards = pgTable('analytics_dashboards', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
@@ -115,7 +115,7 @@ export const analyticsDashboards = pgTable('analytics_dashboards', {
  * Analytics reports table
  * Stores report definitions and metadata
  */
-export const analyticsReports = pgTable('analytics_reports', {
+export const analytics_reports = pgTable('analytics_reports', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
@@ -128,7 +128,7 @@ export const analyticsReports = pgTable('analytics_reports', {
   createdBy: varchar('created_by').notNull(), // References user ID
   updatedBy: varchar('updated_by'), // References user ID
   isPublic: boolean('is_public').default(false).notNull(),
-  dashboardId: varchar('dashboard_id').references(() => analyticsDashboards.id),
+  dashboardId: varchar('dashboard_id').references(() => analytics_dashboards.id),
   schedule: varchar('schedule', { length: 50 })
 });
 
@@ -136,9 +136,9 @@ export const analyticsReports = pgTable('analytics_reports', {
  * Report execution history table
  * Tracks when reports are run and their results
  */
-export const reportExecutionHistory = pgTable('report_execution_history', {
+export const report_execution_history = pgTable('report_execution_history', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
-  reportId: varchar('report_id').notNull().references(() => analyticsReports.id),
+  reportId: varchar('report_id').notNull().references(() => analytics_reports.id),
   companyId: varchar('company_id').notNull(), // References company ID
   executedBy: varchar('executed_by').notNull(), // References user ID
   executedAt: timestamp('executed_at').defaultNow().notNull(),
@@ -153,9 +153,9 @@ export const reportExecutionHistory = pgTable('report_execution_history', {
  * Dashboard views table
  * Tracks dashboard usage statistics
  */
-export const dashboardViews = pgTable('dashboard_views', {
+export const dashboard_views = pgTable('dashboard_views', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
-  dashboardId: varchar('dashboard_id').notNull().references(() => analyticsDashboards.id),
+  dashboardId: varchar('dashboard_id').notNull().references(() => analytics_dashboards.id),
   userId: varchar('user_id').notNull(), // References user ID
   viewedAt: timestamp('viewed_at').defaultNow().notNull(),
   viewDuration: integer('view_duration'), // in seconds
@@ -166,7 +166,7 @@ export const dashboardViews = pgTable('dashboard_views', {
  * Analytics metrics table
  * Stores metric definitions and current values
  */
-export const analyticsMetrics = pgTable('analytics_metrics', {
+export const analytics_metrics = pgTable('analytics_metrics', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
@@ -191,9 +191,9 @@ export const analyticsMetrics = pgTable('analytics_metrics', {
  * Metrics history table
  * Tracks historical values of metrics over time
  */
-export const metricsHistory = pgTable('metrics_history', {
+export const metrics_history = pgTable('metrics_history', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
-  metricId: varchar('metric_id').notNull().references(() => analyticsMetrics.id),
+  metricId: varchar('metric_id').notNull().references(() => analytics_metrics.id),
   companyId: varchar('company_id').notNull(), // References company ID
   value: text('value').notNull(),
   timestamp: timestamp('timestamp').defaultNow().notNull(),
@@ -205,12 +205,12 @@ export const metricsHistory = pgTable('metrics_history', {
  * Analytics alerts table
  * Stores alert definitions and current status
  */
-export const analyticsAlerts = pgTable('analytics_alerts', {
+export const analytics_alerts = pgTable('analytics_alerts', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
   description: text('description'),
-  metricId: varchar('metric_id').references(() => analyticsMetrics.id),
+  metricId: varchar('metric_id').references(() => analytics_metrics.id),
   condition: text('condition').notNull(), // e.g., "value > 1000"
   severity: alertSeverityEnum('severity').notNull(),
   status: alertStatusEnum('status').notNull().default('active'),
@@ -233,9 +233,9 @@ export const analyticsAlerts = pgTable('analytics_alerts', {
  * Alert history table
  * Tracks alert status changes and notifications
  */
-export const alertHistory = pgTable('alert_history', {
+export const alert_history = pgTable('alert_history', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
-  alertId: varchar('alert_id').notNull().references(() => analyticsAlerts.id),
+  alertId: varchar('alert_id').notNull().references(() => analytics_alerts.id),
   companyId: varchar('company_id').notNull(), // References company ID
   previousStatus: alertStatusEnum('previous_status'),
   newStatus: alertStatusEnum('new_status').notNull(),
@@ -252,7 +252,7 @@ export const alertHistory = pgTable('alert_history', {
 /**
  * Business intelligence cost centers table
  */
-export const biCostCenters = pgTable('bi_cost_centers', {
+export const bi_cost_centers = pgTable('bi_cost_centers', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
@@ -271,7 +271,7 @@ export const biCostCenters = pgTable('bi_cost_centers', {
 /**
  * Business intelligence business units table
  */
-export const biBusinessUnits = pgTable('bi_business_units', {
+export const bi_business_units = pgTable('bi_business_units', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
@@ -279,7 +279,7 @@ export const biBusinessUnits = pgTable('bi_business_units', {
   description: text('description'),
   managerUserId: varchar('manager_user_id'), // References user ID
   parentBusinessUnitId: varchar('parent_business_unit_id'), // Self-reference added in SQL migrations
-  costCenterId: varchar('cost_center_id').references(() => biCostCenters.id),
+  costCenterId: varchar('cost_center_id').references(() => bi_cost_centers.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   createdBy: varchar('created_by').notNull(), // References user ID
@@ -290,13 +290,13 @@ export const biBusinessUnits = pgTable('bi_business_units', {
 /**
  * Business intelligence cost allocations table
  */
-export const biCostAllocations = pgTable('bi_cost_allocations', {
+export const bi_cost_allocations = pgTable('bi_cost_allocations', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
   description: text('description'),
-  sourceCostCenterId: varchar('source_cost_center_id').notNull().references(() => biCostCenters.id),
-  targetCostCenterId: varchar('target_cost_center_id').notNull().references(() => biCostCenters.id),
+  sourceCostCenterId: varchar('source_cost_center_id').notNull().references(() => bi_cost_centers.id),
+  targetCostCenterId: varchar('target_cost_center_id').notNull().references(() => bi_cost_centers.id),
   allocationMethod: varchar('allocation_method', { length: 50 }).notNull(), // fixed, percentage, usage-based
   allocationValue: text('allocation_value').notNull(), // Amount or percentage as text
   startDate: timestamp('start_date').notNull(),
@@ -312,9 +312,9 @@ export const biCostAllocations = pgTable('bi_cost_allocations', {
 /**
  * Cost allocation history table
  */
-export const costAllocationHistory = pgTable('cost_allocation_history', {
+export const cost_allocation_history = pgTable('cost_allocation_history', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
-  costAllocationId: varchar('cost_allocation_id').notNull().references(() => biCostAllocations.id),
+  costAllocationId: varchar('cost_allocation_id').notNull().references(() => bi_cost_allocations.id),
   companyId: varchar('company_id').notNull(), // References company ID
   periodStart: timestamp('period_start').notNull(),
   periodEnd: timestamp('period_end').notNull(),
@@ -327,7 +327,7 @@ export const costAllocationHistory = pgTable('cost_allocation_history', {
 /**
  * Predictive models table
  */
-export const predictiveModels = pgTable('predictive_models', {
+export const predictive_models = pgTable('predictive_models', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
@@ -349,9 +349,9 @@ export const predictiveModels = pgTable('predictive_models', {
 /**
  * Model training history table
  */
-export const modelTrainingHistory = pgTable('model_training_history', {
+export const model_training_history = pgTable('model_training_history', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
-  modelId: varchar('model_id').notNull().references(() => predictiveModels.id),
+  modelId: varchar('model_id').notNull().references(() => predictive_models.id),
   companyId: varchar('company_id').notNull(), // References company ID
   trainedAt: timestamp('trained_at').defaultNow().notNull(),
   trainedBy: varchar('trained_by').notNull(), // References user ID
@@ -367,13 +367,13 @@ export const modelTrainingHistory = pgTable('model_training_history', {
 /**
  * Predictive scenarios table
  */
-export const predictiveScenarios = pgTable('predictive_scenarios', {
+export const predictive_scenarios = pgTable('predictive_scenarios', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
   companyId: varchar('company_id').notNull(), // References company ID
   name: varchar('name', { length: 100 }).notNull(),
   description: text('description'),
   type: predictiveScenarioTypeEnum('type').notNull(),
-  modelId: varchar('model_id').notNull().references(() => predictiveModels.id),
+  modelId: varchar('model_id').notNull().references(() => predictive_models.id),
   parameters: text('parameters'), // JSON string with scenario parameters
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -386,9 +386,9 @@ export const predictiveScenarios = pgTable('predictive_scenarios', {
 /**
  * Scenario results table
  */
-export const scenarioResults = pgTable('scenario_results', {
+export const scenario_results = pgTable('scenario_results', {
   id: varchar('id').primaryKey().notNull().$defaultFn(() => createId()),
-  scenarioId: varchar('scenario_id').notNull().references(() => predictiveScenarios.id),
+  scenarioId: varchar('scenario_id').notNull().references(() => predictive_scenarios.id),
   companyId: varchar('company_id').notNull(), // References company ID
   runAt: timestamp('run_at').defaultNow().notNull(),
   runBy: varchar('run_by').notNull(), // References user ID

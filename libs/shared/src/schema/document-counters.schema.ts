@@ -12,7 +12,7 @@ import { companies } from '../schema';
  * Document Counters Table
  * Contoare pentru numerotare automată documente
  */
-export const documentCounters = pgTable('document_counters', {
+export const document_counters = pgTable('document_counters', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull().references(() => companies.id),
   counterType: text('counter_type').notNull(), // 'INVOICE', 'CASH', 'JOURNAL', etc.

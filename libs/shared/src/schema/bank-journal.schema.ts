@@ -45,7 +45,7 @@ export const bankPaymentMethodEnum = pgEnum('bank_payment_method', bankPaymentMe
 /**
  * Bank Accounts Table
  */
-export const bankAccounts = pgTable('bank_accounts', {
+export const bank_accounts = pgTable('bank_accounts', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull().references(() => companies.id),
   
@@ -70,10 +70,10 @@ export const bankAccounts = pgTable('bank_accounts', {
 /**
  * Bank Transactions Table
  */
-export const bankTransactions = pgTable('bank_transactions', {
+export const bank_transactions = pgTable('bank_transactions', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull().references(() => companies.id),
-  bankAccountId: uuid('bank_account_id').notNull().references(() => bankAccounts.id),
+  bankAccountId: uuid('bank_account_id').notNull().references(() => bank_accounts.id),
   
   referenceNumber: text('reference_number').notNull(),
   transactionType: bankTransactionTypeEnum('transaction_type').notNull(),
@@ -115,7 +115,7 @@ export const bankAccountRelations = relations(bankAccounts, ({ one, many }) => (
     fields: [bankAccounts.companyId],
     references: [companies.id],
   }),
-  transactions: many(bankTransactions),
+  transactions: many(bank_transactions),
 }));
 
 export const bankTransactionRelations = relations(bankTransactions, ({ one }) => ({
@@ -123,15 +123,15 @@ export const bankTransactionRelations = relations(bankTransactions, ({ one }) =>
     fields: [bankTransactions.companyId],
     references: [companies.id],
   }),
-  bankAccount: one(bankAccounts, {
+  bankAccount: one(bank_accounts, {
     fields: [bankTransactions.bankAccountId],
-    references: [bankAccounts.id],
+    references: [bank_accounts.id],
   }),
 }));
 
-export const insertBankAccountSchema = createInsertSchema(bankAccounts); // Fixed: removed omit() for drizzle-zod compatibility;
+export const insertBankAccountSchema = createInsertSchema(bank_accounts); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertBankTransactionSchema = createInsertSchema(bankTransactions); // Fixed: removed omit() for drizzle-zod compatibility;
+export const insertBankTransactionSchema = createInsertSchema(bank_transactions); // Fixed: removed omit() for drizzle-zod compatibility;
 
 export type BankAccount = typeof bankAccounts.$inferSelect;
 export type InsertBankAccount = typeof insertBankAccountSchema.type;

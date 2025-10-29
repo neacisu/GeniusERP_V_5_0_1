@@ -32,7 +32,7 @@ import { users, companies } from "../schema";
  * Employee table - Core HR data 
  * Contains basic employee information and references employment contracts
  */
-export const employees: any = pgTable("hr_employees", {
+export const hr_employees = pgTable("hr_employees", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   userId: uuid("user_id").references(() => users.id),
@@ -61,8 +61,8 @@ export const employees: any = pgTable("hr_employees", {
   // Basic Employment Info
   position: text("position").notNull(),
   department: text("department"),
-  departmentId: uuid("department_id").references((): any => departments.id),
-  managerEmployeeId: uuid("manager_employee_id").references((): any => employees.id),
+  departmentId: uuid("department_id").references((): any => hr_departments.id),
+  managerEmployeeId: uuid("manager_employee_id").references((): any => hr_employees.id),
   
   // Status
   isActive: boolean("is_active").default(true),
@@ -86,9 +86,9 @@ export const employees: any = pgTable("hr_employees", {
  * - Labor inspections
  * - ANAF declarations D112/D205
  */
-export const employmentContracts = pgTable("hr_employment_contracts", {
+export const hr_employment_contracts = pgTable("hr_employment_contracts", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  employeeId: uuid("employee_id").notNull().references(() => employees.id),
+  employeeId: uuid("employee_id").notNull().references(() => hr_employees.id),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   
   // Contract Identification
@@ -156,10 +156,10 @@ export const employmentContracts = pgTable("hr_employment_contracts", {
  * - Salary slips generation
  * - CAS/CASS/CAM tax calculations
  */
-export const payrollLogs = pgTable("hr_payroll_logs", {
+export const hr_payroll_logs = pgTable("hr_payroll_logs", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  employeeId: uuid("employee_id").notNull().references(() => employees.id),
-  employmentContractId: uuid("employment_contract_id").notNull().references(() => employmentContracts.id),
+  employeeId: uuid("employee_id").notNull().references(() => hr_employees.id),
+  employmentContractId: uuid("employment_contract_id").notNull().references(() => hr_employment_contracts.id),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   
   // Period
@@ -236,9 +236,9 @@ export const payrollLogs = pgTable("hr_payroll_logs", {
  * - Unpaid leave
  * - Other types of absences
  */
-export const absences = pgTable("hr_absences", {
+export const hr_absences = pgTable("hr_absences", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  employeeId: uuid("employee_id").notNull().references(() => employees.id),
+  employeeId: uuid("employee_id").notNull().references(() => hr_employees.id),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   
   // Absence Period
@@ -283,9 +283,9 @@ export const absences = pgTable("hr_absences", {
  * For part-time and irregular schedules
  * Required for Revisal and labor inspections
  */
-export const workSchedules = pgTable("hr_work_schedules", {
+export const hr_work_schedules = pgTable("hr_work_schedules", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  employmentContractId: uuid("employment_contract_id").notNull().references(() => employmentContracts.id),
+  employmentContractId: uuid("employment_contract_id").notNull().references(() => hr_employment_contracts.id),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   
   // Schedule Definition
@@ -311,7 +311,7 @@ export const workSchedules = pgTable("hr_work_schedules", {
  * 
  * Defines commission calculation rules and targets
  */
-export const commissionStructures = pgTable("hr_commission_structures", {
+export const hr_commission_structures = pgTable("hr_commission_structures", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   
@@ -348,10 +348,10 @@ export const commissionStructures = pgTable("hr_commission_structures", {
 /**
  * Employee Commissions - Individual assignments and actual earnings
  */
-export const employeeCommissions = pgTable("hr_employee_commissions", {
+export const hr_employee_commissions = pgTable("hr_employee_commissions", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  employeeId: uuid("employee_id").notNull().references(() => employees.id),
-  commissionStructureId: uuid("commission_structure_id").notNull().references(() => commissionStructures.id),
+  employeeId: uuid("employee_id").notNull().references(() => hr_employees.id),
+  commissionStructureId: uuid("commission_structure_id").notNull().references(() => hr_commission_structures.id),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   
   // Period
@@ -373,7 +373,7 @@ export const employeeCommissions = pgTable("hr_employee_commissions", {
   status: varchar("status", { length: 50 }).default("calculated").notNull(), // calculated, approved, paid, disputed
   approvedBy: uuid("approved_by").references(() => users.id),
   approvedAt: timestamp("approved_at", { withTimezone: true }),
-  paidInPayrollId: uuid("paid_in_payroll_id").references(() => payrollLogs.id),
+  paidInPayrollId: uuid("paid_in_payroll_id").references(() => hr_payroll_logs.id),
   
   // Details
   performanceMetrics: json("performance_metrics").default({}), // Detailed performance data
@@ -396,7 +396,7 @@ export const employeeCommissions = pgTable("hr_employee_commissions", {
  * 
  * Organizational structure definition for HR reporting
  */
-export const departments: any = pgTable("hr_departments", {
+export const hr_departments = pgTable("hr_departments", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   
@@ -406,10 +406,10 @@ export const departments: any = pgTable("hr_departments", {
   description: text("description"),
   
   // Hierarchy
-  parentDepartmentId: uuid("parent_department_id").references((): any => departments.id),
+  parentDepartmentId: uuid("parent_department_id").references((): any => hr_departments.id),
   
   // Management
-  managerId: uuid("manager_id").references((): any => employees.id),
+  managerId: uuid("manager_id").references((): any => hr_employees.id),
   
   // Budget Code
   costCenter: varchar("cost_center", { length: 50 }),
@@ -432,7 +432,7 @@ export const departments: any = pgTable("hr_departments", {
  * 
  * Standard job positions with COR codes
  */
-export const jobPositions = pgTable("hr_job_positions", {
+export const hr_job_positions = pgTable("hr_job_positions", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   
@@ -447,7 +447,7 @@ export const jobPositions = pgTable("hr_job_positions", {
   requirements: text("requirements"),
   
   // Department
-  departmentId: uuid("department_id").references(() => departments.id),
+  departmentId: uuid("department_id").references(() => hr_departments.id),
   
   // Salary Range
   minimumSalary: numeric("minimum_salary", { precision: 12, scale: 2 }),
@@ -472,7 +472,7 @@ export const jobPositions = pgTable("hr_job_positions", {
  * 
  * Tracks submission of declarations to ANAF
  */
-export const anafExportLogs = pgTable("hr_anaf_export_logs", {
+export const hr_anaf_export_logs = pgTable("hr_anaf_export_logs", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   
@@ -522,7 +522,7 @@ export const anafExportLogs = pgTable("hr_anaf_export_logs", {
  * 
  * Tracks submission of REVISAL XML files
  */
-export const revisalExportLogs = pgTable("hr_revisal_export_logs", {
+export const hr_revisal_export_logs = pgTable("hr_revisal_export_logs", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull().references(() => companies.id),
   
@@ -563,7 +563,7 @@ export const revisalExportLogs = pgTable("hr_revisal_export_logs", {
  * Employees (Legacy - without hr_ prefix)
  * @deprecated Use hr_employees instead. Kept for backward compatibility.
  */
-export const employees = pgTable("employees", {
+export const hr_employees = pgTable("employees", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull(),
   firstName: varchar("first_name", { length: 100 }).notNull(),

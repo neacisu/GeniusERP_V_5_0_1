@@ -99,7 +99,7 @@ export const taskTypeEnum = pgEnum('task_type', [
  * 
  * Main table for task assignments and tracking
  */
-export const collaborationTasks = pgTable('collaboration_tasks', {
+export const collaboration_tasks = pgTable('collaboration_tasks', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   franchiseId: uuid('franchise_id'),
@@ -141,7 +141,7 @@ export const collaborationTasks = pgTable('collaboration_tasks', {
  * 
  * Used for adding notes, comments, and updates to tasks
  */
-export const collaborationNotes = pgTable('collaboration_notes', {
+export const collaboration_notes = pgTable('collaboration_notes', {
   id: uuid('id').primaryKey().defaultRandom(),
   taskId: uuid('task_id').notNull(),
   companyId: uuid('company_id').notNull(),
@@ -172,7 +172,7 @@ export const collaborationNotes = pgTable('collaboration_notes', {
  * 
  * Used for internal discussions separate from tasks
  */
-export const collaborationThreads = pgTable('collaboration_threads', {
+export const collaboration_threads = pgTable('collaboration_threads', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   franchiseId: uuid('franchise_id'),
@@ -205,7 +205,7 @@ export const collaborationThreads = pgTable('collaboration_threads', {
  * 
  * Messages within collaboration threads
  */
-export const collaborationMessages = pgTable('collaboration_messages', {
+export const collaboration_messages = pgTable('collaboration_messages', {
   id: uuid('id').primaryKey().defaultRandom(),
   threadId: uuid('thread_id').notNull(),
   companyId: uuid('company_id').notNull(),
@@ -233,7 +233,7 @@ export const collaborationMessages = pgTable('collaboration_messages', {
  * 
  * Tracks changes in task assignments
  */
-export const taskAssignmentHistory = pgTable('collaboration_task_assignments', {
+export const collaboration_task_assignments = pgTable('collaboration_task_assignments', {
   id: uuid('id').primaryKey().defaultRandom(),
   taskId: uuid('task_id').notNull(),
   companyId: uuid('company_id').notNull(),
@@ -254,7 +254,7 @@ export const taskAssignmentHistory = pgTable('collaboration_task_assignments', {
  * 
  * Tracks changes in task status
  */
-export const taskStatusHistory = pgTable('collaboration_task_status_history', {
+export const collaboration_task_status_history = pgTable('collaboration_task_status_history', {
   id: uuid('id').primaryKey().defaultRandom(),
   taskId: uuid('task_id').notNull(),
   companyId: uuid('company_id').notNull(),
@@ -276,7 +276,7 @@ export const taskStatusHistory = pgTable('collaboration_task_status_history', {
  * 
  * Users who are watching/subscribed to tasks
  */
-export const taskWatchers = pgTable('collaboration_task_watchers', {
+export const collaboration_task_watchers = pgTable('collaboration_task_watchers', {
   id: uuid('id').primaryKey().defaultRandom(),
   taskId: uuid('task_id').notNull(),
   companyId: uuid('company_id').notNull(),
@@ -290,7 +290,7 @@ export const taskWatchers = pgTable('collaboration_task_watchers', {
 }));
 
 // Create Zod schemas for validation and insertion
-export const insertCollaborationTaskSchema = createInsertSchema(collaborationTasks, {
+export const insertCollaborationTaskSchema = createInsertSchema(collaboration_tasks, {
   id: z.string().uuid().optional(),
   status: z.nativeEnum(TaskStatus).optional(),
   priority: z.nativeEnum(TaskPriority).optional(),
@@ -301,14 +301,14 @@ export const insertCollaborationTaskSchema = createInsertSchema(collaborationTas
   relatedItems: z.record(z.string(), z.any()).optional()
 });
 
-export const insertCollaborationNoteSchema = createInsertSchema(collaborationNotes, {
+export const insertCollaborationNoteSchema = createInsertSchema(collaboration_notes, {
   id: z.string().uuid().optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
   attachments: z.array(z.any()).optional()
 });
 
-export const insertCollaborationThreadSchema = createInsertSchema(collaborationThreads, {
+export const insertCollaborationThreadSchema = createInsertSchema(collaboration_threads, {
   id: z.string().uuid().optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
@@ -317,7 +317,7 @@ export const insertCollaborationThreadSchema = createInsertSchema(collaborationT
   category: z.nativeEnum(CommunityCategory).optional()
 });
 
-export const insertCollaborationMessageSchema = createInsertSchema(collaborationMessages, {
+export const insertCollaborationMessageSchema = createInsertSchema(collaboration_messages, {
   id: z.string().uuid().optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
@@ -338,7 +338,7 @@ export type NewCollaborationThread = z.infer<typeof insertCollaborationThreadSch
 export type CollaborationMessage = typeof collaborationMessages.$inferSelect;
 export type NewCollaborationMessage = z.infer<typeof insertCollaborationMessageSchema>;
 
-export const insertTaskWatcherSchema = createInsertSchema(taskWatchers, {
+export const insertTaskWatcherSchema = createInsertSchema(collaboration_task_watchers, {
   id: z.string().uuid().optional(),
   createdAt: z.date().optional(),
   notificationPreference: z.record(z.string(), z.any()).optional()
@@ -354,7 +354,7 @@ export type NewTaskWatcher = z.infer<typeof insertTaskWatcherSchema>;
  * 
  * Tracks activity across the collaboration module
  */
-export const collaborationActivities = pgTable('collaboration_activities', {
+export const collaboration_activities = pgTable('collaboration_activities', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   userId: uuid('user_id').notNull(),
@@ -378,7 +378,7 @@ export const collaborationActivities = pgTable('collaboration_activities', {
  * 
  * Stores user notifications from collaboration activities
  */
-export const collaborationNotifications = pgTable('collaboration_notifications', {
+export const collaboration_notifications = pgTable('collaboration_notifications', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   userId: uuid('user_id').notNull(),
@@ -406,13 +406,13 @@ export const collaborationNotifications = pgTable('collaboration_notifications',
 export type CollaborationActivity = typeof collaborationActivities.$inferSelect;
 export type Notification = typeof collaborationNotifications.$inferSelect;
 
-export const insertCollaborationActivitySchema = createInsertSchema(collaborationActivities, {
+export const insertCollaborationActivitySchema = createInsertSchema(collaboration_activities, {
   id: z.string().uuid().optional(),
   createdAt: z.date().optional(),
   data: z.record(z.string(), z.any()).optional()
 });
 
-export const insertNotificationSchema = createInsertSchema(collaborationNotifications, {
+export const insertNotificationSchema = createInsertSchema(collaboration_notifications, {
   id: z.string().uuid().optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),

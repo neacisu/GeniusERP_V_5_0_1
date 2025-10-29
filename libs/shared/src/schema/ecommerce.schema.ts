@@ -117,7 +117,7 @@ export const cartStatusEnum = pgEnum('cart_status', cartStatusValues as [string,
 /**
  * E-commerce orders table
  */
-export const ecommerceOrders = pgTable("ecommerce_orders", {
+export const ecommerce_orders = pgTable("ecommerce_orders", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull(),
   orderNumber: text("order_number").notNull(),
@@ -183,7 +183,7 @@ export const ecommerceOrders = pgTable("ecommerce_orders", {
 /**
  * E-commerce transactions table
  */
-export const ecommerceTransactions = pgTable("ecommerce_transactions", {
+export const ecommerce_transactions = pgTable("ecommerce_transactions", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull(),
   orderId: uuid("order_id").notNull(),
@@ -233,7 +233,7 @@ export const ecommerceTransactions = pgTable("ecommerce_transactions", {
 /**
  * Shopping carts table
  */
-export const carts = pgTable("ecommerce_carts", {
+export const ecommerce_carts = pgTable("ecommerce_carts", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull(),
   userId: uuid("user_id").notNull(),
@@ -269,9 +269,9 @@ export const carts = pgTable("ecommerce_carts", {
 /**
  * Cart items table
  */
-export const cartItems = pgTable("ecommerce_cart_items", {
+export const ecommerce_cart_items = pgTable("ecommerce_cart_items", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  cartId: uuid("cart_id").notNull().references(() => carts.id, { onDelete: "cascade" }),
+  cartId: uuid("cart_id").notNull().references(() => ecommerce_carts.id, { onDelete: "cascade" }),
   productId: uuid("product_id").notNull(),
   quantity: integer("quantity").notNull().default(1),
   unitPrice: numeric("unit_price").notNull(),
@@ -294,7 +294,7 @@ export const cartItems = pgTable("ecommerce_cart_items", {
 }));
 
 // Create insert schemas
-export const insertEcommerceOrderSchema = createInsertSchema(ecommerceOrders, {
+export const insertEcommerceOrderSchema = createInsertSchema(ecommerce_orders, {
   subtotal: z.string().or(z.number()).transform(val => val.toString()),
   tax: z.string().or(z.number()).transform(val => val.toString()),
   shipping: z.string().or(z.number()).transform(val => val.toString()),
@@ -306,14 +306,14 @@ export const insertEcommerceOrderSchema = createInsertSchema(ecommerceOrders, {
   items: z.array(z.any()).min(1),
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertEcommerceTransactionSchema = createInsertSchema(ecommerceTransactions, {
+export const insertEcommerceTransactionSchema = createInsertSchema(ecommerce_transactions, {
   amount: z.string().or(z.number()).transform(val => val.toString()),
   gatewayFee: z.string().or(z.number()).transform(val => val.toString()).optional(),
   gatewayResponse: z.record(z.string(), z.any()).optional(),
   metadata: z.record(z.string(), z.any()).optional()
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertCartSchema = createInsertSchema(carts, {
+export const insertCartSchema = createInsertSchema(ecommerce_carts, {
   subtotal: z.string().or(z.number()).transform(val => val.toString()).optional(),
   taxAmount: z.string().or(z.number()).transform(val => val.toString()).optional(),
   discountAmount: z.string().or(z.number()).transform(val => val.toString()).optional(),
@@ -321,7 +321,7 @@ export const insertCartSchema = createInsertSchema(carts, {
   metadata: z.record(z.string(), z.any()).optional()
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertCartItemSchema = createInsertSchema(cartItems, {
+export const insertCartItemSchema = createInsertSchema(ecommerce_cart_items, {
   unitPrice: z.string().or(z.number()).transform(val => val.toString()),
   totalPrice: z.string().or(z.number()).transform(val => val.toString()),
   options: z.record(z.string(), z.any()).optional(),
@@ -331,7 +331,7 @@ export const insertCartItemSchema = createInsertSchema(cartItems, {
 /**
  * E-commerce integrations table
  */
-export const ecommerceIntegrations = pgTable("ecommerce_integrations", {
+export const ecommerce_integrations = pgTable("ecommerce_integrations", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull(),
   type: text("type").notNull(), // shopify, woocommerce, prestashop, etc.
@@ -358,7 +358,7 @@ export const ecommerceIntegrations = pgTable("ecommerce_integrations", {
 }));
 
 // Create insert schema for integrations
-export const insertEcommerceIntegrationSchema = createInsertSchema(ecommerceIntegrations, {
+export const insertEcommerceIntegrationSchema = createInsertSchema(ecommerce_integrations, {
   credentials: z.record(z.string(), z.any()),
   settings: z.record(z.string(), z.any()),
   syncStatus: z.record(z.string(), z.any()),

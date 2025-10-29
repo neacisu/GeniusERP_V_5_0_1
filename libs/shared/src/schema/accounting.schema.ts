@@ -12,7 +12,7 @@ import { relations, sql } from 'drizzle-orm';
  * Main table for financial transactions (RAS-compliant)
  * Maps to: accounting_ledger_entries
  */
-export const accountingLedgerEntries = pgTable('accounting_ledger_entries', {
+export const accounting_ledger_entries = pgTable('accounting_ledger_entries', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
   companyId: uuid('company_id').notNull(),
   franchiseId: uuid('franchise_id'),
@@ -77,9 +77,9 @@ export const accountingLedgerEntries = pgTable('accounting_ledger_entries', {
  * Detail lines for each ledger entry (double-entry accounting)
  * Maps to: accounting_ledger_lines
  */
-export const accountingLedgerLines = pgTable('accounting_ledger_lines', {
+export const accounting_ledger_lines = pgTable('accounting_ledger_lines', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
-  ledgerEntryId: uuid('ledger_entry_id').notNull().references(() => accountingLedgerEntries.id, { onDelete: 'cascade' }),
+  ledgerEntryId: uuid('ledger_entry_id').notNull().references(() => accounting_ledger_entries.id, { onDelete: 'cascade' }),
   companyId: uuid('company_id').notNull(),
   
   // Line details
@@ -129,7 +129,7 @@ export const accountingLedgerLines = pgTable('accounting_ledger_lines', {
  * @deprecated Use accountingLedgerEntries instead
  * Legacy schema for backward compatibility
  */
-export const ledgerEntries = pgTable('ledger_entries', {
+export const ledger_entries = pgTable('ledger_entries', {
   id: uuid('id').primaryKey().notNull(),
   companyId: uuid('company_id').notNull(),
   franchiseId: uuid('franchise_id'),
@@ -150,7 +150,7 @@ export const ledgerEntries = pgTable('ledger_entries', {
  * @deprecated Use accountingLedgerLines instead
  * Legacy schema for backward compatibility
  */
-export const ledgerLines = pgTable('ledger_lines', {
+export const ledger_lines = pgTable('ledger_lines', {
   id: uuid('id').primaryKey().notNull(),
   ledgerEntryId: uuid('ledger_entry_id').notNull().references(() => ledgerEntries.id, { onDelete: 'cascade' }),
   accountId: text('account_id').notNull(),
@@ -166,7 +166,7 @@ export const ledgerLines = pgTable('ledger_lines', {
  * Journal types table
  * Types of specialized journals in Romanian accounting
  */
-export const journalTypes = pgTable('journal_types', {
+export const journal_types = pgTable('journal_types', {
   id: uuid('id').primaryKey().notNull(),
   code: text('code').notNull().unique(),
   name: text('name').notNull(),
@@ -181,7 +181,7 @@ export const journalTypes = pgTable('journal_types', {
  * Account balances table
  * Running balances for each account
  */
-export const accountBalances = pgTable('account_balances', {
+export const account_balances = pgTable('account_balances', {
   id: uuid('id').primaryKey().notNull(),
   companyId: uuid('company_id').notNull(),
   franchiseId: uuid('franchise_id'),
@@ -204,7 +204,7 @@ export const accountBalances = pgTable('account_balances', {
  * Fiscal periods table
  * Accounting periods configuration
  */
-export const fiscalPeriods = pgTable('fiscal_periods', {
+export const fiscal_periods = pgTable('fiscal_periods', {
   id: uuid('id').primaryKey().notNull(),
   companyId: uuid('company_id').notNull(),
   year: numeric('year').notNull(),
@@ -227,7 +227,7 @@ export const fiscalPeriods = pgTable('fiscal_periods', {
 /**
  * Chart of accounts table
  */
-export const chartOfAccounts = pgTable('chart_of_accounts', {
+export const chart_of_accounts = pgTable('chart_of_accounts', {
   id: uuid('id').primaryKey().notNull(),
   companyId: uuid('company_id'),
   code: text('code').notNull(),
@@ -247,29 +247,29 @@ export const chartOfAccounts = pgTable('chart_of_accounts', {
 /**
  * Relations for accounting ledger entries
  */
-export const accountingLedgerEntriesRelations = relations(accountingLedgerEntries, ({ many }) => ({
-  lines: many(accountingLedgerLines)
+export const accounting_ledger_entriesRelations = relations(accountingLedgerEntries, ({ many }) => ({
+  lines: many(accounting_ledger_lines)
 }));
 
 /**
  * Relations for accounting ledger lines
  */
-export const accountingLedgerLinesRelations = relations(accountingLedgerLines, ({ one }) => ({
-  entry: one(accountingLedgerEntries, {
+export const accounting_ledger_linesRelations = relations(accountingLedgerLines, ({ one }) => ({
+  entry: one(accounting_ledger_entries, {
     fields: [accountingLedgerLines.ledgerEntryId],
-    references: [accountingLedgerEntries.id]
+    references: [accounting_ledger_entries.id]
   })
 }));
 
 /**
- * @deprecated Use accountingLedgerEntriesRelations instead
+ * @deprecated Use accounting_ledger_entriesRelations instead
  */
 export const ledgerEntriesRelations = relations(ledgerEntries, ({ many }) => ({
   lines: many(ledgerLines)
 }));
 
 /**
- * @deprecated Use accountingLedgerLinesRelations instead
+ * @deprecated Use accounting_ledger_linesRelations instead
  */
 export const ledgerLinesRelations = relations(ledgerLines, ({ one }) => ({
   entry: one(ledgerEntries, {
@@ -281,12 +281,12 @@ export const ledgerLinesRelations = relations(ledgerLines, ({ one }) => ({
 /**
  * Relations for chart of accounts
  */
-export const chartOfAccountsRelations = relations(chartOfAccounts, ({ one, many }) => ({
-  parent: one(chartOfAccounts, {
+export const chart_of_accountsRelations = relations(chartOfAccounts, ({ one, many }) => ({
+  parent: one(chart_of_accounts, {
     fields: [chartOfAccounts.parentId],
-    references: [chartOfAccounts.id]
+    references: [chart_of_accounts.id]
   }),
-  children: many(chartOfAccounts)
+  children: many(chart_of_accounts)
 }));
 
 // Export types for accounting ledger entries
@@ -422,8 +422,8 @@ export default {
   // Current tables
   accountingLedgerEntries,
   accountingLedgerLines,
-  accountingLedgerEntriesRelations,
-  accountingLedgerLinesRelations,
+  accounting_ledger_entriesRelations,
+  accounting_ledger_linesRelations,
   // Legacy tables (deprecated)
   ledgerEntries,
   ledgerLines,
@@ -434,7 +434,7 @@ export default {
   accountBalances,
   fiscalPeriods,
   chartOfAccounts,
-  chartOfAccountsRelations,
+  chart_of_accountsRelations,
   // Newly added tables
   accounting_account_balances,
   accounting_journal_types,

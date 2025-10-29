@@ -21,7 +21,7 @@ import { users } from '../schema';
 // 1. ACCOUNTING SETTINGS TABLE
 // ============================================================
 
-export const accountingSettings = pgTable('accounting_settings', {
+export const accounting_settings = pgTable('accounting_settings', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
   
@@ -56,7 +56,7 @@ export const accountingSettings = pgTable('accounting_settings', {
   companyIdx: index('idx_accounting_settings_company_id').on(table.companyId)
 }));
 
-export const accountingSettingsRelations = relations(accountingSettings, ({ one }) => ({
+export const accounting_settingsRelations = relations(accountingSettings, ({ one }) => ({
   company: one(companies, {
     fields: [accountingSettings.companyId],
     references: [companies.id],
@@ -71,7 +71,7 @@ export const accountingSettingsRelations = relations(accountingSettings, ({ one 
 // 2. VAT SETTINGS TABLE
 // ============================================================
 
-export const vatSettings = pgTable('vat_settings', {
+export const vat_settings = pgTable('vat_settings', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
   
@@ -105,7 +105,7 @@ export const vatSettings = pgTable('vat_settings', {
   companyIdx: index('idx_vat_settings_company_id').on(table.companyId)
 }));
 
-export const vatSettingsRelations = relations(vatSettings, ({ one }) => ({
+export const vat_settingsRelations = relations(vatSettings, ({ one }) => ({
   company: one(companies, {
     fields: [vatSettings.companyId],
     references: [companies.id],
@@ -116,7 +116,7 @@ export const vatSettingsRelations = relations(vatSettings, ({ one }) => ({
 // 3. ACCOUNT RELATIONSHIPS TABLE
 // ============================================================
 
-export const accountRelationships = pgTable('account_relationships', {
+export const account_relationships = pgTable('account_relationships', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
   
@@ -149,7 +149,7 @@ export const accountRelationships = pgTable('account_relationships', {
   priorityIdx: index('idx_account_relationships_priority').on(table.priority),
 }));
 
-export const accountRelationshipsRelations = relations(accountRelationships, ({ one }) => ({
+export const account_relationshipsRelations = relations(accountRelationships, ({ one }) => ({
   company: one(companies, {
     fields: [accountRelationships.companyId],
     references: [companies.id],
@@ -160,7 +160,7 @@ export const accountRelationshipsRelations = relations(accountRelationships, ({ 
 // 4. OPENING BALANCES TABLE
 // ============================================================
 
-export const openingBalances = pgTable('opening_balances', {
+export const opening_balances = pgTable('opening_balances', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
   
@@ -193,7 +193,7 @@ export const openingBalances = pgTable('opening_balances', {
   accountCodeIdx: index('idx_opening_balances_account_code').on(table.accountCode),
 }));
 
-export const openingBalancesRelations = relations(openingBalances, ({ one }) => ({
+export const opening_balancesRelations = relations(openingBalances, ({ one }) => ({
   company: one(companies, {
     fields: [openingBalances.companyId],
     references: [companies.id],
@@ -213,7 +213,7 @@ export const openingBalancesRelations = relations(openingBalances, ({ one }) => 
 // ============================================================
 
 // Accounting Settings Schemas
-export const insertAccountingSettingsSchema = createInsertSchema(accountingSettings, {
+export const insertAccountingSettingsSchema = createInsertSchema(accounting_settings, {
   fiscalYearStartMonth: z.number().int().min(1).max(12),
   anafApiKey: z.string().optional().nullable(),
   accountingStartDate: z.date().optional().nullable(),
@@ -230,7 +230,7 @@ export const updateAccountingSettingsSchema = insertAccountingSettingsSchema.par
 });
 
 // VAT Settings Schemas
-export const insertVatSettingsSchema = createInsertSchema(vatSettings, {
+export const insertVatSettingsSchema = createInsertSchema(vat_settings, {
   standardVatRate: z.number().int().min(0).max(100),
   reducedVatRate1: z.number().int().min(0).max(100),
   reducedVatRate2: z.number().int().min(0).max(100),
@@ -248,7 +248,7 @@ export const updateVatSettingsSchema = insertVatSettingsSchema.partial().omit({
 });
 
 // Account Relationships Schemas
-export const insertAccountRelationshipsSchema = createInsertSchema(accountRelationships, {
+export const insertAccountRelationshipsSchema = createInsertSchema(account_relationships, {
   relationshipType: z.string().min(1),
   debitAccountCode: z.string().min(1),
   creditAccountCode: z.string().min(1),
@@ -266,7 +266,7 @@ export const updateAccountRelationshipsSchema = insertAccountRelationshipsSchema
 });
 
 // Opening Balances Schemas
-export const insertOpeningBalancesSchema = createInsertSchema(openingBalances, {
+export const insertOpeningBalancesSchema = createInsertSchema(opening_balances, {
   accountCode: z.string().min(1),
   accountName: z.string().min(1),
   fiscalYear: z.number().int().min(2000).max(2100),
@@ -338,9 +338,9 @@ export default {
   vatSettings,
   accountRelationships,
   openingBalances,
-  accountingSettingsRelations,
-  vatSettingsRelations,
-  accountRelationshipsRelations,
-  openingBalancesRelations,
+  accounting_settingsRelations,
+  vat_settingsRelations,
+  account_relationshipsRelations,
+  opening_balancesRelations,
 };
 

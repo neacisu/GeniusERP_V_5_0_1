@@ -69,7 +69,7 @@ export const cashTransactionPurposeEnum = pgEnum('cash_transaction_purpose', cas
  * - Case secundare (magazine, puncte de lucru)
  * - Casa în valută
  */
-export const cashRegisters = pgTable('cash_registers', {
+export const cash_registers = pgTable('cash_registers', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull().references(() => companies.id),
   franchiseId: uuid('franchise_id'), // Pentru lanțuri de magazine
@@ -130,11 +130,11 @@ export const cashRegisters = pgTable('cash_registers', {
  * - Persoana (nume, CNP/CI când e necesar)
  * - Baza (factura, contract, etc.)
  */
-export const cashTransactions = pgTable('cash_transactions', {
+export const cash_transactions = pgTable('cash_transactions', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull().references(() => companies.id),
   franchiseId: uuid('franchise_id'),
-  cashRegisterId: uuid('cash_register_id').notNull().references(() => cashRegisters.id),
+  cashRegisterId: uuid('cash_register_id').notNull().references(() => cash_registers.id),
   
   // Numerotare document (Serie + Număr)
   documentNumber: text('document_number').notNull(), // Ex: "CH-2025-00001"
@@ -222,7 +222,7 @@ export const cashRegisterRelations = relations(cashRegisters, ({ one, many }) =>
     fields: [cashRegisters.responsiblePersonId],
     references: [users.id],
   }),
-  transactions: many(cashTransactions),
+  transactions: many(cash_transactions),
 }));
 
 export const cashTransactionRelations = relations(cashTransactions, ({ one }) => ({
@@ -230,9 +230,9 @@ export const cashTransactionRelations = relations(cashTransactions, ({ one }) =>
     fields: [cashTransactions.companyId],
     references: [companies.id],
   }),
-  cashRegister: one(cashRegisters, {
+  cashRegister: one(cash_registers, {
     fields: [cashTransactions.cashRegisterId],
-    references: [cashRegisters.id],
+    references: [cash_registers.id],
   }),
   createdByUser: one(users, {
     fields: [cashTransactions.createdBy],
@@ -243,9 +243,9 @@ export const cashTransactionRelations = relations(cashTransactions, ({ one }) =>
 /**
  * Insert schemas
  */
-export const insertCashRegisterSchema = createInsertSchema(cashRegisters); // Fixed: removed omit() for drizzle-zod compatibility;
+export const insertCashRegisterSchema = createInsertSchema(cash_registers); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertCashTransactionSchema = createInsertSchema(cashTransactions); // Fixed: removed omit() for drizzle-zod compatibility;
+export const insertCashTransactionSchema = createInsertSchema(cash_transactions); // Fixed: removed omit() for drizzle-zod compatibility;
 
 /**
  * Types

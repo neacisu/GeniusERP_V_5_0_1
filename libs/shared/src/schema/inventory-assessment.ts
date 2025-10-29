@@ -56,7 +56,7 @@ export const valuationMethodEnumType = pgEnum('inventory_valuation_method', ['FI
 export const countResultEnumType = pgEnum('inventory_count_result', ['MATCH', 'SURPLUS', 'DEFICIT']);
 
 // Define warehouse table
-export const inventoryWarehouses = pgTable('inventory_warehouses', {
+export const inventory_warehouses = pgTable('inventory_warehouses', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   parentId: uuid('parent_id'),
@@ -73,7 +73,7 @@ export const inventoryWarehouses = pgTable('inventory_warehouses', {
 });
 
 // Define inventory assessment table
-export const inventoryAssessments = pgTable('inventory_assessments', {
+export const inventory_assessments = pgTable('inventory_assessments', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   warehouseId: uuid('warehouse_id').notNull(),
@@ -99,9 +99,9 @@ export const inventoryAssessments = pgTable('inventory_assessments', {
 });
 
 // Define inventory assessment items table
-export const inventoryAssessmentItems = pgTable('inventory_assessment_items', {
+export const inventory_assessment_items = pgTable('inventory_assessment_items', {
   id: uuid('id').primaryKey().defaultRandom(),
-  assessmentId: uuid('assessment_id').notNull().references(() => inventoryAssessments.id),
+  assessmentId: uuid('assessment_id').notNull().references(() => inventory_assessments.id),
   productId: uuid('product_id').notNull(),
   theoreticalQuantity: numeric('theoretical_quantity').notNull(),
   actualQuantity: numeric('actual_quantity'),
@@ -121,7 +121,7 @@ export const inventoryAssessmentItems = pgTable('inventory_assessment_items', {
 });
 
 // Define inventory valuation table
-export const inventoryValuations = pgTable('inventory_valuations', {
+export const inventory_valuations = pgTable('inventory_valuations', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   productId: uuid('product_id').notNull(),
@@ -133,7 +133,7 @@ export const inventoryValuations = pgTable('inventory_valuations', {
   valuationDate: timestamp('valuation_date').notNull(),
   referenceDocument: text('reference_document'),
   referenceId: uuid('reference_id'),
-  assessmentId: uuid('assessment_id').references(() => inventoryAssessments.id),
+  assessmentId: uuid('assessment_id').references(() => inventory_assessments.id),
   notes: text('notes'),
   createdBy: uuid('created_by'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -141,7 +141,7 @@ export const inventoryValuations = pgTable('inventory_valuations', {
 });
 
 // Define inventory batches table
-export const inventoryBatches = pgTable('inventory_batches', {
+export const inventory_batches = pgTable('inventory_batches', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   productId: uuid('product_id').notNull(),
@@ -163,34 +163,34 @@ export const inventoryBatches = pgTable('inventory_batches', {
 // Setup relations
 // Note: Relations la companies vor fi stabilite în schema principală
 export const warehouseRelations = relations(inventoryWarehouses, ({ one, many }) => ({
-  parent: one(inventoryWarehouses, {
+  parent: one(inventory_warehouses, {
     fields: [inventoryWarehouses.parentId],
-    references: [inventoryWarehouses.id]
+    references: [inventory_warehouses.id]
   }),
-  children: many(inventoryWarehouses),
-  assessments: many(inventoryAssessments)
+  children: many(inventory_warehouses),
+  assessments: many(inventory_assessments)
 }));
 
 export const assessmentRelations = relations(inventoryAssessments, ({ one, many }) => ({
-  warehouse: one(inventoryWarehouses, {
+  warehouse: one(inventory_warehouses, {
     fields: [inventoryAssessments.warehouseId],
-    references: [inventoryWarehouses.id]
+    references: [inventory_warehouses.id]
   }),
-  items: many(inventoryAssessmentItems),
-  valuations: many(inventoryValuations)
+  items: many(inventory_assessment_items),
+  valuations: many(inventory_valuations)
 }));
 
 export const assessmentItemRelations = relations(inventoryAssessmentItems, ({ one }) => ({
-  assessment: one(inventoryAssessments, {
+  assessment: one(inventory_assessments, {
     fields: [inventoryAssessmentItems.assessmentId],
-    references: [inventoryAssessments.id]
+    references: [inventory_assessments.id]
   })
   // Note: Relația la product va fi stabilită în schema principală
 }));
 
 // Create Zod validation schemas
 // Notă: Schema warehouse este exportată din warehouse.ts pentru a evita duplicarea
-const insertWarehouseSchemaLocal = createInsertSchema(inventoryWarehouses, {
+const insertWarehouseSchemaLocal = createInsertSchema(inventory_warehouses, {
   type: z.enum([
     warehouseTypeEnum.DEPOZIT, 
     warehouseTypeEnum.MAGAZIN, 
@@ -200,7 +200,7 @@ const insertWarehouseSchemaLocal = createInsertSchema(inventoryWarehouses, {
   code: z.string().optional()
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertAssessmentSchema = createInsertSchema(inventoryAssessments, {
+export const insertAssessmentSchema = createInsertSchema(inventory_assessments, {
   type: z.enum([
     inventoryAssessmentTypeEnum.ANNUAL,
     inventoryAssessmentTypeEnum.MONTHLY,
@@ -223,7 +223,7 @@ export const insertAssessmentSchema = createInsertSchema(inventoryAssessments, {
   ]).optional()
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertAssessmentItemSchema = createInsertSchema(inventoryAssessmentItems, {
+export const insertAssessmentItemSchema = createInsertSchema(inventory_assessment_items, {
   countResult: z.enum([
     inventoryCountResultEnum.MATCH,
     inventoryCountResultEnum.SURPLUS,
@@ -231,7 +231,7 @@ export const insertAssessmentItemSchema = createInsertSchema(inventoryAssessment
   ]).optional()
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertValuationSchema = createInsertSchema(inventoryValuations, {
+export const insertValuationSchema = createInsertSchema(inventory_valuations, {
   method: z.enum([
     inventoryValuationMethodEnum.FIFO,
     inventoryValuationMethodEnum.LIFO,
@@ -240,7 +240,7 @@ export const insertValuationSchema = createInsertSchema(inventoryValuations, {
   ])
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertBatchSchema = createInsertSchema(inventoryBatches)
+export const insertBatchSchema = createInsertSchema(inventory_batches)
   ; // Fixed: removed omit() for drizzle-zod compatibility;
 
 // Create types

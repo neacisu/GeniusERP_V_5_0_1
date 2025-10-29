@@ -82,7 +82,7 @@ export const sentimentEnum = pgEnum('sentiment_type', ['positive', 'negative', '
  * 
  * This table stores communication threads (conversations) across different channels.
  */
-export const messageThreads = pgTable('communications_threads', {
+export const communications_threads = pgTable('communications_threads', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   subject: text('subject'),
@@ -113,9 +113,9 @@ export const messageThreads = pgTable('communications_threads', {
  * 
  * This table stores individual messages within threads.
  */
-export const messages = pgTable('communications_messages', {
+export const communications_messages = pgTable('communications_messages', {
   id: uuid('id').primaryKey().defaultRandom(),
-  threadId: uuid('thread_id').notNull().references(() => messageThreads.id, { onDelete: 'cascade' }),
+  threadId: uuid('thread_id').notNull().references(() => communications_threads.id, { onDelete: 'cascade' }),
   companyId: uuid('company_id').notNull(),
   channel: channelEnum('channel').notNull(),
   direction: directionEnum('direction').notNull(),
@@ -194,7 +194,7 @@ export const contacts = pgTable('communications_contacts', {
  * 
  * This table stores configuration for communication channels (API keys, credentials, etc.).
  */
-export const channelConfigurations = pgTable('communications_channel_configs', {
+export const communications_channel_configs = pgTable('communications_channel_configs', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
   companyId: uuid('company_id').notNull(),
@@ -220,9 +220,9 @@ export const channelConfigurations = pgTable('communications_channel_configs', {
  * 
  * This table controls user access to specific messages.
  */
-export const messageAccess = pgTable('communications_message_access', {
+export const communications_message_access = pgTable('communications_message_access', {
   id: uuid('id').primaryKey().defaultRandom(),
-  messageId: uuid('message_id').notNull().references(() => messages.id, { onDelete: 'cascade' }),
+  messageId: uuid('message_id').notNull().references(() => communications_messages.id, { onDelete: 'cascade' }),
   userId: uuid('user_id').notNull(),
   companyId: uuid('company_id').notNull(),
   canView: boolean('can_view').default(true),
@@ -244,9 +244,9 @@ export const messageAccess = pgTable('communications_message_access', {
  * 
  * This table controls user access to specific threads.
  */
-export const threadAccess = pgTable('communications_thread_access', {
+export const communications_thread_access = pgTable('communications_thread_access', {
   id: uuid('id').primaryKey().defaultRandom(),
-  threadId: uuid('thread_id').notNull().references(() => messageThreads.id, { onDelete: 'cascade' }),
+  threadId: uuid('thread_id').notNull().references(() => communications_threads.id, { onDelete: 'cascade' }),
   userId: uuid('user_id').notNull(),
   companyId: uuid('company_id').notNull(),
   canView: boolean('can_view').default(true),
@@ -266,7 +266,7 @@ export const threadAccess = pgTable('communications_thread_access', {
 
 // Create Zod schemas for validation and insertion
 
-export const insertMessageThreadSchema = createInsertSchema(messageThreads, {
+export const insertMessageThreadSchema = createInsertSchema(communications_threads, {
   id: z.string().uuid().optional(),
   channel: z.nativeEnum(CommunicationChannel),
   status: z.nativeEnum(MessageStatus).optional(),
@@ -274,7 +274,7 @@ export const insertMessageThreadSchema = createInsertSchema(messageThreads, {
   updatedAt: z.date().optional()
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertMessageSchema = createInsertSchema(messages, {
+export const insertMessageSchema = createInsertSchema(communications_messages, {
   id: z.string().uuid().optional(),
   channel: z.nativeEnum(CommunicationChannel),
   direction: z.nativeEnum(MessageDirection),
@@ -290,7 +290,7 @@ export const insertContactSchema = createInsertSchema(contacts, {
   updatedAt: z.date().optional()
 }); // Fixed: removed omit() for drizzle-zod compatibility;
 
-export const insertChannelConfigSchema = createInsertSchema(channelConfigurations, {
+export const insertChannelConfigSchema = createInsertSchema(communications_channel_configs, {
   id: z.string().uuid().optional(),
   channel: z.nativeEnum(CommunicationChannel),
   createdAt: z.date().optional(),

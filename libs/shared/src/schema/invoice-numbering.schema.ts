@@ -26,7 +26,7 @@ import {
  * According to Romanian regulations, each company can have multiple invoice series
  * with a specific number sequence for each series.
  */
-export const invoiceNumberingSettings = pgTable('invoice_numbering_settings', {
+export const invoice_numbering_settings = pgTable('invoice_numbering_settings', {
   id: uuid('id').defaultRandom().primaryKey(),
   
   // The company that owns this numbering configuration
@@ -87,7 +87,7 @@ export const invoiceNumberingSettings = pgTable('invoice_numbering_settings', {
 /**
  * Insert schema for invoice numbering settings
  */
-export const insertInvoiceNumberingSettingsSchema = createInsertSchema(invoiceNumberingSettings)
+export const insertInvoiceNumberingSettingsSchema = createInsertSchema(invoice_numbering_settings)
   .extend({ // Fixed: removed omit() for drizzle-zod compatibility
     series: z.string().min(1).max(10).regex(/^[A-Z0-9]+$/, 
       'Seria trebuie să conțină doar litere mari și cifre'),
@@ -105,7 +105,7 @@ export const insertInvoiceNumberingSettingsSchema = createInsertSchema(invoiceNu
 /**
  * Update schema for invoice numbering settings
  */
-export const updateInvoiceNumberingSettingsSchema = createInsertSchema(invoiceNumberingSettings)
+export const updateInvoiceNumberingSettingsSchema = createInsertSchema(invoice_numbering_settings)
   .extend({ // Fixed: removed omit() for drizzle-zod compatibility
     series: z.string().min(1).max(10).regex(/^[A-Z0-9]+$/, 
       'Seria trebuie să conțină doar litere mari și cifre').optional(),

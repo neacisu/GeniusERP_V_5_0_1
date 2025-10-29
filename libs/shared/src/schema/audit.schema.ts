@@ -10,7 +10,7 @@ import { pgTable, uuid, text, timestamp, jsonb } from 'drizzle-orm/pg-core';
  * Audit logs table to track user actions in the system
  * This schema must match the existing database table
  */
-export const auditLogs = pgTable('audit_logs', {
+export const audit_logs = pgTable('audit_logs', {
   id: uuid('id').primaryKey().notNull(),
   userId: uuid('user_id').notNull(),
   companyId: uuid('company_id').notNull(),

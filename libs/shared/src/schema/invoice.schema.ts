@@ -13,7 +13,7 @@ import { invoices, type Invoice } from '@geniuserp/shared';
 /**
  * Invoice items table (unified from invoice_lines)
  */
-export const invoiceItems = pgTable('invoice_items', {
+export const invoice_items = pgTable('invoice_items', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   invoiceId: uuid('invoice_id').notNull().references(() => invoices.id, { onDelete: 'cascade' }),
   productId: uuid('product_id'),

@@ -19,7 +19,7 @@ import { companies } from "../schema";
 /**
  * HR Settings table - Module configuration
  */
-export const hrSettings = pgTable("hr_settings", {
+export const hr_settings = pgTable("hr_settings", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: uuid("company_id").notNull().references(() => companies.id).unique(),
   

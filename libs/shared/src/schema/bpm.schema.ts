@@ -65,7 +65,7 @@ export enum ActionTargetType {
  * 
  * Defines the core structure of a business process workflow
  */
-export const bpmProcesses = pgTable('bpm_processes', {
+export const bpm_processes = pgTable('bpm_processes', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   franchiseId: uuid('franchise_id'),
@@ -94,9 +94,9 @@ export const bpmProcesses = pgTable('bpm_processes', {
  * 
  * Defines the conditions that trigger a workflow to start
  */
-export const bpmTriggers = pgTable('bpm_triggers', {
+export const bpm_triggers = pgTable('bpm_triggers', {
   id: uuid('id').primaryKey().defaultRandom(),
-  processId: uuid('process_id').notNull().references(() => bpmProcesses.id),
+  processId: uuid('process_id').notNull().references(() => bpm_processes.id),
   name: text('name').notNull(),
   description: text('description'),
   type: text('type', { enum: [TriggerType.SCHEDULED, TriggerType.EVENT_BASED, TriggerType.DATA_CHANGE, TriggerType.MANUAL, TriggerType.API_WEBHOOK] }).notNull(),
@@ -117,10 +117,10 @@ export const bpmTriggers = pgTable('bpm_triggers', {
  * 
  * Represents the actual running instances of a process
  */
-export const bpmProcessInstances = pgTable('bpm_process_instances', {
+export const bpm_process_instances = pgTable('bpm_process_instances', {
   id: uuid('id').primaryKey().defaultRandom(),
-  processId: uuid('process_id').notNull().references(() => bpmProcesses.id),
-  triggerId: uuid('trigger_id').references(() => bpmTriggers.id),
+  processId: uuid('process_id').notNull().references(() => bpm_processes.id),
+  triggerId: uuid('trigger_id').references(() => bpm_triggers.id),
   companyId: uuid('company_id').notNull(),
   contextData: jsonb('context_data'), // Variable data for this instance
   currentStep: varchar('current_step', { length: 100 }),
@@ -142,7 +142,7 @@ export const bpmProcessInstances = pgTable('bpm_process_instances', {
  * 
  * Reusable step templates that can be included in processes
  */
-export const bpmStepTemplates = pgTable('bpm_step_templates', {
+export const bpm_step_templates = pgTable('bpm_step_templates', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   name: text('name').notNull(),
@@ -167,9 +167,9 @@ export const bpmStepTemplates = pgTable('bpm_step_templates', {
  * 
  * Records of individual step executions within a process instance
  */
-export const bpmStepExecutions = pgTable('bpm_step_executions', {
+export const bpm_step_executions = pgTable('bpm_step_executions', {
   id: uuid('id').primaryKey().defaultRandom(),
-  instanceId: uuid('instance_id').notNull().references(() => bpmProcessInstances.id),
+  instanceId: uuid('instance_id').notNull().references(() => bpm_process_instances.id),
   stepId: varchar('step_id', { length: 100 }).notNull(), // ID of the step within the process definition
   stepType: text('step_type', { enum: [ProcessStepType.ACTION, ProcessStepType.DECISION, ProcessStepType.DELAY, ProcessStepType.NOTIFICATION, ProcessStepType.APPROVAL, ProcessStepType.SUBPROCESS, ProcessStepType.API_CALL, ProcessStepType.DOCUMENT_GENERATION] }).notNull(),
   status: varchar('status', { length: 50 }).notNull().default('pending'),
@@ -191,9 +191,9 @@ export const bpmStepExecutions = pgTable('bpm_step_executions', {
  * 
  * Tracks approval steps in workflows that require human intervention
  */
-export const bpmApprovals = pgTable('bpm_approvals', {
+export const bpm_approvals = pgTable('bpm_approvals', {
   id: uuid('id').primaryKey().defaultRandom(),
-  executionId: uuid('execution_id').notNull().references(() => bpmStepExecutions.id),
+  executionId: uuid('execution_id').notNull().references(() => bpm_step_executions.id),
   userId: uuid('user_id').notNull(), // User who needs to approve
   status: varchar('status', { length: 50 }).notNull().default('pending'),
   comments: text('comments'),
@@ -212,7 +212,7 @@ export const bpmApprovals = pgTable('bpm_approvals', {
  * 
  * Configured connections to external APIs for use in workflows
  */
-export const bpmApiConnections = pgTable('bpm_api_connections', {
+export const bpm_api_connections = pgTable('bpm_api_connections', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
   name: text('name').notNull(),
@@ -238,10 +238,10 @@ export const bpmApiConnections = pgTable('bpm_api_connections', {
  * 
  * Scheduled processes based on cron expressions
  */
-export const bpmScheduledJobs = pgTable('bpm_scheduled_jobs', {
+export const bpm_scheduled_jobs = pgTable('bpm_scheduled_jobs', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull(),
-  processId: uuid('process_id').notNull().references(() => bpmProcesses.id),
+  processId: uuid('process_id').notNull().references(() => bpm_processes.id),
   name: text('name').notNull(),
   description: text('description'),
   cronExpression: varchar('cron_expression', { length: 100 }).notNull(),
@@ -262,14 +262,14 @@ export const bpmScheduledJobs = pgTable('bpm_scheduled_jobs', {
 }));
 
 // Create Zod schemas for validation
-export const insertBpmProcessSchema = createInsertSchema(bpmProcesses);
-export const insertBpmTriggerSchema = createInsertSchema(bpmTriggers);
-export const insertBpmProcessInstanceSchema = createInsertSchema(bpmProcessInstances);
-export const insertBpmStepTemplateSchema = createInsertSchema(bpmStepTemplates);
-export const insertBpmStepExecutionSchema = createInsertSchema(bpmStepExecutions);
-export const insertBpmApprovalSchema = createInsertSchema(bpmApprovals);
-export const insertBpmApiConnectionSchema = createInsertSchema(bpmApiConnections);
-export const insertBpmScheduledJobSchema = createInsertSchema(bpmScheduledJobs);
+export const insertBpmProcessSchema = createInsertSchema(bpm_processes);
+export const insertBpmTriggerSchema = createInsertSchema(bpm_triggers);
+export const insertBpmProcessInstanceSchema = createInsertSchema(bpm_process_instances);
+export const insertBpmStepTemplateSchema = createInsertSchema(bpm_step_templates);
+export const insertBpmStepExecutionSchema = createInsertSchema(bpm_step_executions);
+export const insertBpmApprovalSchema = createInsertSchema(bpm_approvals);
+export const insertBpmApiConnectionSchema = createInsertSchema(bpm_api_connections);
+export const insertBpmScheduledJobSchema = createInsertSchema(bpm_scheduled_jobs);
 
 // Export types
 export type BpmProcess = typeof bpmProcesses.$inferSelect;

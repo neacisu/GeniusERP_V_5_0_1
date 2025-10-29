@@ -48,7 +48,7 @@ export type PredictionTypeValues = typeof PredictionType[keyof typeof Prediction
  * 
  * Stores configurations and metadata for predictive models.
  */
-export const analyticsPredictiveModels = pgTable('analytics_predictive_models', {
+export const analytics_predictive_models = pgTable('analytics_predictive_models', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
@@ -88,9 +88,9 @@ export const analyticsPredictiveModels = pgTable('analytics_predictive_models', 
  * 
  * Stores the results of predictive model executions.
  */
-export const analyticsPredictionResults = pgTable('analytics_prediction_results', {
+export const analytics_prediction_results = pgTable('analytics_prediction_results', {
   id: uuid('id').primaryKey().defaultRandom(),
-  modelId: uuid('model_id').notNull().references(() => analyticsPredictiveModels.id, { onDelete: 'cascade' }),
+  modelId: uuid('model_id').notNull().references(() => analytics_predictive_models.id, { onDelete: 'cascade' }),
   executionId: uuid('execution_id').notNull(), // Unique ID for this execution run
   predictionDate: timestamp('prediction_date').notNull(), // When the prediction was made
   targetDate: timestamp('target_date').notNull(), // Date for which the prediction is made
@@ -114,7 +114,7 @@ export const analyticsPredictionResults = pgTable('analytics_prediction_results'
  * 
  * Stores time series data for model training and forecasting.
  */
-export const analyticsTimeSeriesData = pgTable('analytics_time_series_data', {
+export const analytics_time_series_data = pgTable('analytics_time_series_data', {
   id: uuid('id').primaryKey().defaultRandom(),
   entityType: varchar('entity_type', { length: 100 }).notNull(), // products, inventory, sales, etc.
   entityId: varchar('entity_id', { length: 36 }).notNull(), // ID of the related entity
@@ -140,7 +140,7 @@ export const analyticsTimeSeriesData = pgTable('analytics_time_series_data', {
  * 
  * Stores rules for detecting anomalies in time series data.
  */
-export const analyticsAnomalyRules = pgTable('analytics_anomaly_rules', {
+export const analytics_anomaly_rules = pgTable('analytics_anomaly_rules', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
@@ -166,9 +166,9 @@ export const analyticsAnomalyRules = pgTable('analytics_anomaly_rules', {
  * 
  * Stores detected anomalies in time series data.
  */
-export const analyticsAnomalies = pgTable('analytics_anomalies', {
+export const analytics_anomalies = pgTable('analytics_anomalies', {
   id: uuid('id').primaryKey().defaultRandom(),
-  ruleId: uuid('rule_id').notNull().references(() => analyticsAnomalyRules.id, { onDelete: 'cascade' }),
+  ruleId: uuid('rule_id').notNull().references(() => analytics_anomaly_rules.id, { onDelete: 'cascade' }),
   entityType: varchar('entity_type', { length: 100 }).notNull(), // products, inventory, sales, etc.
   entityId: varchar('entity_id', { length: 36 }).notNull(), // ID of the related entity
   metricName: varchar('metric_name', { length: 100 }).notNull(), // What's being measured
@@ -195,7 +195,7 @@ export const analyticsAnomalies = pgTable('analytics_anomalies', {
  * 
  * Stores identified seasonal patterns in time series data.
  */
-export const analyticsSeasonalPatterns = pgTable('analytics_seasonal_patterns', {
+export const analytics_seasonal_patterns = pgTable('analytics_seasonal_patterns', {
   id: uuid('id').primaryKey().defaultRandom(),
   entityType: varchar('entity_type', { length: 100 }).notNull(), // products, inventory, sales, etc.
   entityId: varchar('entity_id', { length: 36 }).notNull(), // ID of the related entity
@@ -221,11 +221,11 @@ export const analyticsSeasonalPatterns = pgTable('analytics_seasonal_patterns', 
  * 
  * Stores configurations for "what-if" scenario analysis.
  */
-export const analyticsScenarios = pgTable('analytics_scenarios', {
+export const analytics_scenarios = pgTable('analytics_scenarios', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
-  baseModelId: uuid('base_model_id').references(() => analyticsPredictiveModels.id, { onDelete: 'set null' }),
+  baseModelId: uuid('base_model_id').references(() => analytics_predictive_models.id, { onDelete: 'set null' }),
   inputs: jsonb('inputs').notNull().default('[]'), // Input parameters for the scenario
   outputs: jsonb('outputs').notNull().default('[]'), // Output metrics to track
   variables: jsonb('variables'), // Optional: Variables and their ranges for the scenario
@@ -257,9 +257,9 @@ export const analyticsScenarios = pgTable('analytics_scenarios', {
  * 
  * Stores results from scenario analysis runs.
  */
-export const analyticsScenarioResults = pgTable('analytics_scenario_results', {
+export const analytics_scenario_results = pgTable('analytics_scenario_results', {
   id: uuid('id').primaryKey().defaultRandom(),
-  scenarioId: uuid('scenario_id').notNull().references(() => analyticsScenarios.id, { onDelete: 'cascade' }),
+  scenarioId: uuid('scenario_id').notNull().references(() => analytics_scenarios.id, { onDelete: 'cascade' }),
   executionId: uuid('execution_id').notNull(), // Unique ID for this scenario run
   inputValues: jsonb('input_values').notNull(), // Input values used for this scenario
   results: jsonb('results').notNull(), // Results of the scenario analysis
@@ -278,7 +278,7 @@ export const analyticsScenarioResults = pgTable('analytics_scenario_results', {
  * 
  * Stores inventory optimization recommendations.
  */
-export const analyticsInventoryOptimization = pgTable('analytics_inventory_optimization', {
+export const analytics_inventory_optimization = pgTable('analytics_inventory_optimization', {
   id: uuid('id').primaryKey().defaultRandom(),
   productId: varchar('product_id', { length: 36 }).notNull(),
   warehouseId: varchar('warehouse_id', { length: 36 }).notNull(),
@@ -293,7 +293,7 @@ export const analyticsInventoryOptimization = pgTable('analytics_inventory_optim
   ordering_cost: doublePrecision('ordering_cost'),
   stockout_cost: doublePrecision('stockout_cost'),
   confidence: doublePrecision('confidence'),
-  modelId: uuid('model_id').references(() => analyticsPredictiveModels.id, { onDelete: 'set null' }),
+  modelId: uuid('model_id').references(() => analytics_predictive_models.id, { onDelete: 'set null' }),
   executionId: uuid('execution_id'),
   companyId: varchar('company_id', { length: 36 }).notNull(),
   calculatedAt: timestamp('calculated_at').defaultNow(),
@@ -310,7 +310,7 @@ export const analyticsInventoryOptimization = pgTable('analytics_inventory_optim
  * 
  * Stores recommended purchase orders based on predictions.
  */
-export const analyticsPurchasingRecommendations = pgTable('analytics_purchasing_recommendations', {
+export const analytics_purchasing_recommendations = pgTable('analytics_purchasing_recommendations', {
   id: uuid('id').primaryKey().defaultRandom(),
   productId: varchar('product_id', { length: 36 }).notNull(),
   warehouseId: varchar('warehouse_id', { length: 36 }).notNull(),
@@ -320,7 +320,7 @@ export const analyticsPurchasingRecommendations = pgTable('analytics_purchasing_
   expectedDeliveryDate: timestamp('expected_delivery_date').notNull(),
   pricePrediction: doublePrecision('price_prediction'),
   confidenceLevel: doublePrecision('confidence_level'),
-  modelId: uuid('model_id').references(() => analyticsPredictiveModels.id, { onDelete: 'set null' }),
+  modelId: uuid('model_id').references(() => analytics_predictive_models.id, { onDelete: 'set null' }),
   executionId: uuid('execution_id'),
   status: varchar('status', { length: 20 }).default('PENDING'), // PENDING, APPROVED, REJECTED, ORDERED
   approvedBy: varchar('approved_by', { length: 36 }),
@@ -338,16 +338,16 @@ export const analyticsPurchasingRecommendations = pgTable('analytics_purchasing_
 }));
 
 // Create insert schemas
-export const insertPredictiveModelSchema = createInsertSchema(analyticsPredictiveModels);
-export const insertPredictionResultSchema = createInsertSchema(analyticsPredictionResults);
-export const insertTimeSeriesDataSchema = createInsertSchema(analyticsTimeSeriesData);
-export const insertAnomalyRuleSchema = createInsertSchema(analyticsAnomalyRules);
-export const insertAnomalySchema = createInsertSchema(analyticsAnomalies);
-export const insertSeasonalPatternSchema = createInsertSchema(analyticsSeasonalPatterns);
-export const insertScenarioSchema = createInsertSchema(analyticsScenarios);
-export const insertScenarioResultSchema = createInsertSchema(analyticsScenarioResults);
-export const insertInventoryOptimizationSchema = createInsertSchema(analyticsInventoryOptimization);
-export const insertPurchasingRecommendationSchema = createInsertSchema(analyticsPurchasingRecommendations);
+export const insertPredictiveModelSchema = createInsertSchema(analytics_predictive_models);
+export const insertPredictionResultSchema = createInsertSchema(analytics_prediction_results);
+export const insertTimeSeriesDataSchema = createInsertSchema(analytics_time_series_data);
+export const insertAnomalyRuleSchema = createInsertSchema(analytics_anomaly_rules);
+export const insertAnomalySchema = createInsertSchema(analytics_anomalies);
+export const insertSeasonalPatternSchema = createInsertSchema(analytics_seasonal_patterns);
+export const insertScenarioSchema = createInsertSchema(analytics_scenarios);
+export const insertScenarioResultSchema = createInsertSchema(analytics_scenario_results);
+export const insertInventoryOptimizationSchema = createInsertSchema(analytics_inventory_optimization);
+export const insertPurchasingRecommendationSchema = createInsertSchema(analytics_purchasing_recommendations);
 
 // Export types
 export type PredictiveModel = typeof analyticsPredictiveModels.$inferSelect;

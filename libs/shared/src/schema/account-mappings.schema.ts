@@ -64,7 +64,7 @@ export const accountMappingTypeEnum = pgEnum('account_mapping_type', accountMapp
  * 
  * Permite fiecărei companii să configureze propriul plan de conturi
  */
-export const accountMappings = pgTable('account_mappings', {
+export const account_mappings = pgTable('account_mappings', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull().references(() => companies.id),
   
@@ -85,7 +85,7 @@ export const accountMappings = pgTable('account_mappings', {
   createdBy: uuid('created_by'),
 });
 
-export const accountMappingsRelations = relations(accountMappings, ({ one }) => ({
+export const account_mappingsRelations = relations(accountMappings, ({ one }) => ({
   company: one(companies, {
     fields: [accountMappings.companyId],
     references: [companies.id],
