@@ -50,16 +50,16 @@ function IdeasPage() {
     
     // Aplicăm filtrare suplimentară
     if (filter === 'implemented') {
-      filteredIdeas = filteredIdeas.filter(idea => idea.metadata?.status === 'implemented');
+      filteredIdeas = filteredIdeas.filter(idea => idea.metadata?.['status'] === 'implemented');
     } else if (filter === 'pending') {
       filteredIdeas = filteredIdeas.filter(idea => 
-        idea.metadata?.status === 'pending' || idea.metadata?.status === 'review'
+        idea.metadata?.['status'] === 'pending' || idea.metadata?.['status'] === 'review'
       );
     }
     
     // Sortare în funcție de filtru
     if (filter === 'popular') {
-      filteredIdeas.sort((a, b) => ((b.metadata?.votes || 0) - (a.metadata?.votes || 0)));
+      filteredIdeas.sort((a, b) => ((b.metadata?.['votes'] || 0) - (a.metadata?.['votes'] || 0)));
     } else if (filter === 'recent') {
       filteredIdeas.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
@@ -200,7 +200,7 @@ function IdeasPage() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <CardTitle className="text-xl">{idea.title}</CardTitle>
-                    {renderStatusBadge(idea.metadata?.status)}
+                    {renderStatusBadge(idea.metadata?.['status'])}
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                     <Avatar className="h-6 w-6">
@@ -219,8 +219,8 @@ function IdeasPage() {
                     {idea.description || 'Fără descriere'}
                   </div>
                   <div className="mt-4 flex gap-2">
-                    {idea.metadata?.tags && Array.isArray(idea.metadata.tags) && (
-                      idea.metadata.tags.map((tag, idx) => (
+                    {idea.metadata?.['tags'] && Array.isArray(idea.metadata['tags']) && (
+                      idea.metadata['tags'].map((tag, idx) => (
                         <Badge key={idx} variant="secondary">{tag}</Badge>
                       ))
                     )}
@@ -230,7 +230,7 @@ function IdeasPage() {
                   <div className="flex space-x-4">
                     <div className="flex items-center space-x-1">
                       <ThumbsUp className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">{idea.metadata?.votes || 0} voturi</span>
+                      <span className="text-sm text-muted-foreground">{idea.metadata?.['votes'] || 0} voturi</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <MessageSquare className="h-4 w-4 text-muted-foreground" />
@@ -238,8 +238,8 @@ function IdeasPage() {
                     </div>
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground">
-                    {idea.metadata?.estimatedDelivery && (
-                      <span>Estimat: {idea.metadata.estimatedDelivery}</span>
+                    {idea.metadata?.['estimatedDelivery'] && (
+                      <span>Estimat: {idea.metadata['estimatedDelivery']}</span>
                     )}
                   </div>
                 </CardFooter>

@@ -57,7 +57,7 @@ const auditLogger = createAuditLogger("application");
 logger.info("Application initializing", {
   context: {
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
+    environment: process.env['NODE_ENV'],
   },
 });
 

@@ -57,17 +57,17 @@ function EventsPage() {
     // Aplicăm filtrare suplimentară
     if (filter === 'upcoming') {
       filteredEvents = filteredEvents.filter(event => {
-        const eventDate = event.metadata?.eventDate ? new Date(event.metadata.eventDate) : null;
+        const eventDate = event.metadata?.['eventDate'] ? new Date(event.metadata['eventDate']) : null;
         return eventDate && eventDate >= today;
       });
     } else if (filter === 'past') {
       filteredEvents = filteredEvents.filter(event => {
-        const eventDate = event.metadata?.eventDate ? new Date(event.metadata.eventDate) : null;
+        const eventDate = event.metadata?.['eventDate'] ? new Date(event.metadata['eventDate']) : null;
         return eventDate && eventDate < today;
       });
     } else if (filter === 'today') {
       filteredEvents = filteredEvents.filter(event => {
-        const eventDate = event.metadata?.eventDate ? new Date(event.metadata.eventDate) : null;
+        const eventDate = event.metadata?.['eventDate'] ? new Date(event.metadata['eventDate']) : null;
         if (!eventDate) return false;
         return (
           eventDate.getDate() === today.getDate() &&
@@ -79,8 +79,8 @@ function EventsPage() {
     
     // Sortăm evenimentele după dată (cele mai apropiate primele)
     filteredEvents.sort((a, b) => {
-      const dateA = a.metadata?.eventDate ? new Date(a.metadata.eventDate) : new Date(a.createdAt);
-      const dateB = b.metadata?.eventDate ? new Date(b.metadata.eventDate) : new Date(b.createdAt);
+      const dateA = a.metadata?.['eventDate'] ? new Date(a.metadata['eventDate']) : new Date(a.createdAt);
+      const dateB = b.metadata?.['eventDate'] ? new Date(b.metadata['eventDate']) : new Date(b.createdAt);
       return dateA.getTime() - dateB.getTime();
     });
     
@@ -91,8 +91,8 @@ function EventsPage() {
   const handleCreateEvent = async (threadData: Partial<CommunityThread>) => {
     try {
       // Procesăm datele specifice pentru evenimente
-      const eventDate = threadData.metadata?.eventDate || null;
-      const eventTime = threadData.metadata?.eventTime || null;
+      const eventDate = threadData.metadata?.['eventDate'] || null;
+      const eventTime = threadData.metadata?.['eventTime'] || null;
       
       // Combinăm data și ora într-un singur câmp ISO
       let combinedDateTime = null;
@@ -116,7 +116,7 @@ function EventsPage() {
           ...(threadData.metadata || {}),
           eventDate: combinedDateTime,
           participants: [],
-          location: threadData.metadata?.location || null
+          location: threadData.metadata?.['location'] || null
         }
       } as any);
       
@@ -145,9 +145,9 @@ function EventsPage() {
 
   // Render custom event card
   const renderEventCard = (event: CommunityThread) => {
-    const eventDate = event.metadata?.eventDate ? new Date(event.metadata.eventDate) : null;
-    const location = event.metadata?.location;
-    const participantCount = Array.isArray(event.metadata?.participants) ? event.metadata?.participants.length : 0;
+    const eventDate = event.metadata?.['eventDate'] ? new Date(event.metadata['eventDate']) : null;
+    const location = event.metadata?.['location'];
+    const participantCount = Array.isArray(event.metadata?.['participants']) ? event.metadata?.['participants'].length : 0;
     
     // Determine badge status based on date
     const today = new Date();

@@ -60,8 +60,8 @@ const CommunityThreadCard: React.FC<CommunityThreadCardProps> = ({
         {extraContent}
         
         <div className="mt-4 flex gap-2">
-          {thread.metadata?.tags && Array.isArray(thread.metadata.tags) && (
-            thread.metadata.tags.map((tag: string, idx: number) => (
+          {thread.metadata?.['tags'] && Array.isArray(thread.metadata['tags']) && (
+            thread.metadata['tags'].map((tag: string, idx: number) => (
               <Badge key={idx} variant="secondary">{tag}</Badge>
             ))
           )}
@@ -73,16 +73,16 @@ const CommunityThreadCard: React.FC<CommunityThreadCardProps> = ({
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">{thread.replyCount || 0} comentarii</span>
           </div>
-          {thread.metadata?.likes && (
+          {thread.metadata?.['likes'] && (
             <div className="flex items-center space-x-1">
               <ThumbsUp className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">{thread.metadata.likes} aprecieri</span>
+              <span className="text-sm text-muted-foreground">{thread.metadata['likes']} aprecieri</span>
             </div>
           )}
-          {thread.metadata?.votes && (
+          {thread.metadata?.['votes'] && (
             <div className="flex items-center space-x-1">
               <ThumbsUp className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">{thread.metadata.votes} voturi</span>
+              <span className="text-sm text-muted-foreground">{thread.metadata['votes']} voturi</span>
             </div>
           )}
         </div>
