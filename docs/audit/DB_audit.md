@@ -819,11 +819,13 @@ export type UpdateAccountGroupZod = z.infer<typeof updateAccountGroupSchema>;
 
 ---
 
-# 183. synthetic_accounts
+# 183. PC_synthetic_accounts
 
 ## 📋 Descriere Generală
 
-**Tabel:** `synthetic_accounts` - **Conturi Sintetice**
+**Tabel:** `PC_synthetic_accounts` - **Conturi Sintetice (Plan de Conturi)**
+
+**Prefix PC_:** Plan de Conturi - pentru identificare ușoară și consistență
 
 **Scop:** Al treilea nivel al ierarhiei Planului de Conturi Românesc, reprezentând conturile sintetice de gradul I (3 cifre, ex: 401) și gradul II (4 cifre, ex: 4011).
 
@@ -840,7 +842,7 @@ export type UpdateAccountGroupZod = z.infer<typeof updateAccountGroupSchema>;
 
 ### DDL PostgreSQL
 ```sql
-CREATE TABLE public.synthetic_accounts (
+CREATE TABLE public.PC_synthetic_accounts (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     code character varying(4) NOT NULL,
     name text NOT NULL,
@@ -852,25 +854,25 @@ CREATE TABLE public.synthetic_accounts (
     is_active boolean DEFAULT true,
     created_at timestamp without time zone NOT NULL DEFAULT now(),
     updated_at timestamp without time zone NOT NULL DEFAULT now(),
-    CONSTRAINT synthetic_accounts_pkey PRIMARY KEY (id),
-    CONSTRAINT synthetic_accounts_code_unique UNIQUE (code),
-    CONSTRAINT synthetic_accounts_group_id_account_groups_id_fk 
-        FOREIGN KEY (group_id) REFERENCES account_groups(id),
-    CONSTRAINT synthetic_accounts_parent_id_synthetic_accounts_id_fk 
-        FOREIGN KEY (parent_id) REFERENCES synthetic_accounts(id)
+    CONSTRAINT PC_synthetic_accounts_pkey PRIMARY KEY (id),
+    CONSTRAINT PC_synthetic_accounts_code_unique UNIQUE (code),
+    CONSTRAINT PC_synthetic_accounts_group_id_PC_account_groups_id_fk 
+        FOREIGN KEY (group_id) REFERENCES PC_account_groups(id),
+    CONSTRAINT PC_synthetic_accounts_parent_id_PC_synthetic_accounts_id_fk 
+        FOREIGN KEY (parent_id) REFERENCES PC_synthetic_accounts(id)
 );
 
 -- Indexes
-CREATE UNIQUE INDEX synthetic_accounts_code_unique ON synthetic_accounts(code);
-CREATE INDEX synthetic_accounts_code_idx ON synthetic_accounts(code);
-CREATE INDEX synthetic_accounts_group_idx ON synthetic_accounts(group_id);
-CREATE INDEX synthetic_accounts_parent_idx ON synthetic_accounts(parent_id);
-CREATE INDEX synthetic_accounts_function_idx ON synthetic_accounts(account_function);
+CREATE UNIQUE INDEX PC_synthetic_accounts_code_unique ON PC_synthetic_accounts(code);
+CREATE INDEX PC_synthetic_accounts_code_idx ON PC_synthetic_accounts(code);
+CREATE INDEX PC_synthetic_accounts_group_idx ON PC_synthetic_accounts(group_id);
+CREATE INDEX PC_synthetic_accounts_parent_idx ON PC_synthetic_accounts(parent_id);
+CREATE INDEX PC_synthetic_accounts_function_idx ON PC_synthetic_accounts(account_function);
 ```
 
 ### Schema Drizzle ORM
 ```typescript
-export const synthetic_accounts = pgTable('synthetic_accounts', {
+export const PC_synthetic_accounts = pgTable('PC_synthetic_accounts', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
   code: varchar('code', { length: 4 }).notNull().unique(),
   name: text('name').notNull(),
@@ -883,11 +885,11 @@ export const synthetic_accounts = pgTable('synthetic_accounts', {
   created_at: timestamp('created_at').notNull().default(sql`now()`),
   updated_at: timestamp('updated_at').notNull().default(sql`now()`)
 }, (table) => ({
-  code_unique: unique('synthetic_accounts_code_unique').on(table.code),
-  code_idx: index('synthetic_accounts_code_idx').on(table.code),
-  group_idx: index('synthetic_accounts_group_idx').on(table.group_id),
-  parent_idx: index('synthetic_accounts_parent_idx').on(table.parent_id),
-  function_idx: index('synthetic_accounts_function_idx').on(table.account_function),
+  code_unique: unique('PC_synthetic_accounts_code_unique').on(table.code),
+  code_idx: index('PC_synthetic_accounts_code_idx').on(table.code),
+  group_idx: index('PC_synthetic_accounts_group_idx').on(table.group_id),
+  parent_idx: index('PC_synthetic_accounts_parent_idx').on(table.parent_id),
+  function_idx: index('PC_synthetic_accounts_function_idx').on(table.account_function),
 }));
 ```
 

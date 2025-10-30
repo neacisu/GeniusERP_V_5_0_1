@@ -195,12 +195,12 @@ export const PC_account_groups = pgTable('PC_account_groups', {
 }));
 
 /**
- * Synthetic Accounts table
+ * Synthetic Accounts table (Plan de Conturi - PC_ prefix)
  * Third level of chart of accounts (3-4 digits)
  * Grade 1: 3 digits (e.g., 401)
  * Grade 2: 4 digits (e.g., 4011)
  */
-export const synthetic_accounts = pgTable('synthetic_accounts', {
+export const PC_synthetic_accounts = pgTable('PC_synthetic_accounts', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
   code: varchar('code', { length: 4 }).notNull().unique(),
   name: text('name').notNull(),
@@ -213,11 +213,11 @@ export const synthetic_accounts = pgTable('synthetic_accounts', {
   created_at: timestamp('created_at').notNull().default(sql`now()`),
   updated_at: timestamp('updated_at').notNull().default(sql`now()`)
 }, (table) => ({
-  code_unique: unique('synthetic_accounts_code_unique').on(table.code),
-  code_idx: index('synthetic_accounts_code_idx').on(table.code),
-  group_idx: index('synthetic_accounts_group_idx').on(table.group_id),
-  parent_idx: index('synthetic_accounts_parent_idx').on(table.parent_id),
-  function_idx: index('synthetic_accounts_function_idx').on(table.account_function),
+  code_unique: unique('PC_synthetic_accounts_code_unique').on(table.code),
+  code_idx: index('PC_synthetic_accounts_code_idx').on(table.code),
+  group_idx: index('PC_synthetic_accounts_group_idx').on(table.group_id),
+  parent_idx: index('PC_synthetic_accounts_parent_idx').on(table.parent_id),
+  function_idx: index('PC_synthetic_accounts_function_idx').on(table.account_function),
 }));
 
 /**
@@ -244,7 +244,7 @@ export const analytic_accounts = pgTable('analytic_accounts', {
 
 /**
  * Accounts table (LEGACY)
- * @deprecated This is a legacy flat structure. Use account_classes, account_groups, synthetic_accounts, and analytic_accounts instead.
+ * @deprecated This is a legacy flat structure. Use PC_account_classes, PC_account_groups, PC_synthetic_accounts, and analytic_accounts instead.
  * Kept for backward compatibility with older data.
  */
 export const accounts = pgTable('accounts', {
@@ -346,22 +346,22 @@ export const PC_account_groupsRelations = relations(PC_account_groups, ({ one, m
     fields: [PC_account_groups.class_id],
     references: [PC_account_classes.id],
   }),
-  syntheticAccounts: many(synthetic_accounts),
+  syntheticAccounts: many(PC_synthetic_accounts),
 }));
 
 /**
  * Synthetic Accounts Relations
  */
-export const synthetic_accountsRelations = relations(synthetic_accounts, ({ one, many }) => ({
+export const PC_synthetic_accountsRelations = relations(PC_synthetic_accounts, ({ one, many }) => ({
   group: one(PC_account_groups, {
-    fields: [synthetic_accounts.group_id],
+    fields: [PC_synthetic_accounts.group_id],
     references: [PC_account_groups.id],
   }),
-  parent: one(synthetic_accounts, {
-    fields: [synthetic_accounts.parent_id],
-    references: [synthetic_accounts.id],
+  parent: one(PC_synthetic_accounts, {
+    fields: [PC_synthetic_accounts.parent_id],
+    references: [PC_synthetic_accounts.id],
   }),
-  children: many(synthetic_accounts),
+  children: many(PC_synthetic_accounts),
   analyticAccounts: many(analytic_accounts),
 }));
 
@@ -369,9 +369,9 @@ export const synthetic_accountsRelations = relations(synthetic_accounts, ({ one,
  * Analytic Accounts Relations
  */
 export const analytic_accountsRelations = relations(analytic_accounts, ({ one }) => ({
-  synthetic: one(synthetic_accounts, {
+  synthetic: one(PC_synthetic_accounts, {
     fields: [analytic_accounts.synthetic_id],
-    references: [synthetic_accounts.id],
+    references: [PC_synthetic_accounts.id],
   }),
 }));
 
@@ -388,9 +388,9 @@ export const accountsRelations = relations(accounts, ({ one, many }) => ({
     references: [accounts.id],
   }),
   children: many(accounts),
-  synthetic: one(synthetic_accounts, {
+  synthetic: one(PC_synthetic_accounts, {
     fields: [accounts.synthetic_id],
-    references: [synthetic_accounts.id],
+    references: [PC_synthetic_accounts.id],
   }),
   analytic: one(analytic_accounts, {
     fields: [accounts.analytic_id],
@@ -444,7 +444,7 @@ export type SelectAccountGroupZod = z.infer<typeof selectAccountGroupSchema>;
 export type UpdateAccountGroupZod = z.infer<typeof updateAccountGroupSchema>;
 
 // Synthetic Accounts Schemas
-export const insertSyntheticAccountSchema = createInsertSchema(synthetic_accounts, {
+export const insertSyntheticAccountSchema = createInsertSchema(PC_synthetic_accounts, {
   code: z.string().min(3).max(4).regex(/^[0-9]{3,4}$/, "Codul contului sintetic trebuie să fie 3-4 cifre"),
   name: z.string().min(1).max(255),
   description: z.string().optional(),
@@ -484,7 +484,7 @@ export const insertSyntheticAccountSchema = createInsertSchema(synthetic_account
 //   const groupCode = chartOfAccountsUtils.extractGroupCode(data.code);
 //   const group = await db.query.PC_account_groups.findFirst({ where: eq(PC_account_groups.id, data.group_id) });
 //   if (group && group.code !== groupCode) throw new Error("group_id nu corespunde cu codul contului");
-export const selectSyntheticAccountSchema = createSelectSchema(synthetic_accounts);
+export const selectSyntheticAccountSchema = createSelectSchema(PC_synthetic_accounts);
 export const updateSyntheticAccountSchema = insertSyntheticAccountSchema.partial().omit({
   id: true,
   created_at: true,
@@ -539,12 +539,18 @@ export type Account = typeof accounts.$inferSelect;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type PC_AccountGroup = typeof PC_account_groups.$inferSelect;
 export type InsertPC_AccountGroup = z.infer<typeof insertAccountGroupSchema>;
-export type SyntheticAccount = typeof synthetic_accounts.$inferSelect;
-export type InsertSyntheticAccount = z.infer<typeof insertSyntheticAccountSchema>;
+export type PC_SyntheticAccount = typeof PC_synthetic_accounts.$inferSelect;
+export type InsertPC_SyntheticAccount = z.infer<typeof insertSyntheticAccountSchema>;
 export type AnalyticAccount = typeof analytic_accounts.$inferSelect;
 export type InsertAnalyticAccount = z.infer<typeof insertAnalyticAccountSchema>;
 export type PC_AccountClass = typeof PC_account_classes.$inferSelect;
 export type InsertPC_AccountClass = z.infer<typeof insertAccountClassSchema>;
+
+// Backward compatibility aliases (deprecated - use PC_ prefixed versions)
+export type SyntheticAccount = PC_SyntheticAccount;
+export type InsertSyntheticAccount = InsertPC_SyntheticAccount;
+export const synthetic_accounts = PC_synthetic_accounts;
+export const synthetic_accountsRelations = PC_synthetic_accountsRelations;
 
 /**
  * Utility functions for Romanian Chart of Accounts
