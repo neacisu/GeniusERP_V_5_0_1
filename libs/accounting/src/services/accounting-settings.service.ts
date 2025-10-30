@@ -35,7 +35,7 @@ import { accountMappings, AccountMapping, InsertAccountMapping } from '@geniuser
 import { documentCounters, DocumentCounter } from '../schema/accounting.schema';
 import { fiscal_periods, FiscalPeriod } from '../schema/accounting.schema';
 import { ledger_entries } from '../schema/accounting.schema';
-import { syntheticAccounts, SyntheticAccount } from '@geniuserp/shared';
+import { synthetic_accounts, SyntheticAccount } from '@geniuserp/shared';
 import { invoices } from '@geniuserp/shared';
 
 export interface AllAccountingSettings {
@@ -771,7 +771,7 @@ export class AccountingSettingsService extends DrizzleService {
    */
   private async validateAccountExists(accountCode: string): Promise<void> {
     const [account] = await this.query((db) =>
-      db.select().from(syntheticAccounts).where(eq(syntheticAccounts.code, accountCode)).limit(1)
+      db.select().from(synthetic_accounts).where(eq(synthetic_accounts.code, accountCode)).limit(1)
     );
 
     if (!account) {
@@ -784,7 +784,7 @@ export class AccountingSettingsService extends DrizzleService {
    */
   private async getAccountName(accountCode: string): Promise<string> {
     const [account] = await this.query((db) =>
-      db.select().from(syntheticAccounts).where(eq(syntheticAccounts.code, accountCode)).limit(1)
+      db.select().from(synthetic_accounts).where(eq(synthetic_accounts.code, accountCode)).limit(1)
     );
 
     return account?.name || accountCode;

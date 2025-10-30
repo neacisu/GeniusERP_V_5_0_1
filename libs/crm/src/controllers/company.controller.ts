@@ -11,7 +11,7 @@ import { UserRole } from '@geniuserp/auth';
 import { v4 as uuidv4 } from 'uuid';
 import { crm_companies } from '../schema/crm.schema';
 import { eq, like, or, sql } from 'drizzle-orm';
-import { analyticAccounts, syntheticAccounts } from '../../../../shared/schema';
+import { analytic_accounts, synthetic_accounts } from '@geniuserp/shared';
 
 export class CompanyController {
   private db: DrizzleService;
