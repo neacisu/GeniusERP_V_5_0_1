@@ -9,7 +9,7 @@ import {
   CardContent 
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Account as BaseAccount, AccountClass, SyntheticAccount as BaseSyntheticAccount } from "@shared/schema";
+import { Account as BaseAccount, AccountClass, AccountGroup, SyntheticAccount as BaseSyntheticAccount } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -104,13 +104,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Interfață pentru grupa de conturi
-interface AccountGroup {
-  id: string;
+// Interfața AccountGroup este importată din @shared/schema
+
+// Tip local pentru form (camelCase pentru React Hook Form)
+interface AccountFormData {
   code: string;
   name: string;
-  description?: string;
+  description: string;
+  accountFunction: string;
   classId: string;
+  parentId: string;
+  isActive: boolean;
 }
 
 export default function ChartOfAccountsPage() {
@@ -185,10 +189,10 @@ export default function ChartOfAccountsPage() {
   // Set up form when editing an account
   const setupEditForm = (account: Account) => {
     // Find parent account info if exists
-    if (account.parentId) {
-      const parentAccount = allAccounts?.find(a => a.id === account.parentId);
+    if (account.parent_id) {
+      const parentAccount = allAccounts?.find(a => a.id === account.parent_id);
       if (parentAccount) {
-        setSelectedParentId(account.parentId);
+        setSelectedParentId(account.parent_id);
         setSelectedParentName(`${parentAccount.code} - ${parentAccount.name}`);
       } else {
         setSelectedParentId("none");
@@ -198,15 +202,16 @@ export default function ChartOfAccountsPage() {
       setSelectedParentId("none");
       setSelectedParentName("Fără cont părinte");
     }
-    
+
+    // Transform snake_case to camelCase for form
     reset({
       code: account.code,
       name: account.name,
       description: account.description || "",
-      accountFunction: account.accountFunction,
-      classId: account.classId,
-      parentId: account.parentId || "none",
-      isActive: account.isActive
+      accountFunction: account.type,
+      classId: account.class_id,
+      parentId: account.parent_id || "none",
+      isActive: account.is_active ?? true
     });
     setIsAccountDialogOpen(true);
   };
@@ -218,7 +223,7 @@ export default function ChartOfAccountsPage() {
       let endpoint;
       if (selectedAccount) {
         // Update existing account - determine if it's synthetic or analytic
-        if (selectedAccount.syntheticId) {
+        if (selectedAccount.synthetic_id) {
           // It's an analytic account
           endpoint = `/api/accounting/analytic-accounts/${selectedAccount.id}`;
         } else {
@@ -259,7 +264,7 @@ export default function ChartOfAccountsPage() {
     }
   });
 
-  const onSubmitAccount = (data: any) => {
+  const onSubmitAccount = (data: AccountFormData) => {
     // Pentru conturi analitice noi, verificăm dacă un cont părinte a fost selectat
     if (!selectedAccount && (!data.parentId || data.parentId === 'none' || data.parentId === '')) {
       console.log("Eroare validare parent ID:", data.parentId);
@@ -285,7 +290,7 @@ export default function ChartOfAccountsPage() {
     }
 
     // Moștenim tipul contului (accountFunction) de la contul părinte
-    data.accountFunction = parentAccount.accountFunction;
+    data.accountFunction = parentAccount.account_function;
     
     // Verifică dacă există deja un cont cu același cod în sistem
     const fullCode = `${parentAccount.code}.${data.code}`;
@@ -307,10 +312,21 @@ export default function ChartOfAccountsPage() {
     // Formatăm codul contului pentru a include codul părinte
     data.code = fullCode;
     
-    console.log("Date trimise la server:", data);
-    
+    // Transformăm datele în formatul așteptat de API (snake_case)
+    const apiData = {
+      code: data.code,
+      name: data.name,
+      description: data.description,
+      account_function: data.accountFunction,
+      class_id: data.classId,
+      parent_id: data.parentId === 'none' ? null : data.parentId,
+      is_active: data.isActive
+    };
+
+    console.log("Date trimise la server:", apiData);
+
     // Trimitem datele la server
-    accountMutation.mutate(data);
+    accountMutation.mutate(apiData);
   };
 
   // Open dialog for new account
@@ -384,7 +400,7 @@ export default function ChartOfAccountsPage() {
   const handleDeleteAccount = (account: Account) => {
     if (confirm("Sunteți sigur că doriți să ștergeți acest cont? Această acțiune nu poate fi anulată.")) {
       // Determine if it's a synthetic or analytic account
-      const isSynthetic = !account.syntheticId;
+      const isSynthetic = !account.synthetic_id;
       deleteAccountMutation.mutate({ 
         id: account.id, 
         isSynthetic 
@@ -445,12 +461,12 @@ export default function ChartOfAccountsPage() {
       // Metoda 1: Prin relația cont -> grupă -> clasă
       let foundClassCode = null;
       
-      if (parentAccount.groupId) {
-        const accountGroup = accountGroups?.find(g => g.id === parentAccount.groupId);
+      if (parentAccount.group_id) {
+        const accountGroup = accountGroups?.find(g => g.id === parentAccount.group_id);
         console.log("Grupa contabilă găsită:", accountGroup);
         
-        if (accountGroup && accountGroup.classId) {
-          const accountClass = accountClasses?.find(c => c.id === accountGroup.classId);
+        if (accountGroup && accountGroup.class_id) {
+          const accountClass = accountClasses?.find(c => c.id === accountGroup.class_id);
           console.log("Clasa contabilă găsită:", accountClass);
           
           if (accountClass) {
@@ -480,7 +496,7 @@ export default function ChartOfAccountsPage() {
       // Căutăm conturile analitice existente pentru acest cont sintetic
       // pentru a determina următorul subcod disponibil
       const analyticAccountsForParent = analyticAccounts?.filter(
-        acc => acc.syntheticId === parentAccount.id
+        acc => acc.synthetic_id === parentAccount.id
       ) || [];
       
       if (analyticAccountsForParent.length > 0) {
@@ -522,8 +538,8 @@ export default function ChartOfAccountsPage() {
       }
       
       // Setăm și tipul contului moștenit de la părinte
-      if (parentAccount.accountFunction) {
-        setValue("accountFunction", parentAccount.accountFunction);
+      if (parentAccount.account_function) {
+        setValue("accountFunction", parentAccount.account_function);
       }
     }
     
@@ -1005,12 +1021,12 @@ export default function ChartOfAccountsPage() {
               
               {/* Înlocuim selectul de tip cont cu un câmp read-only - tipul se moștenește de la părinte */}
               <div className="space-y-2">
-                <Label htmlFor="accountFunction">Tip cont</Label>
+                <Label htmlFor="type">Tip cont</Label>
                 <div className="border rounded-md px-3 py-2 text-sm bg-gray-50">
                   {/* Afișăm tipul contului părinte - acesta va fi moștenit automat */}
                   {selectedParentId && selectedParentId !== "none" && syntheticAccounts ? (
                     getAccountTypeInfo(
-                      syntheticAccounts.find(acc => acc.id === selectedParentId)?.accountFunction || "P"
+                      syntheticAccounts.find(acc => acc.id === selectedParentId)?.account_function || "P"
                     ).label
                   ) : (
                     "Se va moșteni de la contul părinte"
@@ -1030,7 +1046,7 @@ export default function ChartOfAccountsPage() {
                 <input type="hidden" {...register("classId")} />
                 <Select 
                   key={`class-selector-${selectedParentId}`}
-                  defaultValue={selectedAccount?.classId || activeClass} 
+                  defaultValue={selectedAccount?.class_id || activeClass} 
                   onValueChange={(value) => {
                     setValue("classId", value);
                     setActiveClass(value);

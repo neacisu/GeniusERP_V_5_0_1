@@ -1,5 +1,5 @@
 import { getDrizzle } from '@common/drizzle';
-import { syntheticAccounts, accountGroups } from '@geniuserp/shared/schema';
+import { syntheticAccounts, account_groups } from '@geniuserp/shared/schema';
 import { v4 as uuidv4 } from 'uuid';
 import { eq } from 'drizzle-orm';
 
@@ -161,7 +161,7 @@ async function addMissingClass1Accounts() {
   console.log('SECURITATE: Obțin UUID-uri grupuri din DB, NU hardcodate\n');
   
   // Obține toate grupurile din DB pentru mapping
-  const groups = await db.select().from(accountGroups);
+  const groups = await db.select().from(account_groups);
   const groupCodeToId: Record<string, string> = {};
   
   for (const group of groups) {
