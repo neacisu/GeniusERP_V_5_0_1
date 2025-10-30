@@ -289,7 +289,7 @@ export class OnboardingService extends DrizzleService {
     // Get chart of accounts count (for this company's custom accounts)
     // Note: We're counting all synthetic accounts since they're shared
     const accountsCount = await this.query((db) =>
-      db.select().from(syntheticAccounts)
+      db.select().from(synthetic_accounts)
     );
 
     // Validate balances if imported

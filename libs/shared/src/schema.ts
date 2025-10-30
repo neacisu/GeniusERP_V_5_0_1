@@ -106,8 +106,33 @@ export * from "./schema/document-counters.schema";
 
 // Export Communications models for shared usage across the application
 // Notă: Contact are același nume ca în CRM, dar sunt tabele diferite
-export * from "./schema/communications.schema";
-// Explicit re-export to resolve naming conflicts with crm
+// Export everything EXCEPT Contact and insertContactSchema to avoid conflicts
+export {
+  channelEnum,
+  directionEnum,
+  statusEnum,
+  sentimentEnum,
+  communications_threads,
+  communications_messages,
+  contacts,
+  communications_channel_configs,
+  communications_message_access,
+  communications_thread_access,
+  insertMessageThreadSchema,
+  insertMessageSchema,
+  // insertContactSchema - exported with alias below
+  insertChannelConfigSchema,
+  type MessageThreadInsert,
+  type MessageThread,
+  type MessageInsert,
+  type Message,
+  // type ContactInsert - exported with alias below
+  // type Contact - exported with alias below
+  type ChannelConfigInsert,
+  type ChannelConfig
+} from "./schema/communications.schema";
+
+// Explicit re-export with aliases to resolve naming conflicts with crm.schema
 export {
   Contact as CommunicationsContact,
   insertContactSchema as insertCommunicationsContactSchema,
@@ -306,30 +331,13 @@ export type Company = typeof companies.$inferSelect;
 // Relations are defined in core.schema.ts
 
 // 4. Analytic Accounts - Most detailed level
-export const analyticAccounts = pgTable("analytic_accounts", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  code: varchar("code", { length: 20 }).notNull().unique(), // Extended code for detailed classification
-  name: text("name").notNull(),
-  description: text("description"),
-  syntheticId: uuid("synthetic_id").notNull().references(() => syntheticAccounts.id),
-  // Account function in Romanian accounting:
-  // - A (Activ/Asset/Debit): Accounts with normal debit balance (assets, expenses)
-  // - P (Pasiv/Liability/Credit): Accounts with normal credit balance (liabilities, equity, revenues)
-  // - B (Bifunctional/A/P): Accounts that can have either debit or credit balance
-  accountFunction: text("account_function").notNull(),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const analyticAccountRelations = relations(analyticAccounts, ({ one, many }) => ({
-  syntheticAccount: one(syntheticAccounts, {
-    fields: [analyticAccounts.syntheticId],
-    references: [syntheticAccounts.id],
-  }),
-}));
+// Schema moved to core.schema.ts for consistency
+// Relations are defined in core.schema.ts
 
 // Legacy accounts table maintained for backward compatibility
+// Import synthetic_accounts and analytic_accounts for relations
+import { synthetic_accounts, analytic_accounts } from "./schema/core.schema";
+
 export const accounts = pgTable("accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
   code: varchar("code", { length: 20 }).notNull().unique(),
@@ -340,8 +348,8 @@ export const accounts = pgTable("accounts", {
   // Self-reference: accounts can have parent accounts
   parentId: uuid("parent_id"),
   isActive: boolean("is_active").default(true),
-  syntheticId: uuid("synthetic_id").references(() => syntheticAccounts.id),
-  analyticId: uuid("analytic_id").references(() => analyticAccounts.id),
+  syntheticId: uuid("synthetic_id").references(() => synthetic_accounts.id),
+  analyticId: uuid("analytic_id").references(() => analytic_accounts.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
@@ -359,13 +367,13 @@ export const accountRelations = relations(accounts, ({ one, many }) => ({
     references: [accounts.id],
   }),
   children: many(accounts),
-  syntheticAccount: one(syntheticAccounts, {
+  syntheticAccount: one(synthetic_accounts, {
     fields: [accounts.syntheticId],
-    references: [syntheticAccounts.id],
+    references: [synthetic_accounts.id],
   }),
-  analyticAccount: one(analyticAccounts, {
+  analyticAccount: one(analytic_accounts, {
     fields: [accounts.analyticId],
-    references: [analyticAccounts.id],
+    references: [analytic_accounts.id],
   }),
 }));
 
