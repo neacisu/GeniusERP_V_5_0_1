@@ -1,19 +1,20 @@
-import { companies, users, accounts, account_classes, accountGroups, syntheticAccounts, analyticAccounts, 
-  inventoryProducts, inventoryCategories, inventoryUnits, 
+import { companies, users, accounts, account_classes, account_groups, synthetic_accounts, analytic_accounts,
+  inventoryProducts, inventoryCategories, inventoryUnits,
   roles, permissions, userRoles, rolePermissions, auditLogs,
   invoices, invoiceDetails,
-  journalEntries, journalLines } from "../../../libs/shared/src/schema";
-import { invoiceItems, type InsertInvoiceItem } from "../../../libs/invoicing/src/schema/invoice.schema";
+  journalEntries, journalLines } from "@geniuserp/shared";
+import { invoiceItems, type InsertInvoiceItem } from "@geniuserp/invoicing";
 import type { User, InsertUser, Company, InsertCompany,
-  Account, InsertAccount, 
+  Account, InsertAccount,
   AccountGroup, InsertAccountGroup, SyntheticAccount, InsertSyntheticAccount,
   AnalyticAccount, InsertAnalyticAccount,
-  InventoryProduct, InsertInventoryProduct, InventoryCategory, InventoryUnit, 
-  JournalEntry, InsertJournalEntry, InsertJournalLine, 
+  AccountClass, InsertAccountClass,
+  InventoryProduct, InsertInventoryProduct, InventoryCategory, InventoryUnit,
+  JournalEntry, InsertJournalEntry, InsertJournalLine,
   InventoryStockMovement, InsertInventoryStockMovement,
   Role, Permission, InsertRole, InsertPermission,
-  Invoice, 
-  InsertInvoice, InsertInvoiceDetail } from "../../../libs/shared/src/schema";
+  Invoice,
+  InsertInvoice, InsertInvoiceDetail } from "@geniuserp/shared";
   
 import { eq, and, desc, sql, gte, lte, max } from "drizzle-orm";
 import session from "express-session";
@@ -430,7 +431,7 @@ export class DatabaseStorage implements IStorage {
   // 2. Account Groups (second level)
   async getAccountGroups(): Promise<AccountGroup[]> {
     return drizzleService.executeQuery(async (db) => {
-      return await db.select().from(accountGroups).orderBy(accountGroups.code);
+      return await db.select().from(account_groups).orderBy(account_groups.code);
     });
   }
 
@@ -438,29 +439,29 @@ export class DatabaseStorage implements IStorage {
     return drizzleService.executeQuery(async (db) => {
       return await db
         .select()
-        .from(accountGroups)
-        .where(eq(accountGroups.classId, classId))
-        .orderBy(accountGroups.code);
+        .from(account_groups)
+        .where(eq(account_groups.class_id, classId))
+        .orderBy(account_groups.code);
     });
   }
 
   async getAccountGroup(id: string): Promise<AccountGroup | undefined> {
     return drizzleService.executeQuery(async (db) => {
-      const [accountGroup] = await db.select().from(accountGroups).where(eq(accountGroups.id, id));
+      const [accountGroup] = await db.select().from(account_groups).where(eq(account_groups.id, id));
       return accountGroup || undefined;
     });
   }
 
   async getAccountGroupByCode(code: string): Promise<AccountGroup | undefined> {
     return drizzleService.executeQuery(async (db) => {
-      const [accountGroup] = await db.select().from(accountGroups).where(eq(accountGroups.code, code));
+      const [accountGroup] = await db.select().from(account_groups).where(eq(account_groups.code, code));
       return accountGroup || undefined;
     });
   }
 
   async createAccountGroup(accountGroup: InsertAccountGroup): Promise<AccountGroup> {
     return drizzleService.executeQuery(async (db) => {
-      const [newAccountGroup] = await db.insert(accountGroups).values(accountGroup).returning();
+      const [newAccountGroup] = await db.insert(account_groups).values(accountGroup).returning();
       return newAccountGroup;
     });
   }
@@ -468,9 +469,9 @@ export class DatabaseStorage implements IStorage {
   async updateAccountGroup(id: string, accountGroupData: Partial<InsertAccountGroup>): Promise<AccountGroup> {
     return drizzleService.executeQuery(async (db) => {
       const [updatedAccountGroup] = await db
-        .update(accountGroups)
+        .update(account_groups)
         .set(accountGroupData)
-        .where(eq(accountGroups.id, id))
+        .where(eq(account_groups.id, id))
         .returning();
       return updatedAccountGroup;
     });
@@ -479,7 +480,7 @@ export class DatabaseStorage implements IStorage {
   // 3. Synthetic Accounts (third level - Grade 1 and 2)
   async getSyntheticAccounts(): Promise<SyntheticAccount[]> {
     return drizzleService.executeQuery(async (db) => {
-      return await db.select().from(syntheticAccounts).orderBy(syntheticAccounts.code);
+      return await db.select().from(synthetic_accounts).orderBy(synthetic_accounts.code);
     });
   }
 
@@ -487,9 +488,9 @@ export class DatabaseStorage implements IStorage {
     return drizzleService.executeQuery(async (db) => {
       return await db
         .select()
-        .from(syntheticAccounts)
-        .where(eq(syntheticAccounts.groupId, groupId))
-        .orderBy(syntheticAccounts.code);
+        .from(synthetic_accounts)
+        .where(eq(synthetic_accounts.group_id, groupId))
+        .orderBy(synthetic_accounts.code);
     });
   }
 
@@ -497,29 +498,29 @@ export class DatabaseStorage implements IStorage {
     return drizzleService.executeQuery(async (db) => {
       return await db
         .select()
-        .from(syntheticAccounts)
-        .where(eq(syntheticAccounts.grade, grade))
-        .orderBy(syntheticAccounts.code);
+        .from(synthetic_accounts)
+        .where(eq(synthetic_accounts.grade, grade))
+        .orderBy(synthetic_accounts.code);
     });
   }
 
   async getSyntheticAccount(id: string): Promise<SyntheticAccount | undefined> {
     return drizzleService.executeQuery(async (db) => {
-      const [syntheticAccount] = await db.select().from(syntheticAccounts).where(eq(syntheticAccounts.id, id));
+      const [syntheticAccount] = await db.select().from(synthetic_accounts).where(eq(synthetic_accounts.id, id));
       return syntheticAccount || undefined;
     });
   }
 
   async getSyntheticAccountByCode(code: string): Promise<SyntheticAccount | undefined> {
     return drizzleService.executeQuery(async (db) => {
-      const [syntheticAccount] = await db.select().from(syntheticAccounts).where(eq(syntheticAccounts.code, code));
+      const [syntheticAccount] = await db.select().from(synthetic_accounts).where(eq(synthetic_accounts.code, code));
       return syntheticAccount || undefined;
     });
   }
 
   async createSyntheticAccount(syntheticAccount: InsertSyntheticAccount): Promise<SyntheticAccount> {
     return drizzleService.executeQuery(async (db) => {
-      const [newSyntheticAccount] = await db.insert(syntheticAccounts).values(syntheticAccount).returning();
+      const [newSyntheticAccount] = await db.insert(synthetic_accounts).values(syntheticAccount).returning();
       return newSyntheticAccount;
     });
   }
@@ -527,9 +528,9 @@ export class DatabaseStorage implements IStorage {
   async updateSyntheticAccount(id: string, syntheticAccountData: Partial<InsertSyntheticAccount>): Promise<SyntheticAccount> {
     return drizzleService.executeQuery(async (db) => {
       const [updatedSyntheticAccount] = await db
-        .update(syntheticAccounts)
+        .update(synthetic_accounts)
         .set(syntheticAccountData)
-        .where(eq(syntheticAccounts.id, id))
+        .where(eq(synthetic_accounts.id, id))
         .returning();
       return updatedSyntheticAccount;
     });
@@ -538,7 +539,7 @@ export class DatabaseStorage implements IStorage {
   // 4. Analytic Accounts (fourth level - most detailed)
   async getAnalyticAccounts(): Promise<AnalyticAccount[]> {
     return drizzleService.executeQuery(async (db) => {
-      return await db.select().from(analyticAccounts).orderBy(analyticAccounts.code);
+      return await db.select().from(analytic_accounts).orderBy(analytic_accounts.code);
     });
   }
 
@@ -546,29 +547,29 @@ export class DatabaseStorage implements IStorage {
     return drizzleService.executeQuery(async (db) => {
       return await db
         .select()
-        .from(analyticAccounts)
-        .where(eq(analyticAccounts.syntheticId, syntheticId))
-        .orderBy(analyticAccounts.code);
+        .from(analytic_accounts)
+        .where(eq(analytic_accounts.synthetic_id, syntheticId))
+        .orderBy(analytic_accounts.code);
     });
   }
 
   async getAnalyticAccount(id: string): Promise<AnalyticAccount | undefined> {
     return drizzleService.executeQuery(async (db) => {
-      const [analyticAccount] = await db.select().from(analyticAccounts).where(eq(analyticAccounts.id, id));
+      const [analyticAccount] = await db.select().from(analytic_accounts).where(eq(analytic_accounts.id, id));
       return analyticAccount || undefined;
     });
   }
 
   async getAnalyticAccountByCode(code: string): Promise<AnalyticAccount | undefined> {
     return drizzleService.executeQuery(async (db) => {
-      const [analyticAccount] = await db.select().from(analyticAccounts).where(eq(analyticAccounts.code, code));
+      const [analyticAccount] = await db.select().from(analytic_accounts).where(eq(analytic_accounts.code, code));
       return analyticAccount || undefined;
     });
   }
 
   async createAnalyticAccount(analyticAccount: InsertAnalyticAccount): Promise<AnalyticAccount> {
     return drizzleService.executeQuery(async (db) => {
-      const [newAnalyticAccount] = await db.insert(analyticAccounts).values(analyticAccount).returning();
+      const [newAnalyticAccount] = await db.insert(analytic_accounts).values(analyticAccount).returning();
       return newAnalyticAccount;
     });
   }
@@ -576,9 +577,9 @@ export class DatabaseStorage implements IStorage {
   async updateAnalyticAccount(id: string, analyticAccountData: Partial<InsertAnalyticAccount>): Promise<AnalyticAccount> {
     return drizzleService.executeQuery(async (db) => {
       const [updatedAnalyticAccount] = await db
-        .update(analyticAccounts)
+        .update(analytic_accounts)
         .set(analyticAccountData)
-        .where(eq(analyticAccounts.id, id))
+        .where(eq(analytic_accounts.id, id))
         .returning();
       return updatedAnalyticAccount;
     });
@@ -607,7 +608,7 @@ export class DatabaseStorage implements IStorage {
       return await db
         .select()
         .from(accounts)
-        .where(eq(accounts.classId, accountClass.id))
+        .where(eq(accounts.class_id, accountClass.id))
         .orderBy(accounts.code);
     });
   }

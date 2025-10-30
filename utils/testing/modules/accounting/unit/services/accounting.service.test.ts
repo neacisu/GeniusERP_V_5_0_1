@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { AccountingService } from '../../../../../../server/modules/accounting/services/accounting.service';
-import { IStorage } from '../../../../../../server/storage';
+import { AccountingService } from '@geniuserp/accounting';
+import { IStorage } from '../../../../../../apps/api/src/storage';
 
 describe('AccountingService - Unit Tests', () => {
   let accountingService: AccountingService;

@@ -426,3 +426,92 @@ export type InsertAccountClassZod = z.infer<typeof insertAccountClassSchema>;
 export type SelectAccountClassZod = z.infer<typeof selectAccountClassSchema>;
 export type UpdateAccountClassZod = z.infer<typeof updateAccountClassSchema>;
 
+// Account Groups Schemas
+export const insertAccountGroupSchema = createInsertSchema(account_groups, {
+  code: z.string().length(2).regex(/^[0-9]{2}$/, "Codul grupei trebuie să fie 2 cifre"),
+  name: z.string().min(1).max(255),
+  description: z.string().optional(),
+  class_id: z.string().uuid()
+});
+export const selectAccountGroupSchema = createSelectSchema(account_groups);
+export const updateAccountGroupSchema = insertAccountGroupSchema.partial().omit({
+  id: true,
+  created_at: true,
+  updated_at: true
+});
+export type InsertAccountGroupZod = z.infer<typeof insertAccountGroupSchema>;
+export type SelectAccountGroupZod = z.infer<typeof selectAccountGroupSchema>;
+export type UpdateAccountGroupZod = z.infer<typeof updateAccountGroupSchema>;
+
+// Synthetic Accounts Schemas
+export const insertSyntheticAccountSchema = createInsertSchema(synthetic_accounts, {
+  code: z.string().length(3).regex(/^[0-9]{3}$/, "Codul contului sintetic trebuie să fie 3 cifre"),
+  name: z.string().min(1).max(255),
+  description: z.string().optional(),
+  account_function: z.enum(['A', 'P', 'B']),
+  group_id: z.string().uuid(),
+  parent_id: z.string().uuid().optional()
+});
+export const selectSyntheticAccountSchema = createSelectSchema(synthetic_accounts);
+export const updateSyntheticAccountSchema = insertSyntheticAccountSchema.partial().omit({
+  id: true,
+  created_at: true,
+  updated_at: true
+});
+export type InsertSyntheticAccountZod = z.infer<typeof insertSyntheticAccountSchema>;
+export type SelectSyntheticAccountZod = z.infer<typeof selectSyntheticAccountSchema>;
+export type UpdateSyntheticAccountZod = z.infer<typeof updateSyntheticAccountSchema>;
+
+// Analytic Accounts Schemas
+export const insertAnalyticAccountSchema = createInsertSchema(analytic_accounts, {
+  code: z.string().length(6).regex(/^[0-9]{6}$/, "Codul contului analitic trebuie să fie 6 cifre"),
+  name: z.string().min(1).max(255),
+  description: z.string().optional(),
+  account_function: z.enum(['A', 'P', 'B']),
+  synthetic_id: z.string().uuid()
+});
+export const selectAnalyticAccountSchema = createSelectSchema(analytic_accounts);
+export const updateAnalyticAccountSchema = insertAnalyticAccountSchema.partial().omit({
+  id: true,
+  created_at: true,
+  updated_at: true
+});
+export type InsertAnalyticAccountZod = z.infer<typeof insertAnalyticAccountSchema>;
+export type SelectAnalyticAccountZod = z.infer<typeof selectAnalyticAccountSchema>;
+export type UpdateAnalyticAccountZod = z.infer<typeof updateAnalyticAccountSchema>;
+
+// Accounts Schemas
+export const insertAccountSchema = createInsertSchema(accounts, {
+  code: z.string().min(1).max(20),
+  name: z.string().min(1).max(255),
+  description: z.string().optional(),
+  account_function: z.enum(['A', 'P', 'B']),
+  class_id: z.string().uuid(),
+  group_id: z.string().uuid().optional(),
+  synthetic_id: z.string().uuid().optional(),
+  analytic_id: z.string().uuid().optional(),
+  company_id: z.string().uuid(),
+  is_active: z.boolean().default(true)
+});
+export const selectAccountSchema = createSelectSchema(accounts);
+export const updateAccountSchema = insertAccountSchema.partial().omit({
+  id: true,
+  created_at: true,
+  updated_at: true
+});
+export type InsertAccountZod = z.infer<typeof insertAccountSchema>;
+export type SelectAccountZod = z.infer<typeof selectAccountSchema>;
+export type UpdateAccountZod = z.infer<typeof updateAccountSchema>;
+
+// Legacy type aliases for backward compatibility
+export type Account = typeof accounts.$inferSelect;
+export type InsertAccount = z.infer<typeof insertAccountSchema>;
+export type AccountGroup = typeof account_groups.$inferSelect;
+export type InsertAccountGroup = z.infer<typeof insertAccountGroupSchema>;
+export type SyntheticAccount = typeof synthetic_accounts.$inferSelect;
+export type InsertSyntheticAccount = z.infer<typeof insertSyntheticAccountSchema>;
+export type AnalyticAccount = typeof analytic_accounts.$inferSelect;
+export type InsertAnalyticAccount = z.infer<typeof insertAnalyticAccountSchema>;
+export type AccountClass = typeof account_classes.$inferSelect;
+export type InsertAccountClass = z.infer<typeof insertAccountClassSchema>;
+

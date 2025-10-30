@@ -80,8 +80,6 @@ export * from "./schema/collaboration.schema";
 
 // Export Invoicing models for shared usage across the application
 export * from "./schema/invoice.schema";
-// Import invoiceItems explicitly for relations (needed to avoid circular dependency)
-import { invoiceItems } from "./schema/invoice.schema";
 export * from "./schema/invoice-numbering.schema";
 
 // Export Warehouse models for shared usage across the application
@@ -99,34 +97,7 @@ export * from "./schema/document-counters.schema";
 
 // Export Communications models for shared usage across the application
 // Notă: crm_contacts redenumit în communicationsContacts pentru a evita conflicte cu CRM
-export {
-  CommunicationChannel,
-  MessageDirection,
-  MessageStatus,
-  SentimentType,
-  channelEnum,
-  directionEnum,
-  statusEnum,
-  sentimentEnum,
-  messageThreads,
-  messages,
-  contacts as communicationsContacts,
-  channelConfigurations,
-  messageAccess,
-  threadAccess,
-  insertMessageThreadSchema,
-  insertMessageSchema,
-  insertContactSchema as insertCommunicationsContactSchema,
-  insertChannelConfigSchema,
-  type MessageThread,
-  type Message,
-  type Contact as CommunicationsContact,
-  type ChannelConfig,
-  type MessageThreadInsert,
-  type MessageInsert,
-  type ContactInsert as CommunicationsContactInsert,
-  type ChannelConfigInsert
-} from "./schema/communications.schema";
+export * from "./schema/communications.schema";
 
 // Export Marketing models for shared usage across the application
 export * from "./schema/marketing.schema";

@@ -5,12 +5,12 @@
  * that can be used for proper seeding in the future.
  */
 import { v4 as uuidv4 } from 'uuid';
-import { db } from '../db';
+import { db } from '../src/db';
 import {
   account_classes,
-  accountGroups,
-  syntheticAccounts,
-} from "../../libs/shared/src/schema";
+  account_groups,
+  synthetic_accounts,
+} from "@geniuserp/shared";
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -34,53 +34,53 @@ async function exportChartOfAccounts() {
     for (const accountClass of classes) {
       outputContent += `Clasa ${accountClass.code} - ${accountClass.name} (${accountClass.default_account_function})\n\n`;
       
-      // Get groups for this class
-      const groups = await db.select().from(accountGroups)
-                            .where(eq(accountGroups.classId, accountClass.id))
-                            .orderBy(asc(accountGroups.code));
+    // Get groups for this class
+    const groups = await db.select().from(account_groups)
+                           .where(eq(account_groups.class_id, accountClass.id))
+                           .orderBy(asc(account_groups.code));
       
       // Export each group
       for (const group of groups) {
         outputContent += `${group.code}. ${group.name}\n`;
         
         // Get synthetic accounts (grade 1) for this group
-        const syntheticG1 = await db.select().from(syntheticAccounts)
-                                 .where(and(
-                                    eq(syntheticAccounts.groupId, group.id),
-                                    eq(syntheticAccounts.grade, 1)
-                                 ))
-                                 .orderBy(asc(syntheticAccounts.code));
+        const syntheticG1 = await db.select().from(synthetic_accounts)
+                                    .where(and(
+                                      eq(synthetic_accounts.group_id, group.id),
+                                      eq(synthetic_accounts.grade, 1)
+                                    ))
+                                 .orderBy(asc(synthetic_accounts.code));
         
         // Export each grade 1 synthetic account
         for (const synth1 of syntheticG1) {
-          outputContent += `${synth1.code}. ${synth1.name} (${synth1.accountFunction})\n`;
+          outputContent += `${synth1.code}. ${synth1.name} (${synth1.account_function})\n`;
           
           // Get synthetic accounts (grade 2) that have this as parent
-          const syntheticG2 = await db.select().from(syntheticAccounts)
+          const syntheticG2 = await db.select().from(synthetic_accounts)
                                   .where(and(
-                                    eq(syntheticAccounts.parentId, synth1.id),
-                                    eq(syntheticAccounts.grade, 2)
+                                    eq(synthetic_accounts.parent_id, synth1.id),
+                                    eq(synthetic_accounts.grade, 2)
                                   ))
-                                  .orderBy(asc(syntheticAccounts.code));
+                                  .orderBy(asc(synthetic_accounts.code));
           
           // Export each grade 2 synthetic account
           for (const synth2 of syntheticG2) {
-            outputContent += `${synth2.code}. ${synth2.name} (${synth2.accountFunction})\n`;
+            outputContent += `${synth2.code}. ${synth2.name} (${synth2.account_function})\n`;
           }
         }
         
         // Get orphaned synthetic accounts (grade 2) for this group (no parent)
-        const orphanedG2 = await db.select().from(syntheticAccounts)
-                                .where(and(
-                                  eq(syntheticAccounts.groupId, group.id),
-                                  eq(syntheticAccounts.grade, 2),
-                                  isNull(syntheticAccounts.parentId)
-                                ))
-                                .orderBy(asc(syntheticAccounts.code));
+        const orphanedG2 = await db.select().from(synthetic_accounts)
+                                  .where(and(
+                                    eq(synthetic_accounts.group_id, group.id),
+                                    eq(synthetic_accounts.grade, 2),
+                                    isNull(synthetic_accounts.parent_id)
+                                  ))
+                                .orderBy(asc(synthetic_accounts.code));
         
         // Export orphaned grade 2 synthetic accounts
         for (const orphan of orphanedG2) {
-          outputContent += `${orphan.code}. ${orphan.name} (${orphan.accountFunction})\n`;
+          outputContent += `${orphan.code}. ${orphan.name} (${orphan.account_function})\n`;
         }
         
         outputContent += '\n';
@@ -94,7 +94,7 @@ async function exportChartOfAccounts() {
     fs.writeFileSync(filePath, outputContent, 'utf8');
     
     // Count accounts
-    const totalSynthetic = await db.select({ count: count() }).from(syntheticAccounts);
+    const totalSynthetic = await db.select({ count: count() }).from(synthetic_accounts);
     
     console.log(`Exported ${totalSynthetic[0].count} accounts to ${filePath}`);
     console.log('Chart of Accounts export completed successfully');
