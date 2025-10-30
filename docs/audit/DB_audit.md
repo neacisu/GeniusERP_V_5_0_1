@@ -1051,13 +1051,57 @@ export type SelectSyntheticAccountZod = z.infer<typeof selectSyntheticAccountSch
 export type UpdateSyntheticAccountZod = z.infer<typeof updateSyntheticAccountSchema>;
 ```
 
+**Validări Avansate Implementate:**
+```typescript
+// Validare 1: parent_id obligatoriu pentru grad 2, interzis pentru grad 1
+.refine((data) => {
+  if (data.grade === 1 && data.parent_id) return false;
+  if (data.grade === 2 && !data.parent_id) return false;
+  return true;
+})
+
+// Validare 2: Concordanță grad cu lungimea codului
+.refine((data) => {
+  const determinedGrade = chartOfAccountsUtils.determineGrade(data.code);
+  return !determinedGrade || determinedGrade === data.grade;
+})
+```
+
+## 🛠️ Funcții Utilitare `chartOfAccountsUtils`
+
+**Locație:** `libs/shared/src/schema/core.schema.ts`
+
+| **Funcție** | **Scop** | **Exemplu** |
+|-------------|----------|-------------|
+| `extractClassCode(code)` | Extrage codul clasei (prima cifră) | `"401"` → `"4"` |
+| `extractGroupCode(code)` | Extrage codul grupei (primele 2 cifre) | `"401"` → `"40"` |
+| `extractSyntheticPrefix(code)` | Extrage prefixul sintetic din cont analitic | `"401.1"` → `"401"` |
+| `validateCodeClassMatch(code, classCode)` | Validează că codul aparține clasei | `("401", "4")` → `true` |
+| `validateCodeGroupMatch(code, groupCode)` | Validează că codul aparține grupei | `("401", "40")` → `true` |
+| `validateGrade2Hierarchy(code2, code1)` | Validează ierarhie grad 2 → grad 1 | `("4011", "401")` → `true` |
+| `determineGrade(code)` | Determină gradul din lungimea codului | `"401"` → `1`, `"4011"` → `2` |
+
+**Utilizare:**
+```typescript
+import { chartOfAccountsUtils } from '@geniuserp/shared';
+
+// Exemplu: Validare ierarhie
+const isValid = chartOfAccountsUtils.validateGrade2Hierarchy("4011", "401"); // true
+
+// Exemplu: Extragere grup
+const groupCode = chartOfAccountsUtils.extractGroupCode("401"); // "40"
+```
+
 ## 🔄 Standardizare Snake_case (Finalizată)
 
 **Fișiere standardizate:**
 - ✅ Definiție canonică în `libs/shared/src/schema/core.schema.ts`
-- ✅ Scheme Zod complete implementate
+- ✅ Scheme Zod complete implementate cu validări avansate
 - ✅ Relații bidirecționale configurate (group, parent, children, analytic)
 - ✅ Standardizare variabile și proprietăți în tot codebase-ul
+- ✅ Eliminare logică duplicată din `journal.service.ts`
+- ✅ Centralizare funcții utilitare în `chartOfAccountsUtils`
+- ✅ Verificări `is_active` în `storage.ts` și `accounting-settings.service.ts`
 
 ## 📋 Rezumat Audit Tabel `synthetic_accounts`
 
@@ -1065,10 +1109,14 @@ export type UpdateSyntheticAccountZod = z.infer<typeof updateSyntheticAccountSch
 
 **Modificări Implementate:**
 - ✅ Schema Drizzle standardizată cu snake_case
-- ✅ Scheme Zod complete cu validări robuste
+- ✅ Scheme Zod complete cu validări robuste (parent_id, grade, code)
 - ✅ Relații bidirecționale configurate corect
 - ✅ Indexes optimizate pentru performanță
 - ✅ Foreign keys implementate pentru integritate
+- ✅ **NOU:** Funcții utilitare centralizate în `chartOfAccountsUtils`
+- ✅ **NOU:** Eliminare cod duplicat pentru extragere clasă/grupă
+- ✅ **NOU:** Verificări `is_active` în toate query-urile
+- ✅ **NOU:** Validare strictă frontend pentru conturi analitice
 
 **Caracteristici Distinctive:**
 - **Ierarhie pe 2 niveluri:** Grad 1 (3 cifre) și Grad 2 (4 cifre)
@@ -1076,12 +1124,19 @@ export type UpdateSyntheticAccountZod = z.infer<typeof updateSyntheticAccountSch
 - **Codificare strictă:** Primele cifre trebuie să corespundă cu grupa/parent-ul
 - **Funcție contabilă:** A/P/B determină comportamentul în balanță
 - **781 conturi:** Planul complet de conturi românesc
+- **Validări avansate:** Parent_id, grade, și code consistency
 
 **Date în Producție:**
 - **Total înregistrări:** 781 conturi sintetice
 - **Grad 1:** Conturi de bază (3 cifre)
 - **Grad 2:** Detalieri suplimentare (4 cifre)
 - **Sursa:** OMFP 1802/2014 - Planul de Conturi Român
+
+**Probleme Rezolvate:**
+- ❌ → ✅ Logică duplicată pentru extragere clasă/grupă (centralizată în utils)
+- ❌ → ✅ Validări lipsă pentru parent_id și grade (implementate în Zod)
+- ❌ → ✅ Validare prea permisivă frontend (corectată cu regex strict)
+- ❌ → ✅ Lipsa verificări `is_active` (adăugată în toate query-urile)
 
 ---
 

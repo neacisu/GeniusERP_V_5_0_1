@@ -18,6 +18,7 @@ import { JournalNumberingService } from './journal-numbering.service';
 import { AccountingPeriodsService } from './accounting-periods.service';
 import { accountingQueueService } from './accounting-queue.service';
 import { RedisService } from '@common/services/redis.service';
+import { chartOfAccountsUtils } from '@geniuserp/shared';
 
 /**
  * Ledger entry type
@@ -239,10 +240,10 @@ export class JournalService {
             throw new Error('Account ID is required for ledger line');
           }
           
-          // Parse account structure (assuming format like "401" or "5311")
+          // Parse account structure using centralized utils
           const accountStr = String(accountId);
-          const accountClass = parseInt(accountStr.charAt(0)) || 0;
-          const accountGroup = parseInt(accountStr.substring(0, 2)) || 0;
+          const accountClass = parseInt(chartOfAccountsUtils.extractClassCode(accountStr)) || 0;
+          const accountGroup = parseInt(chartOfAccountsUtils.extractGroupCode(accountStr)) || 0;
           const accountNumber = accountStr.substring(0, 3) || accountStr;
           const accountSubNumber = accountStr.length > 3 ? accountStr.substring(3) : null;
           
@@ -504,17 +505,25 @@ export class JournalService {
    * @param accountId Account ID or number
    * @returns Account class and group
    */
+  /**
+   * Parse account number to extract class and group
+   * Uses centralized chartOfAccountsUtils for consistency
+   * @param accountId Account ID or number
+   * @returns Account class and group as numbers
+   * @deprecated Consider using chartOfAccountsUtils directly for string operations
+   */
   parseAccountNumber(accountId: string): { class: number; group: number } {
     // Romanian account numbers follow format X or XY or XYZ
     // Where X is class (1-9), Y is group, Z is synthetic account
     const accountNumber = accountId.toString().split('-')[0]; // In case there's an analytic part after dash
     
-    const accountClass = parseInt(accountNumber.charAt(0));
-    const accountGroup = accountNumber.length > 1 ? parseInt(accountNumber.substring(0, 2)) : accountClass * 10;
+    // Use centralized utils to avoid code duplication
+    const classCode = chartOfAccountsUtils.extractClassCode(accountNumber);
+    const groupCode = chartOfAccountsUtils.extractGroupCode(accountNumber);
     
     return {
-      class: accountClass,
-      group: accountGroup
+      class: parseInt(classCode) || 0,
+      group: parseInt(groupCode) || 0
     };
   }
   

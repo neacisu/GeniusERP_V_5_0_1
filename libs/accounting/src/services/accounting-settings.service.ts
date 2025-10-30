@@ -767,24 +767,34 @@ export class AccountingSettingsService extends DrizzleService {
   }
 
   /**
-   * Helper: Validate account exists in chart of accounts
+   * Helper: Validate account exists in chart of accounts and is active
    */
   private async validateAccountExists(accountCode: string): Promise<void> {
     const [account] = await this.query((db) =>
-      db.select().from(synthetic_accounts).where(eq(synthetic_accounts.code, accountCode)).limit(1)
+      db.select().from(synthetic_accounts).where(
+        and(
+          eq(synthetic_accounts.code, accountCode),
+          eq(synthetic_accounts.is_active, true)
+        )
+      ).limit(1)
     );
 
     if (!account) {
-      throw new Error(`Account ${accountCode} does not exist in chart of accounts`);
+      throw new Error(`Account ${accountCode} does not exist or is not active in chart of accounts`);
     }
   }
 
   /**
-   * Helper: Get account name by code
+   * Helper: Get account name by code (only active accounts)
    */
   private async getAccountName(accountCode: string): Promise<string> {
     const [account] = await this.query((db) =>
-      db.select().from(synthetic_accounts).where(eq(synthetic_accounts.code, accountCode)).limit(1)
+      db.select().from(synthetic_accounts).where(
+        and(
+          eq(synthetic_accounts.code, accountCode),
+          eq(synthetic_accounts.is_active, true)
+        )
+      ).limit(1)
     );
 
     return account?.name || accountCode;

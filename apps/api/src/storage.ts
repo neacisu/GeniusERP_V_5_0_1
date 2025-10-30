@@ -480,7 +480,12 @@ export class DatabaseStorage implements IStorage {
   // 3. Synthetic Accounts (third level - Grade 1 and 2)
   async getSyntheticAccounts(): Promise<SyntheticAccount[]> {
     return drizzleService.executeQuery(async (db) => {
-      return await db.select().from(synthetic_accounts).orderBy(synthetic_accounts.code);
+      // Filter only active accounts by default
+      return await db
+        .select()
+        .from(synthetic_accounts)
+        .where(eq(synthetic_accounts.is_active, true))
+        .orderBy(synthetic_accounts.code);
     });
   }
 
@@ -489,7 +494,12 @@ export class DatabaseStorage implements IStorage {
       return await db
         .select()
         .from(synthetic_accounts)
-        .where(eq(synthetic_accounts.group_id, groupId))
+        .where(
+          and(
+            eq(synthetic_accounts.group_id, groupId),
+            eq(synthetic_accounts.is_active, true)
+          )
+        )
         .orderBy(synthetic_accounts.code);
     });
   }
@@ -499,7 +509,12 @@ export class DatabaseStorage implements IStorage {
       return await db
         .select()
         .from(synthetic_accounts)
-        .where(eq(synthetic_accounts.grade, grade))
+        .where(
+          and(
+            eq(synthetic_accounts.grade, grade),
+            eq(synthetic_accounts.is_active, true)
+          )
+        )
         .orderBy(synthetic_accounts.code);
     });
   }

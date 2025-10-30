@@ -981,8 +981,19 @@ export default function ChartOfAccountsPage() {
                     required: "Codul contului este obligatoriu",
                     validate: {
                       validFormat: (value) => {
-                        // Verificăm dacă e un subcod valid (doar cifre sau cifre cu punct)
-                        return /^[0-9]+(\.[0-9]+)*$/.test(value) || "Codul trebuie să conțină doar cifre și puncte";
+                        // Validare strictă: doar cifre sau un singur punct urmat de cifre
+                        // Format valid: "1", "12", "123" SAU "1.2" (un singur nivel de ierarhie)
+                        // Format INVALID: "1.2.3" (multiple niveluri)
+                        const regex = /^[0-9]+(\.[0-9]+)?$/;
+                        if (!regex.test(value)) {
+                          return "Codul trebuie să conțină doar cifre, opțional cu un singur punct (ex: 1 sau 1.2)";
+                        }
+                        // Verifică că nu are mai mult de un punct
+                        const dots = (value.match(/\./g) || []).length;
+                        if (dots > 1) {
+                          return "Codul poate avea maxim un singur nivel de ierarhie (ex: 401.1, NU 401.1.2)";
+                        }
+                        return true;
                       }
                     }
                   })}

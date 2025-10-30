@@ -452,7 +452,38 @@ export const insertSyntheticAccountSchema = createInsertSchema(synthetic_account
   grade: z.number().int().min(1).max(2),
   group_id: z.string().uuid(),
   parent_id: z.string().uuid().optional()
+}).refine((data) => {
+  // Validare: conturile grad 1 NU pot avea parent_id
+  if (data.grade === 1 && data.parent_id) {
+    return false;
+  }
+  // Validare: conturile grad 2 TREBUIE să aibă parent_id
+  if (data.grade === 2 && !data.parent_id) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Conturile grad 1 nu pot avea parent_id, conturile grad 2 trebuie să aibă parent_id",
+  path: ["parent_id"]
+}).refine((data) => {
+  // Validare: gradul trebuie să corespundă cu lungimea codului
+  const determinedGrade = chartOfAccountsUtils.determineGrade(data.code);
+  if (determinedGrade && determinedGrade !== data.grade) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Gradul contului nu corespunde cu lungimea codului (grad 1 = 3 cifre, grad 2 = 4 cifre)",
+  path: ["grade"]
 });
+
+// NOTE TODO: Validarea că group_id corespunde cu primele 2 cifre ale codului nu poate fi făcută
+// în schema Zod deoarece necesită acces la baza de date pentru a lua codul grupei.
+// Această validare trebuie făcută la nivel de service/controller înainte de insert.
+// Exemplu: 
+//   const groupCode = chartOfAccountsUtils.extractGroupCode(data.code);
+//   const group = await db.query.PC_account_groups.findFirst({ where: eq(PC_account_groups.id, data.group_id) });
+//   if (group && group.code !== groupCode) throw new Error("group_id nu corespunde cu codul contului");
 export const selectSyntheticAccountSchema = createSelectSchema(synthetic_accounts);
 export const updateSyntheticAccountSchema = insertSyntheticAccountSchema.partial().omit({
   id: true,
@@ -532,6 +563,28 @@ export const chartOfAccountsUtils = {
   },
 
   /**
+   * Extract group code from account code
+   * For account codes: first 2 digits represent the group
+   * @param code Account code (e.g., "401", "4011")
+   * @returns Group code as string (e.g., "40")
+   */
+  extractGroupCode: (code: string): string => {
+    if (!code || code.length < 2) return '';
+    return code.substring(0, 2);
+  },
+
+  /**
+   * Extract synthetic prefix from analytic account code
+   * For analytic codes like "401.1" or "4011.2", extracts "401" or "4011"
+   * @param analyticCode Analytic account code (e.g., "401.1", "4011.2")
+   * @returns Synthetic prefix (e.g., "401", "4011")
+   */
+  extractSyntheticPrefix: (analyticCode: string): string => {
+    if (!analyticCode) return '';
+    return analyticCode.split('.')[0] || '';
+  },
+
+  /**
    * Validate that account/group code belongs to the correct class
    * @param code Account or group code
    * @param expectedClassCode Expected class code
@@ -540,6 +593,44 @@ export const chartOfAccountsUtils = {
   validateCodeClassMatch: (code: string, expectedClassCode: string): boolean => {
     const actualClassCode = chartOfAccountsUtils.extractClassCode(code);
     return actualClassCode === expectedClassCode;
+  },
+
+  /**
+   * Validate that account code belongs to the correct group
+   * @param code Account code (e.g., "401", "4011")
+   * @param expectedGroupCode Expected group code (e.g., "40")
+   * @returns true if valid, false otherwise
+   */
+  validateCodeGroupMatch: (code: string, expectedGroupCode: string): boolean => {
+    const extractedGroup = chartOfAccountsUtils.extractGroupCode(code);
+    return extractedGroup === expectedGroupCode;
+  },
+
+  /**
+   * Validate hierarchy between grade 2 and grade 1 synthetic accounts
+   * Grade 2 code must start with grade 1 code (e.g., "4011" starts with "401")
+   * @param grade2Code Grade 2 account code (4 digits)
+   * @param grade1Code Grade 1 parent code (3 digits)
+   * @returns true if valid hierarchy, false otherwise
+   */
+  validateGrade2Hierarchy: (grade2Code: string, grade1Code: string): boolean => {
+    if (!grade2Code || !grade1Code) return false;
+    if (grade2Code.length !== 4 || grade1Code.length !== 3) return false;
+    return grade2Code.substring(0, 3) === grade1Code;
+  },
+
+  /**
+   * Determine account grade from code length
+   * Grade 1: 3 digits (e.g., "401")
+   * Grade 2: 4 digits (e.g., "4011")
+   * @param code Account code
+   * @returns 1 for grade 1, 2 for grade 2, null for invalid
+   */
+  determineGrade: (code: string): 1 | 2 | null => {
+    if (!code) return null;
+    if (code.length === 3) return 1;
+    if (code.length === 4) return 2;
+    return null;
   },
 
   /**
@@ -560,4 +651,5 @@ export const chartOfAccountsUtils = {
     return chartOfAccountsUtils.extractClassCode(accountCode);
   }
 };
+
 
