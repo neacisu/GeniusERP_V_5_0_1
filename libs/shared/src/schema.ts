@@ -86,8 +86,9 @@ export * from "./schema/collaboration.schema";
 
 // Export Invoicing models for shared usage across the application
 export * from "./schema/invoice.schema";
-// Import invoiceItems for relations (avoid circular dependency)
+// Import for relations (avoid circular dependency)
 import { invoiceItems } from "@geniuserp/invoicing";
+import { account_groups } from "./schema/core.schema";
 export * from "./schema/invoice-numbering.schema";
 
 // Export Warehouse models for shared usage across the application
@@ -104,8 +105,14 @@ export * from "./schema/bank-journal.schema";
 export * from "./schema/document-counters.schema";
 
 // Export Communications models for shared usage across the application
-// Notă: crm_contacts redenumit în communicationsContacts pentru a evita conflicte cu CRM
+// Notă: Contact are același nume ca în CRM, dar sunt tabele diferite
 export * from "./schema/communications.schema";
+// Explicit re-export to resolve naming conflicts with crm (optional - TypeScript will use first definition found)
+export {
+  Contact as CommunicationsContact,
+  insertContactSchema as insertCommunicationsContactSchema,
+  type ContactInsert as InsertCommunicationsContact
+} from "./schema/communications.schema";
 
 // Export Marketing models for shared usage across the application
 export * from "./schema/marketing.schema";
@@ -291,24 +298,8 @@ export type Company = typeof companies.$inferSelect;
 // Romanian Chart of Accounts System
 // Account Classes schema moved to core.schema.ts for consistency
 
-// 2. Account Groups - Second level (2 digits)
-export const accountGroups = pgTable("account_groups", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  code: varchar("code", { length: 2 }).notNull().unique(), // Two digits (e.g., 10, 11, 30)
-  name: text("name").notNull(),
-  description: text("description"),
-  classId: uuid("class_id").notNull().references(() => account_classes.id),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const accountGroupRelations = relations(accountGroups, ({ one, many }) => ({
-  class: one(account_classes, {
-    fields: [accountGroups.classId],
-    references: [account_classes.id],
-  }),
-  syntheticAccounts: many(syntheticAccounts),
-}));
+// Account Groups schema moved to core.schema.ts for consistency
+// Relations are defined in core.schema.ts
 
 // 3. Synthetic Accounts (Grade 1: 3 digits, Grade 2: 4 digits)
 export const syntheticAccounts = pgTable("synthetic_accounts", {
@@ -322,7 +313,7 @@ export const syntheticAccounts = pgTable("synthetic_accounts", {
   // - B (Bifunctional/A/P): Accounts that can have either debit or credit balance
   accountFunction: text("account_function").notNull(),
   grade: integer("grade").notNull(), // 1 (3 digits) or 2 (4 digits)
-  groupId: uuid("group_id").notNull().references(() => accountGroups.id),
+  group_id: uuid("group_id").notNull(),
   // Self-reference: Grade 2 accounts can reference Grade 1 accounts as parents
   // Using function with explicit return to allow TypeScript to resolve the circular reference
   parentId: uuid("parent_id"),
@@ -335,9 +326,9 @@ export const syntheticAccounts = pgTable("synthetic_accounts", {
 }));
 
 export const syntheticAccountRelations = relations(syntheticAccounts, ({ one, many }) => ({
-  group: one(accountGroups, {
-    fields: [syntheticAccounts.groupId],
-    references: [accountGroups.id],
+  group: one(account_groups, {
+    fields: [syntheticAccounts.group_id],
+    references: [account_groups.id],
   }),
   parent: one(syntheticAccounts, {
     fields: [syntheticAccounts.parentId],
@@ -912,12 +903,10 @@ export type InsertFxRate = z.infer<typeof insertFxRateSchema>;
 
 // Additional type aliases for commonly used tables
 export type InventoryProduct = typeof inventoryProducts.$inferSelect;
-export type InsertInventoryProduct = z.infer<typeof insertInventoryProductSchema>;
-export type InventoryCategory = typeof inventoryCategories.$inferSelect;
-export type InventoryUnit = typeof inventoryUnits.$inferSelect;
+export type InsertInventoryProduct = typeof inventoryProducts.$inferInsert;
 export type JournalEntry = typeof journalEntries.$inferSelect;
-export type InsertJournalEntry = z.infer<typeof insertJournalEntrySchema>;
+export type InsertJournalEntry = typeof journalEntries.$inferInsert;
 export type JournalLine = typeof journalLines.$inferSelect;
-export type InsertJournalLine = z.infer<typeof insertJournalLineSchema>;
+export type InsertJournalLine = typeof journalLines.$inferInsert;
 export type InventoryStockMovement = typeof inventoryStockMovements.$inferSelect;
-export type InsertInventoryStockMovement = z.infer<typeof insertInventoryStockMovementSchema>;
+export type InsertInventoryStockMovement = typeof inventoryStockMovements.$inferInsert;

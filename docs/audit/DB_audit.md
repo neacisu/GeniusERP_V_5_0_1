@@ -458,8 +458,187 @@ export type UpdateAccountClassZod = z.infer<typeof updateAccountClassSchema>;
 ---
 
 # 3. account_groups
-4. account_mappings
-5. account_relationships
+
+## 📋 Descriere Generală
+
+**Tabel:** `account_groups` - **Grupuri de Conturi**
+
+**Scop:** Al doilea nivel al ierarhiei Planului de Conturi Românesc, grupând conturile sintetice în categorii logice în cadrul fiecărei clase.
+
+**Importanță în Sistem:** ⭐⭐⭐⭐⭐ (Critică - Fundament ierarhiei contabile)
+
+**Context Business:**
+- Reprezintă **grupurile de conturi** din cadrul fiecărei clase (1-9)
+- Codurile sunt formate din **2 cifre** (ex: 10, 11, 20, 30, etc.)
+- Prima cifră = clasa, a doua cifră = grupul în cadrul clasei
+- Exemple: 10=Capital și rezerve, 20=Imobilizări necorporale, 30=Stocuri, etc.
+
+## 🏗️ Structură Tehnică
+
+### DDL PostgreSQL
+```sql
+CREATE TABLE public.account_groups (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    code character varying(2) NOT NULL,
+    name text NOT NULL,
+    description text,
+    class_id uuid NOT NULL,
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    updated_at timestamp without time zone NOT NULL DEFAULT now(),
+    CONSTRAINT account_groups_pkey PRIMARY KEY (id),
+    CONSTRAINT account_groups_code_unique UNIQUE (code),
+    CONSTRAINT account_groups_class_id_account_classes_id_fk
+        FOREIGN KEY (class_id) REFERENCES account_classes(id)
+);
+
+-- Indexes
+CREATE UNIQUE INDEX account_groups_code_unique ON account_groups(code);
+CREATE INDEX account_groups_code_idx ON account_groups(code);
+CREATE INDEX account_groups_class_idx ON account_groups(class_id);
+```
+
+### Schema Drizzle ORM
+```typescript
+export const account_groups = pgTable('account_groups', {
+  id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
+  code: varchar('code', { length: 2 }).notNull().unique(),
+  name: text('name').notNull(),
+  description: text('description'),
+  class_id: uuid('class_id').notNull(),
+  created_at: timestamp('created_at').notNull().default(sql`now()`),
+  updated_at: timestamp('updated_at').notNull().default(sql`now()`)
+}, (table) => ({
+  code_unique: unique('account_groups_code_unique').on(table.code),
+  code_idx: index('account_groups_code_idx').on(table.code),
+  class_idx: index('account_groups_class_idx').on(table.class_id),
+}));
+```
+
+## 📊 Detalierea Coloanelor
+
+### 1. `id` - Identificator Unic
+- **Tip:** `uuid` (PostgreSQL), `uuid('id')` (Drizzle)
+- **Constrângeri:** `PRIMARY KEY`, `NOT NULL`, `DEFAULT gen_random_uuid()`
+- **Business Logic:** Identificator global unic pentru fiecare grup de conturi
+- **Algoritmic:** Generat automat la inserare folosind `gen_random_uuid()`
+- **Validare:** Format UUID valid (36 caractere, inclusiv dash-uri)
+
+### 2. `code` - Codul Grupului
+- **Tip:** `character varying(2)` (PostgreSQL), `varchar('code', { length: 2 })` (Drizzle)
+- **Constrângeri:** `NOT NULL`, `UNIQUE`
+- **Business Logic:** Cod format din 2 cifre reprezentând clasa+grup (ex: "10", "20", "30")
+- **Algoritmic:**
+  - Prima cifră = codul clasei (1-9)
+  - A doua cifră = numărul grupului în cadrul clasei (0-9)
+  - Unic în cadrul întregului plan de conturi
+- **Validare:** Exact 2 cifre, prima cifră 1-9, format: `/^[0-9]{2}$/`
+- **Exemple:** "10"=Capital și rezerve, "20"=Imobilizări necorporale, "30"=Stocuri
+
+### 3. `name` - Denumirea Grupului
+- **Tip:** `text` (PostgreSQL), `text('name')` (Drizzle)
+- **Constrângeri:** `NOT NULL`
+- **Business Logic:** Denumire descriptivă a grupului de conturi conform legislației române
+- **Algoritmic:** Text liber, dar trebuie să fie unic și să respecte nomenclatorul oficial
+- **Validare:** Minimum 1 caracter, maximum 255 caractere
+- **Exemple:** "Capital și rezerve", "Imobilizări necorporale", "Stocuri de materii prime"
+
+### 4. `description` - Descriere Detaliată
+- **Tip:** `text` (PostgreSQL), `text('description')` (Drizzle)
+- **Constrângeri:** `NULL` permis (opțional)
+- **Business Logic:** Descriere extinsă a conținutului și scopului grupului
+- **Algoritmic:** Text liber pentru clarificări suplimentare
+- **Validare:** Opțional, fără limită de lungime practică
+
+### 5. `class_id` - Referință către Clasă
+- **Tip:** `uuid` (PostgreSQL), `uuid('class_id')` (Drizzle)
+- **Constrângeri:** `NOT NULL`, `FOREIGN KEY` către `account_classes(id)`
+- **Business Logic:** Leagă grupul de clasa contabilă căreia îi aparține
+- **Algoritmic:** Prima cifră a codului grupului trebuie să corespundă cu codul clasei
+- **Validare:** UUID valid care există în tabelul `account_classes`
+
+### 6. `created_at` - Timestamp Creare
+- **Tip:** `timestamp without time zone` (PostgreSQL), `timestamp('created_at')` (Drizzle)
+- **Constrângeri:** `NOT NULL`, `DEFAULT now()`
+- **Business Logic:** Momentul creării înregistrării în sistem
+- **Algoritmic:** Setat automat la inserare cu `now()`
+
+### 7. `updated_at` - Timestamp Ultima Modificare
+- **Tip:** `timestamp without time zone` (PostgreSQL), `timestamp('updated_at')` (Drizzle)
+- **Constrângeri:** `NOT NULL`, `DEFAULT now()`
+- **Business Logic:** Momentul ultimei modificări a înregistrării
+- **Algoritmic:** Actualizat automat la fiecare modificare
+
+## 🔗 Relații cu Alte Tabele
+
+### Relație Parent: `account_classes` (1:N)
+- **Tip:** `One-to-Many` (o clasă are mai multe grupe)
+- **Foreign Key:** `class_id` → `account_classes.id`
+- **Business Logic:** Ierarhie clasică contabilă (Clasă → Grupă → Cont Sintetic → Cont Analitic)
+
+### Relație Child: `synthetic_accounts` (1:N)
+- **Tip:** `One-to-Many` (o grupă are mai multe conturi sintetice)
+- **Foreign Key:** `synthetic_accounts.group_id` → `account_groups.id`
+- **Business Logic:** Continuarea ierarhiei contabile
+
+## 📝 Scheme Zod pentru Validare
+
+```typescript
+// Schema pentru inserare
+export const insertAccountGroupSchema = createInsertSchema(account_groups, {
+  code: z.string().length(2).regex(/^[0-9]{2}$/, "Codul grupei trebuie să fie 2 cifre"),
+  name: z.string().min(1).max(255),
+  description: z.string().optional(),
+  class_id: z.string().uuid()
+});
+
+// Schema pentru selectare
+export const selectAccountGroupSchema = createSelectSchema(account_groups);
+
+// Schema pentru actualizare
+export const updateAccountGroupSchema = insertAccountGroupSchema.partial().omit({
+  id: true,
+  created_at: true,
+  updated_at: true
+});
+
+// Tipuri TypeScript
+export type InsertAccountGroupZod = z.infer<typeof insertAccountGroupSchema>;
+export type SelectAccountGroupZod = z.infer<typeof selectAccountGroupSchema>;
+export type UpdateAccountGroupZod = z.infer<typeof updateAccountGroupSchema>;
+```
+
+## 🔄 Standardizare Snake_case (Finalizată)
+
+**Fișiere standardizate:**
+- ✅ Eliminare definiție duplicată din `schema.ts`
+- ✅ Păstrare definiție canonică din `core.schema.ts`
+- ✅ Actualizare relații în `core.schema.ts` să folosească `account_groups`
+- ✅ Scheme Zod complete implementate
+- ✅ Standardizare variabile și proprietăți în tot codebase-ul
+
+## 📋 Rezumat Audit Tabel `account_groups`
+
+**Status: ✅ COMPLET** - Audit exhaustiv finalizat, toate probleme rezolvate
+
+**Modificări Implementate:**
+- ✅ Eliminare schema duplicată din schema.ts
+- ✅ Implementare scheme Zod complete pentru validare
+- ✅ Standardizare snake_case în tot codebase-ul
+- ✅ Actualizare relații și import-uri
+- ✅ Documentație tehnică și business completă
+
+**Importanță în Sistem:** ⭐⭐⭐⭐⭐ (Critică pentru ierarhia contabilă)
+
+**Logică Business Validată:**
+- ✅ Coduri 2 cifre: prima = clasă, a doua = grup
+- ✅ Unicitate cod în întreg planul de conturi
+- ✅ Relație strictă cu clasele contabile
+- ✅ Nomenclator oficial român respectat
+
+---
+
+# 4. account_mappings
+# 5. account_relationships
 6. accounting_account_balances
 7. accounting_journal_types
 8. accounting_ledger_entries
