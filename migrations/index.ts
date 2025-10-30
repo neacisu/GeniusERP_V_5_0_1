@@ -19,6 +19,10 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+// ES modules equivalent of __dirname
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ============================================================================
 // CONFIGURATION
@@ -255,6 +259,7 @@ export type { MigrationModule };
 // CLI EXECUTION
 // ============================================================================
 
-if (require.main === module) {
+// For ES modules, check if this is the main module
+if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(console.error);
 }
