@@ -26,7 +26,7 @@ export async function seed(db: any) {
       let inserted = 0;
       for (const accountClass of accountClassesData) {
         await db.execute(`
-          INSERT INTO account_classes (
+          INSERT INTO PC_account_classes (
             id, code, name, description, default_account_function, created_at, updated_at
           ) VALUES ($1, $2, $3, $4, $5, $6, $7)
           ON CONFLICT (code) DO UPDATE SET
@@ -57,7 +57,7 @@ export async function seed(db: any) {
       let inserted = 0;
       for (const accountGroup of accountGroupsData) {
         await db.execute(`
-          INSERT INTO account_groups (
+          INSERT INTO PC_account_groups (
             id, code, name, description, class_id, created_at, updated_at
           ) VALUES ($1, $2, $3, $4, $5, $6, $7)
           ON CONFLICT (code) DO UPDATE SET

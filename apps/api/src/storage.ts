@@ -1,4 +1,4 @@
-import { companies, users, accounts, account_classes, account_groups, synthetic_accounts, analytic_accounts,
+import { companies, users, accounts, PC_account_classes as account_classes, PC_account_groups as account_groups, synthetic_accounts, analytic_accounts,
   inventoryProducts, inventoryCategories, inventoryUnits,
   roles, permissions, userRoles, rolePermissions, auditLogs,
   invoices, invoiceDetails,
@@ -6,9 +6,9 @@ import { companies, users, accounts, account_classes, account_groups, synthetic_
 import { invoiceItems, type InsertInvoiceItem } from "@geniuserp/invoicing";
 import type { User, InsertUser, Company, InsertCompany,
   Account, InsertAccount,
-  AccountGroup, InsertAccountGroup, SyntheticAccount, InsertSyntheticAccount,
+  PC_AccountGroup as AccountGroup, InsertPC_AccountGroup as InsertAccountGroup, SyntheticAccount, InsertSyntheticAccount,
   AnalyticAccount, InsertAnalyticAccount,
-  AccountClass, InsertAccountClass,
+  PC_AccountClass as AccountClass, InsertPC_AccountClass as InsertAccountClass,
   InventoryProduct, InsertInventoryProduct, InventoryCategory, InventoryUnit,
   JournalEntry, InsertJournalEntry, InsertJournalLine,
   InventoryStockMovement, InsertInventoryStockMovement,
@@ -646,8 +646,8 @@ export class DatabaseStorage implements IStorage {
         code: accounts.code,
         name: accounts.name,
         type: accounts.type,
-        isActive: accounts.isActive,
-      }).from(accounts).where(eq(accounts.isActive, true)).orderBy(accounts.code);
+        isActive: accounts.is_active,
+      }).from(accounts).where(eq(accounts.is_active, true)).orderBy(accounts.code);
     });
   }
 

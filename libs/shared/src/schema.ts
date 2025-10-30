@@ -13,8 +13,8 @@ export * from "./schema/enums";
 // ============================================================================
 export * from "./schema/core.schema";
 
-// Import account_classes for relations
-import { account_classes } from "./schema/core.schema";
+// Import PC_account_classes for relations
+import { PC_account_classes as account_classes } from "./schema/core.schema";
 
 // ============================================================================
 // INVENTORY MANAGEMENT - Product catalog and stock management
@@ -88,7 +88,7 @@ export * from "./schema/collaboration.schema";
 export * from "./schema/invoice.schema";
 // Import for relations (avoid circular dependency)
 import { invoiceItems } from "@geniuserp/invoicing";
-import { account_groups } from "./schema/core.schema";
+import { PC_account_groups as account_groups } from "./schema/core.schema";
 export * from "./schema/invoice-numbering.schema";
 
 // Export Warehouse models for shared usage across the application
@@ -107,7 +107,7 @@ export * from "./schema/document-counters.schema";
 // Export Communications models for shared usage across the application
 // Notă: Contact are același nume ca în CRM, dar sunt tabele diferite
 export * from "./schema/communications.schema";
-// Explicit re-export to resolve naming conflicts with crm (optional - TypeScript will use first definition found)
+// Explicit re-export to resolve naming conflicts with crm
 export {
   Contact as CommunicationsContact,
   insertContactSchema as insertCommunicationsContactSchema,

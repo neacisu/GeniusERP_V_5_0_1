@@ -1,14 +1,14 @@
 # PC Plan Conturi Seeding Directory
 
-Acest director conține datele oficiale pentru Planul de Conturi Român și script-urile de seeding.
+Acest director conține datele oficiale pentru Planul de Conturi Român și script-urile de seeding pentru tabelele PC_account_classes și PC_account_groups.
 
 ## 📁 Structura Directorului
 
 ```
 PC_plan_conturi_seeding/
 ├── README.md                    # Acest fișier
-├── account_classes.json         # Date pentru tabelele account_classes (9 înregistrări)
-├── account_groups.json          # Date pentru tabelele account_groups (71 înregistrări)
+├── account_classes.json         # Date pentru tabelele PC_account_classes (9 înregistrări)
+├── account_groups.json          # Date pentru tabelele PC_account_groups (71 înregistrări)
 └── seed_plan_conturi.ts         # Script de seeding pentru popularea tabelelor
 ```
 
@@ -40,7 +40,7 @@ Grupuri pentru fiecare clasă conform standardelor românești:
 ## 🔧 Utilizare
 
 ### În Sistemul de Migrații
-Script-ul `seed_plan_conturi.ts` poate fi integrat în sistemul de migrații pentru popularea automată a datelor:
+Script-ul `seed_plan_conturi.ts` poate fi integrat în sistemul de migrații pentru popularea automată a tabelelor PC_account_classes și PC_account_groups:
 
 ```typescript
 import { seedRomanianChartOfAccounts } from './PC_plan_conturi_seeding/seed_plan_conturi';

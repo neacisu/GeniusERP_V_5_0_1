@@ -163,7 +163,7 @@ export const role_permissions = pgTable('role_permissions', {
  * Class 1-7: Balance sheet accounts
  * Class 8-9: Profit & Loss accounts
  */
-export const account_classes = pgTable('account_classes', {
+export const PC_account_classes = pgTable('PC_account_classes', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
   code: varchar('code', { length: 1 }).notNull().unique(),
   name: text('name').notNull(),
@@ -180,7 +180,7 @@ export const account_classes = pgTable('account_classes', {
  * Account Groups table
  * Second level of chart of accounts (10-99)
  */
-export const account_groups = pgTable('account_groups', {
+export const PC_account_groups = pgTable('PC_account_groups', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
   code: varchar('code', { length: 2 }).notNull().unique(),
   name: text('name').notNull(),
@@ -333,18 +333,18 @@ export const role_permissionsRelations = relations(role_permissions, ({ one }) =
 /**
  * Account Classes Relations
  */
-export const account_classesRelations = relations(account_classes, ({ many }) => ({
-  groups: many(account_groups),
+export const PC_account_classesRelations = relations(PC_account_classes, ({ many }) => ({
+  groups: many(PC_account_groups),
   accounts: many(accounts), // Legacy
 }));
 
 /**
  * Account Groups Relations
  */
-export const account_groupsRelations = relations(account_groups, ({ one, many }) => ({
-  class: one(account_classes, {
-    fields: [account_groups.class_id],
-    references: [account_classes.id],
+export const PC_account_groupsRelations = relations(PC_account_groups, ({ one, many }) => ({
+  class: one(PC_account_classes, {
+    fields: [PC_account_groups.class_id],
+    references: [PC_account_classes.id],
   }),
   syntheticAccounts: many(synthetic_accounts),
 }));
@@ -353,9 +353,9 @@ export const account_groupsRelations = relations(account_groups, ({ one, many })
  * Synthetic Accounts Relations
  */
 export const synthetic_accountsRelations = relations(synthetic_accounts, ({ one, many }) => ({
-  group: one(account_groups, {
+  group: one(PC_account_groups, {
     fields: [synthetic_accounts.group_id],
-    references: [account_groups.id],
+    references: [PC_account_groups.id],
   }),
   parent: one(synthetic_accounts, {
     fields: [synthetic_accounts.parent_id],
@@ -379,9 +379,9 @@ export const analytic_accountsRelations = relations(analytic_accounts, ({ one })
  * Accounts Relations (Legacy)
  */
 export const accountsRelations = relations(accounts, ({ one, many }) => ({
-  class: one(account_classes, {
+  class: one(PC_account_classes, {
     fields: [accounts.class_id],
-    references: [account_classes.id],
+    references: [PC_account_classes.id],
   }),
   parent: one(accounts, {
     fields: [accounts.parent_id],
@@ -406,14 +406,14 @@ export const accountsRelations = relations(accounts, ({ one, many }) => ({
 // ============================================================================
 
 // Account Classes Schemas
-export const insertAccountClassSchema = createInsertSchema(account_classes, {
+export const insertAccountClassSchema = createInsertSchema(PC_account_classes, {
   code: z.string().length(1).regex(/^[1-9]$/, "Codul clasei trebuie să fie cifră 1-9"),
   name: z.string().min(1).max(255),
   description: z.string().optional(),
   default_account_function: z.enum(['A', 'P', 'B'])
 });
 
-export const selectAccountClassSchema = createSelectSchema(account_classes);
+export const selectAccountClassSchema = createSelectSchema(PC_account_classes);
 
 export const updateAccountClassSchema = insertAccountClassSchema.partial().omit({
   id: true,
@@ -427,13 +427,13 @@ export type SelectAccountClassZod = z.infer<typeof selectAccountClassSchema>;
 export type UpdateAccountClassZod = z.infer<typeof updateAccountClassSchema>;
 
 // Account Groups Schemas
-export const insertAccountGroupSchema = createInsertSchema(account_groups, {
+export const insertAccountGroupSchema = createInsertSchema(PC_account_groups, {
   code: z.string().length(2).regex(/^[0-9]{2}$/, "Codul grupei trebuie să fie 2 cifre"),
   name: z.string().min(1).max(255),
   description: z.string().optional(),
   class_id: z.string().uuid()
 });
-export const selectAccountGroupSchema = createSelectSchema(account_groups);
+export const selectAccountGroupSchema = createSelectSchema(PC_account_groups);
 export const updateAccountGroupSchema = insertAccountGroupSchema.partial().omit({
   id: true,
   created_at: true,
@@ -505,14 +505,14 @@ export type UpdateAccountZod = z.infer<typeof updateAccountSchema>;
 // Legacy type aliases for backward compatibility
 export type Account = typeof accounts.$inferSelect;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
-export type AccountGroup = typeof account_groups.$inferSelect;
-export type InsertAccountGroup = z.infer<typeof insertAccountGroupSchema>;
+export type PC_AccountGroup = typeof PC_account_groups.$inferSelect;
+export type InsertPC_AccountGroup = z.infer<typeof insertAccountGroupSchema>;
 export type SyntheticAccount = typeof synthetic_accounts.$inferSelect;
 export type InsertSyntheticAccount = z.infer<typeof insertSyntheticAccountSchema>;
 export type AnalyticAccount = typeof analytic_accounts.$inferSelect;
 export type InsertAnalyticAccount = z.infer<typeof insertAnalyticAccountSchema>;
-export type AccountClass = typeof account_classes.$inferSelect;
-export type InsertAccountClass = z.infer<typeof insertAccountClassSchema>;
+export type PC_AccountClass = typeof PC_account_classes.$inferSelect;
+export type InsertPC_AccountClass = z.infer<typeof insertAccountClassSchema>;
 
 /**
  * Utility functions for Romanian Chart of Accounts

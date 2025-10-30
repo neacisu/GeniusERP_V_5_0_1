@@ -1,5 +1,5 @@
 import { getDrizzle } from '@common/drizzle';
-import { syntheticAccounts, account_groups } from '@geniuserp/shared/schema';
+import { syntheticAccounts, PC_account_groups as account_groups } from '@geniuserp/shared/schema';
 import { v4 as uuidv4 } from 'uuid';
 import { eq } from 'drizzle-orm';
 
@@ -205,7 +205,7 @@ async function addMissingClass1Accounts() {
         name: account.name,
         accountFunction: account.accountFunction,
         grade: account.grade,
-        groupId: groupId, // Rezolvat dinamic din DB, NU hardcodat
+        group_id: groupId, // Rezolvat dinamic din DB, NU hardcodat
         description: `Romanian Chart of Accounts - Synthetic Account ${account.code}`
       });
       

@@ -9,7 +9,7 @@ import {
   CardContent 
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Account as BaseAccount, AccountClass, AccountGroup, SyntheticAccount as BaseSyntheticAccount, chartOfAccountsUtils } from "@shared/schema";
+import { Account as BaseAccount, PC_AccountClass as AccountClass, PC_AccountGroup as AccountGroup, SyntheticAccount as BaseSyntheticAccount, chartOfAccountsUtils } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

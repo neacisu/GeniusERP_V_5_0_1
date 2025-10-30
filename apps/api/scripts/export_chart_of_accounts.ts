@@ -7,8 +7,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../src/db';
 import {
-  account_classes,
-  account_groups,
+  PC_account_classes as account_classes,
+  PC_account_groups as account_groups,
   synthetic_accounts,
 } from "@geniuserp/shared";
 import * as fs from 'fs';

@@ -31,7 +31,7 @@ export const seedRomanianChartOfAccounts = async (db: any) => {
 
     for (const accountClass of classesData) {
       await sql`
-        INSERT INTO account_classes (
+        INSERT INTO PC_account_classes (
           id, code, name, description, default_account_function, created_at, updated_at
         ) VALUES (
           ${accountClass.id}::uuid,
@@ -59,7 +59,7 @@ export const seedRomanianChartOfAccounts = async (db: any) => {
 
     for (const accountGroup of groupsData) {
       await sql`
-        INSERT INTO account_groups (
+        INSERT INTO PC_account_groups (
           id, code, name, description, class_id, created_at, updated_at
         ) VALUES (
           ${accountGroup.id}::uuid,
@@ -84,18 +84,18 @@ export const seedRomanianChartOfAccounts = async (db: any) => {
     console.log('🔍 Validating seeded data...');
 
     // Check classes count
-    const classesCount = await sql`SELECT COUNT(*) as count FROM account_classes`;
+    const classesCount = await sql`SELECT COUNT(*) as count FROM PC_account_classes`;
     console.log(`📊 Account classes in DB: ${classesCount[0].count}`);
 
     // Check groups count
-    const groupsCount = await sql`SELECT COUNT(*) as count FROM account_groups`;
+    const groupsCount = await sql`SELECT COUNT(*) as count FROM PC_account_groups`;
     console.log(`📊 Account groups in DB: ${groupsCount[0].count}`);
 
     // Validate relationships
     const orphanedGroups = await sql`
       SELECT ag.code, ag.name
-      FROM account_groups ag
-      LEFT JOIN account_classes ac ON ag.class_id = ac.id
+      FROM PC_account_groups ag
+      LEFT JOIN PC_account_classes ac ON ag.class_id = ac.id
       WHERE ac.id IS NULL
     `;
 

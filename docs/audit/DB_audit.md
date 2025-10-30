@@ -248,13 +248,13 @@ export type UpdateAccountBalanceZod = z.infer<typeof updateAccountBalanceSchema>
 **Production Ready:** ✅ Gata pentru producție
 ---
 
-# 2. account_classes
+# 2. PC_account_classes
 
-## 📋 Detalii detaliate tabel: `account_classes`
+## 📋 Detalii detaliate tabel: `PC_account_classes`
 
 ### 🎯 Scop și Rol în Sistem
 
-Tabelul `account_classes` reprezintă **clasificarea de nivel superior** a planului de conturi conform standardelor românești de contabilitate (RAS/OMFP 1802/2014). Acest tabel este **fundamental** pentru:
+Tabelul `PC_account_classes` reprezintă **clasificarea de nivel superior** a planului de conturi conform standardelor românești de contabilitate (RAS/OMFP 1802/2014). Acest tabel este **fundamental** pentru:
 
 - **Ierarhia contabilă**: Definirea celor 9 clase principale (1-9)
 - **Clasificare funcțională**: Distingerea între conturi de bilanț (1-7) și conturi de profit/pierdere (8-9)
@@ -266,7 +266,7 @@ Tabelul `account_classes` reprezintă **clasificarea de nivel superior** a planu
 
 **Schema DB (PostgreSQL):**
 ```sql
-CREATE TABLE public.account_classes (
+CREATE TABLE public.PC_account_classes (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     code character varying(1) NOT NULL,
     name text NOT NULL,
@@ -274,18 +274,18 @@ CREATE TABLE public.account_classes (
     default_account_function text NOT NULL,
     created_at timestamp without time zone NOT NULL DEFAULT now(),
     updated_at timestamp without time zone NOT NULL DEFAULT now(),
-    CONSTRAINT account_classes_pkey PRIMARY KEY (id),
-    CONSTRAINT account_classes_code_unique UNIQUE (code)
+    CONSTRAINT PC_account_classes_pkey PRIMARY KEY (id),
+    CONSTRAINT PC_account_classes_code_unique UNIQUE (code)
 );
 ```
 
 **Indexes:**
-- PRIMARY KEY: `account_classes_pkey` pe `id`
-- UNIQUE: `account_classes_code_unique` pe `code`
+- PRIMARY KEY: `PC_account_classes_pkey` pe `id`
+- UNIQUE: `PC_account_classes_code_unique` pe `code`
 
 **Referințe:**
-- Referenced by: `account_groups.class_id` → `account_classes.id`
-- Referenced by: `accounts.class_id` → `account_classes.id`
+- Referenced by: `PC_account_groups.class_id` → `PC_account_classes.id`
+- Referenced by: `accounts.class_id` → `PC_account_classes.id`
 
 ### 📊 Coloane și Logică Business
 
@@ -369,7 +369,7 @@ function validateAccountBalance(account, balance):
 
 #### ✅ **Schema Canonică** (în `/var/www/GeniusERP/libs/shared/src/schema/core.schema.ts`):
 ```typescript
-export const account_classes = pgTable('account_classes', {
+export const PC_account_classes = pgTable('PC_account_classes', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
   code: varchar('code', { length: 1 }).notNull().unique(),
   name: text('name').notNull(),
@@ -378,8 +378,8 @@ export const account_classes = pgTable('account_classes', {
   created_at: timestamp('created_at').notNull().default(sql`now()`),
   updated_at: timestamp('updated_at').notNull().default(sql`now()`)
 }, (table) => ({
-  code_unique: unique('account_classes_code_unique').on(table.code),
-  code_idx: index('account_classes_code_idx').on(table.code),
+  code_unique: unique('PC_account_classes_code_unique').on(table.code),
+  code_idx: index('idx_PC_account_classes_code').on(table.code),
 }));
 ```
 
@@ -387,7 +387,7 @@ export const account_classes = pgTable('account_classes', {
 
 ```typescript
 // Schema pentru inserare
-export const insertAccountClassSchema = createInsertSchema(account_classes, {
+export const insertAccountClassSchema = createInsertSchema(PC_account_classes, {
   code: z.string().length(1).regex(/^[1-9]$/, "Codul clasei trebuie să fie cifră 1-9"),
   name: z.string().min(1).max(255),
   description: z.string().optional(),
@@ -397,7 +397,7 @@ export const insertAccountClassSchema = createInsertSchema(account_classes, {
 });
 
 // Schema pentru selectare
-export const selectAccountClassSchema = createSelectSchema(account_classes);
+export const selectAccountClassSchema = createSelectSchema(PC_account_classes);
 
 // Schema pentru actualizare
 export const updateAccountClassSchema = insertAccountClassSchema.partial().omit({
@@ -417,11 +417,11 @@ export type UpdateAccountClassZod = z.infer<typeof updateAccountClassSchema>;
 **Fișiere standardizate:**
 - ✅ Eliminare definiție duplicată din `schema.ts`
 - ✅ Păstrare definiție canonică din `core.schema.ts`
-- ✅ Actualizare relații în `schema.ts` să folosească `account_classes`
+- ✅ Actualizare relații în `schema.ts` să folosească `PC_account_classes`
 - ✅ Adăugare scheme Zod complete în `core.schema.ts`
 - ✅ Standardizare variabile și proprietăți în tot codebase-ul
 
-### 📋 Rezumat Audit Tabel `account_classes`
+### 📋 Rezumat Audit Tabel `PC_account_classes`
 
 **Status: ✅ COMPLET** - Audit exhaustiv finalizat, toate probleme rezolvate
 
@@ -438,7 +438,7 @@ export type UpdateAccountClassZod = z.infer<typeof updateAccountClassSchema>;
 
 **Status: ✅ COMPLET** - Migrare canonică implementată în sistemul modular
 
-**Locație:** `/var/www/GeniusERP/migrations/modules/core/create_account_classes.ts`
+**Locație:** `/var/www/GeniusERP/migrations/modules/core/create_account_classes.ts` (creează tabel `PC_account_classes`)
 
 **Caracteristici:**
 - ✅ Funcții `up`/`down` pentru create/drop tabel
@@ -457,11 +457,11 @@ export type UpdateAccountClassZod = z.infer<typeof updateAccountClassSchema>;
 
 ---
 
-# 3. account_groups
+# 3. PC_account_groups
 
 ## 📋 Descriere Generală
 
-**Tabel:** `account_groups` - **Grupuri de Conturi**
+**Tabel:** `PC_account_groups` - **Grupuri de Conturi**
 
 **Scop:** Al doilea nivel al ierarhiei Planului de Conturi Românesc, grupând conturile sintetice în categorii logice în cadrul fiecărei clase.
 
@@ -477,7 +477,7 @@ export type UpdateAccountClassZod = z.infer<typeof updateAccountClassSchema>;
 
 ### DDL PostgreSQL
 ```sql
-CREATE TABLE public.account_groups (
+CREATE TABLE public.PC_account_groups (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     code character varying(2) NOT NULL,
     name text NOT NULL,
@@ -485,21 +485,21 @@ CREATE TABLE public.account_groups (
     class_id uuid NOT NULL,
     created_at timestamp without time zone NOT NULL DEFAULT now(),
     updated_at timestamp without time zone NOT NULL DEFAULT now(),
-    CONSTRAINT account_groups_pkey PRIMARY KEY (id),
-    CONSTRAINT account_groups_code_unique UNIQUE (code),
-    CONSTRAINT account_groups_class_id_account_classes_id_fk
-        FOREIGN KEY (class_id) REFERENCES account_classes(id)
+    CONSTRAINT PC_account_groups_pkey PRIMARY KEY (id),
+    CONSTRAINT PC_account_groups_code_unique UNIQUE (code),
+    CONSTRAINT PC_account_groups_class_id_PC_account_classes_id_fk
+        FOREIGN KEY (class_id) REFERENCES PC_account_classes(id)
 );
 
 -- Indexes
-CREATE UNIQUE INDEX account_groups_code_unique ON account_groups(code);
-CREATE INDEX account_groups_code_idx ON account_groups(code);
-CREATE INDEX account_groups_class_idx ON account_groups(class_id);
+CREATE UNIQUE INDEX PC_account_groups_code_unique ON PC_account_groups(code);
+CREATE INDEX idx_PC_account_groups_code ON PC_account_groups(code);
+CREATE INDEX idx_PC_account_groups_class_id ON PC_account_groups(class_id);
 ```
 
 ### Schema Drizzle ORM
 ```typescript
-export const account_groups = pgTable('account_groups', {
+export const PC_account_groups = pgTable('PC_account_groups', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
   code: varchar('code', { length: 2 }).notNull().unique(),
   name: text('name').notNull(),
@@ -508,9 +508,9 @@ export const account_groups = pgTable('account_groups', {
   created_at: timestamp('created_at').notNull().default(sql`now()`),
   updated_at: timestamp('updated_at').notNull().default(sql`now()`)
 }, (table) => ({
-  code_unique: unique('account_groups_code_unique').on(table.code),
-  code_idx: index('account_groups_code_idx').on(table.code),
-  class_idx: index('account_groups_class_idx').on(table.class_id),
+  code_unique: unique('PC_account_groups_code_unique').on(table.code),
+  code_idx: index('idx_PC_account_groups_code').on(table.code),
+  class_idx: index('idx_PC_account_groups_class_id').on(table.class_id),
 }));
 ```
 
@@ -551,10 +551,10 @@ export const account_groups = pgTable('account_groups', {
 
 ### 5. `class_id` - Referință către Clasă
 - **Tip:** `uuid` (PostgreSQL), `uuid('class_id')` (Drizzle)
-- **Constrângeri:** `NOT NULL`, `FOREIGN KEY` către `account_classes(id)`
+- **Constrângeri:** `NOT NULL`, `FOREIGN KEY` către `PC_account_classes(id)`
 - **Business Logic:** Leagă grupul de clasa contabilă căreia îi aparține
 - **Algoritmic:** Prima cifră a codului grupului trebuie să corespundă cu codul clasei
-- **Validare:** UUID valid care există în tabelul `account_classes`
+- **Validare:** UUID valid care există în tabelul `PC_account_classes`
 
 ### 6. `created_at` - Timestamp Creare
 - **Tip:** `timestamp without time zone` (PostgreSQL), `timestamp('created_at')` (Drizzle)
@@ -570,21 +570,21 @@ export const account_groups = pgTable('account_groups', {
 
 ## 🔗 Relații cu Alte Tabele
 
-### Relație Parent: `account_classes` (1:N)
+### Relație Parent: `PC_account_classes` (1:N)
 - **Tip:** `One-to-Many` (o clasă are mai multe grupe)
-- **Foreign Key:** `class_id` → `account_classes.id`
+- **Foreign Key:** `class_id` → `PC_account_classes.id`
 - **Business Logic:** Ierarhie clasică contabilă (Clasă → Grupă → Cont Sintetic → Cont Analitic)
 
 ### Relație Child: `synthetic_accounts` (1:N)
 - **Tip:** `One-to-Many` (o grupă are mai multe conturi sintetice)
-- **Foreign Key:** `synthetic_accounts.group_id` → `account_groups.id`
+- **Foreign Key:** `synthetic_accounts.group_id` → `PC_account_groups.id`
 - **Business Logic:** Continuarea ierarhiei contabile
 
 ## 📝 Scheme Zod pentru Validare
 
 ```typescript
 // Schema pentru inserare
-export const insertAccountGroupSchema = createInsertSchema(account_groups, {
+export const insertAccountGroupSchema = createInsertSchema(PC_account_groups, {
   code: z.string().length(2).regex(/^[0-9]{2}$/, "Codul grupei trebuie să fie 2 cifre"),
   name: z.string().min(1).max(255),
   description: z.string().optional(),
@@ -592,7 +592,7 @@ export const insertAccountGroupSchema = createInsertSchema(account_groups, {
 });
 
 // Schema pentru selectare
-export const selectAccountGroupSchema = createSelectSchema(account_groups);
+export const selectAccountGroupSchema = createSelectSchema(PC_account_groups);
 
 // Schema pentru actualizare
 export const updateAccountGroupSchema = insertAccountGroupSchema.partial().omit({
@@ -612,11 +612,11 @@ export type UpdateAccountGroupZod = z.infer<typeof updateAccountGroupSchema>;
 **Fișiere standardizate:**
 - ✅ Eliminare definiție duplicată din `schema.ts`
 - ✅ Păstrare definiție canonică din `core.schema.ts`
-- ✅ Actualizare relații în `core.schema.ts` să folosească `account_groups`
+- ✅ Actualizare relații în `core.schema.ts` să folosească `PC_account_groups`
 - ✅ Scheme Zod complete implementate
 - ✅ Standardizare variabile și proprietăți în tot codebase-ul
 
-## 📋 Rezumat Audit Tabel `account_groups`
+## 📋 Rezumat Audit Tabel `PC_account_groups`
 
 **Status: ✅ COMPLET** - Audit exhaustiv finalizat, toate probleme rezolvate
 

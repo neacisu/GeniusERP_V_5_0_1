@@ -31,11 +31,11 @@
 import { sql } from 'drizzle-orm';
 
 export const up = async (db: any) => {
-  console.log('📊 Creating account_classes table...');
+  console.log('📊 Creating PC_account_classes table...');
 
-  // Create the account_classes table
+  // Create the PC_account_classes table
   await sql`
-    CREATE TABLE IF NOT EXISTS account_classes (
+    CREATE TABLE IF NOT EXISTS PC_account_classes (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       code character varying(1) NOT NULL,
       name text NOT NULL,
@@ -45,31 +45,31 @@ export const up = async (db: any) => {
       updated_at timestamp without time zone NOT NULL DEFAULT now(),
 
       -- Unique constraint on code (classes 1-9)
-      CONSTRAINT account_classes_code_unique UNIQUE (code),
+      CONSTRAINT PC_account_classes_code_unique UNIQUE (code),
 
       -- Check constraint for valid account functions
-      CONSTRAINT account_classes_function_check
+      CONSTRAINT PC_account_classes_function_check
         CHECK (default_account_function IN ('A', 'P', 'B'))
     );
   `;
 
   // Create indexes for performance
   await sql`
-    CREATE INDEX IF NOT EXISTS idx_account_classes_code
-    ON account_classes (code);
+    CREATE INDEX IF NOT EXISTS idx_PC_account_classes_code
+    ON PC_account_classes (code);
   `;
 
-  console.log('✅ account_classes table created successfully');
+  console.log('✅ PC_account_classes table created successfully');
 };
 
 export const down = async (db: any) => {
   console.log('🔄 Rolling back account_classes table...');
 
   // Drop indexes first
-  await sql`DROP INDEX IF EXISTS idx_account_classes_code;`;
+  await sql`DROP INDEX IF EXISTS idx_PC_account_classes_code;`;
 
   // Drop the table
-  await sql`DROP TABLE IF EXISTS account_classes;`;
+  await sql`DROP TABLE IF EXISTS PC_account_classes;`;
 
-  console.log('✅ account_classes table rolled back');
+  console.log('✅ PC_account_classes table rolled back');
 };
