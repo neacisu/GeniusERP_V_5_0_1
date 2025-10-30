@@ -827,6 +827,12 @@ export type UpdateAccountGroupZod = z.infer<typeof updateAccountGroupSchema>;
 
 **Prefix PC_:** Plan de Conturi - pentru identificare ușoară și consistență
 
+**Backward Compatibility:** Pentru compatibilitate cu codul existent, există alias-uri:
+```typescript
+export const synthetic_accounts = PC_synthetic_accounts;
+export type SyntheticAccount = PC_SyntheticAccount;
+```
+
 **Scop:** Al treilea nivel al ierarhiei Planului de Conturi Românesc, reprezentând conturile sintetice de gradul I (3 cifre, ex: 401) și gradul II (4 cifre, ex: 4011).
 
 **Importanță în Sistem:** ⭐⭐⭐⭐⭐ (Critică - Nivelul principal de lucru în contabilitate)
