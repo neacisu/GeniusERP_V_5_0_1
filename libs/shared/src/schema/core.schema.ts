@@ -485,13 +485,12 @@ export const insertAccountSchema = createInsertSchema(accounts, {
   code: z.string().min(1).max(20),
   name: z.string().min(1).max(255),
   description: z.string().optional(),
-  account_function: z.enum(['A', 'P', 'B']),
+  type: z.enum(['A', 'P', 'B']),
   class_id: z.string().uuid(),
-  group_id: z.string().uuid().optional(),
+  parent_id: z.string().uuid().optional(),
+  is_active: z.boolean().default(true),
   synthetic_id: z.string().uuid().optional(),
-  analytic_id: z.string().uuid().optional(),
-  company_id: z.string().uuid(),
-  is_active: z.boolean().default(true)
+  analytic_id: z.string().uuid().optional()
 });
 export const selectAccountSchema = createSelectSchema(accounts);
 export const updateAccountSchema = insertAccountSchema.partial().omit({

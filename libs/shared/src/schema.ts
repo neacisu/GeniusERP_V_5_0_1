@@ -53,6 +53,12 @@ export * from "./schema/documents-extended.schema";
 // Export CRM models for shared usage across the application
 // Notă: CRM Activity este exportat ca Activity principal
 export * from "./schema/crm.schema";
+// Explicit re-export to resolve naming conflicts with communications
+export {
+  Contact as CrmContact,
+  insertContactSchema as insertCrmContactSchema,
+  type InsertContact as InsertCrmContact
+} from "./schema/crm.schema";
 export * from "./schema/financial-data.schema";
 
 // Export HR models for shared usage across the application
@@ -80,6 +86,8 @@ export * from "./schema/collaboration.schema";
 
 // Export Invoicing models for shared usage across the application
 export * from "./schema/invoice.schema";
+// Import invoiceItems for relations (avoid circular dependency)
+import { invoiceItems } from "@geniuserp/invoicing";
 export * from "./schema/invoice-numbering.schema";
 
 // Export Warehouse models for shared usage across the application
@@ -901,3 +909,15 @@ export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type InsertDocumentVersion = z.infer<typeof insertDocumentVersionSchema>;
 export type InsertTaggedDocumentVersion = z.infer<typeof insertTaggedDocumentVersionSchema>;
 export type InsertFxRate = z.infer<typeof insertFxRateSchema>;
+
+// Additional type aliases for commonly used tables
+export type InventoryProduct = typeof inventoryProducts.$inferSelect;
+export type InsertInventoryProduct = z.infer<typeof insertInventoryProductSchema>;
+export type InventoryCategory = typeof inventoryCategories.$inferSelect;
+export type InventoryUnit = typeof inventoryUnits.$inferSelect;
+export type JournalEntry = typeof journalEntries.$inferSelect;
+export type InsertJournalEntry = z.infer<typeof insertJournalEntrySchema>;
+export type JournalLine = typeof journalLines.$inferSelect;
+export type InsertJournalLine = z.infer<typeof insertJournalLineSchema>;
+export type InventoryStockMovement = typeof inventoryStockMovements.$inferSelect;
+export type InsertInventoryStockMovement = z.infer<typeof insertInventoryStockMovementSchema>;
