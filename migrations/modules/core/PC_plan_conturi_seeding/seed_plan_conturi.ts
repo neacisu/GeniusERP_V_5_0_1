@@ -18,6 +18,8 @@
  * - 781 conturi sintetice (grad 1 și 2)
  */
 
+/// <reference types="node" />
+
 import { sql } from 'drizzle-orm';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -147,12 +149,13 @@ export const seedRomanianChartOfAccounts = async (db: any) => {
     console.log(`📊 Synthetic accounts in DB: ${syntheticCount[0].count}`);
 
     // Validate relationships: groups → classes
-    const orphanedGroups = await sql`
+    const orphanedGroupsResult = await db.execute(sql`
       SELECT ag.code, ag.name
       FROM PC_account_groups ag
       LEFT JOIN PC_account_classes ac ON ag.class_id = ac.id
       WHERE ac.id IS NULL
-    `;
+    `);
+    const orphanedGroups = orphanedGroupsResult.rows || orphanedGroupsResult;
 
     if (orphanedGroups.length > 0) {
       throw new Error(`❌ Found ${orphanedGroups.length} orphaned account groups without valid class references`);
@@ -161,12 +164,13 @@ export const seedRomanianChartOfAccounts = async (db: any) => {
     console.log('✅ All account groups have valid class references');
 
     // Validate relationships: synthetic accounts → groups
-    const orphanedSynthetic = await sql`
+    const orphanedSyntheticResult = await db.execute(sql`
       SELECT sa.code, sa.name
       FROM PC_synthetic_accounts sa
       LEFT JOIN PC_account_groups ag ON sa.group_id = ag.id
       WHERE ag.id IS NULL
-    `;
+    `);
+    const orphanedSynthetic = orphanedSyntheticResult.rows || orphanedSyntheticResult;
 
     if (orphanedSynthetic.length > 0) {
       throw new Error(`❌ Found ${orphanedSynthetic.length} synthetic accounts without valid group references`);
@@ -175,11 +179,12 @@ export const seedRomanianChartOfAccounts = async (db: any) => {
     console.log('✅ All synthetic accounts have valid group references');
 
     // Validate grade 2 accounts have valid parents
-    const invalidGrade2 = await sql`
+    const invalidGrade2Result = await db.execute(sql`
       SELECT sa.code, sa.name
       FROM PC_synthetic_accounts sa
       WHERE sa.grade = 2 AND sa.parent_id IS NULL
-    `;
+    `);
+    const invalidGrade2 = invalidGrade2Result.rows || invalidGrade2Result;
 
     if (invalidGrade2.length > 0) {
       console.warn(`⚠️  Warning: Found ${invalidGrade2.length} grade 2 accounts without parent_id`);
