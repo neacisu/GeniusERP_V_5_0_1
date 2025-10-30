@@ -128,7 +128,7 @@ export class ManageWarehouseService {
   /**
    * Create an analytic account
    */
-  private async createAnalyticAccount(syntheticId: string, code: string, name: string, description: string, accountFunction: string): Promise<void> {
+  private async createAnalyticAccount(syntheticId: string, code: string, name: string, description: string, account_function: string): Promise<void> {
     try {
       console.log(`[ManageWarehouseService] 📊 Creating analytic account ${code}: ${name}`);
       
@@ -148,7 +148,7 @@ export class ManageWarehouseService {
             '${sanitizedName}',
             '${sanitizedDescription}',
             '${syntheticId}',
-            '${accountFunction}',
+            '${account_function}',
             true,
             NOW(),
             NOW()
@@ -167,9 +167,9 @@ export class ManageWarehouseService {
           code: code,
           name: name,
           description: description,
-          syntheticId: syntheticId,
-          accountFunction: accountFunction, 
-          isActive: true
+          synthetic_id: syntheticId,
+          account_function: account_function, 
+          is_active: true
         };
         
         console.log(`[ManageWarehouseService] 🔄 Analytic account object:`, JSON.stringify(analyticAccount, null, 2));

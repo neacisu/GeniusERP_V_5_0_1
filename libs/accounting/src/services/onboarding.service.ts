@@ -14,7 +14,7 @@
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { eq } from 'drizzle-orm';
 import {
-  syntheticAccounts,
+  synthetic_accounts,
   AccountingSettings,
   OpeningBalance,
   InsertSyntheticAccount,
@@ -43,10 +43,10 @@ export interface ImportAccountData {
   code: string;
   name: string;
   description?: string;
-  accountFunction: 'A' | 'P' | 'B';
+  account_function: 'A' | 'P' | 'B';
   grade: number;
-  groupId: string;
-  parentId?: string | null;
+  group_id: string;
+  parent_id?: string | null;
 }
 
 export interface ImportBalanceData {
@@ -112,12 +112,12 @@ export class OnboardingService extends DrizzleService {
   ): Promise<void> {
     // Validate all required fields
     for (const account of accounts) {
-      if (!account.code || !account.name || !account.accountFunction || !account.grade || !account.groupId) {
+      if (!account.code || !account.name || !account.account_function || !account.grade || !account.group_id) {
         throw new Error(`Invalid account data: ${JSON.stringify(account)}`);
       }
 
-      if (!['A', 'P', 'B'].includes(account.accountFunction)) {
-        throw new Error(`Invalid account function: ${account.accountFunction}. Must be A, P, or B`);
+      if (!['A', 'P', 'B'].includes(account.account_function)) {
+        throw new Error(`Invalid account function: ${account.account_function}. Must be A, P, or B`);
       }
 
       if (account.grade < 1 || account.grade > 3) {
@@ -136,24 +136,24 @@ export class OnboardingService extends DrizzleService {
     for (const account of accounts) {
       // Check if account already exists
       const [existing] = await this.query((db) =>
-        db.select().from(syntheticAccounts).where(eq(syntheticAccounts.code, account.code)).limit(1)
+        db.select().from(synthetic_accounts).where(eq(synthetic_accounts.code, account.code)).limit(1)
       );
 
       if (!existing) {
         // Insert new account
         await this.query((db) =>
-          db.insert(syntheticAccounts).values({
+          db.insert(synthetic_accounts).values({
             id: crypto.randomUUID(),
             code: account.code,
             name: account.name,
             description: account.description || null,
-            accountFunction: account.accountFunction,
+            account_function: account.account_function,
             grade: account.grade,
-            groupId: account.groupId,
-            parentId: account.parentId || null,
-            isActive: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            group_id: account.group_id,
+            parent_id: account.parent_id || null,
+            is_active: true,
+            created_at: new Date(),
+            updated_at: new Date(),
           } as InsertSyntheticAccount)
         );
       }
@@ -353,10 +353,10 @@ export class OnboardingService extends DrizzleService {
         code: parts[0],
         name: parts[1],
         description: parts[2] || undefined,
-        accountFunction: parts[3] as 'A' | 'P' | 'B',
+        account_function: parts[3] as 'A' | 'P' | 'B',
         grade: parseInt(parts[4], 10),
-        groupId: parts[5],
-        parentId: parts[6] || null,
+        group_id: parts[5],
+        parent_id: parts[6] || null,
       });
     }
 

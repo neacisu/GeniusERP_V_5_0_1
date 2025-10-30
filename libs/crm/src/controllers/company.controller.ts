@@ -120,16 +120,16 @@ export class CompanyController {
       }
       
       const syntheticId = syntheticAccount[0].id;
-      const accountFunction = syntheticAccount[0].accountFunction; // Inherit function from synthetic account
+      const accountFunction = syntheticAccount[0].account_function; // Inherit function from synthetic account
       
       // Create new analytic account
       const analyticAccountData = {
         code: code,
         name: `${companyName} - ${code}`,
         description: `Cont analitic pentru compania ${companyName}`,
-        syntheticId: syntheticId,
-        accountFunction: accountFunction,
-        isActive: true
+        synthetic_id: syntheticId,
+        account_function: accountFunction,
+        is_active: true
       };
       
       // Insert the analytic account
@@ -141,9 +141,9 @@ export class CompanyController {
         analyticAccountData.code,
         analyticAccountData.name,
         analyticAccountData.description,
-        analyticAccountData.syntheticId,
-        analyticAccountData.accountFunction,
-        analyticAccountData.isActive
+        analyticAccountData.synthetic_id,
+        analyticAccountData.account_function,
+        analyticAccountData.is_active
       ]); // Extra protection against duplicates
       
       console.log(`[CompanyController] Successfully created analytic account ${code} in analytic_accounts`);
