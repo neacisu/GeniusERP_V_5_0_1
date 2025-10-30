@@ -6,9 +6,9 @@
  */
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../db';
-import { 
-  accountClasses, 
-  accountGroups, 
+import {
+  account_classes,
+  accountGroups,
   syntheticAccounts,
 } from "../../libs/shared/src/schema";
 import * as fs from 'fs';
@@ -25,14 +25,14 @@ async function exportChartOfAccounts() {
     console.log('Starting Romanian Chart of Accounts export...');
     
     // Get all classes
-    const classes = await db.select().from(accountClasses).orderBy(asc(accountClasses.code));
+    const classes = await db.select().from(account_classes).orderBy(asc(account_classes.code));
     
     // File output
     let outputContent = 'Planul de conturi general Românesc\n\n';
     
     // Export each class
     for (const accountClass of classes) {
-      outputContent += `Clasa ${accountClass.code} - ${accountClass.name} (${accountClass.defaultAccountFunction})\n\n`;
+      outputContent += `Clasa ${accountClass.code} - ${accountClass.name} (${accountClass.default_account_function})\n\n`;
       
       // Get groups for this class
       const groups = await db.select().from(accountGroups)

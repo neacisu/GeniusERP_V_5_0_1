@@ -1,11 +1,11 @@
-import { companies, users, accounts, accountClasses, accountGroups, syntheticAccounts, analyticAccounts, 
+import { companies, users, accounts, account_classes, accountGroups, syntheticAccounts, analyticAccounts, 
   inventoryProducts, inventoryCategories, inventoryUnits, 
   roles, permissions, userRoles, rolePermissions, auditLogs,
   invoices, invoiceDetails,
   journalEntries, journalLines } from "../../../libs/shared/src/schema";
 import { invoiceItems, type InsertInvoiceItem } from "../../../libs/invoicing/src/schema/invoice.schema";
-import type { User, InsertUser, Company, InsertCompany, 
-  Account, InsertAccount, AccountClass, InsertAccountClass, 
+import type { User, InsertUser, Company, InsertCompany,
+  Account, InsertAccount, 
   AccountGroup, InsertAccountGroup, SyntheticAccount, InsertSyntheticAccount,
   AnalyticAccount, InsertAnalyticAccount,
   InventoryProduct, InsertInventoryProduct, InventoryCategory, InventoryUnit, 
@@ -391,27 +391,27 @@ export class DatabaseStorage implements IStorage {
   // 1. Account Classes (top level)
   async getAccountClasses(): Promise<AccountClass[]> {
     return drizzleService.executeQuery(async (db) => {
-      return await db.select().from(accountClasses).orderBy(accountClasses.code);
+      return await db.select().from(account_classes).orderBy(account_classes.code);
     });
   }
 
   async getAccountClass(id: string): Promise<AccountClass | undefined> {
     return drizzleService.executeQuery(async (db) => {
-      const [accountClass] = await db.select().from(accountClasses).where(eq(accountClasses.id, id));
+      const [accountClass] = await db.select().from(account_classes).where(eq(account_classes.id, id));
       return accountClass || undefined;
     });
   }
 
   async getAccountClassByCode(code: string): Promise<AccountClass | undefined> {
     return drizzleService.executeQuery(async (db) => {
-      const [accountClass] = await db.select().from(accountClasses).where(eq(accountClasses.code, code));
+      const [accountClass] = await db.select().from(account_classes).where(eq(account_classes.code, code));
       return accountClass || undefined;
     });
   }
 
   async createAccountClass(accountClass: InsertAccountClass): Promise<AccountClass> {
     return drizzleService.executeQuery(async (db) => {
-      const [newAccountClass] = await db.insert(accountClasses).values(accountClass).returning();
+      const [newAccountClass] = await db.insert(account_classes).values(accountClass).returning();
       return newAccountClass;
     });
   }
@@ -419,9 +419,9 @@ export class DatabaseStorage implements IStorage {
   async updateAccountClass(id: string, accountClassData: Partial<InsertAccountClass>): Promise<AccountClass> {
     return drizzleService.executeQuery(async (db) => {
       const [updatedAccountClass] = await db
-        .update(accountClasses)
+        .update(account_classes)
         .set(accountClassData)
-        .where(eq(accountClasses.id, id))
+        .where(eq(account_classes.id, id))
         .returning();
       return updatedAccountClass;
     });
@@ -596,8 +596,8 @@ export class DatabaseStorage implements IStorage {
       // First get the class id based on the code
       const [accountClass] = await db
         .select()
-        .from(accountClasses)
-        .where(eq(accountClasses.code, classCode));
+        .from(account_classes)
+        .where(eq(account_classes.code, classCode));
       
       if (!accountClass) {
         return [];

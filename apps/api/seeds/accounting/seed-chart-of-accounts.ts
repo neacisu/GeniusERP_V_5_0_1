@@ -27,17 +27,19 @@ export async function seed(db: any) {
       for (const accountClass of accountClassesData) {
         await db.execute(`
           INSERT INTO account_classes (
-            id, code, name, description, created_at, updated_at
-          ) VALUES ($1, $2, $3, $4, $5, $6)
+            id, code, name, description, default_account_function, created_at, updated_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7)
           ON CONFLICT (code) DO UPDATE SET
             name = EXCLUDED.name,
             description = EXCLUDED.description,
+            default_account_function = EXCLUDED.default_account_function,
             updated_at = EXCLUDED.updated_at
         `, [
           accountClass.id,
           accountClass.code,
           accountClass.name,
           accountClass.description,
+          accountClass.default_account_function,
           accountClass.created_at || new Date().toISOString(),
           accountClass.updated_at || new Date().toISOString()
         ]);

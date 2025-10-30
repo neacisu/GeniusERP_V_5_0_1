@@ -3,19 +3,19 @@
  * Testează schema Drizzle pentru modulul accounting
  */
 
-import { ledgerEntries, ledgerLines, accountBalances } from '../../../../../../server/modules/accounting/schema/accounting.schema';
+import { ledger_entries, ledger_lines, account_balances } from '../../../../../../../libs/shared/src/schema/accounting.schema';
 
 describe('Accounting Schema', () => {
-  it('should have ledgerEntries table defined', () => {
-    expect(ledgerEntries).toBeDefined();
+  it('should have ledger_entries table defined', () => {
+    expect(ledger_entries).toBeDefined();
   });
 
-  it('should have ledgerLines table defined', () => {
-    expect(ledgerLines).toBeDefined();
+  it('should have ledger_lines table defined', () => {
+    expect(ledger_lines).toBeDefined();
   });
 
-  it('should have accountBalances table defined', () => {
-    expect(accountBalances).toBeDefined();
+  it('should have account_balances table defined', () => {
+    expect(account_balances).toBeDefined();
   });
 });
 

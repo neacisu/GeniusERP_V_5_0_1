@@ -7,6 +7,21 @@
 import { pgTable, uuid, text, timestamp, numeric, jsonb, boolean, unique, integer, varchar, date } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 
+// Import standardized schemas from shared
+import {
+  account_balances,
+  account_balancesRelations,
+  insertAccountBalanceSchema,
+  selectAccountBalanceSchema,
+  updateAccountBalanceSchema
+} from '../../../shared/src/schema/accounting.schema';
+
+// Types are defined locally in this file
+
+// Backward compatibility aliases
+export const accountBalances = account_balances;
+export const accountBalancesRelations = account_balancesRelations;
+
 /**
  * Accounting Ledger Entries table
  * Main table for financial transactions (RAS-compliant)
@@ -178,29 +193,6 @@ export const journalTypes = pgTable('journal_types', {
 });
 
 /**
- * Account balances table
- * Running balances for each account
- */
-export const accountBalances = pgTable('account_balances', {
-  id: uuid('id').primaryKey().notNull(),
-  companyId: uuid('company_id').notNull(),
-  franchiseId: uuid('franchise_id'),
-  accountId: text('account_id').notNull(),
-  periodYear: numeric('period_year').notNull(),
-  periodMonth: numeric('period_month').notNull(),
-  openingDebit: numeric('opening_debit').notNull().default('0'),
-  openingCredit: numeric('opening_credit').notNull().default('0'),
-  periodDebit: numeric('period_debit').notNull().default('0'),
-  periodCredit: numeric('period_credit').notNull().default('0'),
-  closingDebit: numeric('closing_debit').notNull().default('0'),
-  closingCredit: numeric('closing_credit').notNull().default('0'),
-  
-  // Metadata
-  createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull()
-});
-
-/**
  * Fiscal periods table
  * Accounting periods configuration
  */
@@ -352,9 +344,17 @@ export default {
   ledgerLinesRelations,
   // Other tables
   journalTypes,
-  accountBalances,
+  accountBalances, // deprecated: use account_balances
   fiscalPeriods,
   documentCounters,
   chartOfAccounts,
-  chartOfAccountsRelations
+  chartOfAccountsRelations,
+
+  // Standardized schemas (snake_case) - preferred
+  account_balances,
+  account_balancesRelations,
+  insertAccountBalanceSchema,
+  selectAccountBalanceSchema,
+  updateAccountBalanceSchema,
+
 };

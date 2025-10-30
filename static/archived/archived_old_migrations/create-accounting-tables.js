@@ -75,25 +75,7 @@ async function createAccountingTables() {
           );
         END IF;
         
-        -- Create account_balances table if it doesn't exist
-        IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'account_balances') THEN
-          CREATE TABLE "account_balances" (
-            "id" UUID PRIMARY KEY NOT NULL,
-            "company_id" UUID NOT NULL,
-            "franchise_id" UUID,
-            "account_id" TEXT NOT NULL,
-            "period_year" NUMERIC NOT NULL,
-            "period_month" NUMERIC NOT NULL,
-            "opening_debit" NUMERIC NOT NULL DEFAULT '0',
-            "opening_credit" NUMERIC NOT NULL DEFAULT '0',
-            "period_debit" NUMERIC NOT NULL DEFAULT '0',
-            "period_credit" NUMERIC NOT NULL DEFAULT '0',
-            "closing_debit" NUMERIC NOT NULL DEFAULT '0',
-            "closing_credit" NUMERIC NOT NULL DEFAULT '0',
-            "created_at" TIMESTAMP NOT NULL,
-            "updated_at" TIMESTAMP NOT NULL
-          );
-        END IF;
+        -- account_balances table creation removed - use canonical migration in apps/api/migrations/sql/0000_smart_black_bird.sql
         
         -- Create fiscal_periods table if it doesn't exist
         IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'fiscal_periods') THEN

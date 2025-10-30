@@ -245,16 +245,23 @@ async function handleAccountReconciliation(job: Job): Promise<AccountReconciliat
     await job.updateProgress(70);
     
     // 3. Compară cu sold efectiv din account_balances
+    // Calculează anul și luna fiscală din data de sfârșit
+    const endDate = new Date(data.endDate);
+    const fiscalYear = endDate.getFullYear();
+    const fiscalMonth = endDate.getMonth() + 1; // JavaScript months are 0-based
+
     const balanceResult = await db.$client.unsafe(`
-      SELECT balance
+      SELECT
+        COALESCE(closing_debit, 0) - COALESCE(closing_credit, 0) as balance
       FROM account_balances
       WHERE account_id = $1
       AND company_id = $2
-      AND balance_date <= $3
-      ORDER BY balance_date DESC
+      AND fiscal_year = $3
+      AND fiscal_month = $4
+      ORDER BY fiscal_year DESC, fiscal_month DESC
       LIMIT 1
-    `, [data.accountId, data.companyId, data.endDate]);
-    
+    `, [data.accountId, data.companyId, fiscalYear, fiscalMonth]);
+
     const actualBalance = balanceResult.length > 0 ? (balanceResult[0].balance || 0) : 0;
     const difference = Math.abs(expectedBalance - actualBalance);
     const reconciled = difference < 0.01; // Tolerance de 1 ban

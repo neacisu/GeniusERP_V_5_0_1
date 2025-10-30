@@ -12,19 +12,21 @@ import { sql } from "drizzle-orm";
  * All table and variable names standardized to match database exactly.
  */
 
-import { 
-  pgTable, 
-  uuid, 
-  varchar, 
-  text, 
-  timestamp, 
-  boolean, 
+import {
+  pgTable,
+  uuid,
+  varchar,
+  text,
+  timestamp,
+  boolean,
   integer,
   index,
   unique,
   primaryKey
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { z } from 'zod';
 
 // Forward references (resolved when all schemas combined)
 declare const companies: any;
@@ -398,4 +400,29 @@ export const accountsRelations = relations(accounts, ({ one, many }) => ({
 
 // Note: companies relation is forward reference and will be resolved when companies is imported
 // This is handled by Drizzle ORM automatically
+
+// ============================================================================
+// ZOD SCHEMAS FOR ACCOUNT CLASSES
+// ============================================================================
+
+// Account Classes Schemas
+export const insertAccountClassSchema = createInsertSchema(account_classes, {
+  code: z.string().length(1).regex(/^[1-9]$/, "Codul clasei trebuie să fie cifră 1-9"),
+  name: z.string().min(1).max(255),
+  description: z.string().optional(),
+  default_account_function: z.enum(['A', 'P', 'B'])
+});
+
+export const selectAccountClassSchema = createSelectSchema(account_classes);
+
+export const updateAccountClassSchema = insertAccountClassSchema.partial().omit({
+  id: true,
+  created_at: true,
+  updated_at: true
+});
+
+// Export Zod types
+export type InsertAccountClassZod = z.infer<typeof insertAccountClassSchema>;
+export type SelectAccountClassZod = z.infer<typeof selectAccountClassSchema>;
+export type UpdateAccountClassZod = z.infer<typeof updateAccountClassSchema>;
 

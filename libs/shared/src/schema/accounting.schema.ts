@@ -1,15 +1,16 @@
 /**
-import { numeric, json } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
-import { numeric, json } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
  * Accounting Schema
  * 
  * Database schema for the accounting module.
  */
 
-import { pgTable, uuid, text, timestamp, numeric, jsonb, boolean, integer, varchar, date } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, numeric, jsonb, boolean, integer, varchar, date, decimal } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { z } from 'zod';
+
+// Import related tables
+import { accounts, companies } from '../schema';
 
 /**
  * Accounting Ledger Entries table
@@ -186,23 +187,36 @@ export const journal_types = pgTable('journal_types', {
  * Running balances for each account
  */
 export const account_balances = pgTable('account_balances', {
-  id: uuid('id').primaryKey().notNull(),
+  id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
   companyId: uuid('company_id').notNull(),
-  franchiseId: uuid('franchise_id'),
-  accountId: text('account_id').notNull(),
-  periodYear: numeric('period_year').notNull(),
-  periodMonth: numeric('period_month').notNull(),
-  openingDebit: numeric('opening_debit').notNull().default('0'),
-  openingCredit: numeric('opening_credit').notNull().default('0'),
-  periodDebit: numeric('period_debit').notNull().default('0'),
-  periodCredit: numeric('period_credit').notNull().default('0'),
-  closingDebit: numeric('closing_debit').notNull().default('0'),
-  closingCredit: numeric('closing_credit').notNull().default('0'),
-  
+  accountId: uuid('account_id').notNull(),
+  fiscalYear: integer('fiscal_year').notNull(),
+  fiscalMonth: integer('fiscal_month').notNull(),
+  openingDebit: decimal('opening_debit', { precision: 15, scale: 2 }).notNull().default('0'),
+  openingCredit: decimal('opening_credit', { precision: 15, scale: 2 }).notNull().default('0'),
+  periodDebit: decimal('period_debit', { precision: 15, scale: 2 }).notNull().default('0'),
+  periodCredit: decimal('period_credit', { precision: 15, scale: 2 }).notNull().default('0'),
+  closingDebit: decimal('closing_debit', { precision: 15, scale: 2 }).notNull().default('0'),
+  closingCredit: decimal('closing_credit', { precision: 15, scale: 2 }).notNull().default('0'),
+
   // Metadata
-  createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull()
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at').notNull().default(sql`now()`)
 });
+
+/**
+ * Relations for account balances
+ */
+export const account_balancesRelations = relations(account_balances, ({ one }) => ({
+  account: one(accounts, {
+    fields: [account_balances.accountId],
+    references: [accounts.id]
+  }),
+  company: one(companies, {
+    fields: [account_balances.companyId],
+    references: [companies.id]
+  })
+}));
 
 /**
  * Fiscal periods table
@@ -318,6 +332,37 @@ export type InsertFiscalPeriod = typeof fiscal_periods.$inferInsert;
 
 export type ChartOfAccount = typeof chart_of_accounts.$inferSelect;
 export type InsertChartOfAccount = typeof chart_of_accounts.$inferInsert;
+
+// ============================================================
+// ZOD SCHEMAS FOR ACCOUNT BALANCES
+// ============================================================
+
+// Account Balances Schemas
+export const insertAccountBalanceSchema = createInsertSchema(account_balances, {
+  fiscalYear: z.number().int().min(2000).max(2100),
+  fiscalMonth: z.number().int().min(1).max(12),
+  openingDebit: z.string().regex(/^\d+(\.\d{1,2})?$/),
+  openingCredit: z.string().regex(/^\d+(\.\d{1,2})?$/),
+  periodDebit: z.string().regex(/^\d+(\.\d{1,2})?$/),
+  periodCredit: z.string().regex(/^\d+(\.\d{1,2})?$/),
+  closingDebit: z.string().regex(/^\d+(\.\d{1,2})?$/),
+  closingCredit: z.string().regex(/^\d+(\.\d{1,2})?$/),
+});
+
+export const selectAccountBalanceSchema = createSelectSchema(account_balances);
+
+export const updateAccountBalanceSchema = insertAccountBalanceSchema.partial().omit({
+  id: true,
+  companyId: true,
+  accountId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Export Zod types
+export type InsertAccountBalanceZod = z.infer<typeof insertAccountBalanceSchema>;
+export type SelectAccountBalanceZod = z.infer<typeof selectAccountBalanceSchema>;
+export type UpdateAccountBalanceZod = z.infer<typeof updateAccountBalanceSchema>;
 
 // ============================================================================
 // ADDITIONAL ACCOUNTING TABLES (Previously missing)
@@ -436,6 +481,7 @@ export default {
   // Other tables
   journal_types,
   account_balances,
+  account_balancesRelations,
   fiscal_periods,
   chart_of_accounts,
   chart_of_accountsRelations,

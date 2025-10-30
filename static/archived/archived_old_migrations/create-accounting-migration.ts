@@ -189,7 +189,7 @@ async function directMigrate() {
     await sql`CREATE UNIQUE INDEX IF NOT EXISTS journal_code_unique ON accounting_journal_types (company_id, code)`;
     await sql`CREATE INDEX IF NOT EXISTS journal_active_idx ON accounting_journal_types (company_id, is_active)`;
 
-    // Create account_balances table
+    // Create accounting_account_balances table (extended RAS structure)
     console.log('Creating accounting_account_balances table...');
     await sql`
       CREATE TABLE IF NOT EXISTS accounting_account_balances (

@@ -13,6 +13,9 @@ export * from "./schema/enums";
 // ============================================================================
 export * from "./schema/core.schema";
 
+// Import account_classes for relations
+import { account_classes } from "./schema/core.schema";
+
 // ============================================================================
 // INVENTORY MANAGEMENT - Product catalog and stock management
 // ============================================================================
@@ -307,20 +310,7 @@ export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type Company = typeof companies.$inferSelect;
 
 // Romanian Chart of Accounts System
-// 1. Account Classes (Class 1-9) - Top level classification
-export const accountClasses = pgTable("account_classes", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  code: varchar("code", { length: 1 }).notNull().unique(), // Single digit (1-9)
-  name: text("name").notNull(),
-  description: text("description"),
-  // Default account function for accounts in this class: 
-  // - A (Activ/Asset/Debit): Class with primarily debit balance accounts
-  // - P (Pasiv/Liability/Credit): Class with primarily credit balance accounts
-  // - B (Bifunctional/Mixed): Class with mixed account types
-  defaultAccountFunction: text("default_account_function").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+// Account Classes schema moved to core.schema.ts for consistency
 
 // 2. Account Groups - Second level (2 digits)
 export const accountGroups = pgTable("account_groups", {
@@ -328,15 +318,15 @@ export const accountGroups = pgTable("account_groups", {
   code: varchar("code", { length: 2 }).notNull().unique(), // Two digits (e.g., 10, 11, 30)
   name: text("name").notNull(),
   description: text("description"),
-  classId: uuid("class_id").notNull().references(() => accountClasses.id),
+  classId: uuid("class_id").notNull().references(() => account_classes.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const accountGroupRelations = relations(accountGroups, ({ one, many }) => ({
-  class: one(accountClasses, {
+  class: one(account_classes, {
     fields: [accountGroups.classId],
-    references: [accountClasses.id],
+    references: [account_classes.id],
   }),
   syntheticAccounts: many(syntheticAccounts),
 }));
@@ -400,7 +390,6 @@ export const analyticAccountRelations = relations(analyticAccounts, ({ one, many
     fields: [analyticAccounts.syntheticId],
     references: [syntheticAccounts.id],
   }),
-  balances: many(accountBalances),
 }));
 
 // Legacy accounts table maintained for backward compatibility
@@ -410,7 +399,7 @@ export const accounts = pgTable("accounts", {
   name: text("name").notNull(),
   description: text("description"),
   type: text("type").notNull(), // A (Active), P (Passive), B (Bifunctional)
-  classId: uuid("class_id").notNull().references(() => accountClasses.id),
+  classId: uuid("class_id").notNull().references(() => account_classes.id),
   // Self-reference: accounts can have parent accounts
   parentId: uuid("parent_id"),
   isActive: boolean("is_active").default(true),
@@ -424,9 +413,9 @@ export const accounts = pgTable("accounts", {
 }));
 
 export const accountRelations = relations(accounts, ({ one, many }) => ({
-  class: one(accountClasses, {
+  class: one(account_classes, {
     fields: [accounts.classId],
-    references: [accountClasses.id],
+    references: [account_classes.id],
   }),
   parent: one(accounts, {
     fields: [accounts.parentId],
@@ -440,34 +429,6 @@ export const accountRelations = relations(accounts, ({ one, many }) => ({
   analyticAccount: one(analyticAccounts, {
     fields: [accounts.analyticId],
     references: [analyticAccounts.id],
-  }),
-  balances: many(accountBalances),
-}));
-
-export const accountBalances = pgTable("account_balances", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  accountId: uuid("account_id").notNull().references(() => accounts.id),
-  companyId: uuid("company_id").notNull().references(() => companies.id),
-  fiscalYear: integer("fiscal_year").notNull(),
-  fiscalMonth: integer("fiscal_month").notNull(),
-  openingDebit: decimal("opening_debit", { precision: 15, scale: 2 }).default("0").notNull(),
-  openingCredit: decimal("opening_credit", { precision: 15, scale: 2 }).default("0").notNull(),
-  periodDebit: decimal("period_debit", { precision: 15, scale: 2 }).default("0").notNull(),
-  periodCredit: decimal("period_credit", { precision: 15, scale: 2 }).default("0").notNull(),
-  closingDebit: decimal("closing_debit", { precision: 15, scale: 2 }).default("0").notNull(),
-  closingCredit: decimal("closing_credit", { precision: 15, scale: 2 }).default("0").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const accountBalanceRelations = relations(accountBalances, ({ one }) => ({
-  account: one(accounts, {
-    fields: [accountBalances.accountId],
-    references: [accounts.id],
-  }),
-  company: one(companies, {
-    fields: [accountBalances.companyId],
-    references: [companies.id],
   }),
 }));
 
@@ -644,54 +605,7 @@ export const inventoryStock = pgTable("inventory_stock", {
   lastUpdated: timestamp("last_updated").defaultNow().notNull(),
 });
 
-// Schema validations for Chart of Accounts
-export const insertAccountClassSchema = createInsertSchema(accountClasses); // Fixed: removed omit() for drizzle-zod compatibility;
-
-export const insertAccountGroupSchema = createInsertSchema(accountGroups); // Fixed: removed omit() for drizzle-zod compatibility;
-
-export const insertSyntheticAccountSchema = createInsertSchema(syntheticAccounts); // Fixed: removed omit() for drizzle-zod compatibility;
-
-export const insertAnalyticAccountSchema = createInsertSchema(analyticAccounts); // Fixed: removed omit() for drizzle-zod compatibility;
-
-// Legacy account schema validation (maintained for compatibility)
-export const insertAccountSchema = createInsertSchema(accounts); // Fixed: removed omit() for drizzle-zod compatibility;
-
-export const insertJournalEntrySchema = createInsertSchema(journalEntries); // Fixed: removed omit() for drizzle-zod compatibility;
-
-export const insertJournalLineSchema = createInsertSchema(journalLines); // Fixed: removed omit() for drizzle-zod compatibility;
-
-export const insertInventoryProductSchema = createInsertSchema(inventoryProducts); // Fixed: removed omit() for drizzle-zod compatibility;
-
-export const insertInventoryStockMovementSchema = createInsertSchema(inventoryStockMovements); // Fixed: removed omit() for drizzle-zod compatibility;
-
-// Types for insertions - Chart of Accounts
-export type AccountClass = typeof accountClasses.$inferSelect;
-export type InsertAccountClass = z.infer<typeof insertAccountClassSchema>;
-
-export type AccountGroup = typeof accountGroups.$inferSelect;
-export type InsertAccountGroup = z.infer<typeof insertAccountGroupSchema>;
-
-export type SyntheticAccount = typeof syntheticAccounts.$inferSelect;
-export type InsertSyntheticAccount = z.infer<typeof insertSyntheticAccountSchema>;
-
-export type AnalyticAccount = typeof analyticAccounts.$inferSelect;
-export type InsertAnalyticAccount = z.infer<typeof insertAnalyticAccountSchema>;
-
-// Legacy and other types
-export type Account = typeof accounts.$inferSelect;
-export type InsertAccount = z.infer<typeof insertAccountSchema>;
-
-export type JournalEntry = typeof journalEntries.$inferSelect;
-export type InsertJournalEntry = z.infer<typeof insertJournalEntrySchema>;
-
-export type JournalLine = typeof journalLines.$inferSelect;
-export type InsertJournalLine = z.infer<typeof insertJournalLineSchema>;
-
-export type InventoryProduct = typeof inventoryProducts.$inferSelect;
-export type InsertInventoryProduct = z.infer<typeof insertInventoryProductSchema>;
-
-export type InventoryStockMovement = typeof inventoryStockMovements.$inferSelect;
-export type InsertInventoryStockMovement = z.infer<typeof insertInventoryStockMovementSchema>;
+// Schema validations and types moved to respective schema files for consistency
 
 export type InventoryCategory = typeof inventoryCategories.$inferSelect;
 export type InventoryUnit = typeof inventoryUnits.$inferSelect;

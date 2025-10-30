@@ -7,8 +7,8 @@
 
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as sharedSchema from './shared/schema';
-import * as accountingSchema from './server/modules/accounting/schema/accounting.schema';
+import * as sharedSchema from '../../../libs/shared/src/schema';
+import * as accountingSchema from '../../../libs/shared/src/schema/accounting.schema';
 import 'dotenv/config';
 import { eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'crypto';

@@ -28,23 +28,23 @@ describe('AccountingService - Unit Tests', () => {
   describe('Account Classes', () => {
     it('should get all account classes', async () => {
       const mockClasses = [
-        { 
-          id: '1', 
-          code: '1', 
+        {
+          id: '1',
+          code: '1',
           name: 'ACTIVE IMOBILIZATE',
           description: null,
-          defaultAccountFunction: 'asset',
-          createdAt: new Date(),
-          updatedAt: new Date()
+          default_account_function: 'A',
+          created_at: new Date(),
+          updated_at: new Date()
         },
-        { 
-          id: '2', 
-          code: '2', 
+        {
+          id: '2',
+          code: '2',
           name: 'ACTIVE CIRCULANTE',
           description: null,
-          defaultAccountFunction: 'asset',
-          createdAt: new Date(),
-          updatedAt: new Date()
+          default_account_function: 'A',
+          created_at: new Date(),
+          updated_at: new Date()
         },
       ];
 
@@ -57,14 +57,14 @@ describe('AccountingService - Unit Tests', () => {
     });
 
     it('should cache account classes with 24h TTL', async () => {
-      const mockClasses = [{ 
-        id: '1', 
-        code: '1', 
+      const mockClasses = [{
+        id: '1',
+        code: '1',
         name: 'Test',
         description: null,
-        defaultAccountFunction: 'asset',
-        createdAt: new Date(),
-        updatedAt: new Date()
+        default_account_function: 'A',
+        created_at: new Date(),
+        updated_at: new Date()
       }];
       mockStorage.getAccountClasses.mockResolvedValue(mockClasses as any);
 
@@ -75,14 +75,14 @@ describe('AccountingService - Unit Tests', () => {
     });
 
     it('should get single account class by ID', async () => {
-      const mockClass = { 
-        id: '1', 
-        code: '1', 
+      const mockClass = {
+        id: '1',
+        code: '1',
         name: 'ACTIVE IMOBILIZATE',
         description: null,
-        defaultAccountFunction: 'asset',
-        createdAt: new Date(),
-        updatedAt: new Date()
+        default_account_function: 'A',
+        created_at: new Date(),
+        updated_at: new Date()
       };
       mockStorage.getAccountClass.mockResolvedValue(mockClass as any);
 
@@ -93,14 +93,14 @@ describe('AccountingService - Unit Tests', () => {
     });
 
     it('should get account class by code', async () => {
-      const mockClass = { 
-        id: '4', 
-        code: '4', 
+      const mockClass = {
+        id: '4',
+        code: '4',
         name: 'FURNIZORI SI CONTURI ASIMILATE',
         description: null,
-        defaultAccountFunction: 'liability',
-        createdAt: new Date(),
-        updatedAt: new Date()
+        default_account_function: 'P',
+        created_at: new Date(),
+        updated_at: new Date()
       };
       mockStorage.getAccountClassByCode.mockResolvedValue(mockClass as any);
 
