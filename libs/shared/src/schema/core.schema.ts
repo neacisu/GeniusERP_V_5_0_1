@@ -514,3 +514,49 @@ export type InsertAnalyticAccount = z.infer<typeof insertAnalyticAccountSchema>;
 export type AccountClass = typeof account_classes.$inferSelect;
 export type InsertAccountClass = z.infer<typeof insertAccountClassSchema>;
 
+/**
+ * Utility functions for Romanian Chart of Accounts
+ */
+export const chartOfAccountsUtils = {
+  /**
+   * Extract class code from account code
+   * For account codes: first digit represents the class
+   * For group codes: first digit represents the class
+   * @param code Account or group code (e.g., "401", "10")
+   * @returns Class code as string (e.g., "4", "1")
+   */
+  extractClassCode: (code: string): string => {
+    if (!code || code.length === 0) return '';
+    return code.charAt(0);
+  },
+
+  /**
+   * Validate that account/group code belongs to the correct class
+   * @param code Account or group code
+   * @param expectedClassCode Expected class code
+   * @returns true if valid, false otherwise
+   */
+  validateCodeClassMatch: (code: string, expectedClassCode: string): boolean => {
+    const actualClassCode = chartOfAccountsUtils.extractClassCode(code);
+    return actualClassCode === expectedClassCode;
+  },
+
+  /**
+   * Get class code from group code (alias for extractClassCode for clarity)
+   * @param groupCode Group code (2 digits)
+   * @returns Class code (1 digit)
+   */
+  getClassFromGroupCode: (groupCode: string): string => {
+    return chartOfAccountsUtils.extractClassCode(groupCode);
+  },
+
+  /**
+   * Get class code from account code (alias for extractClassCode for clarity)
+   * @param accountCode Account code (3-20 digits)
+   * @returns Class code (1 digit)
+   */
+  getClassFromAccountCode: (accountCode: string): string => {
+    return chartOfAccountsUtils.extractClassCode(accountCode);
+  }
+};
+

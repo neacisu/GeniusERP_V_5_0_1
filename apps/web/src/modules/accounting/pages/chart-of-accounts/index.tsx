@@ -9,7 +9,7 @@ import {
   CardContent 
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Account as BaseAccount, AccountClass, AccountGroup, SyntheticAccount as BaseSyntheticAccount } from "@shared/schema";
+import { Account as BaseAccount, AccountClass, AccountGroup, SyntheticAccount as BaseSyntheticAccount, chartOfAccountsUtils } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -478,7 +478,7 @@ export default function ChartOfAccountsPage() {
       
       // Metoda 2: Extragere din codul contului (prima cifră)
       if (!foundClassCode && parentAccount.code) {
-        foundClassCode = parentAccount.code.charAt(0);
+        foundClassCode = chartOfAccountsUtils.extractClassCode(parentAccount.code);
         console.log("Clasa determinată din codul contului:", foundClassCode);
       }
       
