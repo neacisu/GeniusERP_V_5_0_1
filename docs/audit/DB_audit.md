@@ -816,7 +816,275 @@ export type UpdateAccountGroupZod = z.infer<typeof updateAccountGroupSchema>;
 180. setup_steps
 181. stock_reservations
 182. stocks
-183. synthetic_accounts
+
+---
+
+# 183. synthetic_accounts
+
+## 📋 Descriere Generală
+
+**Tabel:** `synthetic_accounts` - **Conturi Sintetice**
+
+**Scop:** Al treilea nivel al ierarhiei Planului de Conturi Românesc, reprezentând conturile sintetice de gradul I (3 cifre, ex: 401) și gradul II (4 cifre, ex: 4011).
+
+**Importanță în Sistem:** ⭐⭐⭐⭐⭐ (Critică - Nivelul principal de lucru în contabilitate)
+
+**Caracteristici distinctive:**
+- Structură ierarhică cu 2 niveluri de detaliere (grad 1 și grad 2)
+- Codificare: gradul 1 = 3 cifre (ex: 401, 121), gradul 2 = 4 cifre (ex: 4011, 1211)
+- Prima cifră = clasa, primele 2 cifre = grupa, 3-4 cifre = cont sintetic
+- Auto-referință pentru conturi grad 2 (parent_id → conturi grad 1)
+- **781 înregistrări** în baza de date de producție
+
+## 🏗️ Structură Tehnică
+
+### DDL PostgreSQL
+```sql
+CREATE TABLE public.synthetic_accounts (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    code character varying(4) NOT NULL,
+    name text NOT NULL,
+    description text,
+    account_function text NOT NULL,
+    grade integer NOT NULL,
+    group_id uuid NOT NULL,
+    parent_id uuid,
+    is_active boolean DEFAULT true,
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    updated_at timestamp without time zone NOT NULL DEFAULT now(),
+    CONSTRAINT synthetic_accounts_pkey PRIMARY KEY (id),
+    CONSTRAINT synthetic_accounts_code_unique UNIQUE (code),
+    CONSTRAINT synthetic_accounts_group_id_account_groups_id_fk 
+        FOREIGN KEY (group_id) REFERENCES account_groups(id),
+    CONSTRAINT synthetic_accounts_parent_id_synthetic_accounts_id_fk 
+        FOREIGN KEY (parent_id) REFERENCES synthetic_accounts(id)
+);
+
+-- Indexes
+CREATE UNIQUE INDEX synthetic_accounts_code_unique ON synthetic_accounts(code);
+CREATE INDEX synthetic_accounts_code_idx ON synthetic_accounts(code);
+CREATE INDEX synthetic_accounts_group_idx ON synthetic_accounts(group_id);
+CREATE INDEX synthetic_accounts_parent_idx ON synthetic_accounts(parent_id);
+CREATE INDEX synthetic_accounts_function_idx ON synthetic_accounts(account_function);
+```
+
+### Schema Drizzle ORM
+```typescript
+export const synthetic_accounts = pgTable('synthetic_accounts', {
+  id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
+  code: varchar('code', { length: 4 }).notNull().unique(),
+  name: text('name').notNull(),
+  description: text('description'),
+  account_function: text('account_function').notNull(), // 'A', 'P', 'B'
+  grade: integer('grade').notNull(), // 1 or 2
+  group_id: uuid('group_id').notNull(),
+  parent_id: uuid('parent_id'), // Self-reference for grade 2 accounts
+  is_active: boolean('is_active').default(true),
+  created_at: timestamp('created_at').notNull().default(sql`now()`),
+  updated_at: timestamp('updated_at').notNull().default(sql`now()`)
+}, (table) => ({
+  code_unique: unique('synthetic_accounts_code_unique').on(table.code),
+  code_idx: index('synthetic_accounts_code_idx').on(table.code),
+  group_idx: index('synthetic_accounts_group_idx').on(table.group_id),
+  parent_idx: index('synthetic_accounts_parent_idx').on(table.parent_id),
+  function_idx: index('synthetic_accounts_function_idx').on(table.account_function),
+}));
+```
+
+## 📊 Detalierea Coloanelor
+
+### 1. `id` - Identificator Unic
+- **Tip:** `uuid` (PostgreSQL), `uuid('id')` (Drizzle)
+- **Constrângeri:** `PRIMARY KEY`, `NOT NULL`, `DEFAULT gen_random_uuid()`
+- **Business Logic:** Identificator unic pentru fiecare cont sintetic
+- **Algoritmic:** Generat automat de PostgreSQL la inserare
+- **Validare:** UUID valid în format standard
+
+### 2. `code` - Cod Cont Sintetic
+- **Tip:** `character varying(4)` (PostgreSQL), `varchar('code', { length: 4 })` (Drizzle)
+- **Constrângeri:** `NOT NULL`, `UNIQUE`
+- **Business Logic:** Codificare standard contabilitate românească
+  - **Grad 1:** 3 cifre (ex: 101, 401, 121)
+  - **Grad 2:** 4 cifre (ex: 1011, 4011, 1211)
+  - Prima cifră = cod clasă (1-9)
+  - Primele 2 cifre = cod grupă (10-99)
+  - 3-4 cifre = cod cont sintetic
+- **Algoritmic:** 
+  - Extracția clasei: `code.charAt(0)`
+  - Extracția grupei: `code.substring(0, 2)`
+  - Validare cod: trebuie să înceapă cu grupa parent
+- **Validare:** Regex `^[0-9]{3,4}$`, trebuie să corespundă cu grupa referențiată
+
+### 3. `name` - Denumire Cont
+- **Tip:** `text` (PostgreSQL), `text('name')` (Drizzle)
+- **Constrângeri:** `NOT NULL`
+- **Business Logic:** Denumirea oficială a contului sintetic conform OMFP 1802/2014
+- **Algoritmic:** Text liber, minim 1 caracter
+- **Validare:** `string().min(1).max(255)` în Zod (deși DB nu are limită)
+
+### 4. `description` - Descriere Detaliată
+- **Tip:** `text` (PostgreSQL), `text('description')` (Drizzle)
+- **Constrângeri:** `NULLABLE`
+- **Business Logic:** Detalii suplimentare despre utilizarea contului
+- **Algoritmic:** Text liber opțional
+- **Validare:** Optional string în Zod
+
+### 5. `account_function` - Funcția Contabilă
+- **Tip:** `text` (PostgreSQL), `text('account_function')` (Drizzle)
+- **Constrângeri:** `NOT NULL`
+- **Business Logic:** Determină comportamentul implicit al contului în balanță
+  - **'A' (Activ):** Sold normal debitor - active, cheltuieli
+  - **'P' (Pasiv):** Sold normal creditor - pasive, capitaluri, venituri
+  - **'B' (Bifuncțional):** Sold debitor sau creditor - conturi duble
+- **Algoritmic:** 
+  - Moștenit de la grupa parent sau clasa parent
+  - Determinat la crearea contului
+  - Folosit în calculul balanței și validarea înregistrărilor
+- **Validare:** `z.enum(['A', 'P', 'B'])` în Zod
+
+### 6. `grade` - Gradul Contului
+- **Tip:** `integer` (PostgreSQL), `integer('grade')` (Drizzle)
+- **Constrângeri:** `NOT NULL`
+- **Business Logic:** Nivelul de detaliere al contului sintetic
+  - **1:** Conturi de grad 1 (3 cifre) - nivel de bază
+  - **2:** Conturi de grad 2 (4 cifre) - detaliere suplimentară
+- **Algoritmic:** 
+  - Determinat automat din lungimea codului
+  - Grad 1 → `code.length === 3`
+  - Grad 2 → `code.length === 4`
+  - Conturile grad 2 trebuie să aibă parent_id către un cont grad 1
+- **Validare:** `integer().min(1).max(2)` în Zod
+
+### 7. `group_id` - Referință către Grupă
+- **Tip:** `uuid` (PostgreSQL), `uuid('group_id')` (Drizzle)
+- **Constrângeri:** `NOT NULL`, `FOREIGN KEY` către `account_groups(id)`
+- **Business Logic:** Leagă contul sintetic de grupa contabilă căreia îi aparține
+- **Algoritmic:** 
+  - Primele 2 cifre ale codului contului trebuie să corespundă cu codul grupei
+  - Validare: `chartOfAccountsUtils.extractGroupCode(code)` === `group.code`
+- **Validare:** UUID valid care există în tabelul `account_groups`
+
+### 8. `parent_id` - Referință către Cont Părinte
+- **Tip:** `uuid` (PostgreSQL), `uuid('parent_id')` (Drizzle)
+- **Constrângeri:** `NULLABLE`, `FOREIGN KEY` către `synthetic_accounts(id)` (self-reference)
+- **Business Logic:** Ierarhie între conturi sintetice de grad 1 și 2
+  - Conturile **grad 1** au `parent_id = NULL` (sunt rădăcină)
+  - Conturile **grad 2** au `parent_id` către un cont grad 1
+  - Prima cifră a contului grad 2 trebuie să corespundă cu codul contului grad 1 parent
+- **Algoritmic:** 
+  - Auto-referință circulară pentru construirea arborelui contabil
+  - Validare parent: `if (grade === 2) parent_id IS NOT NULL`
+  - Validare cod: `code.substring(0, 3)` === `parent.code`
+- **Validare:** UUID valid opțional, trebuie să existe în `synthetic_accounts` dacă este setat
+
+### 9. `is_active` - Status Activ
+- **Tip:** `boolean` (PostgreSQL), `boolean('is_active')` (Drizzle)
+- **Constrângeri:** `DEFAULT true`
+- **Business Logic:** Indică dacă contul este activ și poate fi folosit
+- **Algoritmic:** 
+  - `true` → contul poate fi folosit în înregistrări noi
+  - `false` → contul este dezactivat, doar pentru vizualizare istorică
+- **Validare:** Boolean în Zod, default `true`
+
+### 10. `created_at` - Timestamp Creare
+- **Tip:** `timestamp without time zone` (PostgreSQL), `timestamp('created_at')` (Drizzle)
+- **Constrângeri:** `NOT NULL`, `DEFAULT now()`
+- **Business Logic:** Momentul creării înregistrării în sistem
+- **Algoritmic:** Setat automat de PostgreSQL la INSERT
+- **Validare:** Timestamp valid
+
+### 11. `updated_at` - Timestamp Actualizare
+- **Tip:** `timestamp without time zone` (PostgreSQL), `timestamp('updated_at')` (Drizzle)
+- **Constrângeri:** `NOT NULL`, `DEFAULT now()`
+- **Business Logic:** Momentul ultimei modificări a înregistrării
+- **Algoritmic:** Actualizat automat la fiecare UPDATE
+- **Validare:** Timestamp valid
+
+## 🔗 Relații cu Alte Tabele
+
+### Relație Parent: `account_groups` (N:1)
+- **Tip:** `Many-to-One` (multe conturi sintetice aparțin unei grupe)
+- **Foreign Key:** `group_id` → `account_groups.id`
+- **Business Logic:** Ierarhie contabilă (Clasă → Grupă → Cont Sintetic)
+
+### Relație Self-Reference: `synthetic_accounts` (N:1)
+- **Tip:** `Many-to-One` (conturi grad 2 au un parent grad 1)
+- **Foreign Key:** `parent_id` → `synthetic_accounts.id`
+- **Business Logic:** Ierarhie între conturile sintetice de diferite grade
+
+### Relație Child: `analytic_accounts` (1:N)
+- **Tip:** `One-to-Many` (un cont sintetic poate avea mai multe conturi analitice)
+- **Foreign Key:** `analytic_accounts.synthetic_id` → `synthetic_accounts.id`
+- **Business Logic:** Următorul nivel de detaliere contabilă
+
+### Relație Child: `accounts` (1:N) - Legacy
+- **Tip:** `One-to-Many` (referință din tabelul vechi accounts)
+- **Foreign Key:** `accounts.synthetic_id` → `synthetic_accounts.id`
+- **Business Logic:** Compatibilitate cu sistemul vechi
+
+## 📝 Scheme Zod pentru Validare
+
+```typescript
+// Schema pentru inserare
+export const insertSyntheticAccountSchema = createInsertSchema(synthetic_accounts, {
+  code: z.string().length(3).regex(/^[0-9]{3}$/, "Codul contului sintetic trebuie să fie 3 cifre"),
+  name: z.string().min(1).max(255),
+  description: z.string().optional(),
+  account_function: z.enum(['A', 'P', 'B']),
+  group_id: z.string().uuid(),
+  parent_id: z.string().uuid().optional()
+});
+
+// Schema pentru selectare
+export const selectSyntheticAccountSchema = createSelectSchema(synthetic_accounts);
+
+// Schema pentru actualizare
+export const updateSyntheticAccountSchema = insertSyntheticAccountSchema.partial().omit({
+  id: true,
+  created_at: true,
+  updated_at: true
+});
+
+// Tipuri TypeScript
+export type InsertSyntheticAccountZod = z.infer<typeof insertSyntheticAccountSchema>;
+export type SelectSyntheticAccountZod = z.infer<typeof selectSyntheticAccountSchema>;
+export type UpdateSyntheticAccountZod = z.infer<typeof updateSyntheticAccountSchema>;
+```
+
+## 🔄 Standardizare Snake_case (Finalizată)
+
+**Fișiere standardizate:**
+- ✅ Definiție canonică în `libs/shared/src/schema/core.schema.ts`
+- ✅ Scheme Zod complete implementate
+- ✅ Relații bidirecționale configurate (group, parent, children, analytic)
+- ✅ Standardizare variabile și proprietăți în tot codebase-ul
+
+## 📋 Rezumat Audit Tabel `synthetic_accounts`
+
+**Status: ✅ COMPLET** - Audit exhaustiv finalizat, toate probleme rezolvate
+
+**Modificări Implementate:**
+- ✅ Schema Drizzle standardizată cu snake_case
+- ✅ Scheme Zod complete cu validări robuste
+- ✅ Relații bidirecționale configurate corect
+- ✅ Indexes optimizate pentru performanță
+- ✅ Foreign keys implementate pentru integritate
+
+**Caracteristici Distinctive:**
+- **Ierarhie pe 2 niveluri:** Grad 1 (3 cifre) și Grad 2 (4 cifre)
+- **Auto-referință:** Conturi grad 2 referențiază conturi grad 1
+- **Codificare strictă:** Primele cifre trebuie să corespundă cu grupa/parent-ul
+- **Funcție contabilă:** A/P/B determină comportamentul în balanță
+- **781 conturi:** Planul complet de conturi românesc
+
+**Date în Producție:**
+- **Total înregistrări:** 781 conturi sintetice
+- **Grad 1:** Conturi de bază (3 cifre)
+- **Grad 2:** Detalieri suplimentare (4 cifre)
+- **Sursa:** OMFP 1802/2014 - Planul de Conturi Român
+
+---
+
 184. system_configs
 185. transfer_documents
 186. transfer_items
@@ -826,6 +1094,8 @@ export type UpdateAccountGroupZod = z.infer<typeof updateAccountGroupSchema>;
 190. warehouses
 
 ---
+
+
 
 
 

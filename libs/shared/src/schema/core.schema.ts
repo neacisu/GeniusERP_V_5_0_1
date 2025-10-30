@@ -445,10 +445,11 @@ export type UpdateAccountGroupZod = z.infer<typeof updateAccountGroupSchema>;
 
 // Synthetic Accounts Schemas
 export const insertSyntheticAccountSchema = createInsertSchema(synthetic_accounts, {
-  code: z.string().length(3).regex(/^[0-9]{3}$/, "Codul contului sintetic trebuie să fie 3 cifre"),
+  code: z.string().min(3).max(4).regex(/^[0-9]{3,4}$/, "Codul contului sintetic trebuie să fie 3-4 cifre"),
   name: z.string().min(1).max(255),
   description: z.string().optional(),
   account_function: z.enum(['A', 'P', 'B']),
+  grade: z.number().int().min(1).max(2),
   group_id: z.string().uuid(),
   parent_id: z.string().uuid().optional()
 });

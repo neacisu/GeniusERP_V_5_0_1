@@ -302,41 +302,8 @@ export type Company = typeof companies.$inferSelect;
 // Relations are defined in core.schema.ts
 
 // 3. Synthetic Accounts (Grade 1: 3 digits, Grade 2: 4 digits)
-export const syntheticAccounts = pgTable("synthetic_accounts", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  code: varchar("code", { length: 4 }).notNull().unique(), // 3-4 digits (e.g., 101, 1011)
-  name: text("name").notNull(),
-  description: text("description"),
-  // Account function in Romanian accounting:
-  // - A (Activ/Asset/Debit): Accounts with normal debit balance (assets, expenses)
-  // - P (Pasiv/Liability/Credit): Accounts with normal credit balance (liabilities, equity, revenues)
-  // - B (Bifunctional/A/P): Accounts that can have either debit or credit balance
-  accountFunction: text("account_function").notNull(),
-  grade: integer("grade").notNull(), // 1 (3 digits) or 2 (4 digits)
-  group_id: uuid("group_id").notNull(),
-  // Self-reference: Grade 2 accounts can reference Grade 1 accounts as parents
-  // Using function with explicit return to allow TypeScript to resolve the circular reference
-  parentId: uuid("parent_id"),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => ({
-  // Define foreign key constraint separately to avoid circular reference issues
-  parentReference: index("synthetic_accounts_parent_idx").on(table.parentId),
-}));
-
-export const syntheticAccountRelations = relations(syntheticAccounts, ({ one, many }) => ({
-  group: one(account_groups, {
-    fields: [syntheticAccounts.group_id],
-    references: [account_groups.id],
-  }),
-  parent: one(syntheticAccounts, {
-    fields: [syntheticAccounts.parentId],
-    references: [syntheticAccounts.id],
-  }),
-  children: many(syntheticAccounts),
-  analyticAccounts: many(analyticAccounts),
-}));
+// Schema moved to core.schema.ts for consistency
+// Relations are defined in core.schema.ts
 
 // 4. Analytic Accounts - Most detailed level
 export const analyticAccounts = pgTable("analytic_accounts", {
