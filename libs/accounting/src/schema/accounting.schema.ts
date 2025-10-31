@@ -62,6 +62,45 @@ export const ACAccountBalances = AC_accounting_account_balances;
 export const ACAccountBalancesRelations = AC_accounting_account_balancesRelations;
 export const ACJournalTypes = AC_journal_types;
 
+// Re-export underscore versions directly for named imports
+export {
+  AC_accounting_ledger_entries,
+  AC_accounting_ledger_lines,
+  AC_accounting_ledger_entriesRelations,
+  AC_accounting_ledger_linesRelations,
+  accounting_ledger_entries,
+  accounting_ledger_lines,
+  accounting_ledger_entriesRelations,
+  accounting_ledger_linesRelations,
+  AC_accounting_account_balances,
+  AC_accounting_account_balancesRelations,
+  AC_journal_types,
+  accounting_journal_types,
+  // Types
+  ACAccountingLedgerEntry,
+  InsertACAccountingLedgerEntry,
+  ACAccountingLedgerLine,
+  InsertACAccountingLedgerLine,
+  // Zod schemas
+  insertACAccountingLedgerEntrySchema,
+  selectACAccountingLedgerEntrySchema,
+  updateACAccountingLedgerEntrySchema,
+  insertACAccountingLedgerLineSchema,
+  selectACAccountingLedgerLineSchema,
+  updateACAccountingLedgerLineSchema,
+  insertACAccountBalanceSchema,
+  selectACAccountBalanceSchema,
+  updateACAccountBalanceSchema,
+  insertACJournalTypeSchema,
+  selectACJournalTypeSchema,
+  updateACJournalTypeSchema,
+  ACJournalType,
+  InsertACJournalType
+};
+
+// chart_of_accounts alias
+export const chart_of_accounts = chartOfAccounts;
+
 // Backward compatibility aliases
 export const accountingLedgerEntries = accounting_ledger_entries;
 export const accountingLedgerLines = accounting_ledger_lines;
