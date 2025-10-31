@@ -11,7 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import { getDrizzle } from "@common/drizzle";
 import { eq, and, gte, lte, inArray, ne, sql as drizzleSql } from 'drizzle-orm';
-import { ledger_entries, ledger_lines, chart_of_accounts } from '../schema/accounting.schema';
+import { accounting_ledger_entries, accounting_ledger_lines, chart_of_accounts } from '../schema/accounting.schema';
 import { RedisService } from '@common/services/redis.service';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import type { ColumnWidths, TableRowData, TableHeader, TableValue } from '../types/general-journal-pdf-types';
@@ -141,7 +141,7 @@ export class GeneralJournalPDFService {
           logger.info('Registru Jurnal PDF generat cu succes', {
             context: {
               filePath,
-              companyId: options.companyId,
+              companyId: options.company_id,
               companyName: options.companyName,
               entriesCount: entries.length,
               dateRange: `${options.startDate.toISOString().split('T')[0]} - ${options.endDate.toISOString().split('T')[0]}`
@@ -171,7 +171,7 @@ export class GeneralJournalPDFService {
     // Create cache key
     const dateStr = `${options.startDate.toISOString().split('T')[0]}_${options.endDate.toISOString().split('T')[0]}`;
     const typesStr = options.journalTypes?.join('_') || 'all';
-    const cacheKey = `acc:general-journal:${options.companyId}:${dateStr}:${typesStr}:${options.detailLevel}`;
+    const cacheKey = `acc:general-journal:${options.company_id}:${dateStr}:${typesStr}:${options.detailLevel}`;
     
     // Check cache first (TTL: 10 minutes)
     if (this.redisService.isConnected()) {
@@ -185,30 +185,30 @@ export class GeneralJournalPDFService {
 
     // Construiește conditions pentru query
     const conditions = [
-      eq(ledgerEntries.companyId, options.companyId),
-      gte(ledgerEntries.entryDate, options.startDate),
-      lte(ledgerEntries.entryDate, options.endDate)
+      eq(accounting_ledger_entries.company_id, options.company_id),
+      gte(accounting_ledger_entries.transaction_date, options.startDate),
+      lte(accounting_ledger_entries.transaction_date, options.endDate)
     ];
 
-    if (options.journalTypes && options$.journal_types.length > 0) {
-      conditions.push(inArray(ledgerEntries.type, options.journalTypes));
+    if (options.journalTypes && options.journalTypes.length > 0) {
+      conditions.push(inArray(accounting_ledger_entries.type, options.journalTypes));
     }
 
     if (!options.includeReversals) {
-      conditions.push(ne(ledgerEntries.type, 'REVERSAL'));
+      conditions.push(ne(accounting_ledger_entries.type, 'REVERSAL'));
     }
 
     // Query folosind Drizzle ORM cu agregare pentru lines
     const results = await db
       .select({
         entry_id: ledger_entries.id,
-        journal_number: ledger_entries.journalNumber,
-        entry_date: ledger_entries.entryDate,
-        document_date: ledger_entries.documentDate,
-        document_number: ledger_entries.referenceNumber,
+        journal_number: ledger_entries.document_number,
+        entry_date: ledger_entries.transaction_date,
+        document_date: ledger_entries.document_date,
+        document_number: ledger_entries.document_number,
         document_type: ledger_entries.type,
         entry_description: ledger_entries.description,
-        entry_amount: drizzleSql<string>`${ledgerEntries.amount}::numeric`,
+        entry_amount: drizzleSql<string>`${accounting_ledger_entries.total_amount}::numeric`,
         entry_type: ledger_entries.type,
         // Agregare JSON pentru lines
         lines: drizzleSql<Array<{
@@ -219,32 +219,32 @@ export class GeneralJournalPDFService {
           description: string | null;
         }>>`json_agg(
           json_build_object(
-            'accountCode', ${ledgerLines.accountId},
-            'accountName', COALESCE(${chartOfAccounts.name}, ${ledgerLines.accountId}),
-            'debitAmount', ${ledgerLines.debitAmount}::numeric,
-            'creditAmount', ${ledgerLines.creditAmount}::numeric,
-            'description', ${ledgerLines.description}
-          ) ORDER BY ${ledgerLines.createdAt}
+            'accountCode', ${accounting_ledger_lines.full_account_number},
+            'accountName', COALESCE(${chart_of_accounts.name}, ${accounting_ledger_lines.full_account_number}),
+            'debitAmount', ${accounting_ledger_lines.debit_amount}::numeric,
+            'creditAmount', ${accounting_ledger_lines.credit_amount}::numeric,
+            'description', ${accounting_ledger_lines.description}
+          ) ORDER BY ${accounting_ledger_lines.created_at}
         )`
       })
-      .from(ledgerEntries)
-      .leftJoin(ledgerLines, eq(ledgerLines.ledgerEntryId, ledgerEntries.id))
-      .leftJoin(chartOfAccounts, and(
-        eq(chartOfAccounts.code, ledgerLines.accountId),
-        eq(chartOfAccounts.companyId, ledgerEntries.companyId)
+      .from(accounting_ledger_entries)
+      .leftJoin(accounting_ledger_lines, eq(accounting_ledger_lines.ledger_entry_id, accounting_ledger_entries.id))
+      .leftJoin(chart_of_accounts, and(
+        eq(chart_of_accounts.code, accounting_ledger_lines.full_account_number),
+        eq(chart_of_accounts.company_id, accounting_ledger_entries.company_id)
       ))
       .where(and(...conditions))
       .groupBy(
-        ledgerEntries.id,
-        ledgerEntries.journalNumber,
-        ledgerEntries.entryDate,
-        ledgerEntries.documentDate,
-        ledgerEntries.referenceNumber,
-        ledgerEntries.type,
-        ledgerEntries.description,
-        ledgerEntries.amount
+        accounting_ledger_entries.id,
+        accounting_ledger_entries.document_number,
+        accounting_ledger_entries.transaction_date,
+        accounting_ledger_entries.document_date,
+        accounting_ledger_entries.document_number,
+        accounting_ledger_entries.type,
+        accounting_ledger_entries.description,
+        accounting_ledger_entries.total_amount
       )
-      .orderBy(ledgerEntries.entryDate, ledgerEntries.journalNumber);
+      .orderBy(accounting_ledger_entries.transaction_date, accounting_ledger_entries.document_number);
 
     // Mapare rezultate la JournalEntry cu bracket notation pentru strict mode
     const entries: JournalEntry[] = results.map((row: JournalQueryResult) => ({
@@ -260,8 +260,8 @@ export class GeneralJournalPDFService {
       lines: (row['lines'] || []).map(line => ({
         accountCode: line.accountCode,
         accountName: line.accountName || line.accountCode,
-        debitAmount: parseFloat(line.debitAmount) || 0,
-        creditAmount: parseFloat(line.creditAmount) || 0,
+        debitAmount: parseFloat(line.debit_amount) || 0,
+        creditAmount: parseFloat(line.credit_amount) || 0,
         description: line.description || ''
       }))
     }));
@@ -345,14 +345,14 @@ export class GeneralJournalPDFService {
           const line = entry.lines[i];
           this.drawTableRow(doc, currentY, colWidths, {
             nr: i === 0 ? entryNumber.toString() : '',
-            data: i === 0 ? entry.entryDate.toLocaleDateString('ro-RO') : '',
+            data: i === 0 ? entry.transaction_date.toLocaleDateString('ro-RO') : '',
             docType: i === 0 ? entry.documentType : '',
             docNo: i === 0 ? entry.documentNumber : '',
-            docDate: i === 0 ? entry.documentDate.toLocaleDateString('ro-RO') : '',
+            docDate: i === 0 ? entry.document_date.toLocaleDateString('ro-RO') : '',
             explanations: line.description || entry.description,
-            accountDr: line.debitAmount > 0 ? line.accountCode : '',
-            accountCr: line.creditAmount > 0 ? line.accountCode : '',
-            amount: Math.max(line.debitAmount, line.creditAmount).toFixed(2)
+            accountDr: line.debit_amount > 0 ? line.accountCode : '',
+            accountCr: line.credit_amount > 0 ? line.accountCode : '',
+            amount: Math.max(line.debit_amount, line.credit_amount).toFixed(2)
           });
           currentY += 20;
         }
@@ -360,19 +360,19 @@ export class GeneralJournalPDFService {
         // Mod sumarizat - o linie per înregistrare
         this.drawTableRow(doc, currentY, colWidths, {
           nr: entryNumber.toString(),
-          data: entry.entryDate.toLocaleDateString('ro-RO'),
+          data: entry.transaction_date.toLocaleDateString('ro-RO'),
           docType: entry.documentType,
           docNo: entry.documentNumber,
-          docDate: entry.documentDate.toLocaleDateString('ro-RO'),
+          docDate: entry.document_date.toLocaleDateString('ro-RO'),
           explanations: entry.description,
-          accountDr: entry.lines.filter(l => l.debitAmount > 0).map(l => l.accountCode).join(', '),
-          accountCr: entry.lines.filter(l => l.creditAmount > 0).map(l => l.accountCode).join(', '),
-          amount: entry.amount.toFixed(2)
+          accountDr: entry.lines.filter(l => l.debit_amount > 0).map(l => l.accountCode).join(', '),
+          accountCr: entry.lines.filter(l => l.credit_amount > 0).map(l => l.accountCode).join(', '),
+          amount: entry.total_amount.toFixed(2)
         });
         currentY += 20;
       }
 
-      totalAmount += entry.amount;
+      totalAmount += entry.total_amount;
       entryNumber++;
     }
 
@@ -408,7 +408,7 @@ export class GeneralJournalPDFService {
       { text: 'Explicația operațiunii', width: colWidths.explanations },
       { text: 'Cont\ndebit', width: colWidths.accountDr },
       { text: 'Cont\ncredit', width: colWidths.accountCr },
-      { text: 'Suma\n(lei)', width: colWidths.amount }
+      { text: 'Suma\n(lei)', width: colWidths.total_amount }
     ];
 
     headers.forEach(header => {
@@ -438,7 +438,7 @@ export class GeneralJournalPDFService {
       { text: data.explanations, width: colWidths.explanations, align: 'left' },
       { text: data.accountDr, width: colWidths.accountDr, align: 'center' },
       { text: data.accountCr, width: colWidths.accountCr, align: 'center' },
-      { text: data.amount, width: colWidths.amount, align: 'right' }
+      { text: data.total_amount, width: colWidths.total_amount, align: 'right' }
     ];
 
     values.forEach(value => {

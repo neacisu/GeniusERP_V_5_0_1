@@ -10,7 +10,7 @@ import fs from 'fs';
 import path from 'path';
 import { getDrizzle } from "@common/drizzle";
 import { eq, and, gte, lte, inArray, ne, sql as drizzleSql } from 'drizzle-orm';
-import { ledger_entries, ledger_lines, chart_of_accounts } from '../schema/accounting.schema';
+import { accounting_ledger_entries, accounting_ledger_lines, chart_of_accounts } from '../schema/accounting.schema';
 import { RedisService } from '@common/services/redis.service';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import type {
@@ -135,45 +135,45 @@ export class GeneralJournalExcelService {
 
     // Build WHERE conditions
     const conditions = [
-      eq(ledgerEntries.companyId, options.companyId),
-      gte(ledgerEntries.entryDate, options.startDate),
-      lte(ledgerEntries.entryDate, options.endDate)
+      eq(accounting_ledger_entries.company_id, options.companyId),
+      gte(accounting_ledger_entries.transaction_date, options.startDate),
+      lte(accounting_ledger_entries.transaction_date, options.endDate)
     ];
 
-    if (options.journalTypes && options$.journal_types.length > 0) {
-      conditions.push(inArray(ledgerEntries.type, options.journalTypes));
+    if (options.journalTypes && options.journalTypes.length > 0) {
+      conditions.push(inArray(accounting_ledger_entries.type, options.journalTypes));
     }
 
     if (!options.includeReversals) {
-      conditions.push(ne(ledgerEntries.type, 'REVERSAL'));
+      conditions.push(ne(accounting_ledger_entries.is_reversal, true));
     }
 
     // Execute Drizzle query with proper joins
     const result = await db
       .select({
-        entry_id: ledger_entries.id,
-        journal_number: ledger_entries.journalNumber,
-        entry_date: ledger_entries.entryDate,
-        document_date: ledger_entries.documentDate,
-        document_number: ledger_entries.referenceNumber,
-        journal_type: ledger_entries.type,
-        entry_description: ledger_entries.description,
-        entry_amount: ledger_entries.amount,
-        account_id: ledger_lines.accountId,
-        account_name: drizzleSql<string>`COALESCE(${chartOfAccounts.name}, ${ledgerLines.accountId})`,
-        debit_amount: drizzleSql<string>`${ledgerLines.debitAmount}::numeric`,
-        credit_amount: drizzleSql<string>`${ledgerLines.creditAmount}::numeric`,
-        line_description: ledger_lines.description,
-        row_number: drizzleSql<number>`ROW_NUMBER() OVER (ORDER BY ${ledgerEntries.entryDate}, ${ledgerEntries.journalNumber}, ${ledgerLines.createdAt})`
+        entry_id: accounting_ledger_entries.id,
+        journal_number: accounting_ledger_entries.documentNumber,
+        entry_date: accounting_ledger_entries.transaction_date,
+        document_date: accounting_ledger_entries.document_date,
+        document_number: accounting_ledger_entries.document_number,
+        journal_type: accounting_ledger_entries.type,
+        entry_description: accounting_ledger_entries.description,
+        entry_amount: accounting_ledger_entries.total_amount,
+        account_id: accounting_ledger_lines.full_account_number,
+        account_name: drizzleSql<string>`COALESCE(${chart_of_accounts.name}, ${accounting_ledger_lines.full_account_number})`,
+        debit_amount: drizzleSql<string>`${accounting_ledger_lines.debit_amount}::numeric`,
+        credit_amount: drizzleSql<string>`${accounting_ledger_lines.credit_amount}::numeric`,
+        line_description: accounting_ledger_lines.description,
+        row_number: drizzleSql<number>`ROW_NUMBER() OVER (ORDER BY ${accounting_ledger_entries.transaction_date}, ${accounting_ledger_entries.document_number}, ${accounting_ledger_lines.created_at})`
       })
-      .from(ledgerEntries)
-      .innerJoin(ledgerLines, eq(ledgerLines.ledgerEntryId, ledgerEntries.id))
-      .leftJoin(chartOfAccounts, and(
-        eq(chartOfAccounts.code, ledgerLines.accountId),
-        eq(chartOfAccounts.companyId, ledgerEntries.companyId)
+      .from(accounting_ledger_entries)
+      .innerJoin(accounting_ledger_lines, eq(accounting_ledger_lines.ledger_entry_id, accounting_ledger_entries.id))
+      .leftJoin(chart_of_accounts, and(
+        eq(chart_of_accounts.code, accounting_ledger_lines.full_account_number),
+        eq(chart_of_accounts.company_id, accounting_ledger_entries.company_id)
       ))
       .where(and(...conditions))
-      .orderBy(ledgerEntries.entryDate, ledgerEntries.journalNumber, ledgerLines.createdAt);
+      .orderBy(accounting_ledger_entries.transaction_date, accounting_ledger_entries.document_number, accounting_ledger_lines.created_at);
 
     const entries: ExcelJournalEntry[] = result.map((row: JournalQueryResult) => ({
       rowNumber: row['row_number'],
