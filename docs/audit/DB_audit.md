@@ -3043,7 +3043,7 @@ async function reverseLedgerEntry(
 
 ---
 
-# 11. accounting_ledger_lines
+# 11. AC_accounting_ledger_lines
 
 ## 📋 Detalii detaliate tabel: `accounting_ledger_lines`
 
@@ -3909,7 +3909,43 @@ Opening Balances Imported: false
 
 
 
-51. chart_of_accounts
+# 51. chart_of_accounts - ⚠️ DEPRECATED
+
+**⚠️ ACEST TABEL ESTE DEPRECATED ȘI NU TREBUIE FOLOSIT**
+
+**Motiv deprecare:** 
+- **NON-CONFORM cu OMFP 1802/2014** - Permite crearea de conturi custom în afara planului oficial de conturi
+- **Redundant** - Toate conturile oficiale există deja în `synthetic_accounts` (781 conturi)
+- **Risc de conformitate ANAF** - Posibilitatea de a crea conturi invalide care nu sunt în Planul de Conturi General
+
+**Tabele de înlocuire:**
+1. **`synthetic_accounts`** - Plan oficial de conturi conform OMFP 1802/2014 (781 conturi pre-populate)
+2. **`analytic_accounts`** - Pentru detalierea conturilor sintetice (ex: 4111.001, 4111.002) - CONFORM cu legislația
+
+**Conform OMFP 1802/2014, Art. 10:**
+> "Entitățile aplică Planul de conturi general prevăzut în anexa nr. 4. Acestea pot **dezvolta** planul de conturi general (prin detalierea în conturi analitice), în limitele și conform precizărilor cuprinse în prezentele reglementări."
+
+**CE ESTE PERMIS:**
+- ✅ Folosirea conturilor din `synthetic_accounts` (planul oficial)
+- ✅ Detalierea în `analytic_accounts` (ex: 4111 → 4111.001, 4111.002)
+- ✅ Nume custom per companie prin `company_account_names` (în viitor)
+
+**CE NU ESTE PERMIS:**
+- ❌ Crearea de conturi noi în afara planului oficial
+- ❌ Modificarea codurilor oficiale
+- ❌ Inventarea de coduri care nu există în OMFP
+
+**Acțiune recomandată:** 
+- Nu mai utilizați acest tabel
+- Folosiți `synthetic_accounts` pentru planul oficial
+- Folosiți `analytic_accounts` pentru detalieri conform legislației
+- Pentru raportare: leftJoin cu `synthetic_accounts` pentru nume oficiale
+
+**Status migrare:** ✅ Eliminat din codebase (vezi commit: refactor(accounting): deprecare chart_of_accounts)
+
+---
+
+
 52. collaboration_activities
 53. collaboration_messages
 54. collaboration_notes

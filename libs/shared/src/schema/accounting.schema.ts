@@ -316,7 +316,15 @@ export const fiscal_periods = pgTable('fiscal_periods', {
 });
 
 /**
- * Chart of accounts table
+ * @deprecated Chart of accounts table - DO NOT USE!
+ * 
+ * ⚠️ NON-CONFORM cu OMFP 1802/2014 - Permite crearea de conturi custom în afara planului oficial
+ * 
+ * Folosiți în loc:
+ * - synthetic_accounts (plan oficial de conturi RO - 781 conturi)
+ * - analytic_accounts (pentru detalieri conforme cu legislația)
+ * 
+ * Motiv deprecare: Risc de non-conformitate ANAF prin crearea de conturi invalide
  */
 export const chart_of_accounts = pgTable('chart_of_accounts', {
   id: uuid('id').primaryKey().notNull(),
@@ -392,7 +400,8 @@ export const ledger_linesRelations = relations(ledger_lines, ({ one }) => ({
 }));
 
 /**
- * Relations for chart of accounts
+ * @deprecated Relations for chart of accounts - DO NOT USE!
+ * Use synthetic_accounts and analytic_accounts instead
  */
 export const chart_of_accountsRelations = relations(chart_of_accounts, ({ one, many }) => ({
   parent: one(chart_of_accounts, {
@@ -448,7 +457,13 @@ export type InsertAccountBalance = InsertACAccountBalance;
 export type FiscalPeriod = typeof fiscal_periods.$inferSelect;
 export type InsertFiscalPeriod = typeof fiscal_periods.$inferInsert;
 
+/**
+ * @deprecated Use synthetic_accounts instead for compliant chart of accounts
+ */
 export type ChartOfAccount = typeof chart_of_accounts.$inferSelect;
+/**
+ * @deprecated Use synthetic_accounts instead for compliant chart of accounts
+ */
 export type InsertChartOfAccount = typeof chart_of_accounts.$inferInsert;
 
 // ============================================================

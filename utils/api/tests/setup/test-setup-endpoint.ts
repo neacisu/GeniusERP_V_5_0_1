@@ -17,8 +17,9 @@ const SERVER_URL = 'http://localhost:5000'; // The port where your Express serve
 const API_PATH = '/api/settings/setup/step';
 
 // Test data
+// @deprecated: chart_of_accounts step is deprecated - use synthetic_accounts instead
 const testData = {
-  step: 'chart_of_accounts',
+  step: 'chart_of_accounts', // DEPRECATED - for backward compatibility testing only
   status: 'completed',
   metadata: {
     lastUpdated: new Date().toISOString(),

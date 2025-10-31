@@ -11,7 +11,8 @@ import fs from 'fs';
 import path from 'path';
 import { getDrizzle } from "@common/drizzle";
 import { eq, and, gte, lte, inArray, ne, sql as drizzleSql } from 'drizzle-orm';
-import { accounting_ledger_entries, accounting_ledger_lines, chart_of_accounts } from '../schema/accounting.schema';
+import { accounting_ledger_entries, accounting_ledger_lines } from '../schema/accounting.schema';
+import { synthetic_accounts } from '@geniuserp/shared';
 import { RedisService } from '@common/services/redis.service';
 import { createModuleLogger } from "@common/logger/loki-logger";
 import type { ColumnWidths, TableRowData, TableHeader, TableValue } from '../types/general-journal-pdf-types';
@@ -225,7 +226,7 @@ export class GeneralJournalPDFService {
         }>>`json_agg(
           json_build_object(
             'accountCode', ${accounting_ledger_lines.full_account_number},
-            'accountName', COALESCE(${chart_of_accounts.name}, ${accounting_ledger_lines.full_account_number}),
+            'accountName', COALESCE(${synthetic_accounts.name}, ${accounting_ledger_lines.full_account_number}),
             'debitAmount', ${accounting_ledger_lines.debit_amount}::numeric,
             'creditAmount', ${accounting_ledger_lines.credit_amount}::numeric,
             'description', ${accounting_ledger_lines.description}
@@ -234,10 +235,7 @@ export class GeneralJournalPDFService {
       })
       .from(accounting_ledger_entries)
       .leftJoin(accounting_ledger_lines, eq(accounting_ledger_lines.ledger_entry_id, accounting_ledger_entries.id))
-      .leftJoin(chart_of_accounts, and(
-        eq(chart_of_accounts.code, accounting_ledger_lines.full_account_number),
-        eq(chart_of_accounts.companyId, accounting_ledger_entries.company_id)
-      ))
+      .leftJoin(synthetic_accounts, eq(synthetic_accounts.code, accounting_ledger_lines.full_account_number))
       .where(and(...conditions))
       .groupBy(
         accounting_ledger_entries.id,

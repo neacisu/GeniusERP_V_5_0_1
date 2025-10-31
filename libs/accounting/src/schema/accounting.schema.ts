@@ -49,7 +49,7 @@ import {
   insertACJournalTypeSchema,
   selectACJournalTypeSchema,
   updateACJournalTypeSchema,
-  // chart_of_accounts (snake_case from shared)
+  // @deprecated chart_of_accounts - use synthetic_accounts instead
   chart_of_accounts,
   chart_of_accountsRelations
 } from '../../../shared/src/schema/accounting.schema';
@@ -81,7 +81,7 @@ export {
   accounting_ledger_entriesRelations,
   accounting_ledger_linesRelations,
   accounting_journal_types,
-  // chart_of_accounts (snake_case standard)
+  // @deprecated chart_of_accounts - use synthetic_accounts instead
   chart_of_accounts,
   chart_of_accountsRelations,
   // Zod schemas
@@ -201,7 +201,13 @@ export const documentCounters = pgTable('document_counters', {
 });
 
 // Backward compatibility camelCase aliases
+/**
+ * @deprecated Use synthetic_accounts instead for compliant chart of accounts
+ */
 export const chartOfAccounts = chart_of_accounts;
+/**
+ * @deprecated Use synthetic_accounts instead for compliant chart of accounts
+ */
 export const chartOfAccountsRelations = chart_of_accountsRelations;
 
 // Backward compatibility type aliases
