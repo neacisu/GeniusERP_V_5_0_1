@@ -17,7 +17,7 @@ import { RedisService } from '@common/services/redis.service';
 import {
   accounting_settings,
   vat_settings,
-  account_relationships,
+  AC_account_relationships,
   opening_balances,
   AccountingSettings,
   VatSettings,
@@ -374,29 +374,29 @@ export class AccountingSettingsService extends DrizzleService {
    */
   async createAccountRelationship(
     companyId: string,
-    data: Omit<InsertAccountRelationship, 'companyId'>
+    data: Omit<InsertAccountRelationship, 'company_id'>
   ): Promise<AccountRelationship> {
     // Validate accounts exist
-    await this.validateAccountExists(data.debitAccountCode);
-    await this.validateAccountExists(data.creditAccountCode);
+    await this.validateAccountExists(data.debit_account_code);
+    await this.validateAccountExists(data.credit_account_code);
 
     // Validate double-entry (accounts must be different)
-    if (data.debitAccountCode === data.creditAccountCode) {
+    if (data.debit_account_code === data.credit_account_code) {
       throw new Error('Debit and credit accounts must be different');
     }
 
     // Get account names
-    const debitAccountName = await this.getAccountName(data.debitAccountCode);
-    const creditAccountName = await this.getAccountName(data.creditAccountCode);
+    const debit_account_name = await this.getAccountName(data.debit_account_code);
+    const credit_account_name = await this.getAccountName(data.credit_account_code);
 
     const [created] = await this.query((db) =>
       db
-        .insert(account_relationships)
+        .insert(AC_account_relationships)
         .values({
-          companyId,
+          company_id: companyId,
           ...data,
-          debitAccountName,
-          creditAccountName,
+          debit_account_name,
+          credit_account_name,
         } as InsertAccountRelationship)
         .returning()
     );
@@ -412,26 +412,26 @@ export class AccountingSettingsService extends DrizzleService {
     data: UpdateAccountRelationship
   ): Promise<AccountRelationship> {
     // Validate accounts if provided
-    if (data.debitAccountCode) {
-      await this.validateAccountExists(data.debitAccountCode);
+    if (data.debit_account_code) {
+      await this.validateAccountExists(data.debit_account_code);
     }
-    if (data.creditAccountCode) {
-      await this.validateAccountExists(data.creditAccountCode);
+    if (data.credit_account_code) {
+      await this.validateAccountExists(data.credit_account_code);
     }
 
     // Update account names if codes changed
-    if (data.debitAccountCode) {
-      data.debitAccountName = await this.getAccountName(data.debitAccountCode);
+    if (data.debit_account_code) {
+      data.debit_account_name = await this.getAccountName(data.debit_account_code);
     }
-    if (data.creditAccountCode) {
-      data.creditAccountName = await this.getAccountName(data.creditAccountCode);
+    if (data.credit_account_code) {
+      data.credit_account_name = await this.getAccountName(data.credit_account_code);
     }
 
     const [updated] = await this.query((db) =>
       db
-        .update(account_relationships)
-        .set({ ...data, updatedAt: new Date() })
-        .where(eq(account_relationships.id, relationshipId))
+        .update(AC_account_relationships)
+        .set({ ...data, updated_at: new Date() })
+        .where(eq(AC_account_relationships.id, relationshipId))
         .returning()
     );
 
@@ -443,7 +443,7 @@ export class AccountingSettingsService extends DrizzleService {
    */
   async deleteAccountRelationship(relationshipId: string): Promise<void> {
     await this.query((db) =>
-      db.delete(account_relationships).where(eq(account_relationships.id, relationshipId))
+      db.delete(AC_account_relationships).where(eq(AC_account_relationships.id, relationshipId))
     );
   }
 
