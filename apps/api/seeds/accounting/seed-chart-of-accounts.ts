@@ -89,7 +89,7 @@ export async function seed(db: any) {
       let inserted = 0;
       for (const account of syntheticAccountsData) {
         await db.execute(`
-          INSERT INTO synthetic_accounts (
+          INSERT INTO PC_synthetic_accounts (
             id, code, name, description, account_function, grade, 
             group_id, parent_id, is_active, created_at, updated_at
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)

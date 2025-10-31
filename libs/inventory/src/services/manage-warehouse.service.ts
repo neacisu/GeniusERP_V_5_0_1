@@ -115,7 +115,7 @@ export class ManageWarehouseService {
    */
   private async getSyntheticAccountId(code: string): Promise<string> {
     const syntheticResult = await this.drizzle.executeQuery(
-      `SELECT id FROM synthetic_accounts WHERE code = '${code}' LIMIT 1`
+      `SELECT id FROM PC_synthetic_accounts WHERE code = '${code}' LIMIT 1`
     );
     
     if (syntheticResult.length === 0) {
