@@ -42,7 +42,7 @@ interface JournalQueryResult {
   document_date: string | null;  // date column returns string
   document_number: string | null;
   journal_type: string;
-  entry_description: string;
+  entry_description: string | null;  // can be null
   entry_amount: string;
   account_id: string;
   account_name: string | null;
