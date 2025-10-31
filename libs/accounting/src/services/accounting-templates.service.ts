@@ -388,7 +388,7 @@ export class AccountingTemplatesService extends DrizzleService {
       userId: request.userId,
       action: 'TEMPLATE_APPLIED' as any,
       severity: 'INFO' as any,
-      entityType: 'ledger_entries',
+      entityType: 'AC_accounting_ledger_entries',
       entityId: ledgerEntry.id,
       description: `Șablon aplicat: ${template.name}`,
       metadata: {
@@ -449,7 +449,7 @@ export class AccountingTemplatesService extends DrizzleService {
       userId: request.userId,
       action: 'AUTO_REVERSAL_CREATED' as any,
       severity: 'CRITICAL' as any,
-      entityType: 'ledger_entries',
+      entityType: 'AC_accounting_ledger_entries',
       entityId: reversalEntry.id,
       description: `Reversare automată: ${request.reversalReason}`,
       metadata: {

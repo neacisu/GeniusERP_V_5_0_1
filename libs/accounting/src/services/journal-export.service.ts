@@ -10,8 +10,9 @@ import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import { getDrizzle } from "@common/drizzle";
-import { and, eq, gte, lte, asc } from 'drizzle-orm';
+import { and, eq, gte, lte, asc, sql } from 'drizzle-orm';
 import { RedisService } from '@common/services/redis.service';
+import { AC_accounting_ledger_entries, AC_accounting_ledger_lines } from '@geniuserp/shared';
 
 // Dynamic import pentru xlsx (evităm erori de tip)
 let XLSX: any;
@@ -59,29 +60,35 @@ export class JournalExportService {
     
     const db = getDrizzle();
     
-    // Fetch ledger entries cu liniile aferente
-    let query = `
-      SELECT 
-        le.id, le.type, le.reference_number, le.amount, le.description, 
-        le.created_at, le.entry_date,
-        ll.account_id, ll.debit_amount, ll.credit_amount, ll.description as line_desc
-      FROM ledger_entries le
-      LEFT JOIN ledger_lines ll ON le.id = ll.ledger_entry_id
-      WHERE le.company_id = $1
-      AND le.entry_date >= $2
-      AND le.entry_date <= $3
-    `;
+    // Fetch ledger entries cu liniile aferente - DRIZZLE ORM
+    let queryBuilder = db
+      .select({
+        id: AC_accounting_ledger_entries.id,
+        type: AC_accounting_ledger_entries.type,
+        reference_number: AC_accounting_ledger_entries.document_number,
+        amount: AC_accounting_ledger_entries.total_amount,
+        description: AC_accounting_ledger_entries.description,
+        created_at: AC_accounting_ledger_entries.created_at,
+        entry_date: AC_accounting_ledger_entries.transaction_date,
+        account_id: AC_accounting_ledger_lines.full_account_number,
+        debit_amount: AC_accounting_ledger_lines.debit_amount,
+        credit_amount: AC_accounting_ledger_lines.credit_amount,
+        line_desc: AC_accounting_ledger_lines.description
+      })
+      .from(AC_accounting_ledger_entries)
+      .leftJoin(AC_accounting_ledger_lines, eq(AC_accounting_ledger_entries.id, AC_accounting_ledger_lines.ledger_entry_id))
+      .where(and(
+        eq(AC_accounting_ledger_entries.company_id, companyId),
+        gte(AC_accounting_ledger_entries.transaction_date, startDate),
+        lte(AC_accounting_ledger_entries.transaction_date, endDate),
+        journalType ? eq(AC_accounting_ledger_entries.type, journalType) : undefined
+      ))
+      .orderBy(
+        asc(AC_accounting_ledger_entries.transaction_date),
+        asc(AC_accounting_ledger_entries.created_at)
+      );
     
-    const params: any[] = [companyId, startDate, endDate];
-    
-    if (journalType) {
-      query += ` AND le.type = $4`;
-      params.push(journalType);
-    }
-    
-    query += ` ORDER BY le.entry_date ASC, le.created_at ASC, ll.debit_amount DESC`;
-    
-    const entries = await db.$client.unsafe(query, params);
+    const entries = await queryBuilder;
     
     // Grupează liniile per entry
     const groupedEntries = this.groupEntriesByLedger(entries);
@@ -201,24 +208,28 @@ export class JournalExportService {
     
     const db = getDrizzle();
     
-    const query = `
-      SELECT 
-        le.type as jurnal,
-        le.entry_date as data,
-        le.reference_number as referinta,
-        le.description as explicatie,
-        ll.account_id as cont,
-        ll.debit_amount as debit,
-        ll.credit_amount as credit
-      FROM ledger_entries le
-      LEFT JOIN ledger_lines ll ON le.id = ll.ledger_entry_id
-      WHERE le.company_id = $1
-      AND le.entry_date >= $2
-      AND le.entry_date <= $3
-      ORDER BY le.entry_date ASC, le.created_at ASC
-    `;
-    
-    const data = await db.$client.unsafe(query, [companyId, startDate, endDate]);
+    // DRIZZLE ORM query instead of raw SQL
+    const data = await db
+      .select({
+        jurnal: AC_accounting_ledger_entries.type,
+        data: AC_accounting_ledger_entries.transaction_date,
+        referinta: AC_accounting_ledger_entries.document_number,
+        explicatie: AC_accounting_ledger_entries.description,
+        cont: AC_accounting_ledger_lines.full_account_number,
+        debit: AC_accounting_ledger_lines.debit_amount,
+        credit: AC_accounting_ledger_lines.credit_amount
+      })
+      .from(AC_accounting_ledger_entries)
+      .leftJoin(AC_accounting_ledger_lines, eq(AC_accounting_ledger_entries.id, AC_accounting_ledger_lines.ledger_entry_id))
+      .where(and(
+        eq(AC_accounting_ledger_entries.company_id, companyId),
+        gte(AC_accounting_ledger_entries.transaction_date, startDate),
+        lte(AC_accounting_ledger_entries.transaction_date, endDate)
+      ))
+      .orderBy(
+        asc(AC_accounting_ledger_entries.transaction_date),
+        asc(AC_accounting_ledger_entries.created_at)
+      );
     
     // Creează Excel
     const ws = XLSX.utils.json_to_sheet(data.map((row: any) => ({

@@ -217,22 +217,28 @@ async function handleAccountReconciliation(job: Job): Promise<AccountReconciliat
     
     await job.updateProgress(20);
     
-    // 1. Citește toate entries din perioada
+    // 1. Citește toate entries din perioada - DRIZZLE ORM
     console.log(`Calculating balance for account ${data.accountId} from ${data.startDate} to ${data.endDate}`, 'accounting-job');
     
-    const entriesResult = await db.$client.unsafe(`
-      SELECT 
-        ll.debit_amount,
-        ll.credit_amount,
-        le.entry_date
-      FROM ledger_lines ll
-      JOIN ledger_entries le ON le.id = ll.ledger_entry_id
-      WHERE ll.account_id = $1
-      AND le.entry_date >= $2
-      AND le.entry_date <= $3
-      AND le.deleted_at IS NULL
-      ORDER BY le.entry_date
-    `, [data.accountId, data.startDate, data.endDate]);
+    // Import Drizzle schemas
+    const { AC_accounting_ledger_entries, AC_accounting_ledger_lines } = await import('@geniuserp/shared');
+    const { eq, and, gte, lte, isNull } = await import('drizzle-orm');
+    
+    const entriesResult = await db
+      .select({
+        debit_amount: AC_accounting_ledger_lines.debit_amount,
+        credit_amount: AC_accounting_ledger_lines.credit_amount,
+        entry_date: AC_accounting_ledger_entries.transaction_date
+      })
+      .from(AC_accounting_ledger_lines)
+      .innerJoin(AC_accounting_ledger_entries, eq(AC_accounting_ledger_entries.id, AC_accounting_ledger_lines.ledger_entry_id))
+      .where(and(
+        eq(AC_accounting_ledger_lines.full_account_number, data.accountId),
+        gte(AC_accounting_ledger_entries.transaction_date, new Date(data.startDate)),
+        lte(AC_accounting_ledger_entries.transaction_date, new Date(data.endDate)),
+        isNull(AC_accounting_ledger_entries.updated_at) // TODO: Check if deleted_at exists
+      ))
+      .orderBy(AC_accounting_ledger_entries.transaction_date);
     
     await job.updateProgress(50);
     

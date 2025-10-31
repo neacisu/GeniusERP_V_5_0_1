@@ -13,6 +13,7 @@ import { JournalService, LedgerEntryType } from './journal.service';
 import { AuditLogService } from './audit-log.service';
 import { eq, and, sql, ne, isNull } from 'drizzle-orm';
 import { RedisService } from '@common/services/redis.service';
+import { AC_accounting_ledger_entries } from '@geniuserp/shared';
 
 export interface FXRevaluationRequest {
   companyId: string;
@@ -483,12 +484,15 @@ export class FXRevaluationService extends DrizzleService {
 
     const referenceNumber = `REEVAL-${year}-${String(month).padStart(2, '0')}`;
 
-    const result = await db.$client.unsafe(`
-      SELECT id FROM ledger_entries
-      WHERE company_id = $1
-      AND reference_number = $2
-      LIMIT 1
-    `, [companyId, referenceNumber]);
+    // DRIZZLE ORM query instead of raw SQL
+    const result = await db
+      .select({ id: AC_accounting_ledger_entries.id })
+      .from(AC_accounting_ledger_entries)
+      .where(and(
+        eq(AC_accounting_ledger_entries.company_id, companyId),
+        eq(AC_accounting_ledger_entries.document_number, referenceNumber)
+      ))
+      .limit(1);
 
     return result && result.length > 0;
   }

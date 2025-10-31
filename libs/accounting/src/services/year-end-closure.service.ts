@@ -9,7 +9,8 @@ import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { getDrizzle } from "@common/drizzle";
 import { JournalService, LedgerEntryType } from './journal.service';
 import { AuditLogService } from './audit-log.service';
-import { eq, and, gte, lte, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, sql, like, sum } from 'drizzle-orm';
+import { AC_accounting_ledger_entries, AC_accounting_ledger_lines } from '@geniuserp/shared';
 
 export interface YearEndClosureRequest {
   companyId: string;
@@ -177,27 +178,33 @@ export class YearEndClosureService extends DrizzleService {
   }> {
     const db = getDrizzle();
 
-    // Calculează totalul veniturilor (clasa 7)
-    const revenueResult = await db.$client.unsafe(`
-      SELECT COALESCE(SUM(ll.credit_amount - ll.debit_amount), 0) as total
-      FROM ledger_lines ll
-      JOIN ledger_entries le ON ll.ledger_entry_id = le.id
-      WHERE le.company_id = $1
-      AND ll.account_id LIKE '7%'
-      AND EXTRACT(YEAR FROM le.entry_date) = $2
-    `, [companyId, fiscalYear]);
+    // Calculează totalul veniturilor (clasa 7) - DRIZZLE ORM
+    const revenueResult = await db
+      .select({ 
+        total: sql<number>`COALESCE(SUM(${AC_accounting_ledger_lines.credit_amount}::numeric - ${AC_accounting_ledger_lines.debit_amount}::numeric), 0)` 
+      })
+      .from(AC_accounting_ledger_lines)
+      .innerJoin(AC_accounting_ledger_entries, eq(AC_accounting_ledger_lines.ledger_entry_id, AC_accounting_ledger_entries.id))
+      .where(and(
+        eq(AC_accounting_ledger_entries.company_id, companyId),
+        like(AC_accounting_ledger_lines.full_account_number, '7%'),
+        sql`EXTRACT(YEAR FROM ${AC_accounting_ledger_entries.transaction_date}) = ${fiscalYear}`
+      ));
 
     const totalRevenue = Number(revenueResult[0]?.total || 0);
 
-    // Calculează totalul cheltuielilor (clasa 6)
-    const expenseResult = await db.$client.unsafe(`
-      SELECT COALESCE(SUM(ll.debit_amount - ll.credit_amount), 0) as total
-      FROM ledger_lines ll
-      JOIN ledger_entries le ON ll.ledger_entry_id = le.id
-      WHERE le.company_id = $1
-      AND ll.account_id LIKE '6%'
-      AND EXTRACT(YEAR FROM le.entry_date) = $2
-    `, [companyId, fiscalYear]);
+    // Calculează totalul cheltuielilor (clasa 6) - DRIZZLE ORM
+    const expenseResult = await db
+      .select({ 
+        total: sql<number>`COALESCE(SUM(${AC_accounting_ledger_lines.debit_amount}::numeric - ${AC_accounting_ledger_lines.credit_amount}::numeric), 0)` 
+      })
+      .from(AC_accounting_ledger_lines)
+      .innerJoin(AC_accounting_ledger_entries, eq(AC_accounting_ledger_lines.ledger_entry_id, AC_accounting_ledger_entries.id))
+      .where(and(
+        eq(AC_accounting_ledger_entries.company_id, companyId),
+        like(AC_accounting_ledger_lines.full_account_number, '6%'),
+        sql`EXTRACT(YEAR FROM ${AC_accounting_ledger_entries.transaction_date}) = ${fiscalYear}`
+      ));
 
     const totalExpenses = Number(expenseResult[0]?.total || 0);
 
@@ -479,13 +486,16 @@ export class YearEndClosureService extends DrizzleService {
   async isYearClosed(companyId: string, fiscalYear: number): Promise<boolean> {
     const db = getDrizzle();
 
-    const result = await db.$client.unsafe(`
-      SELECT id FROM ledger_entries
-      WHERE company_id = $1
-      AND reference_number LIKE 'PROFIT-%'
-      AND reference_number LIKE '%${fiscalYear}'
-      LIMIT 1
-    `, [companyId]);
+    // DRIZZLE ORM query instead of raw SQL
+    const result = await db
+      .select({ id: AC_accounting_ledger_entries.id })
+      .from(AC_accounting_ledger_entries)
+      .where(and(
+        eq(AC_accounting_ledger_entries.company_id, companyId),
+        like(AC_accounting_ledger_entries.document_number, 'PROFIT-%'),
+        like(AC_accounting_ledger_entries.document_number, `%${fiscalYear}`)
+      ))
+      .limit(1);
 
     return result && result.length > 0;
   }

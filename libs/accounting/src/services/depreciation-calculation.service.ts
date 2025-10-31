@@ -410,7 +410,7 @@ export class DepreciationCalculationService extends DrizzleService {
     const referenceNumber = `AMORT-${year}-${String(month).padStart(2, '0')}`;
 
     const result = await db.$client.unsafe(`
-      SELECT id FROM ledger_entries
+      SELECT id FROM AC_accounting_ledger_entries
       WHERE company_id = $1
       AND reference_number = $2
       LIMIT 1

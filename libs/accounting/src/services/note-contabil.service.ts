@@ -72,7 +72,7 @@ export default class NoteContabilService {
       };
 
       // Log audit event
-      await AuditService.console.log({
+      logger.info('Note contabilă created', {
         userId: noteData.userId,
         companyId: noteData.companyId,
         action: 'create',
@@ -211,7 +211,7 @@ export default class NoteContabilService {
       // For now, we just return a dummy note
       
       // Log audit event
-      await AuditService.console.log({
+      logger.info('Note contabilă viewed', {
         userId: userId,
         companyId: companyId,
         action: 'view',
@@ -288,27 +288,27 @@ export default class NoteContabilService {
         }
       }
       
-      // Query direct din PostgreSQL ledger_entries folosind Drizzle ORM
+      // Query direct din PostgreSQL AC_accounting_ledger_entries folosind Drizzle ORM
       const db = getDrizzle();
       
       // Query folosind Drizzle ORM cu relații
       const entries = await db
         .select()
-        .from(ledgerEntries)
-        .where(eq(ledgerEntries.companyId, companyId))
-        .orderBy(desc(ledgerEntries.createdAt));
+        .from(accounting_ledger_entries)
+        .where(eq(accounting_ledger_entries.company_id, companyId))
+        .orderBy(desc(accounting_ledger_entries.created_at));
       
       // Transform to Note Contabilă format
       const notes: NoteListItem[] = entries.map((entry) => ({
         id: entry.id,
-        number: entry.referenceNumber || entry.journalNumber || 'N/A',
-        date: entry.entryDate || entry.createdAt,
+        number: entry.document_number || 'N/A',
+        date: entry.transaction_date || entry.created_at,
         description: entry.description || '',
         documentType: entry.type,
-        totalDebit: Number(entry.amount) || 0,
-        totalCredit: Number(entry.amount) || 0,
+        totalDebit: Number(entry.total_debit) || 0,
+        totalCredit: Number(entry.total_credit) || 0,
         validated: true,
-        createdAt: entry.createdAt,
+        createdAt: entry.created_at,
       }));
       
       // Cache for 5 minutes
@@ -337,7 +337,7 @@ export default class NoteContabilService {
       // For now, we just return a dummy validated note
       
       // Log audit event
-      await AuditService.console.log({
+      logger.info('Note contabilă validated', {
         userId: userId,
         companyId: companyId,
         action: 'validate',
@@ -473,7 +473,7 @@ export default class NoteContabilService {
       }
       
       // Log audit event with REAL data
-      await AuditService.console.log({
+      logger.info('Accounting note generated from document', {
         userId: userId,
         companyId: companyId,
         action: 'generate_accounting_note',

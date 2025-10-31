@@ -174,7 +174,7 @@ export class ManualEntriesController extends BaseController {
         userId,
         action: 'MANUAL_ENTRY_CREATED' as any,
         severity: 'INFO' as any,
-        entityType: 'ledger_entries',
+        entityType: 'AC_accounting_ledger_entries',
         entityId: ledgerEntry.id,
         description: `Notă contabilă creată manual: ${validatedData.description}`,
         metadata: {

@@ -187,7 +187,7 @@ export const cash_transactions = pgTable('cash_transactions', {
   // Contabilizare
   isPosted: boolean('is_posted').notNull().default(false),
   postedAt: timestamp('posted_at'),
-  ledgerEntryId: uuid('ledger_entry_id'), // Link către ledger_entries
+  ledgerEntryId: uuid('ledger_entry_id'), // Link către AC_accounting_ledger_entries
   
   // Anulare (dacă e cazul)
   isCanceled: boolean('is_canceled').notNull().default(false),

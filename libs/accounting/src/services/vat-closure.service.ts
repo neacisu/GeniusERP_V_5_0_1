@@ -13,9 +13,10 @@ import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { getDrizzle } from "@common/drizzle";
 import { JournalService, LedgerEntryType } from './journal.service';
 import { AuditLogService } from './audit-log.service';
-import { eq, and, gte, lte, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, sql, like, sum } from 'drizzle-orm';
 import { accountingQueueService } from './accounting-queue.service';
 import { accountingCacheService } from './accounting-cache.service';
+import { AC_accounting_ledger_entries, AC_accounting_ledger_lines } from '@geniuserp/shared';
 
 export interface VATClosureRequest {
   companyId: string;
@@ -145,42 +146,45 @@ export class VATClosureService extends DrizzleService {
     const db = getDrizzle();
 
     try {
-      // Query pentru TVA colectată (4427) - CREDIT în perioada
-      const collectedResult = await db.$client.unsafe(`
-        SELECT COALESCE(SUM(ll.credit_amount), 0) as total
-        FROM ledger_lines ll
-        JOIN ledger_entries le ON ll.ledger_entry_id = le.id
-        WHERE le.company_id = $1
-        AND ll.account_id LIKE '4427%'
-        AND le.entry_date >= $2
-        AND le.entry_date <= $3
-      `, [companyId, startDate, endDate]);
+      // Query pentru TVA colectată (4427) - CREDIT în perioada - DRIZZLE ORM
+      const collectedResult = await db
+        .select({ total: sum(AC_accounting_ledger_lines.credit_amount) })
+        .from(AC_accounting_ledger_lines)
+        .innerJoin(AC_accounting_ledger_entries, eq(AC_accounting_ledger_lines.ledger_entry_id, AC_accounting_ledger_entries.id))
+        .where(and(
+          eq(AC_accounting_ledger_entries.company_id, companyId),
+          like(AC_accounting_ledger_lines.full_account_number, '4427%'),
+          gte(AC_accounting_ledger_entries.transaction_date, startDate),
+          lte(AC_accounting_ledger_entries.transaction_date, endDate)
+        ));
 
       const vatCollected = Number(collectedResult[0]?.total || 0);
 
-      // Query pentru TVA deductibilă (4426) - DEBIT în perioada
-      const deductibleResult = await db.$client.unsafe(`
-        SELECT COALESCE(SUM(ll.debit_amount), 0) as total
-        FROM ledger_lines ll
-        JOIN ledger_entries le ON ll.ledger_entry_id = le.id
-        WHERE le.company_id = $1
-        AND ll.account_id LIKE '4426%'
-        AND le.entry_date >= $2
-        AND le.entry_date <= $3
-      `, [companyId, startDate, endDate]);
+      // Query pentru TVA deductibilă (4426) - DEBIT în perioada - DRIZZLE ORM
+      const deductibleResult = await db
+        .select({ total: sum(AC_accounting_ledger_lines.debit_amount) })
+        .from(AC_accounting_ledger_lines)
+        .innerJoin(AC_accounting_ledger_entries, eq(AC_accounting_ledger_lines.ledger_entry_id, AC_accounting_ledger_entries.id))
+        .where(and(
+          eq(AC_accounting_ledger_entries.company_id, companyId),
+          like(AC_accounting_ledger_lines.full_account_number, '4426%'),
+          gte(AC_accounting_ledger_entries.transaction_date, startDate),
+          lte(AC_accounting_ledger_entries.transaction_date, endDate)
+        ));
 
       const vatDeductible = Number(deductibleResult[0]?.total || 0);
 
-      // Query pentru TVA nedeductibilă (635) - pentru informare
-      const nonDeductibleResult = await db.$client.unsafe(`
-        SELECT COALESCE(SUM(ll.debit_amount), 0) as total
-        FROM ledger_lines ll
-        JOIN ledger_entries le ON ll.ledger_entry_id = le.id
-        WHERE le.company_id = $1
-        AND ll.account_id LIKE '635%'
-        AND le.entry_date >= $2
-        AND le.entry_date <= $3
-      `, [companyId, startDate, endDate]);
+      // Query pentru TVA nedeductibilă (635) - pentru informare - DRIZZLE ORM
+      const nonDeductibleResult = await db
+        .select({ total: sum(AC_accounting_ledger_lines.debit_amount) })
+        .from(AC_accounting_ledger_lines)
+        .innerJoin(AC_accounting_ledger_entries, eq(AC_accounting_ledger_lines.ledger_entry_id, AC_accounting_ledger_entries.id))
+        .where(and(
+          eq(AC_accounting_ledger_entries.company_id, companyId),
+          like(AC_accounting_ledger_lines.full_account_number, '635%'),
+          gte(AC_accounting_ledger_entries.transaction_date, startDate),
+          lte(AC_accounting_ledger_entries.transaction_date, endDate)
+        ));
 
       const vatNonDeductible = Number(nonDeductibleResult[0]?.total || 0);
 
@@ -294,12 +298,15 @@ export class VATClosureService extends DrizzleService {
 
     const referenceNumber = `VAT-CLOSE-${year}-${String(month).padStart(2, '0')}`;
 
-    const result = await db.$client.unsafe(`
-      SELECT id FROM ledger_entries
-      WHERE company_id = $1
-      AND reference_number = $2
-      LIMIT 1
-    `, [companyId, referenceNumber]);
+    // DRIZZLE ORM query instead of raw SQL
+    const result = await db
+      .select({ id: AC_accounting_ledger_entries.id })
+      .from(AC_accounting_ledger_entries)
+      .where(and(
+        eq(AC_accounting_ledger_entries.company_id, companyId),
+        eq(AC_accounting_ledger_entries.document_number, referenceNumber)
+      ))
+      .limit(1);
 
     return result && result.length > 0;
   }
