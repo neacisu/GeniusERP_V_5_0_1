@@ -9,6 +9,26 @@ import { relations, sql } from 'drizzle-orm';
 
 // Import standardized schemas from shared
 import {
+  // AC_accounting_ledger_entries & lines
+  AC_accounting_ledger_entries,
+  AC_accounting_ledger_entriesRelations,
+  AC_accounting_ledger_lines,
+  AC_accounting_ledger_linesRelations,
+  accounting_ledger_entries, // deprecated alias
+  accounting_ledger_lines, // deprecated alias
+  accounting_ledger_entriesRelations, // deprecated alias
+  accounting_ledger_linesRelations, // deprecated alias
+  ACAccountingLedgerEntry,
+  InsertACAccountingLedgerEntry,
+  ACAccountingLedgerLine,
+  InsertACAccountingLedgerLine,
+  insertACAccountingLedgerEntrySchema,
+  selectACAccountingLedgerEntrySchema,
+  updateACAccountingLedgerEntrySchema,
+  insertACAccountingLedgerLineSchema,
+  selectACAccountingLedgerLineSchema,
+  updateACAccountingLedgerLineSchema,
+  // AC_accounting_account_balances
   AC_accounting_account_balances,
   AC_accounting_account_balancesRelations,
   AC_account_balances, // deprecated alias
@@ -21,6 +41,7 @@ import {
   insertAccountBalanceSchema, // deprecated alias
   selectAccountBalanceSchema, // deprecated alias
   updateAccountBalanceSchema, // deprecated alias
+  // AC_journal_types
   AC_journal_types, // Preferred - standardized with AC_ prefix
   accounting_journal_types, // deprecated alias
   ACJournalType,
@@ -33,132 +54,22 @@ import {
 // Types are defined locally in this file
 
 // Preferred exports with AC_ prefix
+export const ACAccountingLedgerEntries = AC_accounting_ledger_entries;
+export const ACAccountingLedgerLines = AC_accounting_ledger_lines;
+export const ACAccountingLedgerEntriesRelations = AC_accounting_ledger_entriesRelations;
+export const ACAccountingLedgerLinesRelations = AC_accounting_ledger_linesRelations;
 export const ACAccountBalances = AC_accounting_account_balances;
 export const ACAccountBalancesRelations = AC_accounting_account_balancesRelations;
 export const ACJournalTypes = AC_journal_types;
 
 // Backward compatibility aliases
+export const accountingLedgerEntries = accounting_ledger_entries;
+export const accountingLedgerLines = accounting_ledger_lines;
+export const accountingLedgerEntriesRelations = accounting_ledger_entriesRelations;
+export const accountingLedgerLinesRelations = accounting_ledger_linesRelations;
 export const accountBalances = account_balances;
 export const accountBalancesRelations = account_balancesRelations;
 export const journalTypes = accounting_journal_types; // Now points to AC_journal_types via alias
-
-/**
- * Accounting Ledger Entries table
- * Main table for financial transactions (RAS-compliant)
- * Maps to: accounting_ledger_entries
- */
-export const accountingLedgerEntries = pgTable('accounting_ledger_entries', {
-  id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
-  companyId: uuid('company_id').notNull(),
-  franchiseId: uuid('franchise_id'),
-  
-  // Dates
-  transactionDate: timestamp('transaction_date').notNull().default(sql`now()`),
-  postingDate: timestamp('posting_date').notNull().default(sql`now()`),
-  documentDate: date('document_date').notNull(),
-  
-  // Document info
-  type: varchar('type', { length: 50 }).notNull(),
-  documentNumber: varchar('document_number', { length: 100 }),
-  documentType: varchar('document_type', { length: 50 }),
-  referenceId: uuid('reference_id'),
-  referenceTable: varchar('reference_table', { length: 100 }),
-  
-  // Content
-  description: varchar('description', { length: 500 }),
-  notes: text('notes'),
-  
-  // Status flags
-  isPosted: boolean('is_posted').notNull().default(false),
-  isDraft: boolean('is_draft').notNull().default(true),
-  isSystemGenerated: boolean('is_system_generated').notNull().default(false),
-  
-  // Amounts
-  totalAmount: numeric('total_amount', { precision: 19, scale: 4 }).notNull(),
-  totalDebit: numeric('total_debit', { precision: 19, scale: 4 }).notNull(),
-  totalCredit: numeric('total_credit', { precision: 19, scale: 4 }).notNull(),
-  
-  // Currency
-  currency: varchar('currency', { length: 3 }).notNull().default('RON'),
-  exchangeRate: numeric('exchange_rate', { precision: 19, scale: 6 }).notNull().default('1'),
-  exchangeRateDate: date('exchange_rate_date'),
-  
-  // Fiscal period
-  fiscalYear: integer('fiscal_year').notNull(),
-  fiscalMonth: integer('fiscal_month').notNull(),
-  
-  // Audit trail
-  createdBy: uuid('created_by'),
-  createdAt: timestamp('created_at').notNull().default(sql`now()`),
-  updatedBy: uuid('updated_by'),
-  updatedAt: timestamp('updated_at'),
-  postedBy: uuid('posted_by'),
-  postedAt: timestamp('posted_at'),
-  reversedBy: uuid('reversed_by'),
-  reversedAt: timestamp('reversed_at'),
-  
-  // Reversal info
-  isReversal: boolean('is_reversal').notNull().default(false),
-  originalEntryId: uuid('original_entry_id'),
-  reversalEntryId: uuid('reversal_entry_id'),
-  reversalReason: varchar('reversal_reason', { length: 500 }),
-  
-  // Metadata
-  metadata: jsonb('metadata')
-});
-
-/**
- * Accounting Ledger Lines table
- * Detail lines for each ledger entry (double-entry accounting)
- * Maps to: accounting_ledger_lines
- */
-export const accountingLedgerLines = pgTable('accounting_ledger_lines', {
-  id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
-  ledgerEntryId: uuid('ledger_entry_id').notNull().references(() => accountingLedgerEntries.id, { onDelete: 'cascade' }),
-  companyId: uuid('company_id').notNull(),
-  
-  // Line details
-  lineNumber: integer('line_number').notNull(),
-  description: varchar('description', { length: 500 }),
-  
-  // Account structure (RAS)
-  accountClass: integer('account_class').notNull(),
-  accountGroup: integer('account_group').notNull(),
-  accountNumber: varchar('account_number', { length: 20 }).notNull(),
-  accountSubNumber: varchar('account_sub_number', { length: 20 }),
-  fullAccountNumber: varchar('full_account_number', { length: 50 }).notNull(),
-  
-  // Amounts
-  amount: numeric('amount', { precision: 19, scale: 4 }).notNull(),
-  debitAmount: numeric('debit_amount', { precision: 19, scale: 4 }).notNull().default('0'),
-  creditAmount: numeric('credit_amount', { precision: 19, scale: 4 }).notNull().default('0'),
-  
-  // Currency
-  currency: varchar('currency', { length: 3 }).notNull().default('RON'),
-  originalAmount: numeric('original_amount', { precision: 19, scale: 4 }),
-  exchangeRate: numeric('exchange_rate', { precision: 19, scale: 6 }).notNull().default('1'),
-  
-  // Analytical dimensions
-  departmentId: uuid('department_id'),
-  projectId: uuid('project_id'),
-  costCenterId: uuid('cost_center_id'),
-  
-  // VAT
-  vatCode: varchar('vat_code', { length: 20 }),
-  vatPercentage: numeric('vat_percentage', { precision: 5, scale: 2 }),
-  vatAmount: numeric('vat_amount', { precision: 19, scale: 4 }),
-  
-  // Item linking
-  itemType: varchar('item_type', { length: 50 }),
-  itemId: uuid('item_id'),
-  itemQuantity: numeric('item_quantity', { precision: 19, scale: 4 }),
-  itemUnitPrice: numeric('item_unit_price', { precision: 19, scale: 4 }),
-  
-  // Metadata
-  metadata: jsonb('metadata'),
-  createdAt: timestamp('created_at').notNull().default(sql`now()`),
-  updatedAt: timestamp('updated_at')
-});
 
 /**
  * @deprecated Use accountingLedgerEntries instead
@@ -263,40 +174,6 @@ export const chartOfAccounts = pgTable('chart_of_accounts', {
 });
 
 /**
- * Relations for accounting ledger entries
- */
-export const accountingLedgerEntriesRelations = relations(accountingLedgerEntries, ({ many }) => ({
-  lines: many(accountingLedgerLines)
-}));
-
-/**
- * Relations for accounting ledger lines
- */
-export const accountingLedgerLinesRelations = relations(accountingLedgerLines, ({ one }) => ({
-  entry: one(accountingLedgerEntries, {
-    fields: [accountingLedgerLines.ledgerEntryId],
-    references: [accountingLedgerEntries.id]
-  })
-}));
-
-/**
- * @deprecated Use accountingLedgerEntriesRelations instead
- */
-export const ledgerEntriesRelations = relations(ledgerEntries, ({ many }) => ({
-  lines: many(ledgerLines)
-}));
-
-/**
- * @deprecated Use accountingLedgerLinesRelations instead
- */
-export const ledgerLinesRelations = relations(ledgerLines, ({ one }) => ({
-  entry: one(ledgerEntries, {
-    fields: [ledgerLines.ledgerEntryId],
-    references: [ledgerEntries.id]
-  })
-}));
-
-/**
  * Relations for chart of accounts
  */
 export const chartOfAccountsRelations = relations(chartOfAccounts, ({ one, many }) => ({
@@ -307,22 +184,16 @@ export const chartOfAccountsRelations = relations(chartOfAccounts, ({ one, many 
   children: many(chartOfAccounts)
 }));
 
-// Export types for accounting ledger entries
-export type AccountingLedgerEntry = typeof accountingLedgerEntries.$inferSelect;
-export type InsertAccountingLedgerEntry = typeof accountingLedgerEntries.$inferInsert;
-
-export type AccountingLedgerLine = typeof accountingLedgerLines.$inferSelect;
-export type InsertAccountingLedgerLine = typeof accountingLedgerLines.$inferInsert;
-
-// Export types for legacy tables (deprecated)
-export type LedgerEntry = typeof ledgerEntries.$inferSelect;
-export type InsertLedgerEntry = typeof ledgerEntries.$inferInsert;
-
-export type LedgerLine = typeof ledgerLines.$inferSelect;
-export type InsertLedgerLine = typeof ledgerLines.$inferInsert;
-
-// Re-export AC_journal_types types from shared
+// Re-export types from shared
+export type { ACAccountingLedgerEntry, InsertACAccountingLedgerEntry };
+export type { ACAccountingLedgerLine, InsertACAccountingLedgerLine };
 export type { ACJournalType, InsertACJournalType };
+
+// Backward compatibility aliases
+export type AccountingLedgerEntry = ACAccountingLedgerEntry;
+export type InsertAccountingLedgerEntry = InsertACAccountingLedgerEntry;
+export type AccountingLedgerLine = ACAccountingLedgerLine;
+export type InsertAccountingLedgerLine = InsertACAccountingLedgerLine;
 export type JournalType = ACJournalType; // Backward compatibility
 export type InsertJournalType = InsertACJournalType; // Backward compatibility
 
@@ -339,7 +210,15 @@ export type ChartOfAccount = typeof chartOfAccounts.$inferSelect;
 export type InsertChartOfAccount = typeof chartOfAccounts.$inferInsert;
 
 export default {
-  // Current tables
+  // AC_ prefix tables (preferred)
+  ACAccountingLedgerEntries,
+  ACAccountingLedgerLines,
+  ACAccountingLedgerEntriesRelations,
+  ACAccountingLedgerLinesRelations,
+  ACAccountBalances,
+  ACAccountBalancesRelations,
+  ACJournalTypes,
+  // Current tables (backward compatibility)
   accountingLedgerEntries,
   accountingLedgerLines,
   accountingLedgerEntriesRelations,
@@ -347,19 +226,13 @@ export default {
   // Legacy tables (deprecated)
   ledgerEntries,
   ledgerLines,
-  ledgerEntriesRelations,
-  ledgerLinesRelations,
   // AC_journal_types - imported from shared
-  ACJournalTypes, // Preferred
-  journalTypes, // deprecated: points to AC_journal_types
   AC_journal_types, // re-export from shared
   accounting_journal_types, // re-export from shared (deprecated)
   insertACJournalTypeSchema,
   selectACJournalTypeSchema,
   updateACJournalTypeSchema,
   // Account balances
-  ACAccountBalances, // Preferred - standardized with AC_ prefix and full RAS structure
-  accountBalances, // deprecated: use ACAccountBalances
   AC_accounting_account_balances, // re-export from shared
   AC_accounting_account_balancesRelations,
   AC_account_balances, // deprecated alias
@@ -372,6 +245,13 @@ export default {
   insertAccountBalanceSchema, // deprecated alias
   selectAccountBalanceSchema, // deprecated alias
   updateAccountBalanceSchema, // deprecated alias
+  // Zod schemas for ledger entries/lines
+  insertACAccountingLedgerEntrySchema,
+  selectACAccountingLedgerEntrySchema,
+  updateACAccountingLedgerEntrySchema,
+  insertACAccountingLedgerLineSchema,
+  selectACAccountingLedgerLineSchema,
+  updateACAccountingLedgerLineSchema,
   // Other tables
   fiscalPeriods,
   documentCounters,

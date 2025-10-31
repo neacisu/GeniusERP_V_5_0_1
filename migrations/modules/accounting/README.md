@@ -32,7 +32,7 @@ Acest director conține migrațiile pentru modulul de contabilitate (Accounting)
 - `is_bidirectional` - Relație bidirecțională sau nu
 - `applies_to_period` - Perioada în care se aplică
 
-#### 3. AC_journal_types ✅ NOU
+#### 3. AC_journal_types ✅
 **Fișier**: `create_AC_journal_types.ts`  
 **Scop**: Tipuri de jurnale contabile (General, Vânzări, Achiziții, Bancă, Casă)  
 **Prefix**: AC_ (Accounting Configuration)  
@@ -45,8 +45,6 @@ Acest director conține migrațiile pentru modulul de contabilitate (Accounting)
 - `default_debit_account`, `default_credit_account` - Conturi implicite
 - `is_system_journal` - Jurnal sistem (protejat împotriva ștergerii)
 - `is_active` - Status activ (soft delete)
-- `auto_number_prefix` - Prefix numerotare automată (GJ, SA, PU)
-- `last_used_number` - Counter pentru numerotare secvențială
 
 **Tipuri standard de jurnale:**
 ```
@@ -57,16 +55,67 @@ BANK  - Bank Journal (Jurnal Bancă)
 CASH  - Cash Journal (Jurnal Casă)
 ```
 
+#### 4. AC_accounting_ledger_entries ✅ NOU
+**Fișier**: `create_AC_accounting_ledger_entries.ts`  
+**Scop**: Antet note contabile (header pentru double-entry accounting)  
+**Prefix**: AC_ (Accounting Configuration)  
+**Documentație**: `/docs/audit/DB_audit.md` - Secțiunea #10 AC_accounting_ledger_entries
+
+**Coloane principale:**
+- `company_id`, `franchise_id` - Identificare companie și franchiză
+- `journal_type_id` - Link către AC_journal_types
+- `transaction_date`, `posting_date`, `document_date` - Date tranzacție
+- `document_number`, `document_type` - Identificare document
+- `total_debit`, `total_credit` - Totaluri (trebuie egale - partida dublă!)
+- `fiscal_year`, `fiscal_month` - Perioadă fiscală
+- `is_posted`, `is_draft` - Status workflow
+- `is_reversal`, `original_entry_id`, `reversal_entry_id` - Sistem stornare
+
+**Caracteristici:**
+- Double-entry accounting cu validare partida dublă
+- Multi-currency cu exchange rates
+- Complete audit trail (created, updated, posted, reversed)
+- Self-referencing FK pentru ierarhie stornări
+- Polymorphic references către documente sursă
+
 **Indexuri:**
-- `AC_journal_types_pkey` - Primary key pe `id`
-- `AC_journal_types_code_unique` - UNIQUE pe `(company_id, code)`
-- `AC_journal_types_active_idx` - Index pe `(company_id, is_active)`
+- `AC_ledger_primary_idx` - (company_id, fiscal_year, fiscal_month, transaction_date)
+- `AC_ledger_is_posted_idx` - (company_id, is_posted, transaction_date)
+- `AC_ledger_document_unique` - UNIQUE pe (company_id, document_type, document_number)
+
+#### 5. AC_accounting_ledger_lines ✅ NOU
+**Fișier**: `create_AC_accounting_ledger_lines.ts`  
+**Scop**: Linii detaliate note contabile (detail lines pentru partida dublă)  
+**Prefix**: AC_ (Accounting Configuration)  
+**Documentație**: `/docs/audit/DB_audit.md` - Secțiunea #11 AC_accounting_ledger_lines
+
+**Coloane principale:**
+- `ledger_entry_id` - FK către AC_accounting_ledger_entries (CASCADE)
+- `line_number` - Număr ordine linie în notă
+- `account_class`, `account_group`, `account_number`, `full_account_number` - Structură RAS
+- `debit_amount`, `credit_amount` - Sume (doar UNA poate fi > 0!)
+- `department_id`, `project_id`, `cost_center_id` - Dimensiuni analitice
+- `vat_code`, `vat_percentage`, `vat_amount` - Tracking TVA
+- `item_id`, `partner_id` - Linkuri către produse/parteneri
+- `is_reconciled`, `reconciliation_id` - Sistem reconciliere
+
+**Caracteristici:**
+- Suport complet pentru dimensiuni analitice (cost accounting)
+- Tracking TVA per linie
+- Link către inventory items
+- Partner tracking cu scadențe (due_date)
+- Sistem de reconciliere pentru conturi de terți
+
+**Indexuri:**
+- `AC_ledger_line_entry_idx` - (ledger_entry_id) **CRITIC pentru performance!**
+- `AC_ledger_line_account_idx` - (company_id, full_account_number)
+- `AC_ledger_line_dimension_idx` - (company_id, department_id, project_id, cost_center_id)
 
 **Schema Drizzle:**
 - Locație: `/libs/shared/src/schema/accounting.schema.ts`
-- Export principal: `AC_journal_types`
-- Backward compatibility: `accounting_journal_types` (alias deprecated)
-- Zod schemas: `insertACJournalTypeSchema`, `selectACJournalTypeSchema`, `updateACJournalTypeSchema`
+- Export principal: `AC_accounting_ledger_entries`, `AC_accounting_ledger_lines`
+- Backward compatibility: `accounting_ledger_entries`, `accounting_ledger_lines` (aliases deprecated)
+- Zod schemas: `insertACAccountingLedgerEntrySchema`, `insertACAccountingLedgerLineSchema` cu validări business logic
 
 ## 🔧 Convenții de Nume
 

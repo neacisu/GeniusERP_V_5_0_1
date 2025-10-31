@@ -13,125 +13,164 @@ import { z } from 'zod';
 import { accounts, companies } from '../schema';
 
 /**
- * Accounting Ledger Entries table
+ * AC_accounting_ledger_entries table (Accounting Configuration prefix)
  * Main table for financial transactions (RAS-compliant)
- * Maps to: accounting_ledger_entries
+ * 
+ * 🏷️  NUME TABEL: AC_accounting_ledger_entries
+ * 📁 PREFIX: AC_ (Accounting Configuration)
+ * 
+ * REFACTORIZAT: accounting_ledger_entries → AC_accounting_ledger_entries
+ * - Toate coloanele standardizate la snake_case
+ * - Prefix AC_ pentru identificare ușoară
+ * - Compatibilitate înapoi prin aliases
  */
-export const accounting_ledger_entries = pgTable('accounting_ledger_entries', {
+export const AC_accounting_ledger_entries = pgTable('AC_accounting_ledger_entries', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
-  companyId: uuid('company_id').notNull(),
-  franchiseId: uuid('franchise_id'),
+  company_id: uuid('company_id').notNull(),
+  franchise_id: uuid('franchise_id'),
   
-  // Journal Type - NEW: Link to AC_journal_types
-  journalTypeId: uuid('journal_type_id'),
+  // Journal Type - Link to AC_journal_types
+  journal_type_id: uuid('journal_type_id'),
   
   // Dates
-  transactionDate: timestamp('transaction_date').notNull().default(sql`now()`),
-  postingDate: timestamp('posting_date').notNull().default(sql`now()`),
-  documentDate: date('document_date').notNull(),
+  transaction_date: timestamp('transaction_date').notNull().default(sql`now()`),
+  posting_date: timestamp('posting_date').notNull().default(sql`now()`),
+  document_date: date('document_date').notNull(),
   
   // Document info
-  type: varchar('type', { length: 50 }).notNull(), // @deprecated - use journalTypeId instead
-  documentNumber: varchar('document_number', { length: 100 }),
-  documentType: varchar('document_type', { length: 50 }),
-  referenceId: uuid('reference_id'),
-  referenceTable: varchar('reference_table', { length: 100 }),
+  type: varchar('type', { length: 50 }).notNull(), // @deprecated - use journal_type_id instead
+  document_number: varchar('document_number', { length: 100 }),
+  document_type: varchar('document_type', { length: 50 }),
+  reference_id: uuid('reference_id'),
+  reference_table: varchar('reference_table', { length: 100 }),
   
   // Content
   description: varchar('description', { length: 500 }),
   notes: text('notes'),
   
   // Status flags
-  isPosted: boolean('is_posted').notNull().default(false),
-  isDraft: boolean('is_draft').notNull().default(true),
-  isSystemGenerated: boolean('is_system_generated').notNull().default(false),
+  is_posted: boolean('is_posted').notNull().default(false),
+  is_draft: boolean('is_draft').notNull().default(true),
+  is_system_generated: boolean('is_system_generated').notNull().default(false),
   
   // Amounts
-  totalAmount: numeric('total_amount', { precision: 19, scale: 4 }).notNull(),
-  totalDebit: numeric('total_debit', { precision: 19, scale: 4 }).notNull(),
-  totalCredit: numeric('total_credit', { precision: 19, scale: 4 }).notNull(),
+  total_amount: numeric('total_amount', { precision: 19, scale: 4 }).notNull(),
+  total_debit: numeric('total_debit', { precision: 19, scale: 4 }).notNull(),
+  total_credit: numeric('total_credit', { precision: 19, scale: 4 }).notNull(),
   
   // Currency
   currency: varchar('currency', { length: 3 }).notNull().default('RON'),
-  exchangeRate: numeric('exchange_rate', { precision: 19, scale: 6 }).notNull().default('1'),
-  exchangeRateDate: date('exchange_rate_date'),
+  exchange_rate: numeric('exchange_rate', { precision: 19, scale: 6 }).notNull().default('1'),
+  exchange_rate_date: date('exchange_rate_date'),
   
   // Fiscal period
-  fiscalYear: integer('fiscal_year').notNull(),
-  fiscalMonth: integer('fiscal_month').notNull(),
+  fiscal_year: integer('fiscal_year').notNull(),
+  fiscal_month: integer('fiscal_month').notNull(),
   
   // Audit trail
-  createdBy: uuid('created_by'),
-  createdAt: timestamp('created_at').notNull().default(sql`now()`),
-  updatedBy: uuid('updated_by'),
-  updatedAt: timestamp('updated_at'),
-  postedBy: uuid('posted_by'),
-  postedAt: timestamp('posted_at'),
-  reversedBy: uuid('reversed_by'),
-  reversedAt: timestamp('reversed_at'),
+  created_by: uuid('created_by'),
+  created_at: timestamp('created_at').notNull().default(sql`now()`),
+  updated_by: uuid('updated_by'),
+  updated_at: timestamp('updated_at'),
+  posted_by: uuid('posted_by'),
+  posted_at: timestamp('posted_at'),
+  reversed_by: uuid('reversed_by'),
+  reversed_at: timestamp('reversed_at'),
   
   // Reversal info
-  isReversal: boolean('is_reversal').notNull().default(false),
-  originalEntryId: uuid('original_entry_id'),
-  reversalEntryId: uuid('reversal_entry_id'),
-  reversalReason: varchar('reversal_reason', { length: 500 }),
+  is_reversal: boolean('is_reversal').notNull().default(false),
+  original_entry_id: uuid('original_entry_id'),
+  reversal_entry_id: uuid('reversal_entry_id'),
+  reversal_reason: varchar('reversal_reason', { length: 500 }),
   
   // Metadata
   metadata: jsonb('metadata')
 });
 
 /**
- * Accounting Ledger Lines table
- * Detail lines for each ledger entry (double-entry accounting)
- * Maps to: accounting_ledger_lines
+ * @deprecated Use AC_accounting_ledger_entries instead - backward compatibility alias
  */
-export const accounting_ledger_lines = pgTable('accounting_ledger_lines', {
+export const accounting_ledger_entries = AC_accounting_ledger_entries;
+
+/**
+ * AC_accounting_ledger_lines table (Accounting Configuration prefix)
+ * Detail lines for each ledger entry (double-entry accounting)
+ * 
+ * 🏷️  NUME TABEL: AC_accounting_ledger_lines
+ * 📁 PREFIX: AC_ (Accounting Configuration)
+ * 
+ * REFACTORIZAT: accounting_ledger_lines → AC_accounting_ledger_lines
+ * - Toate coloanele standardizate la snake_case
+ * - Prefix AC_ pentru identificare ușoară
+ * - Compatibilitate înapoi prin aliases
+ */
+export const AC_accounting_ledger_lines = pgTable('AC_accounting_ledger_lines', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
-  ledgerEntryId: uuid('ledger_entry_id').notNull().references(() => accounting_ledger_entries.id, { onDelete: 'cascade' }),
-  companyId: uuid('company_id').notNull(),
+  ledger_entry_id: uuid('ledger_entry_id').notNull().references(() => AC_accounting_ledger_entries.id, { onDelete: 'cascade' }),
+  company_id: uuid('company_id').notNull(),
   
   // Line details
-  lineNumber: integer('line_number').notNull(),
+  line_number: integer('line_number').notNull(),
   description: varchar('description', { length: 500 }),
   
   // Account structure (RAS)
-  accountClass: integer('account_class').notNull(),
-  accountGroup: integer('account_group').notNull(),
-  accountNumber: varchar('account_number', { length: 20 }).notNull(),
-  accountSubNumber: varchar('account_sub_number', { length: 20 }),
-  fullAccountNumber: varchar('full_account_number', { length: 50 }).notNull(),
+  account_class: integer('account_class').notNull(),
+  account_group: integer('account_group').notNull(),
+  account_number: varchar('account_number', { length: 20 }).notNull(),
+  account_sub_number: varchar('account_sub_number', { length: 20 }),
+  full_account_number: varchar('full_account_number', { length: 50 }).notNull(),
   
   // Amounts
   amount: numeric('amount', { precision: 19, scale: 4 }).notNull(),
-  debitAmount: numeric('debit_amount', { precision: 19, scale: 4 }).notNull().default('0'),
-  creditAmount: numeric('credit_amount', { precision: 19, scale: 4 }).notNull().default('0'),
+  debit_amount: numeric('debit_amount', { precision: 19, scale: 4 }).notNull().default('0'),
+  credit_amount: numeric('credit_amount', { precision: 19, scale: 4 }).notNull().default('0'),
   
   // Currency
   currency: varchar('currency', { length: 3 }).notNull().default('RON'),
-  originalAmount: numeric('original_amount', { precision: 19, scale: 4 }),
-  exchangeRate: numeric('exchange_rate', { precision: 19, scale: 6 }).notNull().default('1'),
+  original_amount: numeric('original_amount', { precision: 19, scale: 4 }),
+  exchange_rate: numeric('exchange_rate', { precision: 19, scale: 6 }).notNull().default('1'),
   
   // Analytical dimensions
-  departmentId: uuid('department_id'),
-  projectId: uuid('project_id'),
-  costCenterId: uuid('cost_center_id'),
+  department_id: uuid('department_id'),
+  project_id: uuid('project_id'),
+  cost_center_id: uuid('cost_center_id'),
   
   // VAT
-  vatCode: varchar('vat_code', { length: 20 }),
-  vatPercentage: numeric('vat_percentage', { precision: 5, scale: 2 }),
-  vatAmount: numeric('vat_amount', { precision: 19, scale: 4 }),
+  vat_code: varchar('vat_code', { length: 20 }),
+  vat_percentage: numeric('vat_percentage', { precision: 5, scale: 2 }),
+  vat_amount: numeric('vat_amount', { precision: 19, scale: 4 }),
   
   // Item linking
-  itemType: varchar('item_type', { length: 50 }),
-  itemId: uuid('item_id'),
-  itemQuantity: numeric('item_quantity', { precision: 19, scale: 4 }),
-  itemUnitPrice: numeric('item_unit_price', { precision: 19, scale: 4 }),
+  item_type: varchar('item_type', { length: 50 }),
+  item_id: uuid('item_id'),
+  item_quantity: numeric('item_quantity', { precision: 19, scale: 4 }),
+  item_unit_price: numeric('item_unit_price', { precision: 19, scale: 4 }),
+  
+  // Partner tracking (for accounts receivable/payable)
+  partner_id: uuid('partner_id'),
+  partner_type: varchar('partner_type', { length: 20 }),
+  due_date: date('due_date'),
+  
+  // Polymorphic reference
+  reference_id: uuid('reference_id'),
+  reference_table: varchar('reference_table', { length: 100 }),
+  
+  // Reconciliation
+  is_reconciled: boolean('is_reconciled').notNull().default(false),
+  reconciliation_id: uuid('reconciliation_id'),
+  reconciled_at: timestamp('reconciled_at'),
+  reconciled_by: uuid('reconciled_by'),
   
   // Metadata
   metadata: jsonb('metadata'),
-  createdAt: timestamp('created_at').notNull().default(sql`now()`),
-  updatedAt: timestamp('updated_at')
+  created_at: timestamp('created_at').notNull().default(sql`now()`),
+  updated_at: timestamp('updated_at')
 });
+
+/**
+ * @deprecated Use AC_accounting_ledger_lines instead - backward compatibility alias
+ */
+export const accounting_ledger_lines = AC_accounting_ledger_lines;
 
 /**
  * @deprecated Use accounting_ledger_entries instead
@@ -297,25 +336,43 @@ export const chart_of_accounts = pgTable('chart_of_accounts', {
 });
 
 /**
- * Relations for accounting ledger entries
+ * Relations for AC_accounting_ledger_entries
  */
-export const accounting_ledger_entriesRelations = relations(accounting_ledger_entries, ({ many, one }) => ({
-  lines: many(accounting_ledger_lines),
-  journalType: one(AC_journal_types, {
-    fields: [accounting_ledger_entries.journalTypeId],
+export const AC_accounting_ledger_entriesRelations = relations(AC_accounting_ledger_entries, ({ many, one }) => ({
+  lines: many(AC_accounting_ledger_lines),
+  journal_type: one(AC_journal_types, {
+    fields: [AC_accounting_ledger_entries.journal_type_id],
     references: [AC_journal_types.id]
+  }),
+  company: one(companies, {
+    fields: [AC_accounting_ledger_entries.company_id],
+    references: [companies.id]
   })
 }));
 
 /**
- * Relations for accounting ledger lines
+ * @deprecated Use AC_accounting_ledger_entriesRelations instead - backward compatibility alias
  */
-export const accounting_ledger_linesRelations = relations(accounting_ledger_lines, ({ one }) => ({
-  entry: one(accounting_ledger_entries, {
-    fields: [accounting_ledger_lines.ledgerEntryId],
-    references: [accounting_ledger_entries.id]
+export const accounting_ledger_entriesRelations = AC_accounting_ledger_entriesRelations;
+
+/**
+ * Relations for AC_accounting_ledger_lines
+ */
+export const AC_accounting_ledger_linesRelations = relations(AC_accounting_ledger_lines, ({ one }) => ({
+  entry: one(AC_accounting_ledger_entries, {
+    fields: [AC_accounting_ledger_lines.ledger_entry_id],
+    references: [AC_accounting_ledger_entries.id]
+  }),
+  company: one(companies, {
+    fields: [AC_accounting_ledger_lines.company_id],
+    references: [companies.id]
   })
 }));
+
+/**
+ * @deprecated Use AC_accounting_ledger_linesRelations instead - backward compatibility alias
+ */
+export const accounting_ledger_linesRelations = AC_accounting_ledger_linesRelations;
 
 /**
  * @deprecated Use accounting_ledger_entriesRelations instead
@@ -345,12 +402,23 @@ export const chart_of_accountsRelations = relations(chart_of_accounts, ({ one, m
   children: many(chart_of_accounts)
 }));
 
-// Export types for accounting ledger entries
-export type AccountingLedgerEntry = typeof accounting_ledger_entries.$inferSelect;
-export type InsertAccountingLedgerEntry = typeof accounting_ledger_entries.$inferInsert;
+// ============================================================
+// TYPES FOR AC_ACCOUNTING_LEDGER_ENTRIES & LINES
+// ============================================================
 
-export type AccountingLedgerLine = typeof accounting_ledger_lines.$inferSelect;
-export type InsertAccountingLedgerLine = typeof accounting_ledger_lines.$inferInsert;
+// AC_accounting_ledger_entries types
+export type ACAccountingLedgerEntry = typeof AC_accounting_ledger_entries.$inferSelect;
+export type InsertACAccountingLedgerEntry = typeof AC_accounting_ledger_entries.$inferInsert;
+
+// AC_accounting_ledger_lines types
+export type ACAccountingLedgerLine = typeof AC_accounting_ledger_lines.$inferSelect;
+export type InsertACAccountingLedgerLine = typeof AC_accounting_ledger_lines.$inferInsert;
+
+// Backward compatibility aliases (deprecated - use AC* versions)
+export type AccountingLedgerEntry = ACAccountingLedgerEntry;
+export type InsertAccountingLedgerEntry = InsertACAccountingLedgerEntry;
+export type AccountingLedgerLine = ACAccountingLedgerLine;
+export type InsertAccountingLedgerLine = InsertACAccountingLedgerLine;
 
 // Export types for legacy tables (deprecated)
 export type LedgerEntry = typeof ledger_entries.$inferSelect;
@@ -382,6 +450,128 @@ export type InsertFiscalPeriod = typeof fiscal_periods.$inferInsert;
 
 export type ChartOfAccount = typeof chart_of_accounts.$inferSelect;
 export type InsertChartOfAccount = typeof chart_of_accounts.$inferInsert;
+
+// ============================================================
+// ZOD SCHEMAS FOR AC_ACCOUNTING_LEDGER_ENTRIES
+// ============================================================
+
+// AC_accounting_ledger_entries Schemas
+export const insertACAccountingLedgerEntrySchema = createInsertSchema(AC_accounting_ledger_entries, {
+  fiscal_year: z.number().int().min(2000).max(2100),
+  fiscal_month: z.number().int().min(1).max(12),
+  type: z.string().max(50),
+  document_number: z.string().max(100).optional(),
+  document_type: z.string().max(50).optional(),
+  description: z.string().max(500).optional(),
+  notes: z.string().optional(),
+  total_amount: z.string().regex(/^\d+(\.\d{1,4})?$/),
+  total_debit: z.string().regex(/^\d+(\.\d{1,4})?$/),
+  total_credit: z.string().regex(/^\d+(\.\d{1,4})?$/),
+  currency: z.string().length(3).default('RON'),
+  exchange_rate: z.string().regex(/^\d+(\.\d{1,6})?$/).default('1'),
+  is_posted: z.boolean().default(false),
+  is_draft: z.boolean().default(true),
+  is_system_generated: z.boolean().default(false),
+  is_reversal: z.boolean().default(false),
+  reversal_reason: z.string().max(500).optional(),
+}).refine((data) => {
+  // Validare partida dublă: total_debit trebuie să fie egal cu total_credit
+  const debit = parseFloat(data.total_debit);
+  const credit = parseFloat(data.total_credit);
+  return Math.abs(debit - credit) < 0.01;
+}, {
+  message: "Partida dublă nesatisfăcută: total_debit trebuie să fie egal cu total_credit",
+  path: ["total_debit", "total_credit"]
+});
+
+export const selectACAccountingLedgerEntrySchema = createSelectSchema(AC_accounting_ledger_entries);
+
+export const updateACAccountingLedgerEntrySchema = insertACAccountingLedgerEntrySchema.partial().omit({
+  id: true,
+  company_id: true,
+  created_by: true,
+  created_at: true,
+  posted_by: true,
+  posted_at: true,
+  reversed_by: true,
+  reversed_at: true,
+});
+
+// Backward compatibility aliases
+export const insertAccountingLedgerEntrySchema = insertACAccountingLedgerEntrySchema;
+export const selectAccountingLedgerEntrySchema = selectACAccountingLedgerEntrySchema;
+export const updateAccountingLedgerEntrySchema = updateACAccountingLedgerEntrySchema;
+
+// Export Zod types
+export type InsertACAccountingLedgerEntryZod = z.infer<typeof insertACAccountingLedgerEntrySchema>;
+export type SelectACAccountingLedgerEntryZod = z.infer<typeof selectACAccountingLedgerEntrySchema>;
+export type UpdateACAccountingLedgerEntryZod = z.infer<typeof updateACAccountingLedgerEntrySchema>;
+
+// Backward compatibility type aliases
+export type InsertAccountingLedgerEntryZod = InsertACAccountingLedgerEntryZod;
+export type SelectAccountingLedgerEntryZod = SelectACAccountingLedgerEntryZod;
+export type UpdateAccountingLedgerEntryZod = UpdateACAccountingLedgerEntryZod;
+
+// ============================================================
+// ZOD SCHEMAS FOR AC_ACCOUNTING_LEDGER_LINES
+// ============================================================
+
+// AC_accounting_ledger_lines Schemas
+export const insertACAccountingLedgerLineSchema = createInsertSchema(AC_accounting_ledger_lines, {
+  line_number: z.number().int().min(1),
+  description: z.string().max(500).optional(),
+  account_class: z.number().int().min(1).max(9),
+  account_group: z.number().int().min(10).max(99),
+  account_number: z.string().min(1).max(20),
+  account_sub_number: z.string().max(20).optional(),
+  full_account_number: z.string().min(1).max(50),
+  amount: z.string().regex(/^\d+(\.\d{1,4})?$/),
+  debit_amount: z.string().regex(/^\d+(\.\d{1,4})?$/).default('0'),
+  credit_amount: z.string().regex(/^\d+(\.\d{1,4})?$/).default('0'),
+  currency: z.string().length(3).default('RON'),
+  original_amount: z.string().regex(/^\d+(\.\d{1,4})?$/).optional(),
+  exchange_rate: z.string().regex(/^\d+(\.\d{1,6})?$/).default('1'),
+  vat_code: z.string().max(20).optional(),
+  vat_percentage: z.string().regex(/^\d+(\.\d{1,2})?$/).optional(),
+  vat_amount: z.string().regex(/^\d+(\.\d{1,4})?$/).optional(),
+  item_type: z.string().max(50).optional(),
+  partner_type: z.string().max(20).optional(),
+  is_reconciled: z.boolean().default(false),
+}).refine((data) => {
+  // Validare: o linie trebuie să aibă DOAR debit SAU credit, nu ambele
+  const debit = parseFloat(data.debit_amount);
+  const credit = parseFloat(data.credit_amount);
+  return (debit > 0 && credit === 0) || (debit === 0 && credit > 0) || (debit === 0 && credit === 0);
+}, {
+  message: "O linie contabilă trebuie să aibă doar debit SAU credit, nu ambele",
+  path: ["debit_amount", "credit_amount"]
+});
+
+export const selectACAccountingLedgerLineSchema = createSelectSchema(AC_accounting_ledger_lines);
+
+export const updateACAccountingLedgerLineSchema = insertACAccountingLedgerLineSchema.partial().omit({
+  id: true,
+  ledger_entry_id: true,
+  company_id: true,
+  created_at: true,
+  reconciled_by: true,
+  reconciled_at: true,
+});
+
+// Backward compatibility aliases
+export const insertAccountingLedgerLineSchema = insertACAccountingLedgerLineSchema;
+export const selectAccountingLedgerLineSchema = selectACAccountingLedgerLineSchema;
+export const updateAccountingLedgerLineSchema = updateACAccountingLedgerLineSchema;
+
+// Export Zod types
+export type InsertACAccountingLedgerLineZod = z.infer<typeof insertACAccountingLedgerLineSchema>;
+export type SelectACAccountingLedgerLineZod = z.infer<typeof selectACAccountingLedgerLineSchema>;
+export type UpdateACAccountingLedgerLineZod = z.infer<typeof updateACAccountingLedgerLineSchema>;
+
+// Backward compatibility type aliases
+export type InsertAccountingLedgerLineZod = InsertACAccountingLedgerLineZod;
+export type SelectAccountingLedgerLineZod = SelectACAccountingLedgerLineZod;
+export type UpdateAccountingLedgerLineZod = UpdateACAccountingLedgerLineZod;
 
 // ============================================================
 // ZOD SCHEMAS FOR AC_ACCOUNTING_ACCOUNT_BALANCES

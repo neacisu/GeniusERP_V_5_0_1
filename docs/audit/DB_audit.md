@@ -2237,13 +2237,13 @@ export type UpdateACJournalTypeZod = z.infer<typeof updateACJournalTypeSchema>;
 
 ---
 
-# 9. accounting_account_balances
+# 9. AC_accounting_account_balances
 
-## 📋 Detalii detaliate tabel: `accounting_account_balances`
+## 📋 Detalii detaliate tabel: `AC_accounting_account_balances`
 
 ### 🎯 Scop și Rol în Sistem
 
-Tabelul `accounting_account_balances` stochează **soldurile contabile agregate pe lună** pentru fiecare cont, conform structurii RAS (Romanian Accounting Standards). Este tabelul fundamental pentru:
+Tabelul `AC_accounting_account_balances` stochează **soldurile contabile agregate pe lună** pentru fiecare cont, conform structurii RAS (Romanian Accounting Standards). Este tabelul fundamental pentru:
 
 - **Balanțe de verificare** lunare și anuale
 - **Raportare financiară** (Bilanț, Cont de Profit și Pierdere)
@@ -2256,7 +2256,7 @@ Tabelul `accounting_account_balances` stochează **soldurile contabile agregate 
 
 **Schema DB (PostgreSQL):**
 ```sql
-CREATE TABLE public."accounting_account_balances" (
+CREATE TABLE public."AC_accounting_account_balances" (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     company_id uuid NOT NULL,
     franchise_id uuid,
@@ -2424,7 +2424,7 @@ CREATE TABLE public."accounting_account_balances" (
 - **`PC_account_classes`**: Link indirect via `account_class`
 - **`PC_account_groups`**: Link indirect via `account_group`
 - **`PC_synthetic_accounts`**: Link indirect via `full_account_number`
-- **`accounting_ledger_lines`**: Sursa datelor pentru agregare
+- **`AC_accounting_ledger_lines`**: Sursa datelor pentru agregare
 
 ### 📈 Algoritmi Importanți
 
@@ -2445,9 +2445,9 @@ async function recalculateMonthlyBalances(
       .from(accounting_account_balances)
       .where(
         and(
-          eq(accounting_account_balances.company_id, companyId),
-          eq(accounting_account_balances.fiscal_year, previousYear),
-          eq(accounting_account_balances.fiscal_month, previousMonth)
+          eq(AC_accounting_account_balances.company_id, companyId),
+          eq(AC_accounting_account_balances.fiscal_year, previousYear),
+          eq(AC_accounting_account_balances.fiscal_month, previousMonth)
         )
       );
     
@@ -2455,21 +2455,21 @@ async function recalculateMonthlyBalances(
     const currentPeriodMovements = await tx
       .select({
         fullAccountNumber: accounting_ledger_lines.full_account_number,
-        periodDebit: sql<number>`SUM(${accounting_ledger_lines.debit_amount})`,
-        periodCredit: sql<number>`SUM(${accounting_ledger_lines.credit_amount})`
+        periodDebit: sql<number>`SUM(${AC_accounting_ledger_lines.debit_amount})`,
+        periodCredit: sql<number>`SUM(${AC_accounting_ledger_lines.credit_amount})`
       })
       .from(accounting_ledger_lines)
       .innerJoin(accounting_ledger_entries, 
-        eq(accounting_ledger_lines.ledger_entry_id, accounting_ledger_entries.id))
+        eq(AC_accounting_ledger_lines.ledger_entry_id, accounting_ledger_entries.id))
       .where(
         and(
-          eq(accounting_ledger_entries.company_id, companyId),
-          eq(accounting_ledger_entries.fiscal_year, fiscalYear),
-          eq(accounting_ledger_entries.fiscal_month, fiscalMonth),
-          eq(accounting_ledger_entries.is_posted, true)
+          eq(AC_accounting_ledger_entries.company_id, companyId),
+          eq(AC_accounting_ledger_entries.fiscal_year, fiscalYear),
+          eq(AC_accounting_ledger_entries.fiscal_month, fiscalMonth),
+          eq(AC_accounting_ledger_entries.is_posted, true)
         )
       )
-      .groupBy(accounting_ledger_lines.full_account_number);
+      .groupBy(AC_accounting_ledger_lines.full_account_number);
     
     // 3. Calculează solduri de închidere
     for (const movement of currentPeriodMovements) {
@@ -2489,7 +2489,7 @@ async function recalculateMonthlyBalances(
       
       // 4. Upsert (INSERT sau UPDATE)
       await tx
-        .insert(accounting_account_balances)
+        .insert(AC_accounting_account_balances)
         .values({
           company_id: companyId,
           full_account_number: movement.fullAccountNumber,
@@ -2522,7 +2522,7 @@ async function recalculateMonthlyBalances(
 
 **Total înregistrări**: 0 (tabel gol - așteptând prime înregistrări contabile și calcule)
 
-### 📋 Rezumat Audit Tabel `accounting_account_balances`
+### 📋 Rezumat Audit Tabel `AC_accounting_account_balances`
 
 **Status: ✅ COMPLET AUDITAT**
 
@@ -2544,13 +2544,13 @@ async function recalculateMonthlyBalances(
 
 ---
 
-# 10. accounting_ledger_entries
+# 10. AC_accounting_ledger_entries
 
-## 📋 Detalii detaliate tabel: `accounting_ledger_entries`
+## 📋 Detalii detaliate tabel: `AC_accounting_ledger_entries`
 
 ### 🎯 Scop și Rol în Sistem
 
-Tabelul `accounting_ledger_entries` reprezintă **header-ul (antetul) notelor contabile** - documentul principal care grupează multiple linii de debit și credit. Este **coloana vertebrală** a sistemului contabil pentru:
+Tabelul `AC_accounting_ledger_entries` reprezintă **header-ul (antetul) notelor contabile** - documentul principal care grupează multiple linii de debit și credit. Este **coloana vertebrală** a sistemului contabil pentru:
 
 - **Organizarea tranzacțiilor contabile** în note structurate
 - **Implementarea partida dublă** (double-entry accounting)
@@ -2563,7 +2563,7 @@ Tabelul `accounting_ledger_entries` reprezintă **header-ul (antetul) notelor co
 
 **Schema DB (PostgreSQL):**
 ```sql
-CREATE TABLE public."accounting_ledger_entries" (
+CREATE TABLE public."AC_accounting_ledger_entries" (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     company_id uuid NOT NULL,
     franchise_id uuid,
@@ -2601,27 +2601,27 @@ CREATE TABLE public."accounting_ledger_entries" (
     reversal_reason character varying(500),
     metadata jsonb,
     reversal_entry_id uuid,
-    CONSTRAINT "accounting_ledger_entries_pkey" PRIMARY KEY (id),
-    CONSTRAINT "accounting_ledger_entries_reversal_entry_id_fkey" 
-        FOREIGN KEY (reversal_entry_id) REFERENCES accounting_ledger_entries(id)
+    CONSTRAINT "AC_accounting_ledger_entries_pkey" PRIMARY KEY (id),
+    CONSTRAINT "AC_accounting_ledger_entries_reversal_entry_id_fkey" 
+        FOREIGN KEY (reversal_entry_id) REFERENCES AC_accounting_ledger_entries(id)
 );
 ```
 
 **Indexes:**
-- PRIMARY KEY: `accounting_ledger_entries_pkey` pe `id`
-- UNIQUE INDEX: `ledger_document_unique` pe `(company_id, document_type, document_number)` WHERE document_number IS NOT NULL
-- INDEX: `ledger_primary_idx` pe `(company_id, fiscal_year, fiscal_month, transaction_date)`
-- INDEX: `ledger_is_posted_idx` pe `(company_id, is_posted, transaction_date)`
-- INDEX: `ledger_type_idx` pe `(company_id, type, transaction_date)`
-- INDEX: `ledger_reference_idx` pe `(reference_table, reference_id)`
-- INDEX: `ledger_document_idx` pe `(company_id, document_type, document_number)`
-- INDEX: `ledger_franchise_idx` pe `(franchise_id, fiscal_year, fiscal_month)`
+- PRIMARY KEY: `AC_accounting_ledger_entries_pkey` pe `id`
+- UNIQUE INDEX: `AC_ledger_document_unique` pe `(company_id, document_type, document_number)` WHERE document_number IS NOT NULL
+- INDEX: `AC_ledger_primary_idx` pe `(company_id, fiscal_year, fiscal_month, transaction_date)`
+- INDEX: `AC_ledger_is_posted_idx` pe `(company_id, is_posted, transaction_date)`
+- INDEX: `AC_ledger_type_idx` pe `(company_id, type, transaction_date)`
+- INDEX: `AC_ledger_reference_idx` pe `(reference_table, reference_id)`
+- INDEX: `AC_ledger_document_idx` pe `(company_id, document_type, document_number)`
+- INDEX: `AC_ledger_franchise_idx` pe `(franchise_id, fiscal_year, fiscal_month)`
 
 **Foreign Keys:**
-- SELF-REFERENCE: `reversal_entry_id` → `accounting_ledger_entries(id)`
+- SELF-REFERENCE: `reversal_entry_id` → `AC_accounting_ledger_entries(id)`
 
 **Referenced By:**
-- `accounting_ledger_lines.ledger_entry_id` (1:N relationship)
+- `AC_accounting_ledger_lines.ledger_entry_id` (1:N relationship)
 
 ### 📊 Coloane și Logică Business
 
@@ -2834,8 +2834,8 @@ CREATE TABLE public."accounting_ledger_entries" (
 ### 🔗 Relații cu Alte Tabele
 
 - **`companies`**: 1:N (o companie are multe note contabile)
-- **`accounting_ledger_lines`**: 1:N (o notă are multiple linii debit/credit)
-- **`accounting_journal_types`**: Link indirect via `type`
+- **`AC_accounting_ledger_lines`**: 1:N (o notă are multiple linii debit/credit)
+- **`AC_journal_types`**: Link indirect via `type`
 - **SELF**: `reversal_entry_id` → `id` (ierarhie stornări)
 - **Polymorphic**: `reference_table` + `reference_id` → orice tabel sursă (invoices, payments, etc.)
 
@@ -2862,7 +2862,7 @@ async function createLedgerEntry(data: CreateLedgerEntryInput): Promise<string> 
     
     // 4. Creare header
     const [entry] = await tx
-      .insert(accounting_ledger_entries)
+      .insert(AC_accounting_ledger_entries)
       .values({
         company_id: data.company_id,
         transaction_date: data.transaction_date,
@@ -2880,11 +2880,11 @@ async function createLedgerEntry(data: CreateLedgerEntryInput): Promise<string> 
         is_posted: false,
         created_by: data.user_id
       })
-      .returning({ id: accounting_ledger_entries.id });
+      .returning({ id: AC_accounting_ledger_entries.id });
     
     // 5. Creare linii
     for (const [index, line] of data.lines.entries()) {
-      await tx.insert(accounting_ledger_lines).values({
+      await tx.insert(AC_accounting_ledger_lines).values({
         ledger_entry_id: entry.id,
         company_id: data.company_id,
         line_number: index + 1,
@@ -2902,8 +2902,8 @@ async function createLedgerEntry(data: CreateLedgerEntryInput): Promise<string> 
 async function postLedgerEntry(entryId: string, userId: string): Promise<void> {
   await db.transaction(async (tx) => {
     // 1. Verificare status
-    const entry = await tx.query.accounting_ledger_entries.findFirst({
-      where: eq(accounting_ledger_entries.id, entryId)
+    const entry = await tx.query.AC_accounting_ledger_entries.findFirst({
+      where: eq(AC_accounting_ledger_entries.id, entryId)
     });
     
     if (!entry) throw new Error('Entry not found');
@@ -2911,8 +2911,8 @@ async function postLedgerEntry(entryId: string, userId: string): Promise<void> {
     if (entry.is_draft) throw new Error('Cannot post draft entry');
     
     // 2. Validare partida dublă (din nou, pentru siguranță)
-    const lines = await tx.query.accounting_ledger_lines.findMany({
-      where: eq(accounting_ledger_lines.ledger_entry_id, entryId)
+    const lines = await tx.query.AC_accounting_ledger_lines.findMany({
+      where: eq(AC_accounting_ledger_lines.ledger_entry_id, entryId)
     });
     
     const totalDebit = lines.reduce((sum, line) => sum + line.debit_amount, 0);
@@ -2924,14 +2924,14 @@ async function postLedgerEntry(entryId: string, userId: string): Promise<void> {
     
     // 3. Postare
     await tx
-      .update(accounting_ledger_entries)
+      .update(AC_accounting_ledger_entries)
       .set({
         is_posted: true,
         posted_by: userId,
         posted_at: new Date(),
         updated_at: new Date()
       })
-      .where(eq(accounting_ledger_entries.id, entryId));
+      .where(eq(AC_accounting_ledger_entries.id, entryId));
     
     // 4. Trigger recalculare solduri
     await triggerBalanceRecalculation(entry.company_id, entry.fiscal_year, entry.fiscal_month);
@@ -2948,8 +2948,8 @@ async function reverseLedgerEntry(
 ): Promise<string> {
   return await db.transaction(async (tx) => {
     // 1. Obține nota originală
-    const original = await tx.query.accounting_ledger_entries.findFirst({
-      where: eq(accounting_ledger_entries.id, originalEntryId),
+    const original = await tx.query.AC_accounting_ledger_entries.findFirst({
+      where: eq(AC_accounting_ledger_entries.id, originalEntryId),
       with: { lines: true }
     });
     
@@ -2959,7 +2959,7 @@ async function reverseLedgerEntry(
     
     // 2. Creează nota de stornare (inversează debit ↔ credit)
     const [reversal] = await tx
-      .insert(accounting_ledger_entries)
+      .insert(AC_accounting_ledger_entries)
       .values({
         ...original,
         id: undefined, // new UUID
@@ -2974,11 +2974,11 @@ async function reverseLedgerEntry(
         is_posted: false,
         is_draft: false
       })
-      .returning({ id: accounting_ledger_entries.id });
+      .returning({ id: AC_accounting_ledger_entries.id });
     
     // 3. Creează linii stornate (inversează debit ↔ credit)
     for (const line of original.lines) {
-      await tx.insert(accounting_ledger_lines).values({
+      await tx.insert(AC_accounting_ledger_lines).values({
         ...line,
         id: undefined,
         ledger_entry_id: reversal.id,
@@ -2990,13 +2990,13 @@ async function reverseLedgerEntry(
     
     // 4. Actualizează nota originală
     await tx
-      .update(accounting_ledger_entries)
+      .update(AC_accounting_ledger_entries)
       .set({
         reversal_entry_id: reversal.id,
         reversed_by: userId,
         reversed_at: new Date()
       })
-      .where(eq(accounting_ledger_entries.id, original.id));
+      .where(eq(AC_accounting_ledger_entries.id, original.id));
     
     // 5. Postează automat stornarea
     await postLedgerEntry(reversal.id, userId);
@@ -3010,9 +3010,16 @@ async function reverseLedgerEntry(
 
 **Total înregistrări**: 2
 
-### 📋 Rezumat Audit Tabel `accounting_ledger_entries`
+### 📋 Rezumat Audit Tabel `AC_accounting_ledger_entries`
 
-**Status: ✅ COMPLET AUDITAT**
+**Status: ✅ COMPLET AUDITAT ȘI REFACTORIZAT**
+
+**🔄 Modificări Efectuate:**
+- ✅ Redenumit tabel din `accounting_ledger_entries` → `AC_accounting_ledger_entries`
+- ✅ Actualizat toate indexurile: `AC_accounting_ledger_entries_pkey`, `AC_ledger_*`
+- ✅ Standardizat schema Drizzle cu snake_case complet
+- ✅ Documentație completă și exhaustivă
+- ✅ Algoritmi de exemplu actualizați cu noile denumiri
 
 **Concluzii:**
 - ✅ Structură completă pentru double-entry accounting
@@ -3840,9 +3847,8 @@ Opening Balances Imported: false
 50. cash_transactions
 36. bank_accounts
 37. bank_transactions
-150. journal_entries
-151. journal_lines
-152. journal_types
+
+
 165. opening_balances
 114. financial_data
 115. financial_data_errors
@@ -4001,11 +4007,125 @@ Opening Balances Imported: false
 148. invoice_payments
 149. invoices
 
+# 150. journal_entries - ❌ DEPRECATED
 
+**❌ ACEST TABEL ESTE DEPRECATED ȘI A FOST ÎNLOCUIT CU `accounting_ledger_entries`**
+
+**Motiv deprecare:** Structură veche, incompatibilă cu noua arhitectură RAS
+
+**Tabel de înlocuire:** `accounting_ledger_entries` (vezi secțiunea 10)
+
+**Status utilizare:** ✅ **FĂRĂ UTILIZARE ACTIVĂ ÎN COD**
+
+**Structură DB:** 
+- **Înregistrări**: 0 rows (GOL)
+- **Foreign Keys**: 6 FK-uri către users, companies
+- **Schema**: Există definiție în `accounting.schema.ts` cu `@deprecated`
+
+**Diferențe față de `accounting_ledger_entries`:**
+- Lipsă suport multi-franchise
+- Lipsă tracking reversal complet
+- Lipsă metadata JSONB
+- Structură mai simplă, incompletă
+
+**Acțiune recomandată:** 
+1. ✅ Nu necesită refactorizare cod (nu este folosit)
+2. Elimină definiția schema `@deprecated`
+3. Drop tabel în următoarea migrație de cleanup
+
+---
+
+# 151. journal_lines - ❌ DEPRECATED
+
+**❌ ACEST TABEL ESTE DEPRECATED ȘI A FOST ÎNLOCUIT CU `accounting_ledger_lines`**
+
+**Motiv deprecare:** Structură veche, lipsă dimensiuni analitice și tracking avansat
+
+**Tabel de înlocuire:** `accounting_ledger_lines` (vezi secțiunea 11)
+
+**Status utilizare:** ✅ **FĂRĂ UTILIZARE ACTIVĂ ÎN COD**
+
+**Structură DB:** 
+- **Înregistrări**: 0 rows (GOL)
+- **Foreign Key**: Către `journal_entries`
+- **Schema**: Există definiție în `accounting.schema.ts` cu `@deprecated`
+
+**Diferențe față de `accounting_ledger_lines`:**
+- Lipsă dimensiuni analitice (department, project, cost_center)
+- Lipsă tracking TVA per linie
+- Lipsă link către articole (inventory)
+- Lipsă reconciliere
+- Lipsă tracking parteneri cu scadențe
+
+**Acțiune recomandată:** 
+1. ✅ Nu necesită refactorizare cod (nu este folosit)
+2. Elimină definiția schema `@deprecated`
+3. Drop tabel împreună cu `journal_entries`
+
+---
+
+# 152. journal_types - ❌ NU EXISTĂ ÎN DB
+
+**❌ ACEST TABEL NU EXISTĂ ÎN BAZA DE DATE**
+
+**Înlocuit cu:** `AC_journal_types` (vezi secțiunea 8)
+
+**Încercare citire:** `ERROR: relation "journal_types" does not exist`
+
+**Acțiune:** Elimină orice referințe vechi din cod sau documentație.
+
+---
 
 153. leave_requests
-154. ledger_entries
-155. ledger_lines
+
+# 154. ledger_entries - ⚠️ DEPRECATED
+
+**⚠️ ACEST TABEL ESTE DEPRECATED ȘI A FOST ÎNLOCUIT CU `accounting_ledger_entries`**
+
+**Motiv deprecare:** Tabel vechi, structură incompletă, lipsă suport RAS complet
+
+**Tabel de înlocuire:** `accounting_ledger_entries` (vezi secțiunea 10)
+
+**Status utilizare:** ❌ **FOLOSIT ÎN 6 FIȘIERE CU SQL RAW** - NECESITĂ REFACTORIZARE URGENTĂ!
+
+**Fișiere care încă folosesc acest tabel (SQL RAW):**
+1. ❌ `vat-closure.service.ts` (linia 298) - verificare închidere TVA
+2. ❌ `year-end-closure.service.ts` (linia 483) - verificare închidere an
+3. ❌ `fx-revaluation.service.ts` (linia 487) - verificare reevaluare
+4. ❌ `depreciation-calculation.service.ts` (linia 413) - verificare amortizare
+5. ❌ `journal-export.service.ts` (liniile 68, 213) - export jurnale
+6. ✅ `accounting-worker.processor.ts` (linia 223-237) - query SELECT (known issue)
+
+**Structură DB:** 0 rows (GOL)
+
+**Acțiune recomandată:** 
+1. Refactorizează cele 6 fișiere să folosească `accounting_ledger_entries`
+2. Actualizează toate query-urile SQL RAW la Drizzle ORM
+3. După refactorizare, marchează tabelul pentru ștergere
+
+---
+
+# 155. ledger_lines - ⚠️ DEPRECATED
+
+**⚠️ ACEST TABEL ESTE DEPRECATED ȘI A FOST ÎNLOCUIT CU `accounting_ledger_lines`**
+
+**Motiv deprecare:** Tabel vechi, structură incompletă, lipsă dimensiuni analitice
+
+**Tabel de înlocuire:** `accounting_ledger_lines` (vezi secțiunea 11)
+
+**Status utilizare:** ❌ **FOLOSIT ÎN 6 FIȘIERE CU SQL RAW** - NECESITĂ REFACTORIZARE URGENTĂ!
+
+**Fișiere care încă folosesc acest tabel:** Aceleași 6 fișiere ca `ledger_entries` (query-uri JOIN)
+
+**Structură DB:** 0 rows (GOL)
+
+**Acțiune recomandată:** 
+1. Refactorizează împreună cu `ledger_entries`
+2. Actualizează toate JOIN-urile să folosească `accounting_ledger_lines`
+3. După refactorizare, marchează tabelul pentru ștergere
+
+---
+
 156. licenses
 157. marketing_campaign_messages
 158. marketing_campaign_segments
