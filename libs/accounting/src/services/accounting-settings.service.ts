@@ -365,7 +365,7 @@ export class AccountingSettingsService extends DrizzleService {
    */
   async getAccountRelationships(companyId: string): Promise<AccountRelationship[]> {
     return this.query((db) =>
-      db.select().from(account_relationships).where(eq(account_relationships.companyId, companyId)).orderBy(desc(account_relationships.priority))
+      db.select().from(AC_account_relationships).where(eq(AC_account_relationships.company_id, companyId)).orderBy(desc(AC_account_relationships.priority))
     );
   }
 

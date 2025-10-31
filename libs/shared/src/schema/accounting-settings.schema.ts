@@ -8,7 +8,7 @@
  * - Opening balances
  */
 
-import { pgTable, uuid, text, timestamp, boolean, integer, decimal, jsonb, unique, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, boolean, integer, decimal, jsonb, unique, index, check } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
@@ -113,48 +113,85 @@ export const vat_settingsRelations = relations(vat_settings, ({ one }) => ({
 }));
 
 // ============================================================
-// 3. ACCOUNT RELATIONSHIPS TABLE
+// 3. AC_ACCOUNT_RELATIONSHIPS TABLE (Accounting Module)
 // ============================================================
 
-export const account_relationships = pgTable('account_relationships', {
+export const AC_account_relationships = pgTable('AC_account_relationships', {
   id: uuid('id').primaryKey().defaultRandom(),
-  companyId: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
+  company_id: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
   
   // Relație contabilă
-  relationshipType: text('relationship_type').notNull(),
+  relationship_type: text('relationship_type').notNull(),
   description: text('description'),
   
   // Contul debit
-  debitAccountCode: text('debit_account_code').notNull(),
-  debitAccountName: text('debit_account_name'),
+  debit_account_code: text('debit_account_code').notNull(),
+  debit_account_name: text('debit_account_name'),
   
   // Contul credit
-  creditAccountCode: text('credit_account_code').notNull(),
-  creditAccountName: text('credit_account_name'),
+  credit_account_code: text('credit_account_code').notNull(),
+  credit_account_name: text('credit_account_name'),
   
   // Configurare
-  isActive: boolean('is_active').default(true).notNull(),
+  is_active: boolean('is_active').default(true).notNull(),
   priority: integer('priority').default(0).notNull(),
   
   // Condiții (JSON)
   conditions: jsonb('conditions'),
   
   // Audit
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  updated_at: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
-  relationshipUnique: unique().on(table.companyId, table.relationshipType, table.debitAccountCode, table.creditAccountCode),
-  companyIdx: index('idx_account_relationships_company_id').on(table.companyId),
-  typeIdx: index('idx_account_relationships_type').on(table.relationshipType),
+  relationshipUnique: unique().on(table.company_id, table.relationship_type, table.debit_account_code, table.credit_account_code),
+  companyIdx: index('idx_account_relationships_company_id').on(table.company_id),
+  typeIdx: index('idx_account_relationships_type').on(table.relationship_type),
   priorityIdx: index('idx_account_relationships_priority').on(table.priority),
+  activeIdx: index('idx_account_relationships_active').on(table.is_active).where(sql`${table.is_active} = true`),
+  conditionsIdx: index('idx_account_relationships_conditions').using('gin', table.conditions),
+  priorityCheckConstraint: check('AC_account_relationships_priority_check', sql`${table.priority} >= 0`),
 }));
 
-export const account_relationshipsRelations = relations(account_relationships, ({ one }) => ({
+export const AC_account_relationshipsRelations = relations(AC_account_relationships, ({ one }) => ({
   company: one(companies, {
-    fields: [account_relationships.companyId],
+    fields: [AC_account_relationships.company_id],
     references: [companies.id],
   }),
 }));
+
+// Zod Schemas pentru validare
+export const insertAccountRelationshipSchema = z.object({
+  company_id: z.string().uuid(),
+  relationship_type: z.string().min(1).max(100),
+  description: z.string().optional(),
+  debit_account_code: z.string().min(1).max(20),
+  debit_account_name: z.string().max(255).optional(),
+  credit_account_code: z.string().min(1).max(20),
+  credit_account_name: z.string().max(255).optional(),
+  is_active: z.boolean().default(true),
+  priority: z.number().int().min(0).default(0),
+  conditions: z.any().optional(), // JSONB - validare complexă la nivel de service
+});
+
+export const selectAccountRelationshipSchema = insertAccountRelationshipSchema.extend({
+  id: z.string().uuid(),
+  created_at: z.date(),
+  updated_at: z.date(),
+});
+
+export const updateAccountRelationshipSchema = insertAccountRelationshipSchema.partial().extend({
+  id: z.string().uuid(),
+});
+
+// TypeScript Types
+export type AccountRelationship = typeof AC_account_relationships.$inferSelect;
+export type InsertAccountRelationship = z.infer<typeof insertAccountRelationshipSchema>;
+export type SelectAccountRelationship = z.infer<typeof selectAccountRelationshipSchema>;
+export type UpdateAccountRelationship = z.infer<typeof updateAccountRelationshipSchema>;
+
+// Backward Compatibility Aliases
+export const account_relationships = AC_account_relationships;
+export const account_relationshipsRelations = AC_account_relationshipsRelations;
 
 // ============================================================
 // 4. OPENING BALANCES TABLE
@@ -247,23 +284,11 @@ export const updateVatSettingsSchema = insertVatSettingsSchema.partial().omit({
   updatedAt: true,
 });
 
-// Account Relationships Schemas
-export const insertAccountRelationshipsSchema = createInsertSchema(account_relationships, {
-  relationshipType: z.string().min(1),
-  debitAccountCode: z.string().min(1),
-  creditAccountCode: z.string().min(1),
-  priority: z.number().int().min(0),
-  conditions: z.record(z.string(), z.any()).optional().nullable(),
-});
-
-export const selectAccountRelationshipsSchema = createSelectSchema(account_relationships);
-
-export const updateAccountRelationshipsSchema = insertAccountRelationshipsSchema.partial().omit({
-  id: true,
-  companyId: true,
-  createdAt: true,
-  updatedAt: true,
-});
+// Account Relationships Schemas - BACKWARD COMPATIBILITY
+// Folosesc noile Zod schemas cu snake_case
+export const insertAccountRelationshipsSchema = insertAccountRelationshipSchema;
+export const selectAccountRelationshipsSchema = selectAccountRelationshipSchema;
+export const updateAccountRelationshipsSchema = updateAccountRelationshipSchema;
 
 // Opening Balances Schemas
 export const insertOpeningBalancesSchema = createInsertSchema(opening_balances, {
@@ -297,9 +322,7 @@ export type VatSettings = typeof vat_settings.$inferSelect;
 export type InsertVatSettings = z.infer<typeof insertVatSettingsSchema>;
 export type UpdateVatSettings = z.infer<typeof updateVatSettingsSchema>;
 
-export type AccountRelationship = typeof account_relationships.$inferSelect;
-export type InsertAccountRelationship = z.infer<typeof insertAccountRelationshipsSchema>;
-export type UpdateAccountRelationship = z.infer<typeof updateAccountRelationshipsSchema>;
+// AccountRelationship types moved above (after AC_account_relationships definition)
 
 export type OpeningBalance = typeof opening_balances.$inferSelect;
 export type InsertOpeningBalance = z.infer<typeof insertOpeningBalancesSchema>;

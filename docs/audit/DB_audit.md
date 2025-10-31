@@ -1734,9 +1734,461 @@ export const account_mappings = pgTable('account_mappings', {
 
 ---
 
-# 8.2. account_relationships
+# 7. AC_account_relationships
+
+**Tip:** Tabel de configurare contabilă (Accounting Module)  
+**Prefix:** `AC_` (Accounting) - NU face parte din Planul de Conturi  
+**Status:** ✅ ACTIV - Folosit pentru automatizare înregistrări contabile
+
+---
+
+## 📋 Descriere Generală
+
+Tabelul `AC_account_relationships` definește **reguli automate de înregistrare contabilă** (debit-credit) pentru diferite tipuri de operațiuni. Permite fiecărei companii să configureze corespondențe contabile personalizate pentru automatizarea înregistrărilor.
+
+**DIFERENȚĂ CRITICĂ:**
+- **PC_* (Plan de Conturi)**: Definește STRUCTURA conturilor (clase, grupe, sintetice, analitice)
+- **AC_* (Accounting)**: Definește REGULI de utilizare a conturilor (cum se fac înregistrările)
+
+### 🎯 Scop Principal
+
+1. **Automatizare Înregistrări**: Definește automat care cont se debitează și care se creditează pentru fiecare tip de operațiune
+2. **Configurare per Companie**: Fiecare companie poate avea propriile reguli contabile
+3. **Sistem de Prioritizare**: Suportă multiple reguli cu prioritate pentru aceeași operațiune
+4. **Reguli Condiționale**: Folosește JSONB pentru condiții complexe de aplicare
+
+### 📊 Date Actuale
+
+**Înregistrări în DB:** 0 (tabel gol - se populează la configurare)
+
+---
+
+## 🗂️ Structură Coloane
+
+### **DDL PostgreSQL** (Structură Actuală)
+
+```sql
+CREATE TABLE IF NOT EXISTS "AC_account_relationships" (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id uuid NOT NULL,
+  relationship_type text NOT NULL,
+  description text,
+  debit_account_code text NOT NULL,
+  debit_account_name text,
+  credit_account_code text NOT NULL,
+  credit_account_name text,
+  is_active boolean DEFAULT true,
+  priority integer DEFAULT 0,
+  conditions jsonb,
+  created_at timestamp without time zone DEFAULT now(),
+  updated_at timestamp without time zone DEFAULT now(),
+  
+  -- Constraints
+  CONSTRAINT "AC_account_relationships_pkey" PRIMARY KEY (id),
+  CONSTRAINT "AC_account_relationships_company_id_fkey"
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+  CONSTRAINT "AC_account_relationships_priority_check" CHECK (priority >= 0),
+  CONSTRAINT "AC_account_relationships_unique_rule"
+    UNIQUE (company_id, relationship_type, debit_account_code, credit_account_code)
+);
+```
+
+---
+
+## 📝 Descriere Coloane
+
+### 1. **id** (UUID)
+**Tip:** `UUID` | **Nullable:** NO | **Default:** `gen_random_uuid()`
+
+Primary key, identificator unic pentru fiecare regulă contabilă.
+
+### 2. **company_id** (UUID, FK → companies)
+**Tip:** `UUID` | **Nullable:** NO
+
+**Referință:** `companies(id)` ON DELETE CASCADE
+
+Compania pentru care se aplică regula contabilă. Permite configurări diferite per companie.
+
+**Logică Business:**
+- Fiecare companie poate avea propriile reguli de înregistrare
+- La ștergerea companiei, se șterg automat toate regulile (CASCADE)
+
+### 3. **relationship_type** (TEXT)
+**Tip:** `TEXT` | **Nullable:** NO
+
+Tipul de operațiune contabilă pentru care se aplică regula.
+
+**Valori Posibile (Exemple):**
+- `'SALE_INVOICE'` - Factură vânzare
+- `'PURCHASE_INVOICE'` - Factură achiziție
+- `'CASH_RECEIPT'` - Încasare numerar
+- `'BANK_PAYMENT'` - Plată bancară
+- `'SALARY_PAYMENT'` - Plată salarii
+- `'VAT_SETTLEMENT'` - Decontare TVA
+- `'DEPRECIATION'` - Amortizare
+- `'INVENTORY_ADJUSTMENT'` - Ajustare stoc
+- Etc.
+
+**Logică Algoritmică:**
+```typescript
+// Sistem găsește regula potrivită:
+const rule = await findRule({
+  company_id: currentCompany,
+  relationship_type: 'SALE_INVOICE',
+  conditions: { amount: '>= 1000', vat_rate: 19 }
+});
+
+// Aplică automat:
+// Debit: rule.debit_account_code
+// Credit: rule.credit_account_code
+```
+
+### 4. **description** (TEXT, NULLABLE)
+**Tip:** `TEXT` | **Nullable:** YES
+
+Descriere human-readable a regulii contabile.
+
+**Exemple:**
+- `'Factură vânzare mărfuri cu TVA 19%'`
+- `'Plată furnizor peste 10.000 RON'`
+- `'Încasare clienți prin cont bancar principal'`
+
+### 5. **debit_account_code** (TEXT)
+**Tip:** `TEXT` | **Nullable:** NO
+
+Codul contului care va fi **DEBITAT** automat când se aplică regula.
+
+**Format:** Respectă codurile din Planul de Conturi (PC_*)
+- Conturi sintetice: `'411'`, `'5311'`, `'607'`
+- Conturi analitice: `'411.001'`, `'5311.01'`
+
+**Logică Business:**
+```typescript
+// Pentru SALE_INVOICE:
+debit_account_code: '4111' // Clienți (crește creanța)
+credit_account_code: '707'  // Venituri din vânzări
+```
+
+### 6. **debit_account_name** (TEXT, NULLABLE)
+**Tip:** `TEXT` | **Nullable:** YES
+
+Denumirea contului debitat (cached pentru performanță UI).
+
+**Exemple:** `'Clienţi'`, `'Casa în lei'`, `'Cheltuieli cu salariile'`
+
+**Notă:** Poate fi sincronizat cu `PC_synthetic_accounts.name` sau `PC_analytic_accounts.name`
+
+### 7. **credit_account_code** (TEXT)
+**Tip:** `TEXT` | **Nullable:** NO
+
+Codul contului care va fi **CREDITAT** automat când se aplică regula.
+
+**Format:** Identic cu `debit_account_code`
+
+**Logică Business:**
+```typescript
+// Pentru PURCHASE_INVOICE:
+debit_account_code: '607'  // Cheltuieli cu mărfuri
+credit_account_code: '401' // Furnizori (crește datoria)
+```
+
+### 8. **credit_account_name** (TEXT, NULLABLE)
+**Tip:** `TEXT` | **Nullable:** YES
+
+Denumirea contului creditat (cached pentru performanță UI).
+
+### 9. **is_active** (BOOLEAN)
+**Tip:** `BOOLEAN` | **Nullable:** YES | **Default:** `true`
+
+Soft delete / Enable-Disable pentru reguli.
+
+**Logică Business:**
+- `true`: Regula este activă și va fi aplicată
+- `false`: Regula este dezactivată (păstrată pentru istoric/audit)
+
+**Use Case:**
+```typescript
+// Dezactivează temporar o regulă fără a o șterge
+UPDATE AC_account_relationships 
+SET is_active = false 
+WHERE relationship_type = 'OLD_RULE';
+```
+
+### 10. **priority** (INTEGER)
+**Tip:** `INTEGER` | **Nullable:** YES | **Default:** `0`
+
+**Constraint:** CHECK (priority >= 0)
+
+Ordinea de evaluare când există multiple reguli pentru același `relationship_type`.
+
+**Logică Algoritmică:**
+```typescript
+// Găsește regula cu prioritatea cea mai mare care match-uiește condițiile
+const rules = await db
+  .select()
+  .from(AC_account_relationships)
+  .where(and(
+    eq(AC_account_relationships.company_id, companyId),
+    eq(AC_account_relationships.relationship_type, type),
+    eq(AC_account_relationships.is_active, true)
+  ))
+  .orderBy(desc(AC_account_relationships.priority)); // Mai mare = mai prioritar
+
+// Prima regulă care match-uiește condițiile va fi aplicată
+for (const rule of rules) {
+  if (evaluateConditions(rule.conditions, context)) {
+    return rule; // Aplică această regulă
+  }
+}
+```
+
+**Exemplu:**
+- Priority 10: Facturi > 10.000 RON → cont special
+- Priority 5: Facturi > 1.000 RON → cont standard
+- Priority 0: Toate facturile → cont default
+
+### 11. **conditions** (JSONB, NULLABLE)
+**Tip:** `JSONB` | **Nullable:** YES
+
+Condiții complexe pentru aplicarea regulii (evaluare dinamică).
+
+**Index:** GIN index pentru query-uri rapide pe JSON
+
+**Structură JSON (Exemple):**
+
+```json
+{
+  "amount": {
+    "operator": ">=",
+    "value": 10000
+  },
+  "vat_rate": {
+    "operator": "==",
+    "value": 19
+  },
+  "customer_type": {
+    "operator": "in",
+    "value": ["corporate", "vip"]
+  },
+  "payment_method": {
+    "operator": "==",
+    "value": "bank_transfer"
+  }
+}
+```
+
+**Logică Algoritmică:**
+```typescript
+function evaluateConditions(conditions: any, context: any): boolean {
+  if (!conditions) return true; // No conditions = always match
+  
+  for (const [field, rule] of Object.entries(conditions)) {
+    const contextValue = context[field];
+    const { operator, value } = rule;
+    
+    switch (operator) {
+      case '>=': if (!(contextValue >= value)) return false; break;
+      case '==': if (contextValue !== value) return false; break;
+      case 'in': if (!value.includes(contextValue)) return false; break;
+      // ... other operators
+    }
+  }
+  
+  return true; // All conditions matched
+}
+```
+
+### 12. **created_at** (TIMESTAMP)
+**Tip:** `TIMESTAMP WITHOUT TIME ZONE` | **Nullable:** YES | **Default:** `now()`
+
+Data și ora creării regulii (audit trail).
+
+### 13. **updated_at** (TIMESTAMP)
+**Tip:** `TIMESTAMP WITHOUT TIME ZONE` | **Nullable:** YES | **Default:** `now()`
+
+Data și ora ultimei modificări (actualizat automat prin TRIGGER).
+
+**Trigger:** `trg_account_relationships_updated_at`
+
+---
+
+## 🔗 Relații & Constraints
+
+### Foreign Keys
+
+```sql
+-- FK către companies (CASCADE DELETE)
+company_id → companies(id) ON DELETE CASCADE
+```
+
+**Implicații:**
+- La ștergerea companiei, se șterg automat toate regulile sale contabile
+
+### Unique Constraints
+
+```sql
+UNIQUE (company_id, relationship_type, debit_account_code, credit_account_code)
+```
+
+**Implicații:**
+- ✅ Permite: Aceeași regulă activă/inactivă (is_active diferit)
+- ✅ Permite: Aceeași regulă cu condiții diferite (conditions diferit)
+- ❌ Interzice: Duplicate exacte pentru aceeași companie
+
+### Check Constraints
+
+```sql
+CHECK (priority >= 0)
+```
+
+**Asigură:** Prioritatea nu poate fi negativă
+
+### Indexes
+
+```sql
+-- Index principal
+"AC_account_relationships_pkey" PRIMARY KEY (id)
+
+-- Index UNIQUE compus
+"AC_account_relationships_unique_rule" UNIQUE (company_id, relationship_type, debit_account_code, credit_account_code)
+
+-- Performance indexes
+"idx_account_relationships_company_id" btree (company_id)
+"idx_account_relationships_type" btree (relationship_type)
+"idx_account_relationships_priority" btree (priority DESC)
+"idx_account_relationships_active" btree (is_active) WHERE is_active = true
+
+-- JSON index
+"idx_account_relationships_conditions" GIN (conditions)
+```
+
+---
+
+## 🎯 Utilizare în Aplicație
+
+### Exemplu 1: Factură Vânzare
+
+```typescript
+// Configurare regulă
+const saleRule = {
+  company_id: 'uuid-company',
+  relationship_type: 'SALE_INVOICE',
+  description: 'Factură vânzare mărfuri',
+  debit_account_code: '4111', // Clienți
+  debit_account_name: 'Clienţi',
+  credit_account_code: '707',  // Venituri
+  credit_account_name: 'Venituri din vânzarea mărfurilor',
+  is_active: true,
+  priority: 10,
+  conditions: {
+    vat_rate: { operator: '==', value: 19 }
+  }
+};
+
+// Aplicare automată
+const invoice = { amount: 1000, vat_rate: 19 };
+const rule = await findMatchingRule('SALE_INVOICE', invoice);
+
+// Creare înregistrare contabilă
+await createJournalEntry({
+  debit: { account: rule.debit_account_code, amount: 1190 },
+  credit: { account: rule.credit_account_code, amount: 1000 }
+});
+```
+
+### Exemplu 2: Plată Furnizor
+
+```typescript
+const paymentRule = {
+  company_id: 'uuid-company',
+  relationship_type: 'SUPPLIER_PAYMENT',
+  description: 'Plată furnizor prin bancă',
+  debit_account_code: '401',  // Furnizori (reduce datoria)
+  credit_account_code: '5121', // Banca (reduce disponibil)
+  is_active: true,
+  priority: 5,
+  conditions: {
+    payment_method: { operator: '==', value: 'bank_transfer' }
+  }
+};
+```
+
+---
+
+## 🔄 Trigger Details
+
+```sql
+CREATE OR REPLACE FUNCTION update_account_relationships_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_account_relationships_updated_at
+BEFORE UPDATE ON account_relationships
+FOR EACH ROW
+EXECUTE FUNCTION update_account_relationships_updated_at();
+```
+
+**Notă:** După redenumire la `AC_account_relationships`, trigger-ul va rămâne atașat automat.
+
+---
+
+## 📊 Drizzle Schema (Actuală - NECESITĂ REFACTORIZARE)
+
+**Locație:** `/libs/shared/src/schema/accounting-settings.schema.ts`
+
+**Problemă:** Folosește `camelCase` în loc de `snake_case`
+
+```typescript
+// ❌ ÎNAINTE (camelCase)
+export const account_relationships = pgTable('account_relationships', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  companyId: uuid('company_id').notNull(), // ❌ camelCase în TypeScript
+  relationshipType: text('relationship_type').notNull(), // ❌
+  debitAccountCode: text('debit_account_code').notNull(), // ❌
+  // ...
+});
+
+// ✅ DUPĂ (snake_case + AC_ prefix)
+export const AC_account_relationships = pgTable('AC_account_relationships', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  company_id: uuid('company_id').notNull(), // ✅ snake_case
+  relationship_type: text('relationship_type').notNull(), // ✅
+  debit_account_code: text('debit_account_code').notNull(), // ✅
+  // ...
+});
+```
+
+---
+
+## 🚀 Next Steps - Refactorizare Necesară
+
+1. ✅ Documentație completă (ACEST DOCUMENT)
+2. ⏳ Redenumire `account_relationships` → `AC_account_relationships`
+3. ⏳ Actualizare Drizzle schema la `snake_case`
+4. ⏳ Creare migrație `create_AC_account_relationships.ts`
+5. ⏳ Refactorizare services și controllers
+6. ⏳ Actualizare tests
+
+---
+
+
+
+
+
+
+
+
+# 8. accounting_journal_types
+
+---
+
+
 8.3. accounting_account_balances
-7. accounting_journal_types
+
 8. accounting_ledger_entries
 9. accounting_ledger_lines
 10. accounting_settings
