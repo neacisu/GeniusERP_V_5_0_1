@@ -39,7 +39,7 @@ interface JournalQueryResult {
   entry_id: string;
   journal_number: string | null;
   entry_date: Date | null;
-  document_date: Date | null;
+  document_date: string | null;  // date column returns string
   document_number: string | null;
   journal_type: string;
   entry_description: string;
@@ -152,7 +152,7 @@ export class GeneralJournalExcelService {
     const result = await db
       .select({
         entry_id: accounting_ledger_entries.id,
-        journal_number: accounting_ledger_entries.documentNumber,
+        journal_number: accounting_ledger_entries.document_number,
         entry_date: accounting_ledger_entries.transaction_date,
         document_date: accounting_ledger_entries.document_date,
         document_number: accounting_ledger_entries.document_number,
@@ -170,7 +170,7 @@ export class GeneralJournalExcelService {
       .innerJoin(accounting_ledger_lines, eq(accounting_ledger_lines.ledger_entry_id, accounting_ledger_entries.id))
       .leftJoin(chart_of_accounts, and(
         eq(chart_of_accounts.code, accounting_ledger_lines.full_account_number),
-        eq(chart_of_accounts.company_id, accounting_ledger_entries.company_id)
+        eq(chart_of_accounts.companyId, accounting_ledger_entries.company_id)
       ))
       .where(and(...conditions))
       .orderBy(accounting_ledger_entries.transaction_date, accounting_ledger_entries.document_number, accounting_ledger_lines.created_at);

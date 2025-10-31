@@ -185,7 +185,7 @@ export class GeneralJournalPDFService {
 
     // Construiește conditions pentru query
     const conditions = [
-      eq(accounting_ledger_entries.company_id, options.company_id),
+      eq(accounting_ledger_entries.company_id, options.companyId),
       gte(accounting_ledger_entries.transaction_date, options.startDate),
       lte(accounting_ledger_entries.transaction_date, options.endDate)
     ];
