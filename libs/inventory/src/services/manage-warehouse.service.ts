@@ -15,7 +15,7 @@ import { gestiuneTypeEnum } from '../schema/inventory.schema';
 import { AccountingService } from '@geniuserp/accounting';
 import { IStorage, storage } from "@api/storage";
 import { eq } from 'drizzle-orm';
-import { analyticAccounts } from '@geniuserp/shared';
+// analyticAccounts removed - no longer needed
 
 /**
  * Input type for warehouse creation
@@ -168,7 +168,7 @@ export class ManageWarehouseService {
           name: name,
           description: description,
           synthetic_id: syntheticId,
-          account_function: account_function, 
+          account_function: account_function as 'A' | 'P' | 'B' | 'E' | 'V', // Type cast to enum
           is_active: true
         };
         
