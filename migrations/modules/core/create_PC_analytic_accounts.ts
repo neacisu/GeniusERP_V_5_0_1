@@ -10,9 +10,8 @@
  */
 
 import { sql } from 'drizzle-orm';
-import type { DrizzleService } from '@api/db';
 
-export async function up(db: DrizzleService['db']): Promise<void> {
+export async function up(db: any): Promise<void> {
   console.log('🔄 Running migration: create_PC_analytic_accounts');
 
   await db.execute(sql`
@@ -82,7 +81,7 @@ export async function up(db: DrizzleService['db']): Promise<void> {
   console.log('✅ Migration create_PC_analytic_accounts completed successfully');
 }
 
-export async function down(db: DrizzleService['db']): Promise<void> {
+export async function down(db: any): Promise<void> {
   console.log('🔄 Reverting migration: create_PC_analytic_accounts');
 
   // Drop indexes first
