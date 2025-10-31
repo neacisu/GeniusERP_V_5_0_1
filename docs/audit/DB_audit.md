@@ -1315,7 +1315,14 @@ export type InsertAnalyticAccount = InsertPC_AnalyticAccount;
 
 **Migrare:**
 - Fișier migrare: `/var/www/GeniusERP/migrations/modules/core/create_PC_analytic_accounts.ts`
-- Seeding: `/var/www/GeniusERP/migrations/modules/core/PC_plan_conturi_seeding/analytic_accounts.json`
+- **Seeding:** ❌ NU se face seeding - conturile analitice sunt create dinamic de utilizatori la:
+  * Crearea gestiunilor (warehouse) → conturi 371.X, 4426.X, 4427.X, etc.
+  * Crearea partenerilor (clienți/furnizori) → conturi 401.X, 4111.X
+  * Alte entități specifice aplicației
+
+**Creare Automată:**
+- `libs/inventory/src/services/manage-warehouse.service.ts` → creează conturi la gestiune nouă
+- `libs/crm/src/controllers/company.controller.ts` → creează conturi la partener nou
 
 ---
 
