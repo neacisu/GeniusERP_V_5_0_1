@@ -101,7 +101,7 @@ export class VATClosureService extends DrizzleService {
       journalNumber = entry.journalNumber;
 
       // Log audit
-      await this.auditService.console.log({
+      await this.auditService.log({
         companyId,
         userId,
         action: 'VAT_CLOSED' as any,

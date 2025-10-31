@@ -5,9 +5,12 @@
  * database data and validates that it is properly secured with JWT-based
  * authentication and role-based access controls.
  */
-// Use the built-in Node.js fetch API
-const fetch = global.fetch;
-import fs from 'fs';
+// @ts-ignore - Node.js built-in modules
+const fs = require('fs');
+
+// Use the built-in Node.js fetch API (Node.js 18+)
+// @ts-ignore - fetch is available globally in Node.js 18+
+const fetch = globalThis.fetch;
 
 // Read the JWT token from the file
 const token = fs.readFileSync('./app-token.txt', 'utf-8').trim();

@@ -9,16 +9,23 @@
  * - Document counters (TTL: 1h)
  * - Fiscal periods (TTL: 24h)
  * - Opening balances (no cache - frequently updated)
+ * 
+ * Note: Uses backward compatibility aliases for DB tables:
+ * - accounting_settings → AC_accounting_settings
+ * - vat_settings → AC_vat_settings  
+ * - opening_balances → AC_opening_balances
+ * This ensures smooth migration without breaking existing code.
  */
 
 import { DrizzleService } from "@common/drizzle/drizzle.service";
 import { eq, and, desc, sql, like } from 'drizzle-orm';
 import { RedisService } from '@common/services/redis.service';
+import { safeEncrypt, safeDecrypt } from '../../../common/src/utils/encryption';
 import {
-  accounting_settings,
-  vat_settings,
+  accounting_settings, // Alias for AC_accounting_settings (backward compatibility)
+  vat_settings, // Alias for AC_vat_settings (backward compatibility)
   AC_account_relationships,
-  opening_balances,
+  opening_balances, // Alias for AC_opening_balances (backward compatibility)
   AccountingSettings,
   VatSettings,
   AccountRelationship,
@@ -137,6 +144,10 @@ export class AccountingSettingsService extends DrizzleService {
     if (this.redisService.isConnected()) {
       const cached = await this.redisService.getCached<AccountingSettings | null>(cacheKey);
       if (cached !== undefined) {
+        // ⚠️ SECURITY: Decrypt anaf_api_key from cache
+        if (cached && cached.anaf_api_key) {
+          cached.anaf_api_key = safeDecrypt(cached.anaf_api_key);
+        }
         return cached;
       }
     }
@@ -149,6 +160,11 @@ export class AccountingSettingsService extends DrizzleService {
     // Cache for 6 hours
     if (this.redisService.isConnected()) {
       await this.redisService.setCached(cacheKey, result, 21600);
+    }
+
+    // ⚠️ SECURITY: Decrypt anaf_api_key before returning
+    if (result && result.anaf_api_key) {
+      result.anaf_api_key = safeDecrypt(result.anaf_api_key);
     }
 
     return result;
@@ -173,6 +189,11 @@ export class AccountingSettingsService extends DrizzleService {
     data: UpdateAccountingSettings,
     userId: string
   ): Promise<AccountingSettings> {
+    // ⚠️ SECURITY: Encrypt anaf_api_key if provided
+    if (data.anaf_api_key) {
+      data.anaf_api_key = safeEncrypt(data.anaf_api_key);
+    }
+
     // Check if settings exist
     const existing = await this.getGeneralSettings(companyId);
 
@@ -188,6 +209,11 @@ export class AccountingSettingsService extends DrizzleService {
       
       // Invalidate cache
       await this.invalidateSettingsCache(companyId);
+      
+      // ⚠️ SECURITY: Decrypt anaf_api_key before returning
+      if (updated.anaf_api_key) {
+        updated.anaf_api_key = safeDecrypt(updated.anaf_api_key);
+      }
       
       return updated;
     } else {
@@ -205,6 +231,11 @@ export class AccountingSettingsService extends DrizzleService {
       
       // Invalidate cache
       await this.invalidateSettingsCache(companyId);
+      
+      // ⚠️ SECURITY: Decrypt anaf_api_key before returning
+      if (created.anaf_api_key) {
+        created.anaf_api_key = safeDecrypt(created.anaf_api_key);
+      }
       
       return created;
     }
@@ -691,7 +722,7 @@ export class AccountingSettingsService extends DrizzleService {
             debit_balance: balance.debitBalance,
             credit_balance: balance.creditBalance,
             fiscal_year: fiscalYear,
-            import_date: new Date(),
+            import_date: new Date().toISOString().split('T')[0], // ✅ FIXED: date type requires ISO string (YYYY-MM-DD)
             import_source: importSource,
             is_validated: false,
             created_by: userId,

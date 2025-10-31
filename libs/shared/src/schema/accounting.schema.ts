@@ -533,21 +533,29 @@ export type UpdateAccountingLedgerEntryZod = UpdateACAccountingLedgerEntryZod;
 
 // AC_accounting_ledger_lines Schemas
 export const insertACAccountingLedgerLineSchema = createInsertSchema(AC_accounting_ledger_lines, {
-  line_number: z.number().int().min(1),
+  line_number: z.number().int().min(1, "Numărul liniei trebuie să fie pozitiv"),
   description: z.string().max(500).optional(),
-  account_class: z.number().int().min(1).max(9),
-  account_group: z.number().int().min(10).max(99),
+  account_class: z.number().int().min(1).max(9, "Clasa contului trebuie să fie între 1-9"),
+  account_group: z.number().int().min(10).max(99, "Grupa contului trebuie să fie între 10-99"),
   account_number: z.string().min(1).max(20),
   account_sub_number: z.string().max(20).optional(),
   full_account_number: z.string().min(1).max(50),
   amount: z.string().regex(/^\d+(\.\d{1,4})?$/),
   debit_amount: z.string().regex(/^\d+(\.\d{1,4})?$/).default('0'),
   credit_amount: z.string().regex(/^\d+(\.\d{1,4})?$/).default('0'),
-  currency: z.string().length(3).default('RON'),
+  currency: z.string().length(3, "Codul valutar trebuie să fie ISO 4217 (3 caractere)").default('RON'),
   original_amount: z.string().regex(/^\d+(\.\d{1,4})?$/).optional(),
-  exchange_rate: z.string().regex(/^\d+(\.\d{1,6})?$/).default('1'),
+  exchange_rate: z.string().regex(/^\d+(\.\d{1,6})?$/).default('1').refine((val) => parseFloat(val) > 0, {
+    message: "Cursul de schimb trebuie să fie > 0"
+  }),
   vat_code: z.string().max(20).optional(),
-  vat_percentage: z.string().regex(/^\d+(\.\d{1,2})?$/).optional(),
+  vat_percentage: z.string().regex(/^\d+(\.\d{1,2})?$/).optional().refine((val) => {
+    if (!val) return true; // optional field
+    const num = parseFloat(val);
+    return num >= 0 && num <= 100;
+  }, {
+    message: "Procentul TVA trebuie să fie între 0-100"
+  }),
   vat_amount: z.string().regex(/^\d+(\.\d{1,4})?$/).optional(),
   item_type: z.string().max(50).optional(),
   partner_type: z.string().max(20).optional(),

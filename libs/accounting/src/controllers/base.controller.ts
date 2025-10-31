@@ -1,7 +1,8 @@
 import { Response } from 'express';
-import { AuthenticatedRequest } from '../../../types/express';
+import { AuthenticatedRequest } from '@common/middleware/auth-types';
 import { captureException, addBreadcrumb } from "@common/sentry";
 import { createModuleLogger } from "@common/logger/loki-logger";
+import { deepSnakeToCamel, deepCamelToSnake } from '../../../common/src/utils/case-converter';
 
 const logger = createModuleLogger('BaseController');
 
@@ -20,6 +21,9 @@ interface ErrorWithStatus extends Error {
 export class BaseController {
   /**
    * Handle API request with standardized error handling
+   * 
+   * IMPORTANT: Automatically transforms response from snake_case (DB) to camelCase (Frontend)
+   * and request body from camelCase (Frontend) to snake_case (DB)
    */
   protected async handleRequest<T>(
     req: AuthenticatedRequest, 
@@ -42,8 +46,17 @@ export class BaseController {
         }
       );
 
+      // Transform request body from camelCase to snake_case before processing
+      if (req.body && typeof req.body === 'object') {
+        req.body = deepCamelToSnake(req.body);
+      }
+
       const result = await handler();
-      res.status(200).json(result);
+      
+      // Transform response from snake_case to camelCase for frontend
+      const transformedResult = deepSnakeToCamel(result);
+      
+      res.status(200).json(transformedResult);
     } catch (error) {
       const err = error as ErrorWithStatus;
       logger.error('Controller error', err, {

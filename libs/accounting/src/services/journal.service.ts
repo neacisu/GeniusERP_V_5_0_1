@@ -11,7 +11,7 @@
  */
 
 import { getDrizzle } from "@common/drizzle";
-import { accounting_ledger_entries, accounting_ledger_lines } from '../schema/accounting.schema';
+import { AC_accounting_ledger_entries, AC_accounting_ledger_lines } from '@geniuserp/shared';
 import { eq } from 'drizzle-orm';
 import { AuditService, AuditAction } from '@geniuserp/audit';
 import { JournalNumberingService } from './journal-numbering.service';
@@ -202,37 +202,37 @@ export class JournalService {
       
       // Create entry and lines in a transaction
       const result = await db.transaction(async (tx) => {
-        // Insert into accounting_ledger_entries and get the generated ID
-        const [createdEntry] = await tx.insert(accountingLedgerEntries).values({
-          companyId: companyId,
-          franchiseId: franchiseId || null,
+        // Insert into AC_accounting_ledger_entries and get the generated ID
+        const [createdEntry] = await tx.insert(AC_accounting_ledger_entries).values({
+          company_id: companyId,
+          franchise_id: franchiseId || null,
           type: type,
-          transactionDate: entryDate,
-          postingDate: entryDate,
-          documentDate: (documentDate || entryDate).toISOString().split('T')[0],
-          documentNumber: referenceNumber || null,
-          documentType: type,
+          transaction_date: entryDate,
+          posting_date: entryDate,
+          document_date: (documentDate || entryDate).toISOString().split('T')[0],
+          document_number: referenceNumber || null,
+          document_type: type,
           description: description,
           notes: null,
-          isPosted: false,
-          isDraft: true,
-          isSystemGenerated: false,
-          totalAmount: amount.toString(),
-          totalDebit: totalDebit.toString(),
-          totalCredit: totalCredit.toString(),
+          is_posted: false,
+          is_draft: true,
+          is_system_generated: false,
+          total_amount: amount.toString(),
+          total_debit: totalDebit.toString(),
+          total_credit: totalCredit.toString(),
           currency: 'RON',
-          exchangeRate: '1',
-          fiscalYear: fiscalYear,
-          fiscalMonth: fiscalMonth,
-          createdAt: now,
-          updatedAt: now,
-          createdBy: userId || null,
+          exchange_rate: '1',
+          fiscal_year: fiscalYear,
+          fiscal_month: fiscalMonth,
+          created_at: now,
+          updated_at: now,
+          created_by: userId || null,
           metadata: null
-        }).returning({ id: accounting_ledger_entries.id });
+        }).returning({ id: AC_accounting_ledger_entries.id });
         
         const actualEntryId = createdEntry.id;
         
-        // Insert ledger lines into accounting_ledger_lines
+        // Insert ledger lines into AC_accounting_ledger_lines
         const lineValues = lines.map((line, index) => {
           const accountId = line.accountId || line.accountNumber;
           
@@ -248,59 +248,59 @@ export class JournalService {
           const accountSubNumber = accountStr.length > 3 ? accountStr.substring(3) : null;
           
           return {
-            ledgerEntryId: actualEntryId,
-            companyId: companyId,
-            lineNumber: index + 1,
+            ledger_entry_id: actualEntryId,
+            company_id: companyId,
+            line_number: index + 1,
             description: line.description || description,
-            accountClass: accountClass,
-            accountGroup: accountGroup,
-            accountNumber: accountNumber,
-            accountSubNumber: accountSubNumber,
-            fullAccountNumber: accountId,
+            account_class: accountClass,
+            account_group: accountGroup,
+            account_number: accountNumber,
+            account_sub_number: accountSubNumber,
+            full_account_number: accountId,
             amount: ((line.debitAmount || 0) + (line.creditAmount || 0)).toString(),
-            debitAmount: (line.debitAmount || 0).toString(),
-            creditAmount: (line.creditAmount || 0).toString(),
+            debit_amount: (line.debitAmount || 0).toString(),
+            credit_amount: (line.creditAmount || 0).toString(),
             currency: 'RON',
-            exchangeRate: '1',
-            createdAt: now,
-            updatedAt: now,
+            exchange_rate: '1',
+            created_at: now,
+            updated_at: now,
             metadata: null
           };
         });
         
-        await tx.insert(accountingLedgerLines).values(lineValues);
+        await tx.insert(AC_accounting_ledger_lines).values(lineValues);
         
         // Fetch the created entry with lines using Drizzle
         const [entryWithData] = await tx
           .select()
-          .from(accountingLedgerEntries)
-          .where(eq(accountingLedgerEntries.id, actualEntryId))
+          .from(AC_accounting_ledger_entries)
+          .where(eq(AC_accounting_ledger_entries.id, actualEntryId))
           .limit(1);
         
         const createdLines = await tx
           .select()
-          .from(accountingLedgerLines)
-          .where(eq(accountingLedgerLines.ledgerEntryId, actualEntryId));
+          .from(AC_accounting_ledger_lines)
+          .where(eq(AC_accounting_ledger_lines.ledger_entry_id, actualEntryId));
         
         const entry: LedgerEntryData = {
           id: entryWithData.id,
-          companyId: entryWithData.companyId,
-          franchiseId: entryWithData.franchiseId ?? null,
+          companyId: entryWithData.company_id,
+          franchiseId: entryWithData.franchise_id ?? null,
           type: entryWithData.type as LedgerEntryType,
-          referenceNumber: entryWithData.documentNumber ?? undefined,
+          referenceNumber: entryWithData.document_number ?? undefined,
           journalNumber: undefined,
-          entryDate: entryWithData.transactionDate.toISOString(),
-          documentDate: entryWithData.documentDate,
-          amount: parseFloat(entryWithData.totalAmount),
+          entryDate: entryWithData.transaction_date.toISOString(),
+          documentDate: entryWithData.document_date,
+          amount: parseFloat(entryWithData.total_amount),
           description: entryWithData.description ?? '',
-          createdAt: entryWithData.createdAt.toISOString(),
-          createdBy: entryWithData.createdBy ?? undefined,
+          createdAt: entryWithData.created_at.toISOString(),
+          createdBy: entryWithData.created_by ?? undefined,
           lines: createdLines.map(line => ({
             id: line.id,
-            ledgerEntryId: line.ledgerEntryId,
-            accountId: line.fullAccountNumber,
-            debitAmount: parseFloat(line.debitAmount),
-            creditAmount: parseFloat(line.creditAmount),
+            ledgerEntryId: line.ledger_entry_id,
+            accountId: line.full_account_number,
+            debitAmount: parseFloat(line.debit_amount),
+            creditAmount: parseFloat(line.credit_amount),
             description: line.description ?? ''
           }))
         };
@@ -313,7 +313,7 @@ export class JournalService {
       
       // Log audit event
       if (userId) {
-        await AuditService.console.log({
+        await AuditService.log({
           userId,
           companyId,
           franchiseId,
@@ -362,8 +362,8 @@ export class JournalService {
     // Get the original entry with lines using Drizzle ORM
     const [originalEntryData] = await db
       .select()
-      .from(accountingLedgerEntries)
-      .where(eq(accountingLedgerEntries.id, ledgerEntryId))
+      .from(AC_accounting_ledger_entries)
+      .where(eq(AC_accounting_ledger_entries.id, ledgerEntryId))
       .limit(1);
     
     if (!originalEntryData) {
@@ -372,28 +372,28 @@ export class JournalService {
     
     const originalLines = await db
       .select()
-      .from(accountingLedgerLines)
-      .where(eq(accountingLedgerLines.ledgerEntryId, ledgerEntryId));
+      .from(AC_accounting_ledger_lines)
+      .where(eq(AC_accounting_ledger_lines.ledger_entry_id, ledgerEntryId));
     
     const originalEntry = {
       id: originalEntryData.id,
-      companyId: originalEntryData.companyId,
-      franchiseId: originalEntryData.franchiseId ?? null,
+      companyId: originalEntryData.company_id,
+      franchiseId: originalEntryData.franchise_id ?? null,
       type: originalEntryData.type,
-      referenceNumber: originalEntryData.documentNumber ?? undefined,
-      amount: parseFloat(originalEntryData.totalAmount),
+      referenceNumber: originalEntryData.document_number ?? undefined,
+      amount: parseFloat(originalEntryData.total_amount),
       description: originalEntryData.description,
-      isPosted: originalEntryData.isPosted,
-      isReversed: originalEntryData.isReversal,
-      reversalEntryId: originalEntryData.reversalEntryId ?? undefined,
-      createdAt: originalEntryData.createdAt.toISOString(),
-      createdBy: originalEntryData.createdBy ?? undefined,
+      isPosted: originalEntryData.is_posted,
+      isReversed: originalEntryData.is_reversal,
+      reversalEntryId: originalEntryData.reversal_entry_id ?? undefined,
+      createdAt: originalEntryData.created_at.toISOString(),
+      createdBy: originalEntryData.created_by ?? undefined,
       lines: originalLines.map(line => ({
         id: line.id,
-        ledgerEntryId: line.ledgerEntryId,
-        accountId: line.fullAccountNumber,
-        debitAmount: parseFloat(line.debitAmount),
-        creditAmount: parseFloat(line.creditAmount),
+        ledgerEntryId: line.ledger_entry_id,
+        accountId: line.full_account_number,
+        debitAmount: parseFloat(line.debit_amount),
+        creditAmount: parseFloat(line.credit_amount),
         description: line.description
       }))
     };
@@ -439,31 +439,31 @@ export class JournalService {
     // Update the reversal entry to link it to the original
     const now = new Date();
     await db
-      .update(accountingLedgerEntries)
+      .update(AC_accounting_ledger_entries)
       .set({
-        originalEntryId: ledgerEntryId,
-        updatedAt: now
+        original_entry_id: ledgerEntryId,
+        updated_at: now
       })
-      .where(eq(accountingLedgerEntries.id, reversalEntry.id));
+      .where(eq(AC_accounting_ledger_entries.id, reversalEntry.id));
     
     // Post the reversal entry automatically
     await this.postLedgerEntry(reversalEntry.id, userId);
     
     // Mark the original entry as reversed
     await db
-      .update(accountingLedgerEntries)
+      .update(AC_accounting_ledger_entries)
       .set({
-        isReversal: true,
-        reversedAt: now,
-        reversedBy: userId,
-        reversalReason: reason,
-        reversalEntryId: reversalEntry.id,
-        updatedAt: now
+        is_reversal: true,
+        reversed_at: now,
+        reversed_by: userId,
+        reversal_reason: reason,
+        reversal_entry_id: reversalEntry.id,
+        updated_at: now
       })
-      .where(eq(accountingLedgerEntries.id, ledgerEntryId));
+      .where(eq(AC_accounting_ledger_entries.id, ledgerEntryId));
     
     // Log audit event for the original entry
-    await AuditService.console.log({
+    await AuditService.log({
       userId,
       companyId: originalEntry.companyId,
       action: AuditAction.UPDATE,
@@ -657,16 +657,16 @@ export class JournalService {
     // Get the entry to validate it exists and is not already posted
     const [entry] = await db
       .select({
-        id: accounting_ledger_entries.id,
-        companyId: accounting_ledger_entries.companyId,
-        type: accounting_ledger_entries.type,
-        isPosted: accounting_ledger_entries.isPosted,
-        isReversed: accounting_ledger_entries.isReversal,
-        amount: accounting_ledger_entries.totalAmount,
-        description: accounting_ledger_entries.description
+        id: AC_accounting_ledger_entries.id,
+        companyId: AC_accounting_ledger_entries.company_id,
+        type: AC_accounting_ledger_entries.type,
+        isPosted: AC_accounting_ledger_entries.is_posted,
+        isReversed: AC_accounting_ledger_entries.is_reversal,
+        amount: AC_accounting_ledger_entries.total_amount,
+        description: AC_accounting_ledger_entries.description
       })
-      .from(accountingLedgerEntries)
-      .where(eq(accountingLedgerEntries.id, ledgerEntryId))
+      .from(AC_accounting_ledger_entries)
+      .where(eq(AC_accounting_ledger_entries.id, ledgerEntryId))
       .limit(1);
     
     if (!entry) {
@@ -684,18 +684,18 @@ export class JournalService {
     // Validate that lines are balanced
     const lines = await db
       .select({
-        debitAmount: accounting_ledger_lines.debitAmount,
-        creditAmount: accounting_ledger_lines.creditAmount
+        debit_amount: AC_accounting_ledger_lines.debit_amount,
+        credit_amount: AC_accounting_ledger_lines.credit_amount
       })
-      .from(accountingLedgerLines)
-      .where(eq(accountingLedgerLines.ledgerEntryId, ledgerEntryId));
+      .from(AC_accounting_ledger_lines)
+      .where(eq(AC_accounting_ledger_lines.ledger_entry_id, ledgerEntryId));
     
     if (lines.length === 0) {
       throw new Error('Ledger entry has no lines');
     }
     
-    const totalDebit = lines.reduce((sum, line) => sum + parseFloat(line.debitAmount), 0);
-    const totalCredit = lines.reduce((sum, line) => sum + parseFloat(line.creditAmount), 0);
+    const totalDebit = lines.reduce((sum, line) => sum + parseFloat(line.debit_amount), 0);
+    const totalCredit = lines.reduce((sum, line) => sum + parseFloat(line.credit_amount), 0);
     
     if (Math.abs(totalDebit - totalCredit) > 0.01) {
       throw new Error(`Ledger entry is not balanced. Debits: ${totalDebit}, Credits: ${totalCredit}`);
@@ -704,18 +704,18 @@ export class JournalService {
     // Update the entry to mark it as posted
     const now = new Date();
     await db
-      .update(accountingLedgerEntries)
+      .update(AC_accounting_ledger_entries)
       .set({
-        isPosted: true,
-        isDraft: false,
-        postedAt: now,
-        postedBy: userId,
-        updatedAt: now
+        is_posted: true,
+        is_draft: false,
+        posted_at: now,
+        posted_by: userId,
+        updated_at: now
       })
-      .where(eq(accountingLedgerEntries.id, ledgerEntryId));
+      .where(eq(AC_accounting_ledger_entries.id, ledgerEntryId));
     
     // Log audit event
-    await AuditService.console.log({
+    await AuditService.log({
       userId,
       companyId: entry.companyId,
       action: AuditAction.UPDATE,
@@ -755,15 +755,15 @@ export class JournalService {
     // Get the entry to validate
     const [entry] = await db
       .select({
-        id: accounting_ledger_entries.id,
-        companyId: accounting_ledger_entries.companyId,
-        type: accounting_ledger_entries.type,
-        isPosted: accounting_ledger_entries.isPosted,
-        isReversed: accounting_ledger_entries.isReversal,
-        reversalEntryId: accounting_ledger_entries.reversalEntryId
+        id: AC_accounting_ledger_entries.id,
+        companyId: AC_accounting_ledger_entries.company_id,
+        type: AC_accounting_ledger_entries.type,
+        isPosted: AC_accounting_ledger_entries.is_posted,
+        isReversed: AC_accounting_ledger_entries.is_reversal,
+        reversalEntryId: AC_accounting_ledger_entries.reversal_entry_id
       })
-      .from(accountingLedgerEntries)
-      .where(eq(accountingLedgerEntries.id, ledgerEntryId))
+      .from(AC_accounting_ledger_entries)
+      .where(eq(AC_accounting_ledger_entries.id, ledgerEntryId))
       .limit(1);
     
     if (!entry) {
@@ -785,18 +785,18 @@ export class JournalService {
     // Update the entry to mark it as draft again
     const now = new Date();
     await db
-      .update(accountingLedgerEntries)
+      .update(AC_accounting_ledger_entries)
       .set({
-        isPosted: false,
-        isDraft: true,
-        postedAt: null,
-        postedBy: null,
-        updatedAt: now
+        is_posted: false,
+        is_draft: true,
+        posted_at: null,
+        posted_by: null,
+        updated_at: now
       })
-      .where(eq(accountingLedgerEntries.id, ledgerEntryId));
+      .where(eq(AC_accounting_ledger_entries.id, ledgerEntryId));
     
     // Log audit event
-    await AuditService.console.log({
+    await AuditService.log({
       userId,
       companyId: entry.companyId,
       action: AuditAction.UPDATE,
@@ -837,8 +837,8 @@ export class JournalService {
     // Get the entry
     const [entry] = await db
       .select()
-      .from(accountingLedgerEntries)
-      .where(eq(accountingLedgerEntries.id, ledgerEntryId))
+      .from(AC_accounting_ledger_entries)
+      .where(eq(AC_accounting_ledger_entries.id, ledgerEntryId))
       .limit(1);
     
     if (!entry) {
@@ -848,38 +848,38 @@ export class JournalService {
     // Get the lines
     const lines = await db
       .select()
-      .from(accountingLedgerLines)
-      .where(eq(accountingLedgerLines.ledgerEntryId, ledgerEntryId));
+      .from(AC_accounting_ledger_lines)
+      .where(eq(AC_accounting_ledger_lines.ledger_entry_id, ledgerEntryId));
     
     const entryData: LedgerEntryData = {
       id: entry.id,
-      companyId: entry.companyId,
-      franchiseId: entry.franchiseId ?? null,
+      companyId: entry.company_id,
+      franchiseId: entry.franchise_id ?? null,
       type: entry.type as LedgerEntryType,
-      referenceNumber: entry.documentNumber ?? undefined,
+      referenceNumber: entry.document_number ?? undefined,
       journalNumber: undefined,
-      entryDate: entry.transactionDate.toISOString(),
-      documentDate: entry.documentDate,
-      amount: parseFloat(entry.totalAmount),
+      entryDate: entry.transaction_date.toISOString(),
+      documentDate: entry.document_date,
+      amount: parseFloat(entry.total_amount),
       description: entry.description ?? '',
-      isPosted: entry.isPosted,
-      postedAt: entry.postedAt?.toISOString(),
-      postedBy: entry.postedBy ?? undefined,
-      isReversed: entry.isReversal,
-      reversedAt: entry.reversedAt?.toISOString(),
-      reversedBy: entry.reversedBy ?? undefined,
-      reversalReason: entry.reversalReason ?? undefined,
-      originalEntryId: entry.originalEntryId ?? undefined,
-      reversalEntryId: entry.reversalEntryId ?? undefined,
-      createdAt: entry.createdAt.toISOString(),
-      createdBy: entry.createdBy ?? undefined,
-      updatedAt: entry.updatedAt?.toISOString(),
+      isPosted: entry.is_posted,
+      postedAt: entry.posted_at?.toISOString(),
+      postedBy: entry.posted_by ?? undefined,
+      isReversed: entry.is_reversal,
+      reversedAt: entry.reversed_at?.toISOString(),
+      reversedBy: entry.reversed_by ?? undefined,
+      reversalReason: entry.reversal_reason ?? undefined,
+      originalEntryId: entry.original_entry_id ?? undefined,
+      reversalEntryId: entry.reversal_entry_id ?? undefined,
+      createdAt: entry.created_at.toISOString(),
+      createdBy: entry.created_by ?? undefined,
+      updatedAt: entry.updated_at?.toISOString(),
       lines: lines.map(line => ({
         id: line.id,
-        ledgerEntryId: line.ledgerEntryId,
-        accountId: line.fullAccountNumber,
-        debitAmount: parseFloat(line.debitAmount),
-        creditAmount: parseFloat(line.creditAmount),
+        ledgerEntryId: line.ledger_entry_id,
+        accountId: line.full_account_number,
+        debitAmount: parseFloat(line.debit_amount),
+        creditAmount: parseFloat(line.credit_amount),
         description: line.description ?? ''
       }))
     };

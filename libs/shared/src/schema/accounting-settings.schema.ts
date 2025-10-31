@@ -2,13 +2,15 @@
  * Accounting Settings Schema
  * 
  * Database schema for accounting module settings including:
- * - General accounting settings
- * - VAT settings
- * - Account relationships
- * - Opening balances
+ * - General accounting settings (AC_accounting_settings)
+ * - VAT settings (AC_vat_settings)
+ * - Account relationships (AC_account_relationships)
+ * - Opening balances (AC_opening_balances)
+ * 
+ * Prefix AC_ = Accounting Configuration (setări și configurări contabile)
  */
 
-import { pgTable, uuid, text, timestamp, boolean, integer, decimal, jsonb, unique, index, check } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, boolean, integer, decimal, jsonb, unique, index, check, date, pgEnum } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
@@ -18,10 +20,20 @@ import { companies } from '../schema';
 import { users } from '../schema';
 
 // ============================================================
-// 1. ACCOUNTING SETTINGS TABLE
+// ENUMS
 // ============================================================
 
-export const accounting_settings = pgTable('accounting_settings', {
+/**
+ * Declaration Frequency Enum
+ * Frecvența declarațiilor TVA conform legislației românești
+ */
+export const declaration_frequency_enum = pgEnum('declaration_frequency', ['monthly', 'quarterly']);
+
+// ============================================================
+// 1. AC_ACCOUNTING_SETTINGS TABLE (General Accounting Settings)
+// ============================================================
+
+export const AC_accounting_settings = pgTable('AC_accounting_settings', {
   id: uuid('id').primaryKey().defaultRandom(),
   company_id: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
   
@@ -40,11 +52,11 @@ export const accounting_settings = pgTable('accounting_settings', {
   // Integrări externe
   enable_saft_export: boolean('enable_saft_export').default(false).notNull(),
   enable_anaf_efactura: boolean('enable_anaf_efactura').default(false).notNull(),
-  anaf_api_key: text('anaf_api_key'),
+  anaf_api_key: text('anaf_api_key'), // ⚠️ SECURITY: Must be encrypted in application layer!
   
   // Onboarding
   has_accounting_history: boolean('has_accounting_history').default(false).notNull(),
-  accounting_start_date: timestamp('accounting_start_date'),
+  accounting_start_date: date('accounting_start_date'), // Changed from timestamp to date
   opening_balances_imported: boolean('opening_balances_imported').default(false).notNull(),
   
   // Audit
@@ -52,26 +64,34 @@ export const accounting_settings = pgTable('accounting_settings', {
   updated_at: timestamp('updated_at').defaultNow().notNull(),
   created_by: uuid('created_by').references(() => users.id),
 }, (table) => ({
-  companyUnique: unique().on(table.company_id),
-  companyIdx: index('idx_accounting_settings_company_id').on(table.company_id)
+  companyUnique: unique('AC_accounting_settings_company_unique').on(table.company_id),
+  companyIdx: index('idx_AC_accounting_settings_company_id').on(table.company_id),
+  // Check constraint: fiscal_year_start_month trebuie să fie între 1-12
+  fiscalMonthCheck: check('AC_accounting_settings_fiscal_month_check', 
+    sql`${table.fiscal_year_start_month} >= 1 AND ${table.fiscal_year_start_month} <= 12`
+  ),
 }));
 
-export const accounting_settingsRelations = relations(accounting_settings, ({ one }) => ({
+export const AC_accounting_settingsRelations = relations(AC_accounting_settings, ({ one }) => ({
   company: one(companies, {
-    fields: [accounting_settings.company_id],
+    fields: [AC_accounting_settings.company_id],
     references: [companies.id],
   }),
   creator: one(users, {
-    fields: [accounting_settings.created_by],
+    fields: [AC_accounting_settings.created_by],
     references: [users.id],
   }),
 }));
 
+// Backward Compatibility Alias
+export const accounting_settings = AC_accounting_settings;
+export const accounting_settingsRelations = AC_accounting_settingsRelations;
+
 // ============================================================
-// 2. VAT SETTINGS TABLE
+// 2. AC_VAT_SETTINGS TABLE (VAT Configuration)
 // ============================================================
 
-export const vat_settings = pgTable('vat_settings', {
+export const AC_vat_settings = pgTable('AC_vat_settings', {
   id: uuid('id').primaryKey().defaultRandom(),
   company_id: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
   
@@ -91,8 +111,8 @@ export const vat_settings = pgTable('vat_settings', {
   vat_payable_account: text('vat_payable_account').default('4423').notNull(),
   vat_receivable_account: text('vat_receivable_account').default('4424').notNull(),
   
-  // Periodicitate declarație
-  declaration_frequency: text('declaration_frequency').default('monthly').notNull(),
+  // Periodicitate declarație - using pgEnum for type safety
+  declaration_frequency: declaration_frequency_enum('declaration_frequency').default('monthly').notNull(),
   
   // Validare automată CUI
   enable_vat_validation: boolean('enable_vat_validation').default(true).notNull(),
@@ -101,16 +121,20 @@ export const vat_settings = pgTable('vat_settings', {
   created_at: timestamp('created_at').defaultNow().notNull(),
   updated_at: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
-  companyUnique: unique().on(table.company_id),
-  companyIdx: index('idx_vat_settings_company_id').on(table.company_id)
+  companyUnique: unique('AC_vat_settings_company_unique').on(table.company_id),
+  companyIdx: index('idx_AC_vat_settings_company_id').on(table.company_id)
 }));
 
-export const vat_settingsRelations = relations(vat_settings, ({ one }) => ({
+export const AC_vat_settingsRelations = relations(AC_vat_settings, ({ one }) => ({
   company: one(companies, {
-    fields: [vat_settings.company_id],
+    fields: [AC_vat_settings.company_id],
     references: [companies.id],
   }),
 }));
+
+// Backward Compatibility Alias
+export const vat_settings = AC_vat_settings;
+export const vat_settingsRelations = AC_vat_settingsRelations;
 
 // ============================================================
 // 3. AC_ACCOUNT_RELATIONSHIPS TABLE (Accounting Module)
@@ -194,10 +218,10 @@ export const account_relationships = AC_account_relationships;
 export const account_relationshipsRelations = AC_account_relationshipsRelations;
 
 // ============================================================
-// 4. OPENING BALANCES TABLE
+// 4. AC_OPENING_BALANCES TABLE (Opening Balances)
 // ============================================================
 
-export const opening_balances = pgTable('opening_balances', {
+export const AC_opening_balances = pgTable('AC_opening_balances', {
   id: uuid('id').primaryKey().defaultRandom(),
   company_id: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
   
@@ -211,7 +235,7 @@ export const opening_balances = pgTable('opening_balances', {
   
   // Metadata
   fiscal_year: integer('fiscal_year').notNull(),
-  import_date: timestamp('import_date').defaultNow().notNull(),
+  import_date: date('import_date').notNull().default(sql`CURRENT_DATE`), // ✅ FIXED: date instead of timestamp
   import_source: text('import_source'),
   
   // Status
@@ -224,50 +248,104 @@ export const opening_balances = pgTable('opening_balances', {
   updated_at: timestamp('updated_at').defaultNow().notNull(),
   created_by: uuid('created_by').references(() => users.id),
 }, (table) => ({
-  balanceUnique: unique().on(table.company_id, table.account_code, table.fiscal_year),
-  companyIdx: index('idx_opening_balances_company_id').on(table.company_id),
-  fiscalYearIdx: index('idx_opening_balances_fiscal_year').on(table.fiscal_year),
-  accountCodeIdx: index('idx_opening_balances_account_code').on(table.account_code),
+  balanceUnique: unique('AC_opening_balances_unique').on(table.company_id, table.account_code, table.fiscal_year),
+  companyIdx: index('idx_AC_opening_balances_company_id').on(table.company_id),
+  fiscalYearIdx: index('idx_AC_opening_balances_fiscal_year').on(table.fiscal_year),
+  accountCodeIdx: index('idx_AC_opening_balances_account_code').on(table.account_code),
 }));
 
-export const opening_balancesRelations = relations(opening_balances, ({ one }) => ({
+export const AC_opening_balancesRelations = relations(AC_opening_balances, ({ one }) => ({
   company: one(companies, {
-    fields: [opening_balances.company_id],
+    fields: [AC_opening_balances.company_id],
     references: [companies.id],
   }),
   validator: one(users, {
-    fields: [opening_balances.validated_by],
+    fields: [AC_opening_balances.validated_by],
     references: [users.id],
   }),
   creator: one(users, {
-    fields: [opening_balances.created_by],
+    fields: [AC_opening_balances.created_by],
     references: [users.id],
   }),
 }));
+
+// Backward Compatibility Alias
+export const opening_balances = AC_opening_balances;
+export const opening_balancesRelations = AC_opening_balancesRelations;
 
 // ============================================================
 // ZOD SCHEMAS FOR VALIDATION
 // ============================================================
 
-// Accounting Settings Schemas
-export const insertAccountingSettingsSchema = createInsertSchema(accounting_settings, {
+// AC_Accounting Settings Schemas with Conditional Validation
+const baseInsertAccountingSettingsSchema = createInsertSchema(AC_accounting_settings, {
   fiscal_year_start_month: z.number().int().min(1).max(12),
   anaf_api_key: z.string().optional().nullable(),
-  accounting_start_date: z.date().optional().nullable(),
+  accounting_start_date: z.string().optional().nullable(), // date as ISO string
 });
 
-export const selectAccountingSettingsSchema = createSelectSchema(accounting_settings);
+// Enhanced schema with conditional validations
+export const insertAccountingSettingsSchema = baseInsertAccountingSettingsSchema.refine(
+  (data) => {
+    // Validare condiționată: dacă enable_anaf_efactura = true, atunci anaf_api_key este obligatoriu
+    if (data.enable_anaf_efactura && !data.anaf_api_key) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "anaf_api_key este obligatoriu când enable_anaf_efactura este activat",
+    path: ["anaf_api_key"],
+  }
+).refine(
+  (data) => {
+    // Validare condiționată: dacă has_accounting_history = true, atunci accounting_start_date este obligatoriu
+    if (data.has_accounting_history && !data.accounting_start_date) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "accounting_start_date este obligatoriu când has_accounting_history este activat",
+    path: ["accounting_start_date"],
+  }
+);
 
-export const updateAccountingSettingsSchema = insertAccountingSettingsSchema.partial().omit({
+export const selectAccountingSettingsSchema = createSelectSchema(AC_accounting_settings);
+
+export const updateAccountingSettingsSchema = baseInsertAccountingSettingsSchema.partial().omit({
   id: true,
   company_id: true,
   created_at: true,
   updated_at: true,
   created_by: true,
-});
+}).refine(
+  (data) => {
+    // Validare condiționată pentru update
+    if (data.enable_anaf_efactura && !data.anaf_api_key) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "anaf_api_key este obligatoriu când enable_anaf_efactura este activat",
+    path: ["anaf_api_key"],
+  }
+).refine(
+  (data) => {
+    if (data.has_accounting_history && !data.accounting_start_date) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "accounting_start_date este obligatoriu când has_accounting_history este activat",
+    path: ["accounting_start_date"],
+  }
+);
 
-// VAT Settings Schemas
-export const insertVatSettingsSchema = createInsertSchema(vat_settings, {
+// AC_VAT Settings Schemas
+export const insertVatSettingsSchema = createInsertSchema(AC_vat_settings, {
   standard_vat_rate: z.number().int().min(0).max(100),
   reduced_vat_rate_1: z.number().int().min(0).max(100),
   reduced_vat_rate_2: z.number().int().min(0).max(100),
@@ -275,7 +353,7 @@ export const insertVatSettingsSchema = createInsertSchema(vat_settings, {
   declaration_frequency: z.enum(['monthly', 'quarterly']),
 });
 
-export const selectVatSettingsSchema = createSelectSchema(vat_settings);
+export const selectVatSettingsSchema = createSelectSchema(AC_vat_settings);
 
 export const updateVatSettingsSchema = insertVatSettingsSchema.partial().omit({
   id: true,
@@ -290,8 +368,8 @@ export const insertAccountRelationshipsSchema = insertAccountRelationshipSchema;
 export const selectAccountRelationshipsSchema = selectAccountRelationshipSchema;
 export const updateAccountRelationshipsSchema = updateAccountRelationshipSchema;
 
-// Opening Balances Schemas
-export const insertOpeningBalancesSchema = createInsertSchema(opening_balances, {
+// AC_Opening Balances Schemas
+export const insertOpeningBalancesSchema = createInsertSchema(AC_opening_balances, {
   account_code: z.string().min(1),
   account_name: z.string().min(1),
   fiscal_year: z.number().int().min(2000).max(2100),
@@ -300,7 +378,7 @@ export const insertOpeningBalancesSchema = createInsertSchema(opening_balances, 
   import_source: z.enum(['MANUAL', 'CSV', 'EXCEL', 'API']).optional().nullable(),
 });
 
-export const selectOpeningBalancesSchema = createSelectSchema(opening_balances);
+export const selectOpeningBalancesSchema = createSelectSchema(AC_opening_balances);
 
 export const updateOpeningBalancesSchema = insertOpeningBalancesSchema.partial().omit({
   id: true,
@@ -314,19 +392,35 @@ export const updateOpeningBalancesSchema = insertOpeningBalancesSchema.partial()
 // TYPESCRIPT TYPES
 // ============================================================
 
-export type AccountingSettings = typeof accounting_settings.$inferSelect;
-export type InsertAccountingSettings = z.infer<typeof insertAccountingSettingsSchema>;
-export type UpdateAccountingSettings = z.infer<typeof updateAccountingSettingsSchema>;
+// AC_Accounting Settings Types
+export type ACAccountingSettings = typeof AC_accounting_settings.$inferSelect;
+export type InsertACAccountingSettings = z.infer<typeof insertAccountingSettingsSchema>;
+export type UpdateACAccountingSettings = z.infer<typeof updateAccountingSettingsSchema>;
 
-export type VatSettings = typeof vat_settings.$inferSelect;
-export type InsertVatSettings = z.infer<typeof insertVatSettingsSchema>;
-export type UpdateVatSettings = z.infer<typeof updateVatSettingsSchema>;
+// AC_VAT Settings Types
+export type ACVatSettings = typeof AC_vat_settings.$inferSelect;
+export type InsertACVatSettings = z.infer<typeof insertVatSettingsSchema>;
+export type UpdateACVatSettings = z.infer<typeof updateVatSettingsSchema>;
+
+// AC_Opening Balances Types
+export type ACOpeningBalance = typeof AC_opening_balances.$inferSelect;
+export type InsertACOpeningBalance = z.infer<typeof insertOpeningBalancesSchema>;
+export type UpdateACOpeningBalance = z.infer<typeof updateOpeningBalancesSchema>;
 
 // AccountRelationship types moved above (after AC_account_relationships definition)
 
-export type OpeningBalance = typeof opening_balances.$inferSelect;
-export type InsertOpeningBalance = z.infer<typeof insertOpeningBalancesSchema>;
-export type UpdateOpeningBalance = z.infer<typeof updateOpeningBalancesSchema>;
+// Backward Compatibility Type Aliases
+export type AccountingSettings = ACAccountingSettings;
+export type InsertAccountingSettings = InsertACAccountingSettings;
+export type UpdateAccountingSettings = UpdateACAccountingSettings;
+
+export type VatSettings = ACVatSettings;
+export type InsertVatSettings = InsertACVatSettings;
+export type UpdateVatSettings = UpdateACVatSettings;
+
+export type OpeningBalance = ACOpeningBalance;
+export type InsertOpeningBalance = InsertACOpeningBalance;
+export type UpdateOpeningBalance = UpdateACOpeningBalance;
 
 // ============================================================
 // ENUMS AND CONSTANTS
@@ -355,8 +449,17 @@ export const RELATIONSHIP_TYPES = {
   CASH_DEPOSIT: 'CASH_DEPOSIT',
 } as const;
 
-// Export all
+// Export all (with new AC_ names as primary)
 export default {
+  AC_accounting_settings,
+  AC_vat_settings,
+  AC_account_relationships,
+  AC_opening_balances,
+  AC_accounting_settingsRelations,
+  AC_vat_settingsRelations,
+  AC_account_relationshipsRelations,
+  AC_opening_balancesRelations,
+  // Backward compatibility
   accounting_settings,
   vat_settings,
   account_relationships,

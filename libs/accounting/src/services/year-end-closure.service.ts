@@ -127,7 +127,7 @@ export class YearEndClosureService extends DrizzleService {
       distributionLedgerEntryId = distEntry.id;
 
       // Log audit
-      await this.auditService.console.log({
+      await this.auditService.log({
         companyId,
         userId,
         action: 'PROFIT_DISTRIBUTED' as any,
@@ -283,7 +283,7 @@ export class YearEndClosureService extends DrizzleService {
       ledgerEntryId = entry.id;
 
       // Log audit
-      await this.auditService.console.log({
+      await this.auditService.log({
         companyId,
         userId,
         action: 'PROFIT_TAX_CALCULATED' as any,
@@ -465,7 +465,7 @@ export class YearEndClosureService extends DrizzleService {
       ]
     });
 
-    await this.auditService.console.log({
+    await this.auditService.log({
       companyId,
       userId,
       action: 'LOSS_TRANSFERRED' as any,

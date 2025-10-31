@@ -25,7 +25,7 @@ import * as XLSX from 'xlsx';
 
 export interface OnboardingStatus {
   started: boolean;
-  startDate: Date | null;
+  startDate: string | null; // ✅ FIXED: date type in Drizzle = ISO string, not Date
   chartOfAccountsImported: boolean;
   chartAccountsCount: number;
   openingBalancesImported: boolean;
@@ -36,7 +36,7 @@ export interface OnboardingStatus {
   totalCredit: number;
   difference: number;
   completed: boolean;
-  completedAt: Date | null;
+  completedAt: Date | null; // timestamp type = Date object
 }
 
 export interface ImportAccountData {
@@ -84,18 +84,18 @@ export class OnboardingService extends DrizzleService {
     // Check if settings already exist
     const existing = await this.settingsService.getGeneralSettings(companyId);
 
-    if (existing && existing.hasAccountingHistory) {
+    if (existing && existing.has_accounting_history) {
       throw new Error('Onboarding already started for this company');
     }
 
-    // Update or create settings
+    // Update or create settings - usando snake_case per DB
     const settings = await this.settingsService.updateGeneralSettings(
       companyId,
       {
-        hasAccountingHistory: true,
-        accountingStartDate: startDate,
-        openingBalancesImported: false,
-        fiscalYearStartMonth: startDate.getMonth() + 1,
+        has_accounting_history: true,
+        accounting_start_date: startDate.toISOString().split('T')[0], // ✅ FIXED: ISO string, not Date
+        opening_balances_imported: false,
+        fiscal_year_start_month: startDate.getMonth() + 1,
       },
       userId
     );
@@ -189,7 +189,7 @@ export class OnboardingService extends DrizzleService {
     await this.settingsService.updateGeneralSettings(
       companyId,
       {
-        openingBalancesImported: true,
+        opening_balances_imported: true, // ✅ FIXED: snake_case
       },
       userId
     );
@@ -251,8 +251,8 @@ export class OnboardingService extends DrizzleService {
     const settings = await this.settingsService.updateGeneralSettings(
       companyId,
       {
-        hasAccountingHistory: true,
-        openingBalancesImported: true,
+        has_accounting_history: true, // ✅ FIXED: snake_case
+        opening_balances_imported: true, // ✅ FIXED: snake_case
       },
       userId
     );
@@ -305,22 +305,22 @@ export class OnboardingService extends DrizzleService {
     }
 
     // Check if any balance is validated
-    const hasValidatedBalance = balances.some((b) => b.isValidated);
+    const hasValidatedBalance = balances.some((b) => b.is_validated); // ✅ FIXED: snake_case
 
     const status = {
-      started: settings?.hasAccountingHistory || false,
-      startDate: settings?.accountingStartDate || null,
+      started: settings?.has_accounting_history || false, // ✅ FIXED: snake_case
+      startDate: settings?.accounting_start_date || null, // ✅ FIXED: snake_case
       chartOfAccountsImported: accountsCount.length > 0,
       chartAccountsCount: accountsCount.length,
-      openingBalancesImported: settings?.openingBalancesImported || false,
+      openingBalancesImported: settings?.opening_balances_imported || false, // ✅ FIXED: snake_case
       openingBalancesCount: balances.length,
       openingBalancesValidated: hasValidatedBalance,
       isBalanced: validation.isBalanced,
       totalDebit: validation.totalDebit,
       totalCredit: validation.totalCredit,
       difference: validation.difference,
-      completed: (settings?.hasAccountingHistory && settings?.openingBalancesImported && hasValidatedBalance) || false,
-      completedAt: hasValidatedBalance ? (balances.find((b) => b.validatedAt)?.validatedAt || null) : null,
+      completed: (settings?.has_accounting_history && settings?.opening_balances_imported && hasValidatedBalance) || false, // ✅ FIXED: snake_case
+      completedAt: hasValidatedBalance ? (balances.find((b) => b.validated_at)?.validated_at || null) : null, // ✅ FIXED: snake_case
     };
 
     // Cache for 5 minutes (frequently accessed in UI progress bars)
