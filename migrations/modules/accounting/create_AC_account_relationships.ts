@@ -5,6 +5,11 @@
  * pentru diferite tipuri de operațiuni în sistemul de contabilitate.
  * 
  * AC_ Prefix: Accounting Configuration - pentru reguli de utilizare a conturilor, NU structura
+ * 
+ * Module: Accounting (migrations/modules/accounting/)
+ * - Acest tabel aparține modulului Accounting, NU modulului Core
+ * - Core conține doar structura Planului de Conturi (PC_*)
+ * - Accounting conține reguli de utilizare și configurări (AC_*)
  *
  * Table Purpose:
  * - Definește automat ce conturi se debitează și se creditează pentru fiecare tip de operațiune
