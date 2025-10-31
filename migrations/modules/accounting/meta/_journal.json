@@ -22,6 +22,41 @@
       "when": 1730393000000,
       "tag": "create_AC_journal_types",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1730393100000,
+      "tag": "create_AC_accounting_ledger_entries",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1730393200000,
+      "tag": "create_AC_accounting_ledger_lines",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1730486400000,
+      "tag": "create_AC_accounting_settings",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1730486500000,
+      "tag": "create_AC_vat_settings",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1730486600000,
+      "tag": "create_AC_opening_balances",
+      "breakpoints": true
     }
   ]
 }
