@@ -23,46 +23,46 @@ import { users } from '../schema';
 
 export const accounting_settings = pgTable('accounting_settings', {
   id: uuid('id').primaryKey().defaultRandom(),
-  companyId: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
+  company_id: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
   
   // Configurări generale
-  fiscalYearStartMonth: integer('fiscal_year_start_month').default(1).notNull(),
-  requireApproval: boolean('require_approval').default(false).notNull(),
-  autoNumbering: boolean('auto_numbering').default(true).notNull(),
+  fiscal_year_start_month: integer('fiscal_year_start_month').default(1).notNull(),
+  require_approval: boolean('require_approval').default(false).notNull(),
+  auto_numbering: boolean('auto_numbering').default(true).notNull(),
   
   // Funcționalități activate
-  enableAnalyticAccounting: boolean('enable_analytic_accounting').default(false).notNull(),
-  enableMultiCurrency: boolean('enable_multi_currency').default(false).notNull(),
-  enableFixedAssets: boolean('enable_fixed_assets').default(false).notNull(),
-  enableCostCenters: boolean('enable_cost_centers').default(false).notNull(),
-  enableProjects: boolean('enable_projects').default(false).notNull(),
+  enable_analytic_accounting: boolean('enable_analytic_accounting').default(false).notNull(),
+  enable_multi_currency: boolean('enable_multi_currency').default(false).notNull(),
+  enable_fixed_assets: boolean('enable_fixed_assets').default(false).notNull(),
+  enable_cost_centers: boolean('enable_cost_centers').default(false).notNull(),
+  enable_projects: boolean('enable_projects').default(false).notNull(),
   
   // Integrări externe
-  enableSaftExport: boolean('enable_saft_export').default(false).notNull(),
-  enableAnafEfactura: boolean('enable_anaf_efactura').default(false).notNull(),
-  anafApiKey: text('anaf_api_key'),
+  enable_saft_export: boolean('enable_saft_export').default(false).notNull(),
+  enable_anaf_efactura: boolean('enable_anaf_efactura').default(false).notNull(),
+  anaf_api_key: text('anaf_api_key'),
   
   // Onboarding
-  hasAccountingHistory: boolean('has_accounting_history').default(false).notNull(),
-  accountingStartDate: timestamp('accounting_start_date'),
-  openingBalancesImported: boolean('opening_balances_imported').default(false).notNull(),
+  has_accounting_history: boolean('has_accounting_history').default(false).notNull(),
+  accounting_start_date: timestamp('accounting_start_date'),
+  opening_balances_imported: boolean('opening_balances_imported').default(false).notNull(),
   
   // Audit
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-  createdBy: uuid('created_by').references(() => users.id),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  updated_at: timestamp('updated_at').defaultNow().notNull(),
+  created_by: uuid('created_by').references(() => users.id),
 }, (table) => ({
-  companyUnique: unique().on(table.companyId),
-  companyIdx: index('idx_accounting_settings_company_id').on(table.companyId)
+  companyUnique: unique().on(table.company_id),
+  companyIdx: index('idx_accounting_settings_company_id').on(table.company_id)
 }));
 
 export const accounting_settingsRelations = relations(accounting_settings, ({ one }) => ({
   company: one(companies, {
-    fields: [accounting_settings.companyId],
+    fields: [accounting_settings.company_id],
     references: [companies.id],
   }),
   creator: one(users, {
-    fields: [accounting_settings.createdBy],
+    fields: [accounting_settings.created_by],
     references: [users.id],
   }),
 }));
@@ -73,41 +73,41 @@ export const accounting_settingsRelations = relations(accounting_settings, ({ on
 
 export const vat_settings = pgTable('vat_settings', {
   id: uuid('id').primaryKey().defaultRandom(),
-  companyId: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
+  company_id: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
   
   // Regim TVA
-  vatPayer: boolean('vat_payer').default(true).notNull(),
-  useCashVat: boolean('use_cash_vat').default(false).notNull(),
-  cashVatThreshold: decimal('cash_vat_threshold', { precision: 15, scale: 2 }).default('2250000.00').notNull(),
+  vat_payer: boolean('vat_payer').default(true).notNull(),
+  use_cash_vat: boolean('use_cash_vat').default(false).notNull(),
+  cash_vat_threshold: decimal('cash_vat_threshold', { precision: 15, scale: 2 }).default('2250000.00').notNull(),
   
   // Cote TVA
-  standardVatRate: integer('standard_vat_rate').default(19).notNull(),
-  reducedVatRate1: integer('reduced_vat_rate_1').default(9).notNull(),
-  reducedVatRate2: integer('reduced_vat_rate_2').default(5).notNull(),
+  standard_vat_rate: integer('standard_vat_rate').default(19).notNull(),
+  reduced_vat_rate_1: integer('reduced_vat_rate_1').default(9).notNull(),
+  reduced_vat_rate_2: integer('reduced_vat_rate_2').default(5).notNull(),
   
   // Conturi TVA
-  vatCollectedAccount: text('vat_collected_account').default('4427').notNull(),
-  vatDeductibleAccount: text('vat_deductible_account').default('4426').notNull(),
-  vatPayableAccount: text('vat_payable_account').default('4423').notNull(),
-  vatReceivableAccount: text('vat_receivable_account').default('4424').notNull(),
+  vat_collected_account: text('vat_collected_account').default('4427').notNull(),
+  vat_deductible_account: text('vat_deductible_account').default('4426').notNull(),
+  vat_payable_account: text('vat_payable_account').default('4423').notNull(),
+  vat_receivable_account: text('vat_receivable_account').default('4424').notNull(),
   
   // Periodicitate declarație
-  declarationFrequency: text('declaration_frequency').default('monthly').notNull(),
+  declaration_frequency: text('declaration_frequency').default('monthly').notNull(),
   
   // Validare automată CUI
-  enableVatValidation: boolean('enable_vat_validation').default(true).notNull(),
+  enable_vat_validation: boolean('enable_vat_validation').default(true).notNull(),
   
   // Audit
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  updated_at: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
-  companyUnique: unique().on(table.companyId),
-  companyIdx: index('idx_vat_settings_company_id').on(table.companyId)
+  companyUnique: unique().on(table.company_id),
+  companyIdx: index('idx_vat_settings_company_id').on(table.company_id)
 }));
 
 export const vat_settingsRelations = relations(vat_settings, ({ one }) => ({
   company: one(companies, {
-    fields: [vat_settings.companyId],
+    fields: [vat_settings.company_id],
     references: [companies.id],
   }),
 }));
@@ -199,48 +199,48 @@ export const account_relationshipsRelations = AC_account_relationshipsRelations;
 
 export const opening_balances = pgTable('opening_balances', {
   id: uuid('id').primaryKey().defaultRandom(),
-  companyId: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
+  company_id: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
   
   // Cont contabil
-  accountCode: text('account_code').notNull(),
-  accountName: text('account_name').notNull(),
+  account_code: text('account_code').notNull(),
+  account_name: text('account_name').notNull(),
   
   // Solduri
-  debitBalance: decimal('debit_balance', { precision: 15, scale: 2 }).default('0.00').notNull(),
-  creditBalance: decimal('credit_balance', { precision: 15, scale: 2 }).default('0.00').notNull(),
+  debit_balance: decimal('debit_balance', { precision: 15, scale: 2 }).default('0.00').notNull(),
+  credit_balance: decimal('credit_balance', { precision: 15, scale: 2 }).default('0.00').notNull(),
   
   // Metadata
-  fiscalYear: integer('fiscal_year').notNull(),
-  importDate: timestamp('import_date').defaultNow().notNull(),
-  importSource: text('import_source'),
+  fiscal_year: integer('fiscal_year').notNull(),
+  import_date: timestamp('import_date').defaultNow().notNull(),
+  import_source: text('import_source'),
   
   // Status
-  isValidated: boolean('is_validated').default(false).notNull(),
-  validatedAt: timestamp('validated_at'),
-  validatedBy: uuid('validated_by').references(() => users.id),
+  is_validated: boolean('is_validated').default(false).notNull(),
+  validated_at: timestamp('validated_at'),
+  validated_by: uuid('validated_by').references(() => users.id),
   
   // Audit
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-  createdBy: uuid('created_by').references(() => users.id),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  updated_at: timestamp('updated_at').defaultNow().notNull(),
+  created_by: uuid('created_by').references(() => users.id),
 }, (table) => ({
-  balanceUnique: unique().on(table.companyId, table.accountCode, table.fiscalYear),
-  companyIdx: index('idx_opening_balances_company_id').on(table.companyId),
-  fiscalYearIdx: index('idx_opening_balances_fiscal_year').on(table.fiscalYear),
-  accountCodeIdx: index('idx_opening_balances_account_code').on(table.accountCode),
+  balanceUnique: unique().on(table.company_id, table.account_code, table.fiscal_year),
+  companyIdx: index('idx_opening_balances_company_id').on(table.company_id),
+  fiscalYearIdx: index('idx_opening_balances_fiscal_year').on(table.fiscal_year),
+  accountCodeIdx: index('idx_opening_balances_account_code').on(table.account_code),
 }));
 
 export const opening_balancesRelations = relations(opening_balances, ({ one }) => ({
   company: one(companies, {
-    fields: [opening_balances.companyId],
+    fields: [opening_balances.company_id],
     references: [companies.id],
   }),
   validator: one(users, {
-    fields: [opening_balances.validatedBy],
+    fields: [opening_balances.validated_by],
     references: [users.id],
   }),
   creator: one(users, {
-    fields: [opening_balances.createdBy],
+    fields: [opening_balances.created_by],
     references: [users.id],
   }),
 }));
@@ -251,37 +251,37 @@ export const opening_balancesRelations = relations(opening_balances, ({ one }) =
 
 // Accounting Settings Schemas
 export const insertAccountingSettingsSchema = createInsertSchema(accounting_settings, {
-  fiscalYearStartMonth: z.number().int().min(1).max(12),
-  anafApiKey: z.string().optional().nullable(),
-  accountingStartDate: z.date().optional().nullable(),
+  fiscal_year_start_month: z.number().int().min(1).max(12),
+  anaf_api_key: z.string().optional().nullable(),
+  accounting_start_date: z.date().optional().nullable(),
 });
 
 export const selectAccountingSettingsSchema = createSelectSchema(accounting_settings);
 
 export const updateAccountingSettingsSchema = insertAccountingSettingsSchema.partial().omit({
   id: true,
-  companyId: true,
-  createdAt: true,
-  updatedAt: true,
-  createdBy: true,
+  company_id: true,
+  created_at: true,
+  updated_at: true,
+  created_by: true,
 });
 
 // VAT Settings Schemas
 export const insertVatSettingsSchema = createInsertSchema(vat_settings, {
-  standardVatRate: z.number().int().min(0).max(100),
-  reducedVatRate1: z.number().int().min(0).max(100),
-  reducedVatRate2: z.number().int().min(0).max(100),
-  cashVatThreshold: z.string().regex(/^\d+(\.\d{1,2})?$/),
-  declarationFrequency: z.enum(['monthly', 'quarterly']),
+  standard_vat_rate: z.number().int().min(0).max(100),
+  reduced_vat_rate_1: z.number().int().min(0).max(100),
+  reduced_vat_rate_2: z.number().int().min(0).max(100),
+  cash_vat_threshold: z.string().regex(/^\d+(\.\d{1,2})?$/),
+  declaration_frequency: z.enum(['monthly', 'quarterly']),
 });
 
 export const selectVatSettingsSchema = createSelectSchema(vat_settings);
 
 export const updateVatSettingsSchema = insertVatSettingsSchema.partial().omit({
   id: true,
-  companyId: true,
-  createdAt: true,
-  updatedAt: true,
+  company_id: true,
+  created_at: true,
+  updated_at: true,
 });
 
 // Account Relationships Schemas - BACKWARD COMPATIBILITY
@@ -292,22 +292,22 @@ export const updateAccountRelationshipsSchema = updateAccountRelationshipSchema;
 
 // Opening Balances Schemas
 export const insertOpeningBalancesSchema = createInsertSchema(opening_balances, {
-  accountCode: z.string().min(1),
-  accountName: z.string().min(1),
-  fiscalYear: z.number().int().min(2000).max(2100),
-  debitBalance: z.string().regex(/^\d+(\.\d{1,2})?$/),
-  creditBalance: z.string().regex(/^\d+(\.\d{1,2})?$/),
-  importSource: z.enum(['MANUAL', 'CSV', 'EXCEL', 'API']).optional().nullable(),
+  account_code: z.string().min(1),
+  account_name: z.string().min(1),
+  fiscal_year: z.number().int().min(2000).max(2100),
+  debit_balance: z.string().regex(/^\d+(\.\d{1,2})?$/),
+  credit_balance: z.string().regex(/^\d+(\.\d{1,2})?$/),
+  import_source: z.enum(['MANUAL', 'CSV', 'EXCEL', 'API']).optional().nullable(),
 });
 
 export const selectOpeningBalancesSchema = createSelectSchema(opening_balances);
 
 export const updateOpeningBalancesSchema = insertOpeningBalancesSchema.partial().omit({
   id: true,
-  companyId: true,
-  createdAt: true,
-  updatedAt: true,
-  createdBy: true,
+  company_id: true,
+  created_at: true,
+  updated_at: true,
+  created_by: true,
 });
 
 // ============================================================

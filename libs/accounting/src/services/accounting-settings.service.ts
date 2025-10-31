@@ -141,7 +141,7 @@ export class AccountingSettingsService extends DrizzleService {
       }
     }
     const [settings] = await this.query((db) =>
-      db.select().from(accounting_settings).where(eq(accounting_settings.companyId, companyId)).limit(1)
+      db.select().from(accounting_settings).where(eq(accounting_settings.company_id, companyId)).limit(1)
     );
 
     const result = settings || null;
@@ -181,8 +181,8 @@ export class AccountingSettingsService extends DrizzleService {
       const [updated] = await this.query((db) =>
         db
           .update(accounting_settings)
-          .set({ ...data, updatedAt: new Date() })
-          .where(eq(accounting_settings.companyId, companyId))
+          .set({ ...data, updated_at: new Date() })
+          .where(eq(accounting_settings.company_id, companyId))
           .returning()
       );
       
@@ -196,9 +196,9 @@ export class AccountingSettingsService extends DrizzleService {
         db
           .insert(accounting_settings)
           .values({
-            companyId,
+            company_id: companyId,
             ...data,
-            createdBy: userId,
+            created_by: userId,
           } as InsertAccountingSettings)
           .returning()
       );
@@ -215,7 +215,7 @@ export class AccountingSettingsService extends DrizzleService {
    */
   async getVatSettings(companyId: string): Promise<VatSettings | null> {
     const [settings] = await this.query((db) =>
-      db.select().from(vat_settings).where(eq(vat_settings.companyId, companyId)).limit(1)
+      db.select().from(vat_settings).where(eq(vat_settings.company_id, companyId)).limit(1)
     );
 
     return settings || null;
@@ -229,28 +229,28 @@ export class AccountingSettingsService extends DrizzleService {
     data: UpdateVatSettings
   ): Promise<VatSettings> {
     // Validate VAT rates
-    if (data.standardVatRate !== undefined && (data.standardVatRate < 0 || data.standardVatRate > 100)) {
+    if (data.standard_vat_rate !== undefined && (data.standard_vat_rate < 0 || data.standard_vat_rate > 100)) {
       throw new Error('Standard VAT rate must be between 0 and 100');
     }
-    if (data.reducedVatRate1 !== undefined && (data.reducedVatRate1 < 0 || data.reducedVatRate1 > 100)) {
+    if (data.reduced_vat_rate_1 !== undefined && (data.reduced_vat_rate_1 < 0 || data.reduced_vat_rate_1 > 100)) {
       throw new Error('Reduced VAT rate 1 must be between 0 and 100');
     }
-    if (data.reducedVatRate2 !== undefined && (data.reducedVatRate2 < 0 || data.reducedVatRate2 > 100)) {
+    if (data.reduced_vat_rate_2 !== undefined && (data.reduced_vat_rate_2 < 0 || data.reduced_vat_rate_2 > 100)) {
       throw new Error('Reduced VAT rate 2 must be between 0 and 100');
     }
 
     // Validate VAT accounts exist in chart of accounts
-    if (data.vatCollectedAccount) {
-      await this.validateAccountExists(data.vatCollectedAccount);
+    if (data.vat_collected_account) {
+      await this.validateAccountExists(data.vat_collected_account);
     }
-    if (data.vatDeductibleAccount) {
-      await this.validateAccountExists(data.vatDeductibleAccount);
+    if (data.vat_deductible_account) {
+      await this.validateAccountExists(data.vat_deductible_account);
     }
-    if (data.vatPayableAccount) {
-      await this.validateAccountExists(data.vatPayableAccount);
+    if (data.vat_payable_account) {
+      await this.validateAccountExists(data.vat_payable_account);
     }
-    if (data.vatReceivableAccount) {
-      await this.validateAccountExists(data.vatReceivableAccount);
+    if (data.vat_receivable_account) {
+      await this.validateAccountExists(data.vat_receivable_account);
     }
 
     // Check if settings exist
@@ -261,8 +261,8 @@ export class AccountingSettingsService extends DrizzleService {
       const [updated] = await this.query((db) =>
         db
           .update(vat_settings)
-          .set({ ...data, updatedAt: new Date() })
-          .where(eq(vat_settings.companyId, companyId))
+          .set({ ...data, updated_at: new Date() })
+          .where(eq(vat_settings.company_id, companyId))
           .returning()
       );
       return updated;
@@ -272,7 +272,7 @@ export class AccountingSettingsService extends DrizzleService {
         db
           .insert(vat_settings)
           .values({
-            companyId,
+            company_id: companyId,
             ...data,
           } as InsertVatSettings)
           .returning()
@@ -636,7 +636,7 @@ export class AccountingSettingsService extends DrizzleService {
       db
         .select()
         .from(opening_balances)
-        .where(and(eq(opening_balances.companyId, companyId), eq(opening_balances.fiscalYear, fiscalYear)))
+        .where(and(eq(opening_balances.company_id, companyId), eq(opening_balances.fiscal_year, fiscalYear)))
     );
   }
 
@@ -674,7 +674,7 @@ export class AccountingSettingsService extends DrizzleService {
     await this.query((db) =>
       db
         .delete(opening_balances)
-        .where(and(eq(opening_balances.companyId, companyId), eq(opening_balances.fiscalYear, fiscalYear)))
+        .where(and(eq(opening_balances.company_id, companyId), eq(opening_balances.fiscal_year, fiscalYear)))
     );
 
     // Insert new balances
@@ -685,16 +685,16 @@ export class AccountingSettingsService extends DrizzleService {
         db
           .insert(opening_balances)
           .values({
-            companyId,
-            accountCode: balance.accountCode,
-            accountName: balance.accountName,
-            debitBalance: balance.debitBalance,
-            creditBalance: balance.creditBalance,
-            fiscalYear,
-            importDate: new Date(),
-            importSource,
-            isValidated: false,
-            createdBy: userId,
+            company_id: companyId,
+            account_code: balance.accountCode,
+            account_name: balance.accountName,
+            debit_balance: balance.debitBalance,
+            credit_balance: balance.creditBalance,
+            fiscal_year: fiscalYear,
+            import_date: new Date(),
+            import_source: importSource,
+            is_validated: false,
+            created_by: userId,
           } as InsertOpeningBalance)
           .returning()
       );
@@ -715,15 +715,15 @@ export class AccountingSettingsService extends DrizzleService {
     const errors: string[] = [];
 
     for (const balance of balances) {
-      const debit = parseFloat(balance.debitBalance);
-      const credit = parseFloat(balance.creditBalance);
+      const debit = parseFloat(balance.debit_balance);
+      const credit = parseFloat(balance.credit_balance);
 
       totalDebit += debit;
       totalCredit += credit;
 
       // Check constraint
       if (debit > 0 && credit > 0) {
-        errors.push(`Account ${balance.accountCode} has both debit and credit balance`);
+        errors.push(`Account ${balance.account_code} has both debit and credit balance`);
       }
     }
 
@@ -763,12 +763,12 @@ export class AccountingSettingsService extends DrizzleService {
       db
         .update(opening_balances)
         .set({
-          isValidated: true,
-          validatedAt: new Date(),
-          validatedBy: userId,
-          updatedAt: new Date(),
+          is_validated: true,
+          validated_at: new Date(),
+          validated_by: userId,
+          updated_at: new Date(),
         })
-        .where(and(eq(opening_balances.companyId, companyId), eq(opening_balances.fiscalYear, fiscalYear)))
+        .where(and(eq(opening_balances.company_id, companyId), eq(opening_balances.fiscal_year, fiscalYear)))
     );
   }
 
