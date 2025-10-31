@@ -637,189 +637,7 @@ export type UpdateAccountGroupZod = z.infer<typeof updateAccountGroupSchema>;
 
 ---
 
-# 4. account_mappings
-# 5. account_relationships
-6. accounting_account_balances
-7. accounting_journal_types
-8. accounting_ledger_entries
-9. accounting_ledger_lines
-10. accounting_settings
-11. accounts
-12. admin_actions
-13. alert_history
-14. anaf_company_data
-15. analytic_accounts
-16. analytics_alerts
-17. analytics_anomalies
-18. analytics_anomaly_rules
-19. analytics_dashboards
-20. analytics_inventory_optimization
-21. analytics_inventory_optimizations
-22. analytics_metrics
-23. analytics_model_executions
-24. analytics_prediction_results
-25. analytics_predictive_models
-26. analytics_purchasing_recommendations
-27. analytics_reports
-28. analytics_scenario_executions
-29. analytics_scenario_results
-30. analytics_scenarios
-31. analytics_seasonal_patterns
-32. analytics_time_series_data
-33. api_keys
-34. attendance_records
-35. audit_logs
-36. bank_accounts
-37. bank_transactions
-38. bi_business_units
-39. bi_cost_allocations
-40. bi_cost_centers
-41. bpm_api_connections
-42. bpm_approvals
-43. bpm_process_instances
-44. bpm_processes
-45. bpm_scheduled_jobs
-46. bpm_step_executions
-47. bpm_step_templates
-48. bpm_triggers
-49. cash_registers
-50. cash_transactions
-51. chart_of_accounts
-52. collaboration_activities
-53. collaboration_messages
-54. collaboration_notes
-55. collaboration_notifications
-56. collaboration_task_assignments
-57. collaboration_task_status_history
-58. collaboration_task_watchers
-59. collaboration_tasks
-60. collaboration_threads
-61. communications_channel_configs
-62. communications_contacts
-63. communications_message_access
-64. communications_messages
-65. communications_thread_access
-66. communications_threads
-67. companies
-68. company_licenses
-69. configurations
-70. cor_major_groups
-71. cor_minor_groups
-72. cor_occupations
-73. cor_submajor_groups
-74. cor_subminor_groups
-75. cost_allocation_history
-76. crm_activities
-77. crm_companies
-78. crm_contacts
-79. crm_custom_fields
-80. crm_customer_tags
-81. crm_customers
-82. crm_deal_products
-83. crm_deal_tags
-84. crm_deals
-85. crm_email_templates
-86. crm_forecasts
-87. crm_notes
-88. crm_pipelines
-89. crm_revenue_forecasts
-90. crm_sales_quotas
-91. crm_scoring_rules
-92. crm_segments
-93. crm_stage_history
-94. crm_stages
-95. crm_taggables
-96. crm_tags
-97. crm_tasks
-98. dashboard_views
-99. document_counters
-100. document_versions
-101. documents
-102. ecommerce_cart_items
-103. ecommerce_carts
-104. ecommerce_integrations
-105. ecommerce_order_items
-106. ecommerce_orders
-107. ecommerce_shopify_collections
-108. ecommerce_shopify_products
-109. ecommerce_shopify_variants
-110. ecommerce_transactions
-111. employee_contracts
-112. employee_documents
-113. employees
-114. financial_data
-115. financial_data_errors
-116. financial_data_jobs
-117. fiscal_periods
-118. fx_rates
-119. health_checks
-120. hr_absences
-121. hr_anaf_export_logs
-122. hr_commission_structures
-123. hr_departments
-124. hr_documents
-125. hr_employee_commissions
-126. hr_employee_drafts
-127. hr_employees
-128. hr_employment_contracts
-129. hr_job_positions
-130. hr_payroll_logs
-131. hr_revisal_export_logs
-132. hr_settings
-133. hr_work_schedules
-134. integrations
-135. inventory_assessment_items
-136. inventory_assessments
-137. inventory_batches
-138. inventory_categories
-139. inventory_products
-140. inventory_stock
-141. inventory_stock_movements
-142. inventory_units
-143. inventory_valuations
-144. inventory_warehouses
-145. invoice_details
-146. invoice_items
-147. invoice_numbering_settings
-148. invoice_payments
-149. invoices
-150. journal_entries
-151. journal_lines
-152. journal_types
-153. leave_requests
-154. ledger_entries
-155. ledger_lines
-156. licenses
-157. marketing_campaign_messages
-158. marketing_campaign_segments
-159. marketing_campaign_templates
-160. marketing_campaigns
-161. metrics_history
-162. model_training_history
-163. nir_documents
-164. nir_items
-165. opening_balances
-166. payroll_records
-167. permissions
-168. predictive_models
-169. predictive_scenarios
-170. purchase_order_items
-171. purchase_orders
-172. report_execution_history
-173. role_permissions
-174. roles
-175. scenario_results
-176. settings_feature_toggles
-177. settings_global
-178. settings_ui_themes
-179. settings_user_preferences
-180. setup_steps
-181. stock_reservations
-182. stocks
-
----
-
-# 183. PC_synthetic_accounts
+# 4. PC_synthetic_accounts
 
 ## 📋 Descriere Generală
 
@@ -1147,6 +965,547 @@ const groupCode = chartOfAccountsUtils.extractGroupCode("401"); // "40"
 - ❌ → ✅ Lipsa verificări `is_active` (adăugată în toate query-urile)
 
 ---
+
+# 5. PC_analytic_accounts
+
+## 📋 Detalii detaliate tabel: `PC_analytic_accounts`
+
+### 🎯 Scop și Rol în Sistem
+
+Tabelul `PC_analytic_accounts` reprezintă **cel mai detaliat nivel din ierarhia Planului de Conturi Român**. Acesta este ultimul nivel de granularitate contabilă și este folosit pentru:
+
+- **Detalieri analitice** ale conturilor sintetice (5+ cifre)
+- **Urmărire pe gestiuni** (ex: 371.1, 371.40 pentru mărfuri pe diferite depozite)
+- **Urmărire pe parteneri** (ex: conturi furnizori, clienți specific per partener)
+- **Urmărire pe proiecte** sau centre de cost
+- **Generare rapoarte detaliate** la cel mai fin nivel de analiză
+
+**Prefix PC_** = **Plan de Conturi** pentru identificare ușoară, standardizare și consistență cu celelalte tabele din ierarhia contabilă.
+
+### 🏗️ Structură Tehnică
+
+**Schema DB (PostgreSQL):**
+```sql
+CREATE TABLE public.PC_analytic_accounts (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    code character varying(20) NOT NULL UNIQUE,
+    name text NOT NULL,
+    description text,
+    synthetic_id uuid NOT NULL,
+    account_function text NOT NULL,
+    is_active boolean DEFAULT true,
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    updated_at timestamp without time zone NOT NULL DEFAULT now(),
+    CONSTRAINT PC_analytic_accounts_code_unique UNIQUE (code),
+    CONSTRAINT PC_analytic_accounts_synthetic_id_PC_synthetic_accounts_id_fk 
+        FOREIGN KEY (synthetic_id) REFERENCES PC_synthetic_accounts(id) 
+        ON DELETE RESTRICT ON UPDATE CASCADE
+);
+```
+
+**Indexes:**
+- `PC_analytic_accounts_pkey` PRIMARY KEY pe `id`
+- `PC_analytic_accounts_code_unique` UNIQUE pe `code`
+- `PC_analytic_accounts_code_idx` pe `code` (performance)
+- `PC_analytic_accounts_synthetic_idx` pe `synthetic_id` (joins)
+- `PC_analytic_accounts_function_idx` pe `account_function` (filtering)
+
+**Schema Drizzle (TypeScript):**
+```typescript
+export const PC_analytic_accounts = pgTable('PC_analytic_accounts', {
+  id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
+  code: varchar('code', { length: 20 }).notNull().unique(),
+  name: text('name').notNull(),
+  description: text('description'),
+  synthetic_id: uuid('synthetic_id').notNull(),
+  account_function: text('account_function').notNull(),
+  is_active: boolean('is_active').default(true),
+  created_at: timestamp('created_at').notNull().default(sql`now()`),
+  updated_at: timestamp('updated_at').notNull().default(sql`now()`)
+}, (table) => ({
+  code_unique: unique('PC_analytic_accounts_code_unique').on(table.code),
+  code_idx: index('PC_analytic_accounts_code_idx').on(table.code),
+  synthetic_idx: index('PC_analytic_accounts_synthetic_idx').on(table.synthetic_id),
+  function_idx: index('PC_analytic_accounts_function_idx').on(table.account_function),
+}));
+```
+
+**Locație Schema:** `/var/www/GeniusERP/libs/shared/src/schema/core.schema.ts`
+
+### 📊 Coloane și Logică Business
+
+#### 1. `id` (uuid, PRIMARY KEY, NOT NULL)
+- **Tip:** UUID (Universally Unique Identifier)
+- **Default:** `gen_random_uuid()`
+- **Nullable:** ❌ NOT NULL
+- **Scop:** Identificator unic și stabil pentru fiecare cont analitic
+- **Logică Business:** 
+  - Generat automat la inserare
+  - Folosit pentru relații FK în tabele downstream (ex: `accounts`, `journal_lines`)
+  - Nu se modifică niciodată după creare
+- **Algoritm:** PostgreSQL `gen_random_uuid()` - UUID v4 random
+
+#### 2. `code` (varchar(20), UNIQUE, NOT NULL)
+- **Tip:** VARCHAR(20) - string de maxim 20 caractere
+- **Constraint:** UNIQUE - fiecare cont analitic trebuie să aibă cod unic
+- **Format:** **Minimum 5 caractere cifre**, poate include punct pentru sub-niveluri (ex: `371.1`, `4426.40`, `511.01.001`)
+- **Pattern regex:** `^[0-9]{3,4}(\.[0-9]+)+$` (cod sintetic + cel puțin un nivel analitic)
+- **Scop:** Identificator contabil uman-readable
+- **Logică Business:**
+  - Primele 3-4 cifre **TREBUIE** să corespundă cu codul contului sintetic părinte (ex: `371.1` → sintetic `371`)
+  - După punct urmează identificatorul gestiunii/partenerului/proiectului
+  - Structură ierarhică: `[sintetic].[nivel1].[nivel2].[nivelN]`
+  - **Generare automată:** La crearea unei gestiuni/companii/proiect → sistem generează automat conturile analitice necesare
+- **Validări:**
+  - Minimum 5 caractere (3 cifre sintetic + punct + 1 cifră analitică)
+  - Trebuie să înceapă cu un cod sintetic valid existent
+  - Unicitate globală în sistem
+
+#### 3. `name` (text, NOT NULL)
+- **Tip:** TEXT - string nelimitat
+- **Nullable:** ❌ NOT NULL
+- **Format:** Text liber, recomandat maxim 255 caractere
+- **Scop:** Denumirea contului analitic
+- **Logică Business:**
+  - Denumire descriptivă care include specificul analitic (gestiune, partener, etc.)
+  - **Pattern:** `[Denumire Sintetic] pentru [Entitate]`
+  - Exemplu: `"Mărfuri în gestiunea Constanta Test"`, `"Casa în lei pentru gestiunea Magazin Brăila"`
+- **Generare:** 
+  - Automată la crearea gestiunii: `{nume_sintetic} pentru gestiunea {nume_gestiune}`
+  - Automată la crearea partenerului: `{nume_sintetic} - {nume_partener}`
+- **Algoritm:**
+  ```typescript
+  const analyticName = `${syntheticAccount.name} pentru gestiunea ${warehouse.name}`;
+  ```
+
+#### 4. `description` (text, NULLABLE)
+- **Tip:** TEXT - string nelimitat
+- **Nullable:** ✅ NULL permis
+- **Scop:** Descriere extinsă, detalii suplimentare despre cont
+- **Logică Business:**
+  - Opțional - folosit pentru clarificări suplimentare
+  - Poate conține informații despre scop, restricții, modalitate de utilizare
+
+#### 5. `synthetic_id` (uuid, NOT NULL, FOREIGN KEY)
+- **Tip:** UUID
+- **Nullable:** ❌ NOT NULL
+- **Foreign Key:** → `PC_synthetic_accounts(id)` ON DELETE RESTRICT ON UPDATE CASCADE
+- **Scop:** Relația ierarhică către contul sintetic părinte
+- **Logică Business:**
+  - **Obligatoriu:** Orice cont analitic TREBUIE să aibă un părinte sintetic
+  - **Validare:** `synthetic_id` trebuie să corespundă cu primele 3-4 cifre din `code`
+  - **Algoritm de validare:**
+    ```typescript
+    const syntheticCode = chartOfAccountsUtils.extractSyntheticPrefix(analyticCode);
+    // Verifică că syntheticCode == synthetic.code
+    ```
+- **ON DELETE RESTRICT:** Nu poți șterge un cont sintetic dacă are conturi analitice dependente
+- **ON UPDATE CASCADE:** Dacă se modifică ID-ul sintetic (rareori), se actualizează automat
+
+#### 6. `account_function` (text, NOT NULL)
+- **Tip:** TEXT cu CHECK constraint
+- **Constraint:** `CHECK (account_function IN ('A', 'P', 'B', 'E', 'V'))`
+- **Enum values:**
+  - `'A'` = **Activ** (conturi de bilanț - active)
+  - `'P'` = **Pasiv** (conturi de bilanț - pasive)
+  - `'B'` = **Bifuncțional** (pot fi activ SAU pasiv în funcție de sold)
+  - `'E'` = **Cheltuieli** (conturi de profit și pierdere - expenses)
+  - `'V'` = **Venituri** (conturi de profit și pierdere - revenues)
+- **Nullable:** ❌ NOT NULL
+- **Scop:** Determină comportamentul contului în balanță și natura soldului
+- **Logică Business:**
+  - **MOȘTENIT** automat de la contul sintetic părinte
+  - La creare: `analytic.account_function = synthetic.account_function`
+  - **Impactează:**
+    - Poziționare în balanță (Activ vs Pasiv)
+    - Validarea soldurilor (debit vs credit)
+    - Rapoarte financiare (Bilanț vs Profit & Pierdere)
+- **Algoritm:**
+  ```typescript
+  // La creare cont analitic
+  analyticAccountData.account_function = syntheticAccount.account_function;
+  ```
+
+#### 7. `is_active` (boolean, DEFAULT true)
+- **Tip:** BOOLEAN
+- **Default:** `true`
+- **Nullable:** ✅ (dar practic întotdeauna are valoare datorită default-ului)
+- **Scop:** Soft delete - marchează conturile inactive fără a le șterge fizic
+- **Logică Business:**
+  - `true` = cont activ, vizibil în sistem, poate fi folosit în tranzacții noi
+  - `false` = cont dezactivat, păstrat pentru istoric, nu mai poate fi folosit în tranzacții noi
+  - **Toate query-urile** trebuie să filtreze după `is_active = true` pentru a exclude conturile inactive
+- **Algoritm standard:**
+  ```typescript
+  const activeAnalyticAccounts = await db.select()
+    .from(PC_analytic_accounts)
+    .where(eq(PC_analytic_accounts.is_active, true));
+  ```
+
+#### 8. `created_at` (timestamp, NOT NULL)
+- **Tip:** TIMESTAMP WITHOUT TIME ZONE
+- **Default:** `now()`
+- **Nullable:** ❌ NOT NULL
+- **Scop:** Timestamp creare înregistrare
+- **Logică Business:**
+  - Setat automat la inserare
+  - Folosit pentru audit trail
+  - Nu se modifică niciodată
+
+#### 9. `updated_at` (timestamp, NOT NULL)
+- **Tip:** TIMESTAMP WITHOUT TIME ZONE
+- **Default:** `now()`
+- **Nullable:** ❌ NOT NULL
+- **Scop:** Timestamp ultima modificare
+- **Logică Business:**
+  - Setat automat la inserare
+  - **Actualizat automat** la orice UPDATE (prin trigger sau ORM)
+  - Folosit pentru sincronizare și audit
+
+### 🔗 Relații și Foreign Keys
+
+**Relații Upstream (Părinți):**
+```typescript
+export const PC_analytic_accountsRelations = relations(PC_analytic_accounts, ({ one }) => ({
+  synthetic: one(PC_synthetic_accounts, {
+    fields: [PC_analytic_accounts.synthetic_id],
+    references: [PC_synthetic_accounts.id],
+  }),
+}));
+```
+
+**Relații Downstream (Copii):**
+- `accounts.analytic_id` → `PC_analytic_accounts.id` (tabelul legacy)
+- Potențial: `journal_lines.analytic_account_id` (pentru înregistrări contabile detaliate)
+
+### 📝 Schema Zod (Validări Runtime)
+
+```typescript
+export const insertAnalyticAccountSchema = createInsertSchema(PC_analytic_accounts, {
+  code: z.string()
+    .min(5, "Codul contului analitic trebuie să aibă minimum 5 caractere")
+    .max(20, "Codul contului analitic trebuie să aibă maximum 20 caractere")
+    .regex(/^[0-9]{3,4}(\.[0-9]+)+$/, "Format invalid: trebuie să fie [cod_sintetic].[identificator]"),
+  name: z.string().min(1, "Denumirea este obligatorie").max(255),
+  description: z.string().optional(),
+  account_function: z.enum(['A', 'P', 'B', 'E', 'V'], {
+    errorMap: () => ({ message: "Funcția contabilă trebuie să fie A, P, B, E sau V" })
+  }),
+  synthetic_id: z.string().uuid("ID sintetic invalid")
+}).refine(async (data) => {
+  // Validare: codul analitic trebuie să înceapă cu codul sintetic
+  const syntheticCode = chartOfAccountsUtils.extractSyntheticPrefix(data.code);
+  const synthetic = await db.select().from(PC_synthetic_accounts)
+    .where(and(
+      eq(PC_synthetic_accounts.id, data.synthetic_id),
+      eq(PC_synthetic_accounts.code, syntheticCode)
+    ));
+  return synthetic.length > 0;
+}, {
+  message: "Codul analitic trebuie să înceapă cu codul contului sintetic părinte"
+});
+
+export const selectAnalyticAccountSchema = createSelectSchema(PC_analytic_accounts);
+
+export const updateAnalyticAccountSchema = insertAnalyticAccountSchema.partial().omit({
+  id: true,
+  created_at: true,
+  updated_at: true
+});
+```
+
+### 🔧 Utilitare Chart of Accounts (chartOfAccountsUtils)
+
+```typescript
+// Extragere cod sintetic din cod analitic
+extractSyntheticPrefix: (analyticCode: string): string => {
+  const match = analyticCode.match(/^(\d{3,4})/);
+  return match ? match[1] : '';
+}
+
+// Validare ierarhie analitic → sintetic
+validateAnalyticHierarchy: async (analyticCode: string, syntheticId: string): Promise<boolean> => {
+  const syntheticCode = extractSyntheticPrefix(analyticCode);
+  const synthetic = await db.select().from(PC_synthetic_accounts)
+    .where(and(
+      eq(PC_synthetic_accounts.id, syntheticId),
+      eq(PC_synthetic_accounts.code, syntheticCode)
+    ));
+  return synthetic.length > 0;
+}
+```
+
+### 🌐 Ierarhia Completă a Planului de Conturi
+
+```
+PC_account_classes (9 clase: 1-9)
+    ↓
+PC_account_groups (67 grupe: 10-98)
+    ↓
+PC_synthetic_accounts (781 conturi sintetice: 101-987)
+    ↓ (grad 1: 3 cifre | grad 2: 4 cifre)
+    ↓
+PC_analytic_accounts (conturi analitice: 5+ caractere cu punct)
+    └── Exemple: 371.1, 4426.40, 511.01.001
+```
+
+### 📌 Cazuri de Utilizare Tipice
+
+#### 1. Creare Gestiune Nouă
+```typescript
+// La crearea unei gestiuni warehouse
+const warehouse = { id: 'uuid-123', name: 'Magazin Brăila', code: '40' };
+
+// Sistem generează automat conturi analitice pentru:
+// - 371.40 (Mărfuri în gestiunea Magazin Brăila)
+// - 378.40 (Diferențe de preț la mărfuri pentru gestiunea Magazin Brăila)
+// - 4426.40 (TVA deductibilă pentru gestiunea Magazin Brăila)
+// - 4427.40 (TVA colectată pentru gestiunea Magazin Brăila)
+```
+
+#### 2. Creare Partener Nou (Client/Furnizor)
+```typescript
+// La crearea unui partener
+const partner = { id: 'uuid-456', name: 'SC ABC SRL', code: 'CLI001' };
+
+// Sistem generează automat:
+// - 411.CLI001 (Clienți - SC ABC SRL)
+// - 401.CLI001 (Furnizori - SC ABC SRL) - dacă este și furnizor
+```
+
+#### 3. Înregistrare Contabilă cu Analitice
+```typescript
+// Vânzare mărfuri din gestiunea "Magazin Brăila" către "SC ABC SRL"
+journal_entry = {
+  lines: [
+    { account: '411.CLI001', debit: 1190, credit: 0 },  // Client
+    { account: '707.40', debit: 0, credit: 1000 },      // Venit vânzare gestiune
+    { account: '4427.40', debit: 0, credit: 190 },      // TVA colectată gestiune
+    { account: '607.40', debit: 850, credit: 0 },       // Cheltuieli mărfuri gestiune
+    { account: '371.40', debit: 0, credit: 850 },       // Ieșire mărfuri gestiune
+  ]
+}
+```
+
+### 🎯 Reguli Importante
+
+- **Cod unic global:** Nu pot exista două conturi analitice cu același cod
+- **Ierarhie strictă:** Codul trebuie să înceapă cu codul sintetic valid
+- **Funcție moștenită:** `account_function` este întotdeauna identică cu cea a părintelui sintetic
+- **Filtrare is_active:** Toate query-urile trebuie să verifice `is_active = true`
+- **Minimum 5 caractere:** Format `XXX.Y` sau `XXXX.Y` (sintetic + punct + analitic)
+- **Format standard:** `[cod_sintetic].[identificator_entitate]`
+
+### 📊 Statistici Curente
+
+**Date în Producție:**
+- **Total înregistrări:** 14 conturi analitice
+- **Distribuție:** Majoritatea pentru gestiuni (warehouse management)
+- **Tipuri:** Mărfuri (371), TVA (4426, 4427), Casa (5311), Cheltuieli/Venituri (607, 707)
+- **Pattern comun:** `{cod_sintetic}.{cod_gestiune}`
+
+**Backward Compatibility:**
+```typescript
+// Alias-uri pentru compatibilitate cu cod existent
+export const analytic_accounts = PC_analytic_accounts;
+export const analytic_accountsRelations = PC_analytic_accountsRelations;
+export type AnalyticAccount = PC_AnalyticAccount;
+export type InsertAnalyticAccount = InsertPC_AnalyticAccount;
+```
+
+**Migrare:**
+- Fișier migrare: `/var/www/GeniusERP/migrations/modules/core/create_PC_analytic_accounts.ts`
+- Seeding: `/var/www/GeniusERP/migrations/modules/core/PC_plan_conturi_seeding/analytic_accounts.json`
+
+---
+
+# 8.1. account_mappings
+# 8.2. account_relationships
+6. accounting_account_balances
+7. accounting_journal_types
+8. accounting_ledger_entries
+9. accounting_ledger_lines
+10. accounting_settings
+11. accounts
+12. admin_actions
+13. alert_history
+14. anaf_company_data
+
+---
+
+
+
+16. analytics_alerts
+17. analytics_anomalies
+18. analytics_anomaly_rules
+19. analytics_dashboards
+20. analytics_inventory_optimization
+21. analytics_inventory_optimizations
+22. analytics_metrics
+23. analytics_model_executions
+24. analytics_prediction_results
+25. analytics_predictive_models
+26. analytics_purchasing_recommendations
+27. analytics_reports
+28. analytics_scenario_executions
+29. analytics_scenario_results
+30. analytics_scenarios
+31. analytics_seasonal_patterns
+32. analytics_time_series_data
+33. api_keys
+34. attendance_records
+35. audit_logs
+36. bank_accounts
+37. bank_transactions
+38. bi_business_units
+39. bi_cost_allocations
+40. bi_cost_centers
+41. bpm_api_connections
+42. bpm_approvals
+43. bpm_process_instances
+44. bpm_processes
+45. bpm_scheduled_jobs
+46. bpm_step_executions
+47. bpm_step_templates
+48. bpm_triggers
+49. cash_registers
+50. cash_transactions
+51. chart_of_accounts
+52. collaboration_activities
+53. collaboration_messages
+54. collaboration_notes
+55. collaboration_notifications
+56. collaboration_task_assignments
+57. collaboration_task_status_history
+58. collaboration_task_watchers
+59. collaboration_tasks
+60. collaboration_threads
+61. communications_channel_configs
+62. communications_contacts
+63. communications_message_access
+64. communications_messages
+65. communications_thread_access
+66. communications_threads
+67. companies
+68. company_licenses
+69. configurations
+70. cor_major_groups
+71. cor_minor_groups
+72. cor_occupations
+73. cor_submajor_groups
+74. cor_subminor_groups
+75. cost_allocation_history
+76. crm_activities
+77. crm_companies
+78. crm_contacts
+79. crm_custom_fields
+80. crm_customer_tags
+81. crm_customers
+82. crm_deal_products
+83. crm_deal_tags
+84. crm_deals
+85. crm_email_templates
+86. crm_forecasts
+87. crm_notes
+88. crm_pipelines
+89. crm_revenue_forecasts
+90. crm_sales_quotas
+91. crm_scoring_rules
+92. crm_segments
+93. crm_stage_history
+94. crm_stages
+95. crm_taggables
+96. crm_tags
+97. crm_tasks
+98. dashboard_views
+99. document_counters
+100. document_versions
+101. documents
+102. ecommerce_cart_items
+103. ecommerce_carts
+104. ecommerce_integrations
+105. ecommerce_order_items
+106. ecommerce_orders
+107. ecommerce_shopify_collections
+108. ecommerce_shopify_products
+109. ecommerce_shopify_variants
+110. ecommerce_transactions
+111. employee_contracts
+112. employee_documents
+113. employees
+114. financial_data
+115. financial_data_errors
+116. financial_data_jobs
+117. fiscal_periods
+118. fx_rates
+119. health_checks
+120. hr_absences
+121. hr_anaf_export_logs
+122. hr_commission_structures
+123. hr_departments
+124. hr_documents
+125. hr_employee_commissions
+126. hr_employee_drafts
+127. hr_employees
+128. hr_employment_contracts
+129. hr_job_positions
+130. hr_payroll_logs
+131. hr_revisal_export_logs
+132. hr_settings
+133. hr_work_schedules
+134. integrations
+135. inventory_assessment_items
+136. inventory_assessments
+137. inventory_batches
+138. inventory_categories
+139. inventory_products
+140. inventory_stock
+141. inventory_stock_movements
+142. inventory_units
+143. inventory_valuations
+144. inventory_warehouses
+145. invoice_details
+146. invoice_items
+147. invoice_numbering_settings
+148. invoice_payments
+149. invoices
+150. journal_entries
+151. journal_lines
+152. journal_types
+153. leave_requests
+154. ledger_entries
+155. ledger_lines
+156. licenses
+157. marketing_campaign_messages
+158. marketing_campaign_segments
+159. marketing_campaign_templates
+160. marketing_campaigns
+161. metrics_history
+162. model_training_history
+163. nir_documents
+164. nir_items
+165. opening_balances
+166. payroll_records
+167. permissions
+168. predictive_models
+169. predictive_scenarios
+170. purchase_order_items
+171. purchase_orders
+172. report_execution_history
+173. role_permissions
+174. roles
+175. scenario_results
+176. settings_feature_toggles
+177. settings_global
+178. settings_ui_themes
+179. settings_user_preferences
+180. setup_steps
+181. stock_reservations
+182. stocks
+
+---
+
+# 183. 
 
 184. system_configs
 185. transfer_documents

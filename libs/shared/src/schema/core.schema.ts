@@ -221,11 +221,13 @@ export const PC_synthetic_accounts = pgTable('PC_synthetic_accounts', {
 }));
 
 /**
- * Analytic Accounts table
+ * Analytic Accounts table (with PC_ prefix - Plan de Conturi)
  * Detailed level of chart of accounts (5+ digits)
  * Full analytical breakdown of synthetic accounts
+ * 
+ * Prefix PC_ = Plan de Conturi pentru identificare ușoară, standardizare și consistență
  */
-export const analytic_accounts = pgTable('analytic_accounts', {
+export const PC_analytic_accounts = pgTable('PC_analytic_accounts', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
   code: varchar('code', { length: 20 }).notNull().unique(),
   name: text('name').notNull(),
@@ -236,10 +238,11 @@ export const analytic_accounts = pgTable('analytic_accounts', {
   created_at: timestamp('created_at').notNull().default(sql`now()`),
   updated_at: timestamp('updated_at').notNull().default(sql`now()`)
 }, (table) => ({
-  code_unique: unique('analytic_accounts_code_unique').on(table.code),
-  code_idx: index('analytic_accounts_code_idx').on(table.code),
-  synthetic_idx: index('analytic_accounts_synthetic_idx').on(table.synthetic_id),
-  function_idx: index('analytic_accounts_function_idx').on(table.account_function),
+  code_unique: unique('PC_analytic_accounts_code_unique').on(table.code),
+  code_idx: index('PC_analytic_accounts_code_idx').on(table.code),
+  synthetic_idx: index('PC_analytic_accounts_synthetic_idx').on(table.synthetic_id),
+  function_idx: index('PC_analytic_accounts_function_idx').on(table.account_function),
+  is_active_idx: index('PC_analytic_accounts_is_active_idx').on(table.is_active),
 }));
 
 /**
@@ -362,15 +365,15 @@ export const PC_synthetic_accountsRelations = relations(PC_synthetic_accounts, (
     references: [PC_synthetic_accounts.id],
   }),
   children: many(PC_synthetic_accounts),
-  analyticAccounts: many(analytic_accounts),
+  analyticAccounts: many(PC_analytic_accounts),
 }));
 
 /**
  * Analytic Accounts Relations
  */
-export const analytic_accountsRelations = relations(analytic_accounts, ({ one }) => ({
+export const PC_analytic_accountsRelations = relations(PC_analytic_accounts, ({ one }) => ({
   synthetic: one(PC_synthetic_accounts, {
-    fields: [analytic_accounts.synthetic_id],
+    fields: [PC_analytic_accounts.synthetic_id],
     references: [PC_synthetic_accounts.id],
   }),
 }));
@@ -495,19 +498,34 @@ export type SelectSyntheticAccountZod = z.infer<typeof selectSyntheticAccountSch
 export type UpdateSyntheticAccountZod = z.infer<typeof updateSyntheticAccountSchema>;
 
 // Analytic Accounts Schemas
-export const insertAnalyticAccountSchema = createInsertSchema(analytic_accounts, {
-  code: z.string().length(6).regex(/^[0-9]{6}$/, "Codul contului analitic trebuie să fie 6 cifre"),
-  name: z.string().min(1).max(255),
+export const insertAnalyticAccountSchema = createInsertSchema(PC_analytic_accounts, {
+  code: z.string()
+    .min(5, "Codul contului analitic trebuie să aibă minimum 5 caractere")
+    .max(20, "Codul contului analitic trebuie să aibă maximum 20 caractere")
+    .regex(/^[0-9]{3,4}(\.[0-9]+)+$/, "Format invalid: trebuie să fie [cod_sintetic].[identificator]"),
+  name: z.string().min(1, "Denumirea este obligatorie").max(255),
   description: z.string().optional(),
-  account_function: z.enum(['A', 'P', 'B']),
-  synthetic_id: z.string().uuid()
+  account_function: z.enum(['A', 'P', 'B', 'E', 'V'], {
+    message: "Funcția contabilă trebuie să fie A (Activ), P (Pasiv), B (Bifuncțional), E (Cheltuieli) sau V (Venituri)"
+  }),
+  synthetic_id: z.string().uuid("ID sintetic invalid")
+}).refine((data) => {
+  // Validare: codul analitic trebuie să înceapă cu codul sintetic
+  // Notă: Validarea completă cu DB ar necesita async - se face la nivel de service
+  const syntheticPrefix = chartOfAccountsUtils.extractSyntheticPrefix(data.code);
+  return syntheticPrefix.length >= 3 && syntheticPrefix.length <= 4;
+}, {
+  message: "Codul analitic trebuie să înceapă cu un cod sintetic valid (3-4 cifre)"
 });
-export const selectAnalyticAccountSchema = createSelectSchema(analytic_accounts);
+
+export const selectAnalyticAccountSchema = createSelectSchema(PC_analytic_accounts);
+
 export const updateAnalyticAccountSchema = insertAnalyticAccountSchema.partial().omit({
   id: true,
   created_at: true,
   updated_at: true
 });
+
 export type InsertAnalyticAccountZod = z.infer<typeof insertAnalyticAccountSchema>;
 export type SelectAnalyticAccountZod = z.infer<typeof selectAnalyticAccountSchema>;
 export type UpdateAnalyticAccountZod = z.infer<typeof updateAnalyticAccountSchema>;
@@ -541,8 +559,10 @@ export type PC_AccountGroup = typeof PC_account_groups.$inferSelect;
 export type InsertPC_AccountGroup = z.infer<typeof insertAccountGroupSchema>;
 export type PC_SyntheticAccount = typeof PC_synthetic_accounts.$inferSelect;
 export type InsertPC_SyntheticAccount = z.infer<typeof insertSyntheticAccountSchema>;
-export type AnalyticAccount = typeof analytic_accounts.$inferSelect;
-export type InsertAnalyticAccount = z.infer<typeof insertAnalyticAccountSchema>;
+export type PC_AnalyticAccount = typeof PC_analytic_accounts.$inferSelect;
+export type InsertPC_AnalyticAccount = z.infer<typeof insertAnalyticAccountSchema>;
+export type AnalyticAccount = PC_AnalyticAccount; // Alias for backward compatibility
+export type InsertAnalyticAccount = InsertPC_AnalyticAccount; // Alias for backward compatibility
 export type PC_AccountClass = typeof PC_account_classes.$inferSelect;
 export type InsertPC_AccountClass = z.infer<typeof insertAccountClassSchema>;
 
@@ -551,6 +571,8 @@ export type SyntheticAccount = PC_SyntheticAccount;
 export type InsertSyntheticAccount = InsertPC_SyntheticAccount;
 export const synthetic_accounts = PC_synthetic_accounts;
 export const synthetic_accountsRelations = PC_synthetic_accountsRelations;
+export const analytic_accounts = PC_analytic_accounts;
+export const analytic_accountsRelations = PC_analytic_accountsRelations;
 
 /**
  * Utility functions for Romanian Chart of Accounts
