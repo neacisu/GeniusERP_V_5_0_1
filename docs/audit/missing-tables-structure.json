@@ -480,8 +480,8 @@
       "category": "Accounting",
       "priority": "P1"
     },
-    "accounting_journal_types": {
-      "table_name": "accounting_journal_types",
+    "AC_journal_types": {
+      "table_name": "AC_journal_types",
       "columns": [
         {
           "name": "id",
@@ -655,17 +655,17 @@
       "foreign_keys": [],
       "indexes": [
         {
-          "table": "accounting_journal_types",
+          "table": "AC_journal_types",
           "name": "accounting_journal_types_pkey",
           "definition": "CREATE UNIQUE INDEX accounting_journal_types_pkey ON public.accounting_journal_types USING btree (id)"
         },
         {
-          "table": "accounting_journal_types",
+          "table": "AC_journal_types",
           "name": "journal_active_idx",
           "definition": "CREATE INDEX journal_active_idx ON public.accounting_journal_types USING btree (company_id, is_active)"
         },
         {
-          "table": "accounting_journal_types",
+          "table": "AC_journal_types",
           "name": "journal_code_unique",
           "definition": "CREATE UNIQUE INDEX journal_code_unique ON public.accounting_journal_types USING btree (company_id, code)"
         }

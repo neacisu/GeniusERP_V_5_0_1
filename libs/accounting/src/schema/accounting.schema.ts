@@ -18,7 +18,14 @@ import {
   updateACAccountBalanceSchema,
   insertAccountBalanceSchema, // deprecated alias
   selectAccountBalanceSchema, // deprecated alias
-  updateAccountBalanceSchema // deprecated alias
+  updateAccountBalanceSchema, // deprecated alias
+  AC_journal_types, // Preferred - standardized with AC_ prefix
+  accounting_journal_types, // deprecated alias
+  ACJournalType,
+  InsertACJournalType,
+  insertACJournalTypeSchema,
+  selectACJournalTypeSchema,
+  updateACJournalTypeSchema
 } from '../../../shared/src/schema/accounting.schema';
 
 // Types are defined locally in this file
@@ -26,10 +33,12 @@ import {
 // Preferred exports with AC_ prefix
 export const ACAccountBalances = AC_account_balances;
 export const ACAccountBalancesRelations = AC_account_balancesRelations;
+export const ACJournalTypes = AC_journal_types;
 
 // Backward compatibility aliases
 export const accountBalances = account_balances;
 export const accountBalancesRelations = account_balancesRelations;
+export const journalTypes = accounting_journal_types; // Now points to AC_journal_types via alias
 
 /**
  * Accounting Ledger Entries table
@@ -187,21 +196,6 @@ export const ledgerLines = pgTable('ledger_lines', {
 });
 
 /**
- * Journal types table
- * Types of specialized journals in Romanian accounting
- */
-export const journalTypes = pgTable('journal_types', {
-  id: uuid('id').primaryKey().notNull(),
-  code: text('code').notNull().unique(),
-  name: text('name').notNull(),
-  description: text('description'),
-  
-  // Metadata
-  createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull()
-});
-
-/**
  * Fiscal periods table
  * Accounting periods configuration
  */
@@ -325,8 +319,10 @@ export type InsertLedgerEntry = typeof ledgerEntries.$inferInsert;
 export type LedgerLine = typeof ledgerLines.$inferSelect;
 export type InsertLedgerLine = typeof ledgerLines.$inferInsert;
 
-export type JournalType = typeof journalTypes.$inferSelect;
-export type InsertJournalType = typeof journalTypes.$inferInsert;
+// Re-export AC_journal_types types from shared
+export type { ACJournalType, InsertACJournalType };
+export type JournalType = ACJournalType; // Backward compatibility
+export type InsertJournalType = InsertACJournalType; // Backward compatibility
 
 export type AccountBalance = typeof accountBalances.$inferSelect;
 export type InsertAccountBalance = typeof accountBalances.$inferInsert;
@@ -351,17 +347,18 @@ export default {
   ledgerLines,
   ledgerEntriesRelations,
   ledgerLinesRelations,
-  // Other tables
-  journalTypes,
+  // AC_journal_types - imported from shared
+  ACJournalTypes, // Preferred
+  journalTypes, // deprecated: points to AC_journal_types
+  AC_journal_types, // re-export from shared
+  accounting_journal_types, // re-export from shared (deprecated)
+  insertACJournalTypeSchema,
+  selectACJournalTypeSchema,
+  updateACJournalTypeSchema,
+  // Account balances
   ACAccountBalances, // Preferred - standardized with AC_ prefix
   accountBalances, // deprecated: use ACAccountBalances
-  fiscalPeriods,
-  documentCounters,
-  chartOfAccounts,
-  chartOfAccountsRelations,
-
-  // Standardized schemas (snake_case) - preferred
-  AC_account_balances,
+  AC_account_balances, // re-export from shared
   AC_account_balancesRelations,
   account_balances, // deprecated alias
   account_balancesRelations, // deprecated alias
@@ -371,5 +368,9 @@ export default {
   insertAccountBalanceSchema, // deprecated alias
   selectAccountBalanceSchema, // deprecated alias
   updateAccountBalanceSchema, // deprecated alias
-
+  // Other tables
+  fiscalPeriods,
+  documentCounters,
+  chartOfAccounts,
+  chartOfAccountsRelations,
 };

@@ -4,7 +4,7 @@
 
 Această listă conține toate tabelele existente în baza de date `geniuserp` după factorizarea majoră:
 
-# 1. AC_account_balances
+# 1. AC_account_balances - DEPRECATED
 
 ## 📋 Detalii detaliate tabel: `AC_account_balances`
 
@@ -2186,20 +2186,18 @@ export const AC_account_relationships = pgTable('AC_account_relationships', {
 
 ---
 
+# 8. AC_journal_types
 
+## 📋 Detalii detaliate tabel: `AC_journal_types`
 
-
-
-
-
-
-# 8. accounting_journal_types
-
-## 📋 Detalii detaliate tabel: `accounting_journal_types`
+**🏷️ NUME TABEL**: `AC_journal_types` (PREFIX: AC_ = Accounting Configuration)
+**📦 MODUL**: Accounting
+**📁 LOCAȚIE SCHEMA**: `/libs/shared/src/schema/accounting.schema.ts`
+**📁 LOCAȚIE MIGRAȚIE**: `/migrations/modules/accounting/create_AC_journal_types.ts`
 
 ### 🎯 Scop și Rol în Sistem
 
-Tabelul `accounting_journal_types` definește **tipurile de jurnale contabile** utilizate pentru organizarea și clasificarea înregistrărilor contabile conform standardelor românești. Acest tabel este esențial pentru:
+Tabelul `AC_journal_types` definește **tipurile de jurnale contabile** utilizate pentru organizarea și clasificarea înregistrărilor contabile conform standardelor românești. Acest tabel este esențial pentru:
 
 - **Organizarea înregistrărilor contabile** pe tipuri de operațiuni (vânzări, achiziții, bancă, casă, general)
 - **Configurarea conturilor implicite** pentru fiecare tip de jurnal
@@ -2211,7 +2209,7 @@ Tabelul `accounting_journal_types` definește **tipurile de jurnale contabile** 
 
 **Schema DB (PostgreSQL):**
 ```sql
-CREATE TABLE public."accounting_journal_types" (
+CREATE TABLE public."AC_journal_types" (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     company_id uuid NOT NULL,
     code character varying(20) NOT NULL,
@@ -2227,14 +2225,35 @@ CREATE TABLE public."accounting_journal_types" (
     created_at timestamp without time zone NOT NULL DEFAULT now(),
     updated_by uuid,
     updated_at timestamp without time zone,
-    CONSTRAINT "accounting_journal_types_pkey" PRIMARY KEY (id)
+    CONSTRAINT "AC_journal_types_pkey" PRIMARY KEY (id)
 );
 ```
 
 **Indexes:**
-- PRIMARY KEY: `accounting_journal_types_pkey` pe `id`
-- UNIQUE INDEX: `journal_code_unique` pe `(company_id, code)`
-- INDEX: `journal_active_idx` pe `(company_id, is_active)`
+- PRIMARY KEY: `AC_journal_types_pkey` pe `id`
+- UNIQUE INDEX: `AC_journal_types_code_unique` pe `(company_id, code)`
+- INDEX: `AC_journal_types_active_idx` pe `(company_id, is_active)`
+
+**Schema Drizzle:**
+```typescript
+export const AC_journal_types = pgTable("AC_journal_types", {
+  id: uuid("id").primaryKey().notNull().default(sql`gen_random_uuid()`),
+  company_id: uuid("company_id").notNull(),
+  code: varchar("code", { length: 20 }).notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  default_debit_account: varchar("default_debit_account", { length: 20 }),
+  default_credit_account: varchar("default_credit_account", { length: 20 }),
+  is_system_journal: boolean("is_system_journal").notNull().default(false),
+  is_active: boolean("is_active").notNull().default(true),
+  auto_number_prefix: varchar("auto_number_prefix", { length: 20 }),
+  last_used_number: integer("last_used_number").notNull().default(0),
+  created_by: uuid("created_by"),
+  created_at: timestamp("created_at").notNull().default(sql`now()`),
+  updated_by: uuid("updated_by"),
+  updated_at: timestamp("updated_at"),
+});
+```
 
 ### 📊 Coloane și Logică Business
 
@@ -2361,15 +2380,15 @@ Is Active: true
 
 #### Algoritm Generare Număr Document:
 ```typescript
-async function getNextDocumentNumber(journalTypeId: string): Promise<string> {
+async function getNextDocumentNumber(journal_type_id: string): Promise<string> {
   const result = await db.transaction(async (tx) => {
     const journal = await tx
-      .update(accounting_journal_types)
+      .update(AC_journal_types)
       .set({ 
-        last_used_number: sql`${accounting_journal_types.last_used_number} + 1`,
+        last_used_number: sql`${AC_journal_types.last_used_number} + 1`,
         updated_at: new Date()
       })
-      .where(eq(accounting_journal_types.id, journalTypeId))
+      .where(eq(AC_journal_types.id, journal_type_id))
       .returning();
     
     const prefix = journal[0].auto_number_prefix || '';
@@ -2385,45 +2404,77 @@ async function getNextDocumentNumber(journalTypeId: string): Promise<string> {
 #### Validare Cont Implicit:
 ```typescript
 function validateDefaultAccounts(
-  debitAccount?: string, 
-  creditAccount?: string
+  debit_account?: string, 
+  credit_account?: string
 ): boolean {
   // Verifică dacă conturile există în Plan de Conturi
-  if (debitAccount) {
-    const debitExists = await checkAccountExists(debitAccount);
-    if (!debitExists) throw new Error('Cont debit invalid');
+  if (debit_account) {
+    const debit_exists = await checkAccountExists(debit_account);
+    if (!debit_exists) throw new Error('Cont debit invalid');
   }
   
-  if (creditAccount) {
-    const creditExists = await checkAccountExists(creditAccount);
-    if (!creditExists) throw new Error('Cont credit invalid');
+  if (credit_account) {
+    const credit_exists = await checkAccountExists(credit_account);
+    if (!credit_exists) throw new Error('Cont credit invalid');
   }
   
   return true;
 }
 ```
 
-### 📋 Rezumat Audit Tabel `accounting_journal_types`
+### 📋 Rezumat Audit Tabel `AC_journal_types`
 
-**Status: ✅ COMPLET AUDITAT**
+**Status: ✅ COMPLET AUDITAT ȘI FACTORIZAT**
+
+**🔄 Modificări Efectuate:**
+- ✅ Redenumit tabel din `accounting_journal_types` → `AC_journal_types`
+- ✅ Actualizat toate indexurile: `AC_journal_types_pkey`, `AC_journal_types_code_unique`, `AC_journal_types_active_idx`
+- ✅ Standardizat schema Drizzle cu snake_case complet
+- ✅ Creat Zod schemas pentru validare: `insertACJournalTypeSchema`, `selectACJournalTypeSchema`, `updateACJournalTypeSchema`
+- ✅ Adăugat backward compatibility aliases pentru cod legacy
+- ✅ Creat fișier de migrație `/migrations/modules/accounting/create_AC_journal_types.ts`
+- ✅ Actualizat documentație comprehensivă
+
+**📁 Fișiere Schema Drizzle:**
+- `/libs/shared/src/schema/accounting.schema.ts` - Schema principală cu AC_journal_types
+
+**📁 Fișiere Migrație:**
+- `/migrations/modules/accounting/create_AC_journal_types.ts` - Migrație completă
 
 **Concluzii:**
 - ✅ Structură corectă și completă
 - ✅ Indexes optimizate pentru performance
 - ✅ Constraint UNIQUE pentru unicitate (company_id, code)
-- ✅ Sistem de numerotare automată funcțional
+- ✅ Sistem de numerotare automată funcțional cu transaction safety
 - ✅ Protecție jurnale sistem (is_system_journal)
 - ✅ Suport pentru soft delete (is_active)
-- ✅ Audit trail complet
+- ✅ Audit trail complet (created_by, created_at, updated_by, updated_at)
+- ✅ Standardizare snake_case în tot codebase-ul
+- ✅ Zod schemas pentru validare la nivel de aplicație
 
 **Recomandări:**
 - ✅ Implementat: Sistem de numerotare thread-safe cu transactions
-- ⚠️ Consideră adăugarea unui CHECK constraint pentru `code` (uppercase, alfanumeric)
+- ✅ Implementat: Validare Zod pentru format cod (uppercase alfanumeric)
+- ⚠️ Consideră adăugarea unui CHECK constraint în DB pentru `code` (uppercase, alfanumeric)
 - ⚠️ Consideră adăugarea unui trigger pentru validarea conturilor implicite
 - ⚠️ Documentează standardele de naming pentru coduri noi de jurnale
 
----
+**🔗 Legături cu Alte Tabele:**
+- `accounting_ledger_entries.journal_type_id` → `AC_journal_types.id`
+- `AC_journal_types.company_id` → `companies.id`
+- `AC_journal_types.default_debit_account` → `PC_synthetic_accounts.code`
+- `AC_journal_types.default_credit_account` → `PC_synthetic_accounts.code`
 
+**📊 Tipuri de Date Zod:**
+```typescript
+export type ACJournalType = typeof AC_journal_types.$inferSelect;
+export type InsertACJournalType = typeof AC_journal_types.$inferInsert;
+export type InsertACJournalTypeZod = z.infer<typeof insertACJournalTypeSchema>;
+export type SelectACJournalTypeZod = z.infer<typeof selectACJournalTypeSchema>;
+export type UpdateACJournalTypeZod = z.infer<typeof updateACJournalTypeSchema>;
+```
+
+---
 
 # 9. accounting_account_balances
 
@@ -3224,7 +3275,6 @@ async function reverseLedgerEntry(
 
 ---
 
-
 # 11. accounting_ledger_lines
 
 ## 📋 Detalii detaliate tabel: `accounting_ledger_lines`
@@ -4023,7 +4073,25 @@ Opening Balances Imported: false
 
 ---
 
-# 13. admin_actions
+# 13. 
+
+49. cash_registers
+50. cash_transactions
+36. bank_accounts
+37. bank_transactions
+150. journal_entries
+151. journal_lines
+152. journal_types
+165. opening_balances
+114. financial_data
+115. financial_data_errors
+116. financial_data_jobs
+117. fiscal_periods
+118. fx_rates
+
+
+
+# 14.1. admin_actions
 
 ---
 
@@ -4057,8 +4125,9 @@ Opening Balances Imported: false
 33. api_keys
 34. attendance_records
 35. audit_logs
-36. bank_accounts
-37. bank_transactions
+
+
+
 38. bi_business_units
 39. bi_cost_allocations
 40. bi_cost_centers
@@ -4070,8 +4139,9 @@ Opening Balances Imported: false
 46. bpm_step_executions
 47. bpm_step_templates
 48. bpm_triggers
-49. cash_registers
-50. cash_transactions
+
+
+
 51. chart_of_accounts
 52. collaboration_activities
 53. collaboration_messages
@@ -4135,11 +4205,9 @@ Opening Balances Imported: false
 111. employee_contracts
 112. employee_documents
 113. employees
-114. financial_data
-115. financial_data_errors
-116. financial_data_jobs
-117. fiscal_periods
-118. fx_rates
+
+
+
 119. health_checks
 120. hr_absences
 121. hr_anaf_export_logs
@@ -4171,9 +4239,9 @@ Opening Balances Imported: false
 147. invoice_numbering_settings
 148. invoice_payments
 149. invoices
-150. journal_entries
-151. journal_lines
-152. journal_types
+
+
+
 153. leave_requests
 154. ledger_entries
 155. ledger_lines
@@ -4186,7 +4254,9 @@ Opening Balances Imported: false
 162. model_training_history
 163. nir_documents
 164. nir_items
-165. opening_balances
+
+
+
 166. payroll_records
 167. permissions
 168. predictive_models

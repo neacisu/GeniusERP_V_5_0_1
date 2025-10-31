@@ -133,7 +133,7 @@
 
 ### Accounting Extended (6)
 - ✅ accounting_account_balances
-- ✅ accounting_journal_types
+- ✅ AC_journal_types (accounting_journal_types - RENAMED with AC_ prefix)
 - ✅ journal_entries (legacy)
 - ✅ journal_lines (legacy)
 - ✅ stocks (legacy)

@@ -3795,9 +3795,9 @@
       "unique_constraints": [],
       "foreign_keys": []
     },
-    "accounting_journal_types": {
-      "variable_name": "accounting_journal_types",
-      "table_name": "accounting_journal_types",
+    "AC_journal_types": {
+      "variable_name": "AC_journal_types",
+      "table_name": "AC_journal_types",
       "source_file": "accounting.schema.ts",
       "columns": [
         {

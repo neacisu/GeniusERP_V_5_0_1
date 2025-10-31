@@ -1523,8 +1523,8 @@
         "index_count": 5
       }
     },
-    "accounting_journal_types": {
-      "name": "accounting_journal_types",
+    "AC_journal_types": {
+      "name": "AC_journal_types",
       "columns": [
         {
           "name": "id",

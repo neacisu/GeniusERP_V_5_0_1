@@ -101,7 +101,7 @@
         "definition": "CREATE UNIQUE INDEX accounting_account_balances_pkey ON public.accounting_account_balances USING btree (id)"
       }
     ],
-    "accounting_journal_types": [
+    "AC_journal_types": [
       {
         "name": "accounting_journal_types_pkey",
         "definition": "CREATE UNIQUE INDEX accounting_journal_types_pkey ON public.accounting_journal_types USING btree (id)"
