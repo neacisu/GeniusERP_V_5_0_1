@@ -12,13 +12,17 @@ import { v4 as uuidv4 } from 'uuid';
 import { crm_companies } from '../schema/crm.schema';
 import { eq, like, or, sql } from 'drizzle-orm';
 import { analytic_accounts, synthetic_accounts } from '@geniuserp/shared';
+import { AnalyticAccountsService } from '@geniuserp/accounting';
+import { storage } from "@api/storage";
 
 export class CompanyController {
   private db: DrizzleService;
   private jwtService: any = null;
+  private analyticAccountsService: AnalyticAccountsService;
 
   constructor(db?: DrizzleService) {
     this.db = db || new DrizzleService();
+    this.analyticAccountsService = new AnalyticAccountsService(storage, this.db);
 
     // Bind the methods to this instance
     this.createCompany = this.createCompany.bind(this);
@@ -87,66 +91,39 @@ export class CompanyController {
    * @param code The analytic account code (401.x or 4111.x format)
    * @param companyName The company name to use for the analytic account name
    * @returns true if successful, false otherwise
+   * @deprecated Use AnalyticAccountsService methods directly
    */
   private async syncAnalyticAccount(code: string, companyName: string): Promise<boolean> {
     try {
       console.log(`[CompanyController] Syncing analytic account ${code} for company ${companyName}`);
       
-      // First check if the account already exists in PC_analytic_accounts
-      const existingAccount = await this.db.executeQuery(`
-        SELECT * FROM PC_analytic_accounts
-        WHERE code = $1
-        LIMIT 1
-      `, [code]);
-      
-      if (existingAccount && existingAccount.length > 0) {
-        console.log(`[CompanyController] Analytic account ${code} already exists in PC_analytic_accounts`);
-        return true; // Account already exists, consider it synced
+      // Check if account already exists
+      const existing = await this.analyticAccountsService.getAnalyticByCode(code);
+      if (existing) {
+        console.log(`[CompanyController] Analytic account ${code} already exists`);
+        return true;
       }
       
-      // Figure out which synthetic account to link to
-      const prefix = code.split('.')[0]; // Get the prefix (401 or 4111)
+      // Get synthetic prefix and ID
+      const prefix = code.split('.')[0];
+      const syntheticId = await this.analyticAccountsService.getSyntheticIdByCode(prefix);
+      const synthetic = await this.analyticAccountsService.getSyntheticByCode(prefix);
       
-      // Find corresponding synthetic account
-      const syntheticAccount = await this.db.executeQuery(`
-        SELECT * FROM PC_synthetic_accounts
-        WHERE code = $1
-        LIMIT 1
-      `, [prefix]);
-      
-      if (!syntheticAccount || syntheticAccount.length === 0) {
+      if (!synthetic) {
         console.error(`[CompanyController] Could not find synthetic account with code ${prefix}`);
         return false;
       }
       
-      const syntheticId = syntheticAccount[0].id;
-      const accountFunction = syntheticAccount[0].account_function; // Inherit function from synthetic account
-      
-      // Create new analytic account
-      const analyticAccountData = {
-        code: code,
+      // Create the analytic account using the centralized service
+      await this.analyticAccountsService.createAnalyticAccount({
+        code,
         name: `${companyName} - ${code}`,
         description: `Cont analitic pentru compania ${companyName}`,
         synthetic_id: syntheticId,
-        account_function: accountFunction,
-        is_active: true
-      };
+        account_function: synthetic.account_function as 'A' | 'P' | 'B' | 'E' | 'V'
+      });
       
-      // Insert the analytic account
-      await this.db.executeQuery(`
-        INSERT INTO PC_analytic_accounts (code, name, description, synthetic_id, account_function, is_active)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        ON CONFLICT (code) DO NOTHING
-      `, [
-        analyticAccountData.code,
-        analyticAccountData.name,
-        analyticAccountData.description,
-        analyticAccountData.synthetic_id,
-        analyticAccountData.account_function,
-        analyticAccountData.is_active
-      ]); // Extra protection against duplicates
-      
-      console.log(`[CompanyController] Successfully created analytic account ${code} in PC_analytic_accounts`);
+      console.log(`[CompanyController] Successfully created analytic account ${code}`);
       return true;
     } catch (error) {
       console.error(`[CompanyController] Error syncing analytic account ${code}:`, error);
@@ -158,64 +135,17 @@ export class CompanyController {
    * Find the next available analytic account number and ensure it doesn't exist in either table
    * @param prefix The prefix for the analytic account (401 or 4111)
    * @param companyId The company ID to search within
+   * @deprecated Use AnalyticAccountsService.getNextAvailableCode() instead
    */
   private async getNextAnalyticAccountNumber(prefix: string, companyId: string): Promise<string> {
     try {
       console.log(`[CompanyController] Finding next available ${prefix}.x account number`);
-      const columnName = `analythic_${prefix}`;
       
-      // Query to find the highest existing account number in crm_companies
-      const query = `
-        SELECT ${columnName} 
-        FROM crm_companies 
-        WHERE company_id = $1 
-          AND ${columnName} IS NOT NULL 
-          AND ${columnName} LIKE '${prefix}.%'
-        ORDER BY ${columnName} DESC 
-        LIMIT 1
-      `;
+      // Use the centralized service
+      const nextCode = await this.analyticAccountsService.getNextAvailableCode(prefix);
       
-      const result = await this.db.executeQuery(query, [companyId]);
-      
-      let nextNumber = 1;
-      
-      if (result && result.length > 0) {
-        const lastAccount = result[0][columnName];
-        if (lastAccount && typeof lastAccount === 'string') {
-          const parts = lastAccount.split('.');
-          if (parts.length === 2) {
-            const lastNumber = parseInt(parts[1], 10);
-            if (!isNaN(lastNumber)) {
-              nextNumber = lastNumber + 1;
-            }
-          }
-        }
-      }
-      
-      // Also check PC_analytic_accounts table to ensure number is unique there too
-      let isUnique = false;
-      let candidateCode = '';
-      
-      while (!isUnique) {
-        candidateCode = `${prefix}.${nextNumber}`;
-        
-        // Check if this code exists in PC_analytic_accounts
-        const existingAnalytic = await this.db.executeQuery(`
-          SELECT * FROM PC_analytic_accounts
-          WHERE code = $1
-          LIMIT 1
-        `, [candidateCode]);
-        
-        if (existingAnalytic && existingAnalytic.length > 0) {
-          // Code already exists in PC_analytic_accounts, try next number
-          nextNumber++;
-        } else {
-          isUnique = true;
-        }
-      }
-      
-      console.log(`[CompanyController] Next ${prefix}.x account number: ${candidateCode}`);
-      return candidateCode;
+      console.log(`[CompanyController] Next ${prefix}.x account number: ${nextCode}`);
+      return nextCode;
     } catch (error) {
       console.error(`[CompanyController] Error finding next analytic account number for ${prefix}:`, error);
       return `${prefix}.1`; // Default to 1 if there's an error

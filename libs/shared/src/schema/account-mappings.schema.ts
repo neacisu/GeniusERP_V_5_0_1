@@ -1,9 +1,5 @@
 /**
-import { numeric, json } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
-import { numeric, json } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
- * Account Mappings Schema
+ * PC_account_mappings Schema (Plan de Conturi - Account Mappings)
  * 
  * RECOMANDARE 5: Conturi contabile configurabile în DB
  * 
@@ -14,6 +10,7 @@ import { sql } from "drizzle-orm";
 import { pgTable, uuid, text, timestamp, boolean, pgEnum } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { companies } from '../schema';
+import { z } from 'zod';
 
 /**
  * Tipuri de operațiuni contabile
@@ -68,33 +65,76 @@ export const accountMappingTypeEnum = pgEnum('account_mapping_type', accountMapp
  * 
  * Permite fiecărei companii să configureze propriul plan de conturi
  */
-export const account_mappings = pgTable('account_mappings', {
+export const PC_account_mappings = pgTable('PC_account_mappings', {
   id: uuid('id').primaryKey().defaultRandom(),
-  companyId: uuid('company_id').notNull().references(() => companies.id),
+  company_id: uuid('company_id').notNull().references(() => companies.id),
   
   // Tipul de operațiune contabilă
-  mappingType: accountMappingTypeEnum('mapping_type').notNull(),
+  mapping_type: accountMappingTypeEnum('mapping_type').notNull(),
   
   // Contul contabil asociat
-  accountCode: text('account_code').notNull(), // Ex: '5311', '4111'
-  accountName: text('account_name').notNull(), // Ex: 'Casa în lei', 'Clienți'
+  account_code: text('account_code').notNull(), // Ex: '5311', '4111'
+  account_name: text('account_name').notNull(), // Ex: 'Casa în lei', 'Clienți'
   
   // Configurare
-  isDefault: boolean('is_default').notNull().default(false),
-  isActive: boolean('is_active').notNull().default(true),
+  is_default: boolean('is_default').notNull().default(false),
+  is_active: boolean('is_active').notNull().default(true),
   
   // Audit
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-  createdBy: uuid('created_by'),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  updated_at: timestamp('updated_at').notNull().defaultNow(),
+  created_by: uuid('created_by'),
 });
 
-export const account_mappingsRelations = relations(account_mappings, ({ one }) => ({
+export const PC_account_mappingsRelations = relations(PC_account_mappings, ({ one }) => ({
   company: one(companies, {
-    fields: [account_mappings.companyId],
+    fields: [PC_account_mappings.company_id],
     references: [companies.id],
   }),
 }));
 
-export type AccountMapping = typeof account_mappings.$inferSelect;
-export type InsertAccountMapping = typeof account_mappings.$inferInsert;
+// ============================================================================
+// ZOD SCHEMAS
+// ============================================================================
+
+export const insertAccountMappingSchema = z.object({
+  id: z.string().uuid().optional(),
+  company_id: z.string().uuid(),
+  mapping_type: z.enum(accountMappingTypeValues),
+  account_code: z.string().min(1).regex(/^[0-9]{1,4}(\.[0-9]+)?$/, 'Cod cont invalid (ex: 401, 4111, 371.1)'),
+  account_name: z.string().min(1),
+  is_default: z.boolean().default(false),
+  is_active: z.boolean().default(true),
+  created_by: z.string().uuid().nullable().optional(),
+});
+
+export const selectAccountMappingSchema = insertAccountMappingSchema.extend({
+  id: z.string().uuid(),
+  created_at: z.date(),
+  updated_at: z.date(),
+});
+
+export const updateAccountMappingSchema = insertAccountMappingSchema.partial().required({ id: true });
+
+// ============================================================================
+// TYPESCRIPT TYPES
+// ============================================================================
+
+export type AccountMapping = typeof PC_account_mappings.$inferSelect;
+export type InsertAccountMapping = z.infer<typeof insertAccountMappingSchema>;
+export type SelectAccountMapping = z.infer<typeof selectAccountMappingSchema>;
+export type UpdateAccountMapping = z.infer<typeof updateAccountMappingSchema>;
+
+// ============================================================================
+// BACKWARD COMPATIBILITY ALIASES
+// ============================================================================
+
+/**
+ * @deprecated Use PC_account_mappings instead
+ */
+export const account_mappings = PC_account_mappings;
+
+/**
+ * @deprecated Use PC_account_mappingsRelations instead
+ */
+export const account_mappingsRelations = PC_account_mappingsRelations;

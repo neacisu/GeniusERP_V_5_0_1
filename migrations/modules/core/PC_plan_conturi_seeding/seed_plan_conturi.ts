@@ -38,7 +38,7 @@ export const seedRomanianChartOfAccounts = async (db: any) => {
 
     for (const accountClass of classesData) {
       await sql`
-        INSERT INTO PC_account_classes (
+        INSERT INTO "PC_account_classes" (
           id, code, name, description, default_account_function, created_at, updated_at
         ) VALUES (
           ${accountClass.id}::uuid,
@@ -66,7 +66,7 @@ export const seedRomanianChartOfAccounts = async (db: any) => {
 
     for (const accountGroup of groupsData) {
       await sql`
-        INSERT INTO PC_account_groups (
+        INSERT INTO "PC_account_groups" (
           id, code, name, description, class_id, created_at, updated_at
         ) VALUES (
           ${accountGroup.id}::uuid,
@@ -98,7 +98,7 @@ export const seedRomanianChartOfAccounts = async (db: any) => {
     for (const syntheticAccount of syntheticData) {
       try {
         await sql`
-          INSERT INTO PC_synthetic_accounts (
+          INSERT INTO "PC_synthetic_accounts" (
             id, code, name, description, account_function, grade, 
             group_id, parent_id, is_active, created_at, updated_at
           ) VALUES (

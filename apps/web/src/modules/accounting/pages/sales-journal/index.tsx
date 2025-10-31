@@ -134,8 +134,8 @@ type InvoiceItem = {
 type InvoiceJournalEntry = {
   id: string;
   journalEntryId: string;
-  accountCode: string;
-  accountName: string;
+  account_code: string;
+  account_name: string;
   description: string;
   debit: number;
   credit: number;
@@ -437,8 +437,8 @@ export default function SalesJournalPage() {
       {
         id: '1',
         journalEntryId: 'JE-2025-001',
-        accountCode: '4111',
-        accountName: 'Clienți',
+        account_code: '4111',
+        account_name: 'Clienți',
         description: 'Factura vânzare FACT 0001',
         debit: 5355.00,
         credit: 0
@@ -446,8 +446,8 @@ export default function SalesJournalPage() {
       {
         id: '2',
         journalEntryId: 'JE-2025-001',
-        accountCode: '707',
-        accountName: 'Venituri din vânzarea mărfurilor',
+        account_code: '707',
+        account_name: 'Venituri din vânzarea mărfurilor',
         description: 'Factura vânzare FACT 0001',
         debit: 0,
         credit: 4500.00
@@ -455,8 +455,8 @@ export default function SalesJournalPage() {
       {
         id: '3',
         journalEntryId: 'JE-2025-001',
-        accountCode: '4427',
-        accountName: 'TVA colectată',
+        account_code: '4427',
+        account_name: 'TVA colectată',
         description: 'Factura vânzare FACT 0001',
         debit: 0,
         credit: 855.00
@@ -1103,8 +1103,8 @@ export default function SalesJournalPage() {
                     <TableBody>
                       {journalEntry.map((line) => (
                         <TableRow key={line.id}>
-                          <TableCell className="font-medium">{line.accountCode}</TableCell>
-                          <TableCell>{line.accountName}</TableCell>
+                          <TableCell className="font-medium">{line.account_code}</TableCell>
+                          <TableCell>{line.account_name}</TableCell>
                           <TableCell>{line.description}</TableCell>
                           <TableCell className="text-right tabular-nums">
                             {line.debit > 0 ? formatCurrency(line.debit) : ""}

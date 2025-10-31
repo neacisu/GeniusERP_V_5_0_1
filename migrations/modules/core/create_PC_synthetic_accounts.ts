@@ -39,7 +39,7 @@ export const up = async (db: any) => {
 
   // Create the PC_synthetic_accounts table
   await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS PC_synthetic_accounts (
+    CREATE TABLE IF NOT EXISTS "PC_synthetic_accounts" (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       code character varying(4) NOT NULL,
       name text NOT NULL,
@@ -53,30 +53,30 @@ export const up = async (db: any) => {
       updated_at timestamp without time zone NOT NULL DEFAULT now(),
 
       -- Unique constraint on code
-      CONSTRAINT PC_synthetic_accounts_code_unique UNIQUE (code),
+      CONSTRAINT "PC_synthetic_accounts_code_unique" UNIQUE (code),
 
       -- Foreign key to PC_account_groups
-      CONSTRAINT PC_synthetic_accounts_group_id_PC_account_groups_id_fk
-        FOREIGN KEY (group_id) REFERENCES PC_account_groups(id)
+      CONSTRAINT "PC_synthetic_accounts_group_id_PC_account_groups_id_fk"
+        FOREIGN KEY (group_id) REFERENCES "PC_account_groups"(id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
 
       -- Self-referencing foreign key for parent accounts
-      CONSTRAINT PC_synthetic_accounts_parent_id_PC_synthetic_accounts_id_fk
-        FOREIGN KEY (parent_id) REFERENCES PC_synthetic_accounts(id)
+      CONSTRAINT "PC_synthetic_accounts_parent_id_PC_synthetic_accounts_id_fk"
+        FOREIGN KEY (parent_id) REFERENCES "PC_synthetic_accounts"(id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
 
       -- Check constraint: account_function must be A, P, or B
-      CONSTRAINT PC_synthetic_accounts_account_function_check
+      CONSTRAINT "PC_synthetic_accounts_account_function_check"
         CHECK (account_function IN ('A', 'P', 'B')),
 
       -- Check constraint: grade must be 1 or 2
-      CONSTRAINT PC_synthetic_accounts_grade_check
+      CONSTRAINT "PC_synthetic_accounts_grade_check"
         CHECK (grade IN (1, 2)),
 
       -- Check constraint: code must be 3 or 4 digits
-      CONSTRAINT PC_synthetic_accounts_code_format_check
+      CONSTRAINT "PC_synthetic_accounts_code_format_check"
         CHECK (code ~ '^[0-9]{3,4}$')
     );
   `);
@@ -85,33 +85,33 @@ export const up = async (db: any) => {
   console.log('📇 Creating indexes for PC_synthetic_accounts...');
 
   await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS PC_synthetic_accounts_code_idx
-    ON PC_synthetic_accounts (code);
+    CREATE INDEX IF NOT EXISTS "PC_synthetic_accounts_code_idx"
+    ON "PC_synthetic_accounts" (code);
   `);
 
   await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS PC_synthetic_accounts_group_idx
-    ON PC_synthetic_accounts (group_id);
+    CREATE INDEX IF NOT EXISTS "PC_synthetic_accounts_group_idx"
+    ON "PC_synthetic_accounts" (group_id);
   `);
 
   await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS PC_synthetic_accounts_parent_idx
-    ON PC_synthetic_accounts (parent_id);
+    CREATE INDEX IF NOT EXISTS "PC_synthetic_accounts_parent_idx"
+    ON "PC_synthetic_accounts" (parent_id);
   `);
 
   await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS PC_synthetic_accounts_function_idx
-    ON PC_synthetic_accounts (account_function);
+    CREATE INDEX IF NOT EXISTS "PC_synthetic_accounts_function_idx"
+    ON "PC_synthetic_accounts" (account_function);
   `);
 
   await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS PC_synthetic_accounts_grade_idx
-    ON PC_synthetic_accounts (grade);
+    CREATE INDEX IF NOT EXISTS "PC_synthetic_accounts_grade_idx"
+    ON "PC_synthetic_accounts" (grade);
   `);
 
   await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS PC_synthetic_accounts_is_active_idx
-    ON PC_synthetic_accounts (is_active);
+    CREATE INDEX IF NOT EXISTS "PC_synthetic_accounts_is_active_idx"
+    ON "PC_synthetic_accounts" (is_active);
   `);
 
   console.log('✅ PC_synthetic_accounts table created successfully with 6 indexes');
@@ -122,15 +122,15 @@ export const down = async (db: any) => {
   console.log('🔄 Rolling back PC_synthetic_accounts table...');
 
   // Drop indexes first
-  await db.execute(sql`DROP INDEX IF EXISTS PC_synthetic_accounts_is_active_idx;`);
-  await db.execute(sql`DROP INDEX IF EXISTS PC_synthetic_accounts_grade_idx;`);
-  await db.execute(sql`DROP INDEX IF EXISTS PC_synthetic_accounts_function_idx;`);
-  await db.execute(sql`DROP INDEX IF EXISTS PC_synthetic_accounts_parent_idx;`);
-  await db.execute(sql`DROP INDEX IF EXISTS PC_synthetic_accounts_group_idx;`);
-  await db.execute(sql`DROP INDEX IF EXISTS PC_synthetic_accounts_code_idx;`);
+  await db.execute(sql`DROP INDEX IF EXISTS "PC_synthetic_accounts_is_active_idx";`);
+  await db.execute(sql`DROP INDEX IF EXISTS "PC_synthetic_accounts_grade_idx";`);
+  await db.execute(sql`DROP INDEX IF EXISTS "PC_synthetic_accounts_function_idx";`);
+  await db.execute(sql`DROP INDEX IF EXISTS "PC_synthetic_accounts_parent_idx";`);
+  await db.execute(sql`DROP INDEX IF EXISTS "PC_synthetic_accounts_group_idx";`);
+  await db.execute(sql`DROP INDEX IF EXISTS "PC_synthetic_accounts_code_idx";`);
 
   // Drop the table (cascading will handle foreign keys)
-  await db.execute(sql`DROP TABLE IF EXISTS PC_synthetic_accounts CASCADE;`);
+  await db.execute(sql`DROP TABLE IF EXISTS "PC_synthetic_accounts" CASCADE;`);
 
   console.log('✅ PC_synthetic_accounts table rolled back');
 };

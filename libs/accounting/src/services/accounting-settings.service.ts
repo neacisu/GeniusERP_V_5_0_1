@@ -12,13 +12,13 @@
  */
 
 import { DrizzleService } from "@common/drizzle/drizzle.service";
-import { eq, and, desc, sql, like, or } from 'drizzle-orm';
+import { eq, and, desc, sql, like } from 'drizzle-orm';
 import { RedisService } from '@common/services/redis.service';
 import {
-  accountingSettings,
-  vatSettings,
-  accountRelationships,
-  openingBalances,
+  accounting_settings,
+  vat_settings,
+  account_relationships,
+  opening_balances,
   AccountingSettings,
   VatSettings,
   AccountRelationship,
@@ -30,13 +30,19 @@ import {
   UpdateAccountingSettings,
   UpdateVatSettings,
   UpdateAccountRelationship,
+  synthetic_accounts,
+  invoices,
+  PC_account_mappings,
+  AccountMapping,
+  InsertAccountMapping,
 } from '@geniuserp/shared';
-import { accountMappings, AccountMapping, InsertAccountMapping } from '@geniuserp/shared';
-import { documentCounters, DocumentCounter } from '../schema/accounting.schema';
-import { fiscal_periods, FiscalPeriod } from '../schema/accounting.schema';
-import { ledger_entries } from '../schema/accounting.schema';
-import { synthetic_accounts, SyntheticAccount } from '@geniuserp/shared';
-import { invoices } from '@geniuserp/shared';
+import { 
+  documentCounters, 
+  DocumentCounter, 
+  fiscalPeriods, 
+  FiscalPeriod, 
+  ledgerEntries,
+} from '../schema/accounting.schema';
 
 export interface AllAccountingSettings {
   generalSettings: AccountingSettings | null;
@@ -135,7 +141,7 @@ export class AccountingSettingsService extends DrizzleService {
       }
     }
     const [settings] = await this.query((db) =>
-      db.select().from(accountingSettings).where(eq(accountingSettings.companyId, companyId)).limit(1)
+      db.select().from(accounting_settings).where(eq(accounting_settings.companyId, companyId)).limit(1)
     );
 
     const result = settings || null;
@@ -174,9 +180,9 @@ export class AccountingSettingsService extends DrizzleService {
       // Update existing settings
       const [updated] = await this.query((db) =>
         db
-          .update(accountingSettings)
+          .update(accounting_settings)
           .set({ ...data, updatedAt: new Date() })
-          .where(eq(accountingSettings.companyId, companyId))
+          .where(eq(accounting_settings.companyId, companyId))
           .returning()
       );
       
@@ -188,7 +194,7 @@ export class AccountingSettingsService extends DrizzleService {
       // Create new settings
       const [created] = await this.query((db) =>
         db
-          .insert(accountingSettings)
+          .insert(accounting_settings)
           .values({
             companyId,
             ...data,
@@ -209,7 +215,7 @@ export class AccountingSettingsService extends DrizzleService {
    */
   async getVatSettings(companyId: string): Promise<VatSettings | null> {
     const [settings] = await this.query((db) =>
-      db.select().from(vatSettings).where(eq(vatSettings.companyId, companyId)).limit(1)
+      db.select().from(vat_settings).where(eq(vat_settings.companyId, companyId)).limit(1)
     );
 
     return settings || null;
@@ -254,9 +260,9 @@ export class AccountingSettingsService extends DrizzleService {
       // Update existing settings
       const [updated] = await this.query((db) =>
         db
-          .update(vatSettings)
+          .update(vat_settings)
           .set({ ...data, updatedAt: new Date() })
-          .where(eq(vatSettings.companyId, companyId))
+          .where(eq(vat_settings.companyId, companyId))
           .returning()
       );
       return updated;
@@ -264,7 +270,7 @@ export class AccountingSettingsService extends DrizzleService {
       // Create new settings
       const [created] = await this.query((db) =>
         db
-          .insert(vatSettings)
+          .insert(vat_settings)
           .values({
             companyId,
             ...data,
@@ -280,7 +286,7 @@ export class AccountingSettingsService extends DrizzleService {
    */
   async getAccountMappings(companyId: string): Promise<AccountMapping[]> {
     return this.query((db) =>
-      db.select().from(accountMappings).where(eq(accountMappings.companyId, companyId))
+      db.select().from(PC_account_mappings).where(eq(PC_account_mappings.company_id, companyId))
     );
   }
 
@@ -302,10 +308,10 @@ export class AccountingSettingsService extends DrizzleService {
     const [existing] = await this.query((db) =>
       db
         .select()
-        .from(accountMappings)
+        .from(PC_account_mappings)
         .where(and(
-          eq(accountMappings.companyId, companyId), 
-          sql`${accountMappings.mappingType} = ${mappingType}`
+          eq(PC_account_mappings.company_id, companyId), 
+          sql`${PC_account_mappings.mapping_type} = ${mappingType}`
         ))
         .limit(1)
     );
@@ -314,11 +320,11 @@ export class AccountingSettingsService extends DrizzleService {
       // Update existing mapping
       const [updated] = await this.query((db) =>
         db
-          .update(accountMappings)
-          .set({ accountCode, accountName, updatedAt: new Date() })
+          .update(PC_account_mappings)
+          .set({ account_code: accountCode, account_name: accountName, updated_at: new Date() })
           .where(and(
-            eq(accountMappings.companyId, companyId), 
-            sql`${accountMappings.mappingType} = ${mappingType}`
+            eq(PC_account_mappings.company_id, companyId), 
+            sql`${PC_account_mappings.mapping_type} = ${mappingType}`
           ))
           .returning()
       );
@@ -327,14 +333,14 @@ export class AccountingSettingsService extends DrizzleService {
       // Create new mapping
       const [created] = await this.query((db) =>
         db
-          .insert(accountMappings)
+          .insert(PC_account_mappings)
           .values({
-            companyId,
-            mappingType,
-            accountCode,
-            accountName,
-            isDefault: false,
-            isActive: true,
+            company_id: companyId,
+            mapping_type: mappingType,
+            account_code: accountCode,
+            account_name: accountName,
+            is_default: false,
+            is_active: true,
           } as InsertAccountMapping)
           .returning()
       );
@@ -348,7 +354,7 @@ export class AccountingSettingsService extends DrizzleService {
   async resetAccountMappingsToDefault(companyId: string): Promise<void> {
     // Delete all custom mappings
     await this.query((db) =>
-      db.delete(accountMappings).where(and(eq(accountMappings.companyId, companyId), eq(accountMappings.isDefault, false)))
+      db.delete(PC_account_mappings).where(and(eq(PC_account_mappings.company_id, companyId), eq(PC_account_mappings.is_default, false)))
     );
 
     // Default mappings will be used by the system
@@ -359,7 +365,7 @@ export class AccountingSettingsService extends DrizzleService {
    */
   async getAccountRelationships(companyId: string): Promise<AccountRelationship[]> {
     return this.query((db) =>
-      db.select().from(accountRelationships).where(eq(accountRelationships.companyId, companyId)).orderBy(desc(accountRelationships.priority))
+      db.select().from(account_relationships).where(eq(account_relationships.companyId, companyId)).orderBy(desc(account_relationships.priority))
     );
   }
 
@@ -385,7 +391,7 @@ export class AccountingSettingsService extends DrizzleService {
 
     const [created] = await this.query((db) =>
       db
-        .insert(accountRelationships)
+        .insert(account_relationships)
         .values({
           companyId,
           ...data,
@@ -423,9 +429,9 @@ export class AccountingSettingsService extends DrizzleService {
 
     const [updated] = await this.query((db) =>
       db
-        .update(accountRelationships)
+        .update(account_relationships)
         .set({ ...data, updatedAt: new Date() })
-        .where(eq(accountRelationships.id, relationshipId))
+        .where(eq(account_relationships.id, relationshipId))
         .returning()
     );
 
@@ -437,7 +443,7 @@ export class AccountingSettingsService extends DrizzleService {
    */
   async deleteAccountRelationship(relationshipId: string): Promise<void> {
     await this.query((db) =>
-      db.delete(accountRelationships).where(eq(accountRelationships.id, relationshipId))
+      db.delete(account_relationships).where(eq(account_relationships.id, relationshipId))
     );
   }
 
@@ -629,8 +635,8 @@ export class AccountingSettingsService extends DrizzleService {
     return this.query((db) =>
       db
         .select()
-        .from(openingBalances)
-        .where(and(eq(openingBalances.companyId, companyId), eq(openingBalances.fiscalYear, fiscalYear)))
+        .from(opening_balances)
+        .where(and(eq(opening_balances.companyId, companyId), eq(opening_balances.fiscalYear, fiscalYear)))
     );
   }
 
@@ -667,8 +673,8 @@ export class AccountingSettingsService extends DrizzleService {
     // Delete existing balances for this year
     await this.query((db) =>
       db
-        .delete(openingBalances)
-        .where(and(eq(openingBalances.companyId, companyId), eq(openingBalances.fiscalYear, fiscalYear)))
+        .delete(opening_balances)
+        .where(and(eq(opening_balances.companyId, companyId), eq(opening_balances.fiscalYear, fiscalYear)))
     );
 
     // Insert new balances
@@ -677,7 +683,7 @@ export class AccountingSettingsService extends DrizzleService {
     for (const balance of balances) {
       const [created] = await this.query((db) =>
         db
-          .insert(openingBalances)
+          .insert(opening_balances)
           .values({
             companyId,
             accountCode: balance.accountCode,
@@ -755,14 +761,14 @@ export class AccountingSettingsService extends DrizzleService {
     // Mark as validated
     await this.query((db) =>
       db
-        .update(openingBalances)
+        .update(opening_balances)
         .set({
           isValidated: true,
           validatedAt: new Date(),
           validatedBy: userId,
           updatedAt: new Date(),
         })
-        .where(and(eq(openingBalances.companyId, companyId), eq(openingBalances.fiscalYear, fiscalYear)))
+        .where(and(eq(opening_balances.companyId, companyId), eq(opening_balances.fiscalYear, fiscalYear)))
     );
   }
 

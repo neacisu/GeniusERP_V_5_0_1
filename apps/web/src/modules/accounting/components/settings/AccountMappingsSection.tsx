@@ -23,9 +23,9 @@ import { Loader2 } from "lucide-react";
 
 interface AccountMapping {
   id: string;
-  mappingType: string;
-  accountCode: string;
-  accountName: string;
+  mapping_type: string;
+  account_code: string;
+  account_name: string;
 }
 
 interface SyntheticAccount {
@@ -55,10 +55,10 @@ export default function AccountMappingsSection({ companyId, onChange }: AccountM
 
   // Update mapping mutation
   const updateMappingMutation = useMutation({
-    mutationFn: async ({ mappingType, accountCode }: { mappingType: string; accountCode: string }) => {
-      return await apiRequest(`/api/accounting/settings/${companyId}/account-mappings/${mappingType}`, {
+    mutationFn: async ({ mapping_type, account_code }: { mapping_type: string; account_code: string }) => {
+      return await apiRequest(`/api/accounting/settings/${companyId}/account-mappings/${mapping_type}`, {
         method: 'PUT',
-        body: { accountCode },
+        body: { accountCode: account_code }, // Backend still expects camelCase
       });
     },
     onSuccess: () => {
@@ -88,8 +88,8 @@ export default function AccountMappingsSection({ companyId, onChange }: AccountM
     },
   });
 
-  const handleMappingChange = (mappingType: string, accountCode: string) => {
-    updateMappingMutation.mutate({ mappingType, accountCode });
+  const handleMappingChange = (mapping_type: string, account_code: string) => {
+    updateMappingMutation.mutate({ mapping_type, account_code });
   };
 
   const handleReset = () => {
@@ -98,9 +98,9 @@ export default function AccountMappingsSection({ companyId, onChange }: AccountM
     }
   };
 
-  const getMappingValue = (mappingType: string) => {
-    const mapping = mappings.find((m) => m.mappingType === mappingType);
-    return mapping?.accountCode || "";
+  const getMappingValue = (mapping_type: string) => {
+    const mapping = mappings.find((m) => m.mapping_type === mapping_type);
+    return mapping?.account_code || "";
   };
 
   if (mappingsLoading || accountsLoading) {

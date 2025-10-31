@@ -35,7 +35,7 @@ export const up = async (db: any) => {
 
   // Create the PC_account_groups table
   await sql`
-    CREATE TABLE IF NOT EXISTS PC_account_groups (
+    CREATE TABLE IF NOT EXISTS "PC_account_groups" (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       code character varying(2) NOT NULL,
       name text NOT NULL,
@@ -45,23 +45,23 @@ export const up = async (db: any) => {
       updated_at timestamp without time zone NOT NULL DEFAULT now(),
 
       -- Unique constraint on code (groups 10-99)
-      CONSTRAINT PC_account_groups_code_unique UNIQUE (code),
+      CONSTRAINT "PC_account_groups_code_unique" UNIQUE (code),
 
       -- Foreign key to PC_account_classes
-      CONSTRAINT PC_account_groups_class_id_PC_account_classes_id_fk
-        FOREIGN KEY (class_id) REFERENCES PC_account_classes(id)
+      CONSTRAINT "PC_account_groups_class_id_PC_account_classes_id_fk"
+        FOREIGN KEY (class_id) REFERENCES "PC_account_classes"(id)
     );
   `;
 
   // Create indexes for performance
   await sql`
-    CREATE INDEX IF NOT EXISTS idx_PC_account_groups_code
-    ON PC_account_groups (code);
+    CREATE INDEX IF NOT EXISTS "idx_PC_account_groups_code"
+    ON "PC_account_groups" (code);
   `;
 
   await sql`
-    CREATE INDEX IF NOT EXISTS idx_PC_account_groups_class_id
-    ON PC_account_groups (class_id);
+    CREATE INDEX IF NOT EXISTS "idx_PC_account_groups_class_id"
+    ON "PC_account_groups" (class_id);
   `;
 
   console.log('✅ PC_account_groups table created successfully');
@@ -71,11 +71,11 @@ export const down = async (db: any) => {
   console.log('🔄 Rolling back account_groups table...');
 
   // Drop indexes first
-  await sql`DROP INDEX IF EXISTS idx_PC_account_groups_class_id;`;
-  await sql`DROP INDEX IF EXISTS idx_PC_account_groups_code;`;
+  await sql`DROP INDEX IF EXISTS "idx_PC_account_groups_class_id";`;
+  await sql`DROP INDEX IF EXISTS "idx_PC_account_groups_code";`;
 
   // Drop the table
-  await sql`DROP TABLE IF EXISTS PC_account_groups;`;
+  await sql`DROP TABLE IF EXISTS "PC_account_groups";`;
 
   console.log('✅  PC_account_groups table rolled back');
 };

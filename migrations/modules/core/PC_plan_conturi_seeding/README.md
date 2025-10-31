@@ -42,7 +42,7 @@ Grupuri pentru fiecare clasă conform standardelor românești:
 Conturi sintetice de grad 1 (3 cifre) și grad 2 (4 cifre):
 - **Grad 1** (3 cifre): Conturi de bază (ex: 101, 121, 401, 411, 512, 607, 707)
 - **Grad 2** (4 cifre): Detalieri suplimentare (ex: 1011, 1211, 4011, 4111, 5121)
-- **Funcții contabile**: A (Activ), P (Pasiv), B (Bifuncțional)
+- **Funcții contabile**: A (Activ), P (Pasiv), B (Bifuncțional), E (Cheltuieli/Expenses), V (Venituri/Revenues)
 - **Ierarhie**: Conturi grad 2 au referință la conturi grad 1 prin `parent_id`
 
 ## 🔧 Utilizare
@@ -66,7 +66,12 @@ node seed_plan_conturi.ts
 ## 📋 Specificații Tehnice
 
 ### Normalizări Aplicate
-- `default_account_function` și `account_function`: Convertit din `ASSET`/`EQUITY`/`EXPENSE`/`REVENUE` în `A`/`P`/`B`
+- `default_account_function` și `account_function`: Convertit din `ASSET`/`EQUITY`/`EXPENSE`/`REVENUE` în `A`/`P`/`B`/`E`/`V`
+  - A = Activ (Asset)
+  - P = Pasiv (Equity/Liability)
+  - B = Bifuncțional (Can be both)
+  - E = Cheltuieli (Expenses)
+  - V = Venituri (Revenues)
 - `grade`: Determinat automat din lungimea codului (3 cifre = 1, 4 cifre = 2)
 - Date păstrate în format ISO 8601
 - UUID-uri păstrate pentru integritate referentială

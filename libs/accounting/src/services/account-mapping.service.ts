@@ -8,7 +8,7 @@
 
 import { getDrizzle } from "@common/drizzle";
 import { eq, and } from 'drizzle-orm';
-import { accountMappings } from '@geniuserp/shared/schema/account-mappings.schema';
+import { PC_account_mappings } from '@geniuserp/shared/schema/account-mappings.schema';
 import { RedisService } from '@common/services/redis.service';
 
 export class AccountMappingService {
@@ -48,21 +48,21 @@ export class AccountMappingService {
     try {
       const [mapping] = await db
         .select()
-        .from(accountMappings)
+        .from(PC_account_mappings)
         .where(and(
-          eq(accountMappings.companyId, companyId),
-          eq(accountMappings.mappingType, mappingType as any),
-          eq(accountMappings.isActive, true)
+          eq(PC_account_mappings.company_id, companyId),
+          eq(PC_account_mappings.mapping_type, mappingType as any),
+          eq(PC_account_mappings.is_active, true)
         ))
         .limit(1);
       
       if (mapping) {
         // Cache result in Redis for 24 hours
         if (this.redisService.isConnected()) {
-          await this.redisService.setCached(cacheKey, mapping.accountCode, 86400);
+          await this.redisService.setCached(cacheKey, mapping.account_code, 86400);
         }
         
-        return mapping.accountCode;
+        return mapping.account_code;
       }
       
       // Fallback la conturi default RO dacă nu e configurat
@@ -156,17 +156,17 @@ export class AccountMappingService {
     const defaults = this.getAllDefaultMappings();
     
     const values = defaults.map(({ type, code, name }) => ({
-      companyId,
-      mappingType: type,
-      accountCode: code,
-      accountName: name,
-      isDefault: true,
-      isActive: true,
-      createdBy: userId
+      company_id: companyId,
+      mapping_type: type,
+      account_code: code,
+      account_name: name,
+      is_default: true,
+      is_active: true,
+      created_by: userId
     }));
     
     try {
-      await db.insert(accountMappings).values(values as any);
+      await db.insert(PC_account_mappings).values(values as any);
       console.log(`✅ Mapări conturi default create pentru compania ${companyId}`);
     } catch (error) {
       console.error('❌ Error initializing account mappings:', error);

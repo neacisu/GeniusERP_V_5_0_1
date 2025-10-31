@@ -12,10 +12,9 @@
 import { getDrizzle, DrizzleService } from "@common/drizzle";
 import { randomUUID } from 'crypto';
 import { gestiuneTypeEnum } from '../schema/inventory.schema';
-import { AccountingService } from '@geniuserp/accounting';
+import { AccountingService, AnalyticAccountsService } from '@geniuserp/accounting';
 import { IStorage, storage } from "@api/storage";
 import { eq } from 'drizzle-orm';
-// analyticAccounts removed - no longer needed
 
 /**
  * Input type for warehouse creation
@@ -34,75 +33,47 @@ export type WarehouseInput = {
 export class ManageWarehouseService {
   private drizzle: DrizzleService;
   private accountingService: AccountingService;
+  private analyticAccountsService: AnalyticAccountsService;
   private storage: IStorage;
   
   constructor() {
     this.drizzle = new DrizzleService();
     // Use the imported storage instance
     this.storage = storage;
-    // Instantiate the accounting service
+    // Instantiate services
     this.accountingService = new AccountingService(this.storage);
+    this.analyticAccountsService = new AnalyticAccountsService(this.storage, this.drizzle);
     
-    console.log('[ManageWarehouseService] 🔧 Service initialized with storage and accounting service');
-    console.log('[ManageWarehouseService] 🔍 Storage methods available:');
-    console.log('[ManageWarehouseService] - createAnalyticAccount:', typeof this.storage.createAnalyticAccount);
+    console.log('[ManageWarehouseService] 🔧 Service initialized with AnalyticAccountsService');
   }
   
   /**
    * Generate the next available prefix.x analytic account code for all account types
    * This gets the highest existing x suffix across all account types that need to be assigned
    * to the warehouse to ensure consistency
+   * 
+   * @deprecated Use AnalyticAccountsService.getNextAvailableCode() for individual synthetic codes
    */
   private async getNextAnalyticSuffix(): Promise<number> {
     try {
-      // We must check both PC_analytic_accounts AND warehouses tables to avoid duplicates
-      
-      // Step 1: Check the PC_analytic_accounts table
+      // This method is kept for backward compatibility but should use the new service
+      // We check the maximum suffix across multiple synthetic codes (371, 378, etc.)
       const accountPrefixes = ['371', '378', '4426', '4427', '4428', '5311', '607', '707', '8033', '8039'];
-      const prefixPatterns = accountPrefixes.map(prefix => `${prefix}.%`);
       
-      const analyticAccountsSql = `
-        SELECT code FROM PC_analytic_accounts 
-        WHERE code LIKE ANY(ARRAY['${prefixPatterns.join("','")}'])
-      `;
+      let maxSuffix = 0;
       
-      // Step 2: Check the warehouses table
-      const warehousesSql = `
-        SELECT code FROM warehouses
-        WHERE code LIKE '371.%' OR code LIKE '8033.%' OR code LIKE '8039.%'
-      `;
-      
-      // Run both queries
-      const analyticResults = await this.drizzle.executeQuery(analyticAccountsSql);
-      const warehouseResults = await this.drizzle.executeQuery(warehousesSql);
-      
-      console.log(`[ManageWarehouseService] 🔍 Found ${analyticResults.length} analytic accounts and ${warehouseResults.length} warehouses with codes`);
-      
-      // Combine results from both tables
-      const allCodes = [
-        ...analyticResults.map((row: any) => row.code),
-        ...warehouseResults.map((row: any) => row.code)
-      ];
-      
-      if (allCodes.length === 0) {
-        // No existing accounts or warehouses, start with 1
-        console.log(`[ManageWarehouseService] 🔍 No existing codes found, using suffix 1`);
-        return 1;
+      // Check each prefix and find the global maximum
+      for (const prefix of accountPrefixes) {
+        const nextCode = await this.analyticAccountsService.getNextAvailableCode(prefix);
+        const parts = nextCode.split('.');
+        const suffix = parseInt(parts[1], 10);
+        if (suffix > maxSuffix) {
+          maxSuffix = suffix;
+        }
       }
       
-      // Extract all suffixes (numbers after the dot)
-      const allSuffixes = allCodes.map(code => {
-        const parts = code.split('.');
-        if (parts.length !== 2) return 0;
-        return parseInt(parts[1]);
-      }).filter(num => !isNaN(num));
-      
-      // Find the highest suffix
-      const maxSuffix = Math.max(...allSuffixes);
-      console.log(`[ManageWarehouseService] 🔍 Highest suffix found: ${maxSuffix}, using ${maxSuffix + 1} as next suffix`);
-      
-      // Return the next suffix
-      return maxSuffix + 1;
+      // Return the max suffix found, or 1 if none exists
+      return maxSuffix > 0 ? maxSuffix : 1;
     } catch (error) {
       console.error(`[ManageWarehouseService] ❌ Error generating next analytic suffix:`, error);
       // If there's an error, use a safe fallback method with timestamp
@@ -112,75 +83,32 @@ export class ManageWarehouseService {
   
   /**
    * Get synthetic account ID by code
+   * @deprecated Use AnalyticAccountsService.getSyntheticIdByCode() instead
    */
   private async getSyntheticAccountId(code: string): Promise<string> {
-    const syntheticResult = await this.drizzle.executeQuery(
-      `SELECT id FROM PC_synthetic_accounts WHERE code = '${code}' LIMIT 1`
-    );
-    
-    if (syntheticResult.length === 0) {
-      throw new Error(`Synthetic account ${code} not found`);
-    }
-    
-    return syntheticResult[0].id;
+    return await this.analyticAccountsService.getSyntheticIdByCode(code);
   }
   
   /**
    * Create an analytic account
+   * @deprecated Use AnalyticAccountsService.createAnalyticAccount() instead
    */
   private async createAnalyticAccount(syntheticId: string, code: string, name: string, description: string, account_function: string): Promise<void> {
     try {
       console.log(`[ManageWarehouseService] 📊 Creating analytic account ${code}: ${name}`);
       
-      // Sanitize inputs to prevent SQL injection
-      const sanitizedCode = code.replace(/'/g, "''");
-      const sanitizedName = name.replace(/'/g, "''");
-      const sanitizedDescription = description ? description.replace(/'/g, "''") : '';
+      // Use the centralized service
+      await this.analyticAccountsService.createAnalyticAccount({
+        code,
+        name,
+        description,
+        synthetic_id: syntheticId,
+        account_function: account_function as 'A' | 'P' | 'B' | 'E' | 'V'
+      });
       
-      // Create analytic account with direct SQL first, then use the storage method as fallback
-      try {
-        const analyticAccountSQL = `
-          INSERT INTO PC_analytic_accounts (
-            id, code, name, description, synthetic_id, account_function, is_active, created_at, updated_at
-          ) VALUES (
-            '${randomUUID()}',
-            '${sanitizedCode}',
-            '${sanitizedName}',
-            '${sanitizedDescription}',
-            '${syntheticId}',
-            '${account_function}',
-            true,
-            NOW(),
-            NOW()
-          ) RETURNING *
-        `;
-        
-        const result = await this.drizzle.executeQuery(analyticAccountSQL);
-        console.log(`[ManageWarehouseService] ✅ Created analytic account with SQL: ${code} - ${name}`);
-        return;
-      } catch (sqlError: any) {
-        console.error(`[ManageWarehouseService] ⚠️ SQL insert failed, trying storage method: ${sqlError.message || String(sqlError)}`);
-        
-        // Fallback to storage method if SQL fails
-        const analyticAccount = {
-          id: randomUUID(),
-          code: code,
-          name: name,
-          description: description,
-          synthetic_id: syntheticId,
-          account_function: account_function as 'A' | 'P' | 'B' | 'E' | 'V', // Type cast to enum
-          is_active: true
-        };
-        
-        console.log(`[ManageWarehouseService] 🔄 Analytic account object:`, JSON.stringify(analyticAccount, null, 2));
-        
-        await this.storage.createAnalyticAccount(analyticAccount);
-        console.log(`[ManageWarehouseService] ✅ Created analytic account with storage: ${code} - ${name}`);
-      }
+      console.log(`[ManageWarehouseService] ✅ Analytic account ${code} created successfully via AnalyticAccountsService`);
     } catch (error: any) {
-      console.error(`[ManageWarehouseService] ❌ Error creating specific analytic account ${code}:`, error);
-      console.error(`[ManageWarehouseService] ❌ Detalii eroare cont analitic ${code}:`, error.message || String(error));
-      console.error(`[ManageWarehouseService] ❌ Stack trace:`, error.stack || 'No stack trace available');
+      console.error(`[ManageWarehouseService] ❌ Error creating analytic account ${code}:`, error);
       throw new Error(`Failed to create analytic account: ${error.message || String(error)}`);
     }
   }

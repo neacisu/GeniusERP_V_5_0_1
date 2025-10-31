@@ -46,7 +46,7 @@ describe('AccountingSettingsService Unit Tests', () => {
     it('should return cached settings if available', async () => {
       const companyId = 'company-1';
       const cachedSettings = {
-        generalSettings: { id: '1', companyId },
+        generalSettings: { id: '1', company_id: companyId }, // snake_case
         vatSettings: null,
         accountMappings: [],
         accountRelationships: [],
