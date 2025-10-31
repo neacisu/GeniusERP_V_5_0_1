@@ -183,10 +183,13 @@ export const journal_types = pgTable('journal_types', {
 });
 
 /**
- * Account balances table
+ * Account balances table (AC_ prefix)
  * Running balances for each account
+ * 
+ * 🏷️  NUME TABEL: AC_account_balances
+ * 📁 PREFIX: AC_ (Accounting Configuration)
  */
-export const account_balances = pgTable('account_balances', {
+export const AC_account_balances = pgTable('AC_account_balances', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
   companyId: uuid('company_id').notNull(),
   accountId: uuid('account_id').notNull(),
@@ -205,18 +208,28 @@ export const account_balances = pgTable('account_balances', {
 });
 
 /**
- * Relations for account balances
+ * @deprecated Use AC_account_balances instead - backward compatibility alias
  */
-export const account_balancesRelations = relations(account_balances, ({ one }) => ({
+export const account_balances = AC_account_balances;
+
+/**
+ * Relations for AC_account_balances
+ */
+export const AC_account_balancesRelations = relations(AC_account_balances, ({ one }) => ({
   account: one(accounts, {
-    fields: [account_balances.accountId],
+    fields: [AC_account_balances.accountId],
     references: [accounts.id]
   }),
   company: one(companies, {
-    fields: [account_balances.companyId],
+    fields: [AC_account_balances.companyId],
     references: [companies.id]
   })
 }));
+
+/**
+ * @deprecated Use AC_account_balancesRelations instead - backward compatibility alias
+ */
+export const account_balancesRelations = AC_account_balancesRelations;
 
 /**
  * Fiscal periods table
@@ -324,8 +337,8 @@ export type InsertLedgerLine = typeof ledger_lines.$inferInsert;
 export type JournalType = typeof journal_types.$inferSelect;
 export type InsertJournalType = typeof journal_types.$inferInsert;
 
-export type AccountBalance = typeof account_balances.$inferSelect;
-export type InsertAccountBalance = typeof account_balances.$inferInsert;
+export type AccountBalance = typeof AC_account_balances.$inferSelect;
+export type InsertAccountBalance = typeof AC_account_balances.$inferInsert;
 
 export type FiscalPeriod = typeof fiscal_periods.$inferSelect;
 export type InsertFiscalPeriod = typeof fiscal_periods.$inferInsert;
@@ -334,11 +347,11 @@ export type ChartOfAccount = typeof chart_of_accounts.$inferSelect;
 export type InsertChartOfAccount = typeof chart_of_accounts.$inferInsert;
 
 // ============================================================
-// ZOD SCHEMAS FOR ACCOUNT BALANCES
+// ZOD SCHEMAS FOR AC_ACCOUNT_BALANCES
 // ============================================================
 
-// Account Balances Schemas
-export const insertAccountBalanceSchema = createInsertSchema(account_balances, {
+// AC_account_balances Schemas
+export const insertACAccountBalanceSchema = createInsertSchema(AC_account_balances, {
   fiscalYear: z.number().int().min(2000).max(2100),
   fiscalMonth: z.number().int().min(1).max(12),
   openingDebit: z.string().regex(/^\d+(\.\d{1,2})?$/),
@@ -349,9 +362,9 @@ export const insertAccountBalanceSchema = createInsertSchema(account_balances, {
   closingCredit: z.string().regex(/^\d+(\.\d{1,2})?$/),
 });
 
-export const selectAccountBalanceSchema = createSelectSchema(account_balances);
+export const selectACAccountBalanceSchema = createSelectSchema(AC_account_balances);
 
-export const updateAccountBalanceSchema = insertAccountBalanceSchema.partial().omit({
+export const updateACAccountBalanceSchema = insertACAccountBalanceSchema.partial().omit({
   id: true,
   companyId: true,
   accountId: true,
@@ -359,10 +372,20 @@ export const updateAccountBalanceSchema = insertAccountBalanceSchema.partial().o
   updatedAt: true,
 });
 
+// Backward compatibility aliases
+export const insertAccountBalanceSchema = insertACAccountBalanceSchema;
+export const selectAccountBalanceSchema = selectACAccountBalanceSchema;
+export const updateAccountBalanceSchema = updateACAccountBalanceSchema;
+
 // Export Zod types
-export type InsertAccountBalanceZod = z.infer<typeof insertAccountBalanceSchema>;
-export type SelectAccountBalanceZod = z.infer<typeof selectAccountBalanceSchema>;
-export type UpdateAccountBalanceZod = z.infer<typeof updateAccountBalanceSchema>;
+export type InsertACAccountBalanceZod = z.infer<typeof insertACAccountBalanceSchema>;
+export type SelectACAccountBalanceZod = z.infer<typeof selectACAccountBalanceSchema>;
+export type UpdateACAccountBalanceZod = z.infer<typeof updateACAccountBalanceSchema>;
+
+// Backward compatibility type aliases
+export type InsertAccountBalanceZod = InsertACAccountBalanceZod;
+export type SelectAccountBalanceZod = SelectACAccountBalanceZod;
+export type UpdateAccountBalanceZod = UpdateACAccountBalanceZod;
 
 // ============================================================================
 // ADDITIONAL ACCOUNTING TABLES (Previously missing)
@@ -480,8 +503,10 @@ export default {
   ledger_linesRelations,
   // Other tables
   journal_types,
-  account_balances,
-  account_balancesRelations,
+  AC_account_balances, // Preferred - standardized with AC_ prefix
+  account_balances, // Deprecated alias for backward compatibility
+  AC_account_balancesRelations,
+  account_balancesRelations, // Deprecated alias
   fiscal_periods,
   chart_of_accounts,
   chart_of_accountsRelations,

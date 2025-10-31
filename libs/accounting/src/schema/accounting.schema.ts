@@ -9,14 +9,23 @@ import { relations, sql } from 'drizzle-orm';
 
 // Import standardized schemas from shared
 import {
-  account_balances,
-  account_balancesRelations,
-  insertAccountBalanceSchema,
-  selectAccountBalanceSchema,
-  updateAccountBalanceSchema
+  AC_account_balances,
+  AC_account_balancesRelations,
+  account_balances, // deprecated alias
+  account_balancesRelations, // deprecated alias
+  insertACAccountBalanceSchema,
+  selectACAccountBalanceSchema,
+  updateACAccountBalanceSchema,
+  insertAccountBalanceSchema, // deprecated alias
+  selectAccountBalanceSchema, // deprecated alias
+  updateAccountBalanceSchema // deprecated alias
 } from '../../../shared/src/schema/accounting.schema';
 
 // Types are defined locally in this file
+
+// Preferred exports with AC_ prefix
+export const ACAccountBalances = AC_account_balances;
+export const ACAccountBalancesRelations = AC_account_balancesRelations;
 
 // Backward compatibility aliases
 export const accountBalances = account_balances;
@@ -344,17 +353,23 @@ export default {
   ledgerLinesRelations,
   // Other tables
   journalTypes,
-  accountBalances, // deprecated: use account_balances
+  ACAccountBalances, // Preferred - standardized with AC_ prefix
+  accountBalances, // deprecated: use ACAccountBalances
   fiscalPeriods,
   documentCounters,
   chartOfAccounts,
   chartOfAccountsRelations,
 
   // Standardized schemas (snake_case) - preferred
-  account_balances,
-  account_balancesRelations,
-  insertAccountBalanceSchema,
-  selectAccountBalanceSchema,
-  updateAccountBalanceSchema,
+  AC_account_balances,
+  AC_account_balancesRelations,
+  account_balances, // deprecated alias
+  account_balancesRelations, // deprecated alias
+  insertACAccountBalanceSchema,
+  selectACAccountBalanceSchema,
+  updateACAccountBalanceSchema,
+  insertAccountBalanceSchema, // deprecated alias
+  selectAccountBalanceSchema, // deprecated alias
+  updateAccountBalanceSchema, // deprecated alias
 
 };

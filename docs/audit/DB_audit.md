@@ -4,13 +4,16 @@
 
 Această listă conține toate tabelele existente în baza de date `geniuserp` după factorizarea majoră:
 
-# 1. account_balances
+# 1. AC_account_balances
 
-## 📋 Detalii detaliate tabel: `account_balances`
+## 📋 Detalii detaliate tabel: `AC_account_balances`
+
+### 🏷️ PREFIX: AC_ (Accounting Configuration)
+📁 **Locație migrație**: `/migrations/modules/accounting/create_AC_account_balances.ts`
 
 ### 🎯 Scop și Rol în Sistem
 
-Tabelul `account_balances` reprezintă **soldurile curente și istorice** pentru fiecare cont contabil dintr-o companie. Acest tabel este **fundamental** în sistemul contabil pentru:
+Tabelul `AC_account_balances` reprezintă **soldurile curente și istorice** pentru fiecare cont contabil dintr-o companie. Acest tabel este **fundamental** în sistemul contabil pentru:
 
 - **Urmărirea soldurilor lunare** pentru fiecare cont contabil
 - **Calcularea soldurilor de închidere** pe baza tranzacțiilor lunare
@@ -22,7 +25,7 @@ Tabelul `account_balances` reprezintă **soldurile curente și istorice** pentru
 
 **Schema DB (PostgreSQL):**
 ```sql
-CREATE TABLE public.account_balances (
+CREATE TABLE public."AC_account_balances" (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     account_id uuid NOT NULL,
     company_id uuid NOT NULL,
@@ -36,16 +39,21 @@ CREATE TABLE public.account_balances (
     closing_credit numeric(15,2) NOT NULL DEFAULT '0'::numeric,
     created_at timestamp without time zone NOT NULL DEFAULT now(),
     updated_at timestamp without time zone NOT NULL DEFAULT now(),
-    CONSTRAINT account_balances_pkey PRIMARY KEY (id),
-    CONSTRAINT account_balances_account_id_accounts_id_fk FOREIGN KEY (account_id) REFERENCES accounts(id),
-    CONSTRAINT account_balances_company_id_companies_id_fk FOREIGN KEY (company_id) REFERENCES companies(id)
+    CONSTRAINT "AC_account_balances_pkey" PRIMARY KEY (id),
+    CONSTRAINT "AC_account_balances_account_id_fkey" FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
+    CONSTRAINT "AC_account_balances_company_id_fkey" FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+    CONSTRAINT "AC_account_balances_unique_key" UNIQUE (account_id, company_id, fiscal_year, fiscal_month)
 );
 ```
 
 **Indexes:**
-- PRIMARY KEY: `account_balances_pkey` pe `id`
-- FOREIGN KEY: `account_balances_account_id_accounts_id_fk` către `accounts(id)`
-- FOREIGN KEY: `account_balances_company_id_companies_id_fk` către `companies(id)`
+- PRIMARY KEY: `AC_account_balances_pkey` pe `id`
+- FOREIGN KEY: `AC_account_balances_account_id_fkey` către `accounts(id)` ON DELETE CASCADE
+- FOREIGN KEY: `AC_account_balances_company_id_fkey` către `companies(id)` ON DELETE CASCADE
+- INDEX: `idx_AC_account_balances_account` pe `account_id`
+- INDEX: `idx_AC_account_balances_company` pe `company_id`
+- INDEX: `idx_AC_account_balances_period` pe `(company_id, fiscal_year, fiscal_month)`
+- INDEX: `idx_AC_account_balances_lookup` pe `(account_id, fiscal_year, fiscal_month)`
 
 ### 📊 Coloane și Logică Business
 
@@ -167,9 +175,9 @@ opening_debit - opening_credit + period_debit - period_credit = closing_debit - 
 ### 🎯 Scheme Drizzle Identificate
 
 #### ✅ **Schema Standardizată** (în `/var/www/GeniusERP/libs/shared/src/schema/accounting.schema.ts`):
-**NOTĂ:** Schema Drizzle pentru `account_balances` este definită în `accounting.schema.ts`, dar tabela este creată prin migrarea canonică SQL din `/var/www/GeniusERP/apps/api/migrations/sql/0000_smart_black_bird.sql`.
+**NOTĂ:** Schema Drizzle pentru `AC_account_balances` este definită în `accounting.schema.ts` și este creată prin migrarea din `/var/www/GeniusERP/migrations/modules/accounting/create_AC_account_balances.ts`.
 ```typescript
-export const account_balances = pgTable('account_balances', {
+export const AC_account_balances = pgTable('AC_account_balances', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
   companyId: uuid('company_id').notNull(),
   accountId: uuid('account_id').notNull(),
@@ -184,6 +192,9 @@ export const account_balances = pgTable('account_balances', {
   createdAt: timestamp('created_at').notNull().default(sql`now()`),
   updatedAt: timestamp('updated_at').notNull().default(sql`now()`)
 });
+
+// Backward compatibility alias
+export const account_balances = AC_account_balances;
 ```
 
 #### ✅ **Schema Principală** (în `/var/www/GeniusERP/libs/shared/src/schema.ts`):

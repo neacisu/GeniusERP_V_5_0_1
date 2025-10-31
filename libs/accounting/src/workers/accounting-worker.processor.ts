@@ -244,7 +244,7 @@ async function handleAccountReconciliation(job: Job): Promise<AccountReconciliat
     
     await job.updateProgress(70);
     
-    // 3. Compară cu sold efectiv din account_balances
+    // 3. Compară cu sold efectiv din AC_account_balances
     // Calculează anul și luna fiscală din data de sfârșit
     const endDate = new Date(data.endDate);
     const fiscalYear = endDate.getFullYear();
@@ -253,7 +253,7 @@ async function handleAccountReconciliation(job: Job): Promise<AccountReconciliat
     const balanceResult = await db.$client.unsafe(`
       SELECT
         COALESCE(closing_debit, 0) - COALESCE(closing_credit, 0) as balance
-      FROM account_balances
+      FROM "AC_account_balances"
       WHERE account_id = $1
       AND company_id = $2
       AND fiscal_year = $3
