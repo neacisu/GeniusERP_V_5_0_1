@@ -84,11 +84,6 @@ export {
   // chart_of_accounts (snake_case standard)
   chart_of_accounts,
   chart_of_accountsRelations,
-  // Types
-  ACAccountingLedgerEntry,
-  InsertACAccountingLedgerEntry,
-  ACAccountingLedgerLine,
-  InsertACAccountingLedgerLine,
   // Zod schemas
   insertACAccountingLedgerEntrySchema,
   selectACAccountingLedgerEntrySchema,
@@ -101,7 +96,15 @@ export {
   updateACAccountBalanceSchema,
   insertACJournalTypeSchema,
   selectACJournalTypeSchema,
-  updateACJournalTypeSchema,
+  updateACJournalTypeSchema
+};
+
+// Re-export types from shared
+export type {
+  ACAccountingLedgerEntry,
+  InsertACAccountingLedgerEntry,
+  ACAccountingLedgerLine,
+  InsertACAccountingLedgerLine,
   ACJournalType,
   InsertACJournalType
 };
@@ -201,12 +204,7 @@ export const documentCounters = pgTable('document_counters', {
 export const chartOfAccounts = chart_of_accounts;
 export const chartOfAccountsRelations = chart_of_accountsRelations;
 
-// Re-export types from shared
-export type { ACAccountingLedgerEntry, InsertACAccountingLedgerEntry };
-export type { ACAccountingLedgerLine, InsertACAccountingLedgerLine };
-export type { ACJournalType, InsertACJournalType };
-
-// Backward compatibility aliases
+// Backward compatibility type aliases
 export type AccountingLedgerEntry = ACAccountingLedgerEntry;
 export type InsertAccountingLedgerEntry = InsertACAccountingLedgerEntry;
 export type AccountingLedgerLine = ACAccountingLedgerLine;
