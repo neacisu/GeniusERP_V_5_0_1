@@ -55,14 +55,14 @@ export class ManageWarehouseService {
    */
   private async getNextAnalyticSuffix(): Promise<number> {
     try {
-      // We must check both analytic_accounts AND warehouses tables to avoid duplicates
+      // We must check both PC_analytic_accounts AND warehouses tables to avoid duplicates
       
-      // Step 1: Check the analytic_accounts table
+      // Step 1: Check the PC_analytic_accounts table
       const accountPrefixes = ['371', '378', '4426', '4427', '4428', '5311', '607', '707', '8033', '8039'];
       const prefixPatterns = accountPrefixes.map(prefix => `${prefix}.%`);
       
       const analyticAccountsSql = `
-        SELECT code FROM analytic_accounts 
+        SELECT code FROM PC_analytic_accounts 
         WHERE code LIKE ANY(ARRAY['${prefixPatterns.join("','")}'])
       `;
       
@@ -140,7 +140,7 @@ export class ManageWarehouseService {
       // Create analytic account with direct SQL first, then use the storage method as fallback
       try {
         const analyticAccountSQL = `
-          INSERT INTO analytic_accounts (
+          INSERT INTO PC_analytic_accounts (
             id, code, name, description, synthetic_id, account_function, is_active, created_at, updated_at
           ) VALUES (
             '${randomUUID()}',

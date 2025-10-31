@@ -92,15 +92,15 @@ export class CompanyController {
     try {
       console.log(`[CompanyController] Syncing analytic account ${code} for company ${companyName}`);
       
-      // First check if the account already exists in analytic_accounts
+      // First check if the account already exists in PC_analytic_accounts
       const existingAccount = await this.db.executeQuery(`
-        SELECT * FROM analytic_accounts
+        SELECT * FROM PC_analytic_accounts
         WHERE code = $1
         LIMIT 1
       `, [code]);
       
       if (existingAccount && existingAccount.length > 0) {
-        console.log(`[CompanyController] Analytic account ${code} already exists in analytic_accounts`);
+        console.log(`[CompanyController] Analytic account ${code} already exists in PC_analytic_accounts`);
         return true; // Account already exists, consider it synced
       }
       
@@ -109,7 +109,7 @@ export class CompanyController {
       
       // Find corresponding synthetic account
       const syntheticAccount = await this.db.executeQuery(`
-        SELECT * FROM synthetic_accounts
+        SELECT * FROM PC_synthetic_accounts
         WHERE code = $1
         LIMIT 1
       `, [prefix]);
@@ -134,7 +134,7 @@ export class CompanyController {
       
       // Insert the analytic account
       await this.db.executeQuery(`
-        INSERT INTO analytic_accounts (code, name, description, synthetic_id, account_function, is_active)
+        INSERT INTO PC_analytic_accounts (code, name, description, synthetic_id, account_function, is_active)
         VALUES ($1, $2, $3, $4, $5, $6)
         ON CONFLICT (code) DO NOTHING
       `, [
@@ -146,7 +146,7 @@ export class CompanyController {
         analyticAccountData.is_active
       ]); // Extra protection against duplicates
       
-      console.log(`[CompanyController] Successfully created analytic account ${code} in analytic_accounts`);
+      console.log(`[CompanyController] Successfully created analytic account ${code} in PC_analytic_accounts`);
       return true;
     } catch (error) {
       console.error(`[CompanyController] Error syncing analytic account ${code}:`, error);
@@ -192,22 +192,22 @@ export class CompanyController {
         }
       }
       
-      // Also check analytic_accounts table to ensure number is unique there too
+      // Also check PC_analytic_accounts table to ensure number is unique there too
       let isUnique = false;
       let candidateCode = '';
       
       while (!isUnique) {
         candidateCode = `${prefix}.${nextNumber}`;
         
-        // Check if this code exists in analytic_accounts
+        // Check if this code exists in PC_analytic_accounts
         const existingAnalytic = await this.db.executeQuery(`
-          SELECT * FROM analytic_accounts
+          SELECT * FROM PC_analytic_accounts
           WHERE code = $1
           LIMIT 1
         `, [candidateCode]);
         
         if (existingAnalytic && existingAnalytic.length > 0) {
-          // Code already exists in analytic_accounts, try next number
+          // Code already exists in PC_analytic_accounts, try next number
           nextNumber++;
         } else {
           isUnique = true;
