@@ -9,8 +9,10 @@ import { relations, sql } from 'drizzle-orm';
 
 // Import standardized schemas from shared
 import {
-  AC_account_balances,
-  AC_account_balancesRelations,
+  AC_accounting_account_balances,
+  AC_accounting_account_balancesRelations,
+  AC_account_balances, // deprecated alias
+  AC_account_balancesRelations, // deprecated alias
   account_balances, // deprecated alias
   account_balancesRelations, // deprecated alias
   insertACAccountBalanceSchema,
@@ -31,8 +33,8 @@ import {
 // Types are defined locally in this file
 
 // Preferred exports with AC_ prefix
-export const ACAccountBalances = AC_account_balances;
-export const ACAccountBalancesRelations = AC_account_balancesRelations;
+export const ACAccountBalances = AC_accounting_account_balances;
+export const ACAccountBalancesRelations = AC_accounting_account_balancesRelations;
 export const ACJournalTypes = AC_journal_types;
 
 // Backward compatibility aliases
@@ -356,10 +358,12 @@ export default {
   selectACJournalTypeSchema,
   updateACJournalTypeSchema,
   // Account balances
-  ACAccountBalances, // Preferred - standardized with AC_ prefix
+  ACAccountBalances, // Preferred - standardized with AC_ prefix and full RAS structure
   accountBalances, // deprecated: use ACAccountBalances
-  AC_account_balances, // re-export from shared
-  AC_account_balancesRelations,
+  AC_accounting_account_balances, // re-export from shared
+  AC_accounting_account_balancesRelations,
+  AC_account_balances, // deprecated alias
+  AC_account_balancesRelations, // deprecated alias
   account_balances, // deprecated alias
   account_balancesRelations, // deprecated alias
   insertACAccountBalanceSchema,

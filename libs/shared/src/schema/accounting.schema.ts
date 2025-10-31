@@ -174,7 +174,7 @@ export const ledger_lines = pgTable('ledger_lines', {
  * Account Balances table (AC_ prefix)
  * Solduri contabile cu structură completă RAS (Romanian Accounting Standards)
  * 
- * 🏷️  NUME TABEL: AC_account_balances
+ * 🏷️  NUME TABEL: AC_accounting_account_balances
  * 📁 PREFIX: AC_ (Accounting Configuration)
  * 
  * Acest tabel stochează soldurile lunare agregate pentru fiecare cont contabil,
@@ -184,7 +184,7 @@ export const ledger_lines = pgTable('ledger_lines', {
  * - Solduri de deschidere, mișcări perioadă, solduri de închidere
  * - Urmărire pe clase, grupe și conturi analitice
  */
-export const AC_account_balances = pgTable('AC_account_balances', {
+export const AC_accounting_account_balances = pgTable('AC_accounting_account_balances', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
   company_id: uuid('company_id').notNull(),
   franchise_id: uuid('franchise_id'),
@@ -218,29 +218,39 @@ export const AC_account_balances = pgTable('AC_account_balances', {
 });
 
 /**
- * @deprecated Use AC_account_balances instead - backward compatibility alias
+ * @deprecated Use AC_accounting_account_balances instead - backward compatibility alias
  */
-export const account_balances = AC_account_balances;
+export const AC_account_balances = AC_accounting_account_balances;
 
 /**
- * @deprecated Use AC_account_balances instead - old name before refactoring
+ * @deprecated Use AC_accounting_account_balances instead - backward compatibility alias
  */
-export const accounting_account_balances = AC_account_balances;
+export const account_balances = AC_accounting_account_balances;
 
 /**
- * Relations for AC_account_balances
+ * @deprecated Use AC_accounting_account_balances instead - old name before refactoring
  */
-export const AC_account_balancesRelations = relations(AC_account_balances, ({ one }) => ({
+export const accounting_account_balances = AC_accounting_account_balances;
+
+/**
+ * Relations for AC_accounting_account_balances
+ */
+export const AC_accounting_account_balancesRelations = relations(AC_accounting_account_balances, ({ one }) => ({
   company: one(companies, {
-    fields: [AC_account_balances.company_id],
+    fields: [AC_accounting_account_balances.company_id],
     references: [companies.id]
   })
 }));
 
 /**
- * @deprecated Use AC_account_balancesRelations instead - backward compatibility alias
+ * @deprecated Use AC_accounting_account_balancesRelations instead - backward compatibility alias
  */
-export const account_balancesRelations = AC_account_balancesRelations;
+export const AC_account_balancesRelations = AC_accounting_account_balancesRelations;
+
+/**
+ * @deprecated Use AC_accounting_account_balancesRelations instead - backward compatibility alias
+ */
+export const account_balancesRelations = AC_accounting_account_balancesRelations;
 
 /**
  * Fiscal periods table
@@ -359,9 +369,9 @@ export type InsertJournalType = InsertACJournalType;
 export type AccountingJournalType = ACJournalType;
 export type InsertAccountingJournalType = InsertACJournalType;
 
-// Export types for AC_account_balances
-export type ACAccountBalance = typeof AC_account_balances.$inferSelect;
-export type InsertACAccountBalance = typeof AC_account_balances.$inferInsert;
+// Export types for AC_accounting_account_balances
+export type ACAccountBalance = typeof AC_accounting_account_balances.$inferSelect;
+export type InsertACAccountBalance = typeof AC_accounting_account_balances.$inferInsert;
 
 // Backward compatibility type aliases (deprecated)
 export type AccountBalance = ACAccountBalance;
@@ -374,11 +384,11 @@ export type ChartOfAccount = typeof chart_of_accounts.$inferSelect;
 export type InsertChartOfAccount = typeof chart_of_accounts.$inferInsert;
 
 // ============================================================
-// ZOD SCHEMAS FOR AC_ACCOUNT_BALANCES
+// ZOD SCHEMAS FOR AC_ACCOUNTING_ACCOUNT_BALANCES
 // ============================================================
 
-// AC_account_balances Schemas
-export const insertACAccountBalanceSchema = createInsertSchema(AC_account_balances, {
+// AC_accounting_account_balances Schemas
+export const insertACAccountBalanceSchema = createInsertSchema(AC_accounting_account_balances, {
   fiscal_year: z.number().int().min(2000).max(2100),
   fiscal_month: z.number().int().min(1).max(12),
   account_class: z.number().int().min(1).max(9),
@@ -397,7 +407,7 @@ export const insertACAccountBalanceSchema = createInsertSchema(AC_account_balanc
   currency_closing_credit: z.string().regex(/^\d+(\.\d{1,4})?$/).optional(),
 });
 
-export const selectACAccountBalanceSchema = createSelectSchema(AC_account_balances);
+export const selectACAccountBalanceSchema = createSelectSchema(AC_accounting_account_balances);
 
 export const updateACAccountBalanceSchema = insertACAccountBalanceSchema.partial().omit({
   id: true,
@@ -572,10 +582,12 @@ export default {
   ledger_entriesRelations,
   ledger_linesRelations,
   // Account balances
-  AC_account_balances, // Preferred - standardized with AC_ prefix
+  AC_accounting_account_balances, // Preferred - standardized with AC_ prefix and full RAS structure
+  AC_account_balances, // Deprecated alias for backward compatibility
   account_balances, // Deprecated alias for backward compatibility
   accounting_account_balances, // Deprecated alias for backward compatibility
-  AC_account_balancesRelations,
+  AC_accounting_account_balancesRelations,
+  AC_account_balancesRelations, // Deprecated alias
   account_balancesRelations, // Deprecated alias
   // Fiscal periods & chart of accounts
   fiscal_periods,

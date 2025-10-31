@@ -6,14 +6,15 @@ Acest director conține migrațiile pentru modulul de contabilitate (Accounting)
 
 ### AC_ (Accounting Configuration) - Tabele de Configurare Contabilă
 
-#### 1. AC_account_balances
-**Fișier**: `create_AC_account_balances.ts`  
-**Scop**: Solduri contabile pe cont, lună, an fiscal  
+#### 1. AC_accounting_account_balances
+**Fișier**: `create_AC_accounting_account_balances.ts`  
+**Scop**: Solduri contabile pe cont, lună, an fiscal (structură completă RAS)  
 **Prefix**: AC_ (Accounting Configuration)  
-**Documentație**: `/docs/audit/DB_audit.md` - Secțiunea AC_account_balances
+**Documentație**: `/docs/audit/DB_audit.md` - Secțiunea AC_accounting_account_balances
 
 **Coloane principale:**
-- `company_id`, `account_id` - Identificare cont per companie
+- `company_id`, `franchise_id` - Identificare companie și franchiză
+- `account_class`, `account_group`, `account_number`, `account_sub_number`, `full_account_number` - Structură RAS completă
 - `fiscal_year`, `fiscal_month` - Perioadă fiscală
 - `opening_debit/credit` - Solduri de deschidere
 - `period_debit/credit` - Mișcări în perioadă
