@@ -48,7 +48,10 @@ import {
   InsertACJournalType,
   insertACJournalTypeSchema,
   selectACJournalTypeSchema,
-  updateACJournalTypeSchema
+  updateACJournalTypeSchema,
+  // chart_of_accounts (snake_case from shared)
+  chart_of_accounts,
+  chart_of_accountsRelations
 } from '../../../shared/src/schema/accounting.schema';
 
 // Types are defined locally in this file
@@ -64,18 +67,23 @@ export const ACJournalTypes = AC_journal_types;
 
 // Re-export underscore versions directly for named imports
 export {
+  // AC_ preferred names
   AC_accounting_ledger_entries,
   AC_accounting_ledger_lines,
   AC_accounting_ledger_entriesRelations,
   AC_accounting_ledger_linesRelations,
+  AC_accounting_account_balances,
+  AC_accounting_account_balancesRelations,
+  AC_journal_types,
+  // Deprecated underscore aliases
   accounting_ledger_entries,
   accounting_ledger_lines,
   accounting_ledger_entriesRelations,
   accounting_ledger_linesRelations,
-  AC_accounting_account_balances,
-  AC_accounting_account_balancesRelations,
-  AC_journal_types,
   accounting_journal_types,
+  // chart_of_accounts (snake_case standard)
+  chart_of_accounts,
+  chart_of_accountsRelations,
   // Types
   ACAccountingLedgerEntry,
   InsertACAccountingLedgerEntry,
@@ -97,9 +105,6 @@ export {
   ACJournalType,
   InsertACJournalType
 };
-
-// chart_of_accounts alias
-export const chart_of_accounts = chartOfAccounts;
 
 // Backward compatibility aliases
 export const accountingLedgerEntries = accounting_ledger_entries;
@@ -192,36 +197,9 @@ export const documentCounters = pgTable('document_counters', {
   };
 });
 
-/**
- * Chart of accounts table
- */
-export const chartOfAccounts = pgTable('chart_of_accounts', {
-  id: uuid('id').primaryKey().notNull(),
-  companyId: uuid('company_id'),
-  code: text('code').notNull(),
-  name: text('name').notNull(),
-  description: text('description'),
-  accountClass: numeric('account_class').notNull(),
-  accountGroup: numeric('account_group').notNull(),
-  accountType: text('account_type').notNull(),
-  isActive: numeric('is_active').notNull().default('1'),
-  parentId: uuid('parent_id'),
-  
-  // Metadata
-  createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull()
-});
-
-/**
- * Relations for chart of accounts
- */
-export const chartOfAccountsRelations = relations(chartOfAccounts, ({ one, many }) => ({
-  parent: one(chartOfAccounts, {
-    fields: [chartOfAccounts.parentId],
-    references: [chartOfAccounts.id]
-  }),
-  children: many(chartOfAccounts)
-}));
+// Backward compatibility camelCase aliases
+export const chartOfAccounts = chart_of_accounts;
+export const chartOfAccountsRelations = chart_of_accountsRelations;
 
 // Re-export types from shared
 export type { ACAccountingLedgerEntry, InsertACAccountingLedgerEntry };
