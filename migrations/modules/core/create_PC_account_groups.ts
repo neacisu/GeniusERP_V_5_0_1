@@ -1,8 +1,11 @@
 /**
  * Migration: Create PC_account_groups table
  *
- * This migration creates the account_groups table which defines the second level
+ * This migration creates the PC_account_groups table which defines the second level
  * of the Romanian Chart of Accounts hierarchy (groups 10-99).
+ *
+ * 📁 LOCAȚIE CORECTĂ: /migrations/modules/core/
+ * 🏷️  PREFIX: PC_ (Plan de Conturi - Chart of Accounts)
  *
  * Table Purpose:
  * - Define account groups within each account class
@@ -11,8 +14,8 @@
  * - Enable proper chart of accounts structure navigation
  *
  * Relations:
- * - class_id -> account_classes.id (required, one-to-many)
- * - Referenced by synthetic_accounts.group_id (one-to-many)
+ * - class_id -> PC_account_classes.id (required, one-to-many)
+ * - Referenced by PC_synthetic_accounts.group_id (one-to-many)
  *
  * Romanian Accounting Groups Examples:
  * - 10-19: Capital și rezerve (Capital and Reserves)
@@ -68,7 +71,7 @@ export const up = async (db: any) => {
 };
 
 export const down = async (db: any) => {
-  console.log('🔄 Rolling back account_groups table...');
+  console.log('🔄 Rolling back PC_account_groups table...');
 
   // Drop indexes first
   await sql`DROP INDEX IF EXISTS "idx_PC_account_groups_class_id";`;
@@ -77,5 +80,5 @@ export const down = async (db: any) => {
   // Drop the table
   await sql`DROP TABLE IF EXISTS "PC_account_groups";`;
 
-  console.log('✅  PC_account_groups table rolled back');
+  console.log('✅ PC_account_groups table rolled back');
 };

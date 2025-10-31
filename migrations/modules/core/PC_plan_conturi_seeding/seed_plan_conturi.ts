@@ -33,7 +33,7 @@ export const seedRomanianChartOfAccounts = async (db: any) => {
   try {
     // 1. Seed Account Classes
     console.log('📊 Seeding account classes...');
-    const classesPath = path.join(__dirname, 'account_classes.json');
+    const classesPath = path.join(__dirname, 'PC_account_classes.json');
     const classesData = JSON.parse(fs.readFileSync(classesPath, 'utf8'));
 
     for (const accountClass of classesData) {
@@ -61,7 +61,7 @@ export const seedRomanianChartOfAccounts = async (db: any) => {
 
     // 2. Seed Account Groups
     console.log('📊 Seeding account groups...');
-    const groupsPath = path.join(__dirname, 'account_groups.json');
+    const groupsPath = path.join(__dirname, 'PC_account_groups.json');
     const groupsData = JSON.parse(fs.readFileSync(groupsPath, 'utf8'));
 
     for (const accountGroup of groupsData) {
@@ -89,7 +89,7 @@ export const seedRomanianChartOfAccounts = async (db: any) => {
 
     // 3. Seed Synthetic Accounts
     console.log('📊 Seeding synthetic accounts...');
-    const syntheticPath = path.join(__dirname, 'synthetic_accounts.json');
+    const syntheticPath = path.join(__dirname, 'PC_synthetic_accounts.json');
     const syntheticData = JSON.parse(fs.readFileSync(syntheticPath, 'utf8'));
 
     let successCount = 0;
@@ -208,9 +208,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   // This would need proper database connection setup
   // For now, just show that the script loads correctly
   console.log('📁 Seed files found:');
-  console.log('- account_classes.json:', fs.existsSync(path.join(__dirname, 'account_classes.json')));
-  console.log('- account_groups.json:', fs.existsSync(path.join(__dirname, 'account_groups.json')));
-  console.log('- synthetic_accounts.json:', fs.existsSync(path.join(__dirname, 'synthetic_accounts.json')));
+  console.log('- PC_account_classes.json:', fs.existsSync(path.join(__dirname, 'PC_account_classes.json')));
+  console.log('- PC_account_groups.json:', fs.existsSync(path.join(__dirname, 'PC_account_groups.json')));
+  console.log('- PC_synthetic_accounts.json:', fs.existsSync(path.join(__dirname, 'PC_synthetic_accounts.json')));
 
   console.log('✅ Seed script loaded successfully');
   console.log('💡 To run seeding, integrate this function into your migration system');

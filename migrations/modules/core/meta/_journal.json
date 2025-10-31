@@ -1,5 +1,41 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1730283800000,
+      "tag": "create_PC_account_classes",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1730283820000,
+      "tag": "create_PC_account_groups",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1730283840000,
+      "tag": "create_PC_synthetic_accounts",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1730283860000,
+      "tag": "create_PC_analytic_accounts",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1730283880000,
+      "tag": "create_PC_account_mappings",
+      "breakpoints": true
+    }
+  ]
 }

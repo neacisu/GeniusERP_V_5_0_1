@@ -93,14 +93,14 @@ export const down = async (db: any) => {
 
 **❌ GREȘIT (probleme în echipă):**
 ```
-20251030_143645_create_account_classes.ts  // Timestamp problematic
-20251030_144512_create_account_groups.ts    // Conflicte în Git/CI
+20251030_143645_create_PC_account_classes.ts  // Timestamp problematic
+20251030_144512_create_PC_account_groups.ts    // Conflicte în Git/CI
 ```
 
 **✅ CORECT (nume descriptive):**
 ```
-create_account_classes.ts     // Simplu, clar, fără conflicte
-create_account_groups.ts      // Ușor de citit și înțeles
+create_PC_account_classes.ts     // Simplu, clar, fără conflicte cu PC_ prefix
+create_PC_account_groups.ts      // Ușor de citit și înțeles
 add_user_permissions.ts       // Descrie acțiunea, nu data
 ```
 

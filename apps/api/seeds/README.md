@@ -10,11 +10,7 @@ seeds/
 ├── initial-admin-users.ts              # Useri administrativi (admin, superadmin)
 ├── core-permissions.ts                 # Permisiuni fundamentale și asignări roluri
 ├── essential-configurations.ts         # Configurări esențiale sistem
-├── accounting/                         # Seeds contabilitate
-│   ├── seed-chart-of-accounts.ts      # Script seed Plan de Conturi
-│   ├── account-classes.json           # 9 Clase de conturi
-│   ├── account-groups.json            # 71 Grupe de conturi
-│   └── synthetic-accounts.json        # 781 Conturi sintetice
+├── onboarding.ts                       # Script orchestration pentru toate seeds
 └── hr/                                 # Seeds HR
     ├── seed-cor.ts                    # Script seed COR
     ├── cor-major-groups.json          # Grupe Majore COR
@@ -22,6 +18,14 @@ seeds/
     ├── cor-minor-groups.json          # Grupe Minore COR
     ├── cor-subminor-groups.json       # Grupe Sub-Minore COR
     └── cor-occupations.json           # 4247 Ocupații COR
+
+⚠️  NOTĂ: Plan de Conturi MUTAT în sistemul centralizat de migrații:
+📁 Locație nouă: /migrations/modules/core/PC_plan_conturi_seeding/
+   ├── PC_account_classes.json         # 9 Clase de conturi
+   ├── PC_account_groups.json          # 71 Grupe de conturi
+   ├── PC_synthetic_accounts.json      # 781 Conturi sintetice
+   └── seed_plan_conturi.ts            # Script seed Plan de Conturi
+🚀 Rulare: npm run migrate:all sau npm run migrate:module core
 ```
 
 ## Seed-uri Disponibile

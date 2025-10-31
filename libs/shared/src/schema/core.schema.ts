@@ -158,10 +158,12 @@ export const role_permissions = pgTable('role_permissions', {
 // ============================================================================
 
 /**
- * Account Classes table
+ * Account Classes table (PC_ prefix)
  * Top level of chart of accounts (1-9)
  * Class 1-7: Balance sheet accounts
  * Class 8-9: Profit & Loss accounts
+ * 
+ * 🏷️  PREFIX: PC_ (Plan de Conturi - Chart of Accounts)
  */
 export const PC_account_classes = pgTable('PC_account_classes', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
@@ -172,13 +174,15 @@ export const PC_account_classes = pgTable('PC_account_classes', {
   created_at: timestamp('created_at').notNull().default(sql`now()`),
   updated_at: timestamp('updated_at').notNull().default(sql`now()`)
 }, (table) => ({
-  code_unique: unique('account_classes_code_unique').on(table.code),
-  code_idx: index('account_classes_code_idx').on(table.code),
+  code_unique: unique('PC_account_classes_code_unique').on(table.code),
+  code_idx: index('idx_PC_account_classes_code').on(table.code),
 }));
 
 /**
- * Account Groups table
+ * Account Groups table (PC_ prefix)
  * Second level of chart of accounts (10-99)
+ * 
+ * 🏷️  PREFIX: PC_ (Plan de Conturi - Chart of Accounts)
  */
 export const PC_account_groups = pgTable('PC_account_groups', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
@@ -189,9 +193,9 @@ export const PC_account_groups = pgTable('PC_account_groups', {
   created_at: timestamp('created_at').notNull().default(sql`now()`),
   updated_at: timestamp('updated_at').notNull().default(sql`now()`)
 }, (table) => ({
-  code_unique: unique('account_groups_code_unique').on(table.code),
-  code_idx: index('account_groups_code_idx').on(table.code),
-  class_idx: index('account_groups_class_idx').on(table.class_id),
+  code_unique: unique('PC_account_groups_code_unique').on(table.code),
+  code_idx: index('idx_PC_account_groups_code').on(table.code),
+  class_idx: index('idx_PC_account_groups_class_id').on(table.class_id),
 }));
 
 /**

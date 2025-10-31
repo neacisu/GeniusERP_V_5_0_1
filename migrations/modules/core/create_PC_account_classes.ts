@@ -1,8 +1,11 @@
 /**
- * Migration: Create account_classes table
+ * Migration: Create PC_account_classes table
  *
- * This migration creates the account_classes table which defines the first level
+ * This migration creates the PC_account_classes table which defines the first level
  * of the Romanian Chart of Accounts hierarchy (classes 1-9).
+ *
+ * 📁 LOCAȚIE CORECTĂ: /migrations/modules/core/
+ * 🏷️  PREFIX: PC_ (Plan de Conturi - Chart of Accounts)
  *
  * Table Purpose:
  * - Define account classes (1=Capital, 2=Assets, 3=Inventory, etc.)
@@ -11,7 +14,7 @@
  * - Enable proper chart of accounts structure
  *
  * Relations:
- * - Referenced by account_groups.class_id (one-to-many)
+ * - Referenced by PC_account_groups.class_id (one-to-many)
  * - Referenced by accounts.class_id (one-to-many)
  *
  * Romanian Accounting Classes:
@@ -25,7 +28,7 @@
  * - 8: Conturi speciale (Special accounts)
  * - 9: Conturi de gestiune (Management accounts)
  *
- * Migration ID: create_account_classes
+ * Migration ID: create_PC_account_classes
  */
 
 import { sql } from 'drizzle-orm';
@@ -63,7 +66,7 @@ export const up = async (db: any) => {
 };
 
 export const down = async (db: any) => {
-  console.log('🔄 Rolling back account_classes table...');
+  console.log('🔄 Rolling back PC_account_classes table...');
 
   // Drop indexes first
   await sql`DROP INDEX IF EXISTS "idx_PC_account_classes_code";`;

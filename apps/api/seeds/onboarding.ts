@@ -147,28 +147,30 @@ export async function runOnboarding(db: any, options: OnboardingOptions = {}) {
     }
     
     // ===================================================================
-    // STEP 5: CHART OF ACCOUNTS (OPTIONAL)
+    // STEP 5: CHART OF ACCOUNTS (OPTIONAL) - Using Centralized Migration System
     // ===================================================================
     if (!options.skipAccountingSeeds) {
       console.log('\n┌─────────────────────────────────────────────────────────┐');
       console.log('│ 📊 Step 5/6: Seeding Chart of Accounts (Romanian)      │');
+      console.log('│          Using Centralized Migration System             │');
       console.log('└─────────────────────────────────────────────────────────┘\n');
       
-      const accountingResult = await runSeed(db, 'accounting/seed-chart-of-accounts', {
-        description: 'Romanian Chart of Accounts (OMFP 1802/2014)',
-        verbose: options.verbose
-      });
-      results.push(accountingResult);
+      console.log('  ⚠️  NOTE: Chart of Accounts now uses centralized migration system');
+      console.log('  📁 Location: /migrations/modules/core/PC_plan_conturi_seeding/');
+      console.log('  🚀 Run: npm run migrate:all or npm run migrate:module core\n');
       
-      if (!accountingResult.success) {
-        console.log('  ⚠️  Warning: Chart of Accounts seeding failed\n');
-      }
+      results.push({
+        name: 'accounting/chart-of-accounts',
+        success: true,
+        duration: 0,
+        message: 'Moved to centralized migration system - run migrations instead'
+      });
     } else {
       console.log('\n┌─────────────────────────────────────────────────────────┐');
       console.log('│ 📊 Step 5/6: Chart of Accounts - SKIPPED               │');
       console.log('└─────────────────────────────────────────────────────────┘\n');
       results.push({
-        name: 'accounting/seed-chart-of-accounts',
+        name: 'accounting/chart-of-accounts',
         success: true,
         duration: 0,
         message: 'Skipped by user option'
