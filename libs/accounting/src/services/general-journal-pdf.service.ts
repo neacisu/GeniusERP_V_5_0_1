@@ -28,10 +28,13 @@ interface JournalEntry {
   documentDate: Date;
   documentType: string;
   documentNumber: string;
-  description: string;
+  description: string | null;
   amount: number;
-  type: string; // SALES, PURCHASE, CASH, BANK, GENERAL
+  type: string;
   lines: JournalLine[];
+  transaction_date?: Date;
+  document_date?: Date;
+  total_amount?: number;
 }
 
 interface JournalLine {
@@ -40,6 +43,8 @@ interface JournalLine {
   debitAmount: number;
   creditAmount: number;
   description: string;
+  debit_amount?: number;   // snake_case from DB
+  credit_amount?: number;  // snake_case from DB
 }
 
 /**
@@ -49,11 +54,11 @@ interface JournalLine {
 interface JournalQueryResult {
   entry_id: string;
   journal_number: string | null;
-  entry_date: Date | null;
-  document_date: Date | null;
+  entry_date: Date;
+  document_date: string;
   document_number: string | null;
   document_type: string;
-  entry_description: string;
+  entry_description: string | null;
   entry_amount: string;
   entry_type: string;
   lines: Array<{
@@ -141,7 +146,7 @@ export class GeneralJournalPDFService {
           logger.info('Registru Jurnal PDF generat cu succes', {
             context: {
               filePath,
-              companyId: options.company_id,
+              companyId: options.companyId,
               companyName: options.companyName,
               entriesCount: entries.length,
               dateRange: `${options.startDate.toISOString().split('T')[0]} - ${options.endDate.toISOString().split('T')[0]}`
@@ -171,7 +176,7 @@ export class GeneralJournalPDFService {
     // Create cache key
     const dateStr = `${options.startDate.toISOString().split('T')[0]}_${options.endDate.toISOString().split('T')[0]}`;
     const typesStr = options.journalTypes?.join('_') || 'all';
-    const cacheKey = `acc:general-journal:${options.company_id}:${dateStr}:${typesStr}:${options.detailLevel}`;
+    const cacheKey = `acc:general-journal:${options.companyId}:${dateStr}:${typesStr}:${options.detailLevel}`;
     
     // Check cache first (TTL: 10 minutes)
     if (this.redisService.isConnected()) {
@@ -201,15 +206,15 @@ export class GeneralJournalPDFService {
     // Query folosind Drizzle ORM cu agregare pentru lines
     const results = await db
       .select({
-        entry_id: ledger_entries.id,
-        journal_number: ledger_entries.document_number,
-        entry_date: ledger_entries.transaction_date,
-        document_date: ledger_entries.document_date,
-        document_number: ledger_entries.document_number,
-        document_type: ledger_entries.type,
-        entry_description: ledger_entries.description,
+        entry_id: accounting_ledger_entries.id,
+        journal_number: accounting_ledger_entries.document_number,
+        entry_date: accounting_ledger_entries.transaction_date,
+        document_date: accounting_ledger_entries.document_date,
+        document_number: accounting_ledger_entries.document_number,
+        document_type: accounting_ledger_entries.type,
+        entry_description: accounting_ledger_entries.description,
         entry_amount: drizzleSql<string>`${accounting_ledger_entries.total_amount}::numeric`,
-        entry_type: ledger_entries.type,
+        entry_type: accounting_ledger_entries.type,
         // Agregare JSON pentru lines
         lines: drizzleSql<Array<{
           accountCode: string;
@@ -231,7 +236,7 @@ export class GeneralJournalPDFService {
       .leftJoin(accounting_ledger_lines, eq(accounting_ledger_lines.ledger_entry_id, accounting_ledger_entries.id))
       .leftJoin(chart_of_accounts, and(
         eq(chart_of_accounts.code, accounting_ledger_lines.full_account_number),
-        eq(chart_of_accounts.company_id, accounting_ledger_entries.company_id)
+        eq(chart_of_accounts.companyId, accounting_ledger_entries.company_id)
       ))
       .where(and(...conditions))
       .groupBy(
@@ -260,8 +265,8 @@ export class GeneralJournalPDFService {
       lines: (row['lines'] || []).map(line => ({
         accountCode: line.accountCode,
         accountName: line.accountName || line.accountCode,
-        debitAmount: parseFloat(line.debit_amount) || 0,
-        creditAmount: parseFloat(line.credit_amount) || 0,
+        debitAmount: parseFloat(line.debitAmount) || 0,
+        creditAmount: parseFloat(line.creditAmount) || 0,
         description: line.description || ''
       }))
     }));
@@ -292,8 +297,8 @@ export class GeneralJournalPDFService {
     const periodText = `Perioada: ${options.startDate.toLocaleDateString('ro-RO')} - ${options.endDate.toLocaleDateString('ro-RO')}`;
     doc.text(periodText, { align: 'center' });
     
-    if (options.journalTypes && options$.journal_types.length > 0) {
-      doc.text(`Jurnale: ${options$.journal_types.join(', ')}`, { align: 'center' });
+    if (options.journalTypes && options.journalTypes.length > 0) {
+      doc.text(`Jurnale: ${options.journalTypes.join(', ')}`, { align: 'center' });
     }
     
     doc.moveDown(1);
@@ -345,14 +350,14 @@ export class GeneralJournalPDFService {
           const line = entry.lines[i];
           this.drawTableRow(doc, currentY, colWidths, {
             nr: i === 0 ? entryNumber.toString() : '',
-            data: i === 0 ? entry.transaction_date.toLocaleDateString('ro-RO') : '',
+            data: i === 0 ? (entry.transaction_date || entry.entryDate).toLocaleDateString('ro-RO') : '',
             docType: i === 0 ? entry.documentType : '',
             docNo: i === 0 ? entry.documentNumber : '',
-            docDate: i === 0 ? entry.document_date.toLocaleDateString('ro-RO') : '',
-            explanations: line.description || entry.description,
-            accountDr: line.debit_amount > 0 ? line.accountCode : '',
-            accountCr: line.credit_amount > 0 ? line.accountCode : '',
-            amount: Math.max(line.debit_amount, line.credit_amount).toFixed(2)
+            docDate: i === 0 ? (entry.document_date || entry.documentDate).toLocaleDateString('ro-RO') : '',
+            explanations: line.description || entry.description || '',
+            accountDr: (line.debit_amount || line.debitAmount) > 0 ? line.accountCode : '',
+            accountCr: (line.credit_amount || line.creditAmount) > 0 ? line.accountCode : '',
+            amount: Math.max(line.debit_amount || line.debitAmount, line.credit_amount || line.creditAmount).toFixed(2)
           });
           currentY += 20;
         }
@@ -360,19 +365,19 @@ export class GeneralJournalPDFService {
         // Mod sumarizat - o linie per înregistrare
         this.drawTableRow(doc, currentY, colWidths, {
           nr: entryNumber.toString(),
-          data: entry.transaction_date.toLocaleDateString('ro-RO'),
+          data: (entry.transaction_date || entry.entryDate).toLocaleDateString('ro-RO'),
           docType: entry.documentType,
           docNo: entry.documentNumber,
-          docDate: entry.document_date.toLocaleDateString('ro-RO'),
-          explanations: entry.description,
-          accountDr: entry.lines.filter(l => l.debit_amount > 0).map(l => l.accountCode).join(', '),
-          accountCr: entry.lines.filter(l => l.credit_amount > 0).map(l => l.accountCode).join(', '),
-          amount: entry.total_amount.toFixed(2)
+          docDate: (entry.document_date || entry.documentDate).toLocaleDateString('ro-RO'),
+          explanations: entry.description || '',
+          accountDr: entry.lines.filter(l => (l.debit_amount || l.debitAmount) > 0).map(l => l.accountCode).join(', '),
+          accountCr: entry.lines.filter(l => (l.credit_amount || l.creditAmount) > 0).map(l => l.accountCode).join(', '),
+          amount: (entry.total_amount || entry.amount).toFixed(2)
         });
         currentY += 20;
       }
 
-      totalAmount += entry.total_amount;
+      totalAmount += (entry.total_amount || entry.amount);
       entryNumber++;
     }
 
@@ -408,7 +413,7 @@ export class GeneralJournalPDFService {
       { text: 'Explicația operațiunii', width: colWidths.explanations },
       { text: 'Cont\ndebit', width: colWidths.accountDr },
       { text: 'Cont\ncredit', width: colWidths.accountCr },
-      { text: 'Suma\n(lei)', width: colWidths.total_amount }
+      { text: 'Suma\n(lei)', width: colWidths.total_amount || colWidths.amount }
     ];
 
     headers.forEach(header => {
@@ -438,7 +443,7 @@ export class GeneralJournalPDFService {
       { text: data.explanations, width: colWidths.explanations, align: 'left' },
       { text: data.accountDr, width: colWidths.accountDr, align: 'center' },
       { text: data.accountCr, width: colWidths.accountCr, align: 'center' },
-      { text: data.total_amount, width: colWidths.total_amount, align: 'right' }
+      { text: data.total_amount || data.amount, width: colWidths.total_amount || colWidths.amount, align: 'right' }
     ];
 
     values.forEach(value => {

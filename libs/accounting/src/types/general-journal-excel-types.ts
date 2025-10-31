@@ -29,7 +29,7 @@ export interface ExcelJournalEntry {
   documentDate: string;
   documentType: string;
   documentNumber: string;
-  description: string;
+  description: string | null;  // can be null
   accountCode: string;
   accountName: string;
   debitAmount: number;

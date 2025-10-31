@@ -17,6 +17,7 @@ export interface ColumnWidths {
   accountDr: number;    // Cont debit
   accountCr: number;    // Cont credit
   amount: number;       // Suma (lei)
+  total_amount?: number; // optional snake_case
 }
 
 /**
@@ -32,6 +33,7 @@ export interface TableRowData {
   accountDr: string;    // Cont debit
   accountCr: string;    // Cont credit
   amount: string;       // Sumă formatată
+  total_amount?: string; // optional snake_case
 }
 
 /**
