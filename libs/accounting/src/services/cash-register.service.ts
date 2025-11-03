@@ -678,7 +678,7 @@ export class CashRegisterService {
             payerName: data.company_name || 'Numerar din casierie',
           });
           
-          return { cash_transaction_id, bank_transaction_id };
+          return { cash_transaction_id: cashTransactionId, bank_transaction_id: bankTransactionId };
         } catch (bankError) {
           console.error('Error creating bank transaction:', bankError);
           // Tranzacția cash a fost creată, dar cea bancară a eșuat
@@ -688,7 +688,7 @@ export class CashRegisterService {
       }
       
       // Dacă nu s-a specificat cont bancar, returnăm doar ID-ul cash
-      return { cash_transaction_id, bank_transaction_id: '' };
+      return { cash_transaction_id: cashTransactionId, bank_transaction_id: '' };
     } catch (error) {
       console.error('Error recording cash deposit:', error);
       throw new Error(`Failed to record cash deposit: ${(error as Error).message}`);
@@ -728,14 +728,14 @@ export class CashRegisterService {
             payeeName: data.company_name || 'Numerar pentru casierie',
           });
           
-          return { cash_transaction_id, bank_transaction_id };
+          return { cash_transaction_id: cashTransactionId, bank_transaction_id: bankTransactionId };
         } catch (bankError) {
           console.error('Error creating bank transaction:', bankError);
           throw new Error(`Ridicarea în casă a fost înregistrată (ID: ${cashTransactionId}), dar înregistrarea în bancă a eșuat. Vă rugăm să adăugați manual tranzacția bancară.`);
         }
       }
       
-      return { cash_transaction_id, bank_transaction_id: '' };
+      return { cash_transaction_id: cashTransactionId, bank_transaction_id: '' };
     } catch (error) {
       console.error('Error recording cash withdrawal:', error);
       throw new Error(`Failed to record cash withdrawal: ${(error as Error).message}`);
@@ -823,8 +823,8 @@ export class CashRegisterService {
       
       return {
         success: true,
-        closingBalance,
-        // pdfPath
+        closing_balance: closingBalance
+        // pdf_path poate fi adăugat
       };
     } catch (error) {
       console.error('Error closing daily cash register:', error);
@@ -1701,7 +1701,7 @@ export class CashRegisterService {
       
       // VAT rate validation according to Romanian standards
       const validVatRates = [0, 5, 9, 19]; // Current Romanian VAT rates
-      if (transactionData.vatRate !== undefined && !validVatRates.includes(Number(transactionData.vatRate))) {
+      if (transactionData.vat_rate !== undefined && !validVatRates.includes(Number(transactionData.vat_rate))) {
         errors.push(`Invalid VAT rate. Valid rates in Romania are: ${validVatRates.join(', ')}%`);
       }
     }
@@ -1709,7 +1709,7 @@ export class CashRegisterService {
     // Currency validation
     if (!transactionData.currency) {
       errors.push('Currency is required');
-    } else if (transactionData.currency !== 'RON' && !transactionData.exchangeRate) {
+    } else if (transactionData.currency !== 'RON' && !transactionData.exchange_rate) {
       errors.push('Exchange rate is required for non-RON transactions');
     }
     
@@ -1770,7 +1770,7 @@ export class CashRegisterService {
           ],
           set: {
             lastNumber: sql`${document_counters.lastNumber} + 1`,
-            updated_at: new Date(),
+            updatedAt: new Date(),
           },
         })
         .returning({ lastNumber: document_counters.lastNumber });
@@ -1853,8 +1853,8 @@ export class CashRegisterService {
       const job = await accountingQueueService.queueAccountReconciliation({
         accountId: cashRegisterId,
         companyId,
-        startDate,
-        endDate
+        startDate: startDate,
+        endDate: endDate
       });
       
       return {
