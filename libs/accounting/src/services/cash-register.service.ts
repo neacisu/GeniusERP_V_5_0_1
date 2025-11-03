@@ -1853,8 +1853,8 @@ export class CashRegisterService {
       const job = await accountingQueueService.queueAccountReconciliation({
         accountId: cashRegisterId,
         companyId,
-        startDate:         startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(): endDate
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
       });
       
       return {
