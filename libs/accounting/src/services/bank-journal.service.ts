@@ -12,7 +12,7 @@
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
 import { getDrizzle } from "@common/drizzle";
 import { and, desc, eq, gte, lte } from 'drizzle-orm';
-import { bankAccounts, bankTransactions, BankAccount, BankTransaction } from '@geniuserp/shared';
+import { AC_bank_accounts, AC_bank_transactions, BankAccount, BankTransaction } from '@geniuserp/shared';
 import { v4 as uuidv4 } from 'uuid';
 import { accountingQueueService } from './accounting-queue.service';
 import { RedisService } from '@common/services/redis.service';
@@ -125,13 +125,13 @@ export class BankJournalService {
   // CRUD for Bank Accounts
   public async getBankAccounts(companyId: string): Promise<{ data: BankAccount[]; total: number }> {
     const db = getDrizzle();
-    const result = await db.select().from(bankAccounts).where(eq(bankAccounts.companyId, companyId));
+    const result = await db.select().from(AC_bank_accounts).where(eq(AC_bank_accounts.company_id, companyId));
     return { data: result, total: result.length };
   }
   
   public async getBankAccount(id: string, companyId: string): Promise<BankAccount | null> {
     const db = getDrizzle();
-    const result = await db.select().from(bankAccounts).where(and(eq(bankAccounts.id, id), eq(bankAccounts.companyId, companyId))).limit(1);
+    const result = await db.select().from(AC_bank_accounts).where(and(eq(AC_bank_accounts.id, id), eq(AC_bank_accounts.company_id, companyId))).limit(1);
     return result[0] || null;
   }
   
@@ -147,20 +147,20 @@ export class BankJournalService {
   ): Promise<{ data: BankTransaction[]; total: number; page: number; limit: number }> {
     const db = getDrizzle();
     const offset = (page - 1) * limit;
-    const conditions: any[] = [eq(bankTransactions.companyId, companyId)];
-    if (accountId) conditions.push(eq(bankTransactions.bankAccountId, accountId));
-    if (startDate) conditions.push(gte(bankTransactions.transactionDate, startDate));
-    if (endDate) conditions.push(lte(bankTransactions.transactionDate, endDate));
-    if (type) conditions.push(eq(bankTransactions.transactionType, type as any));
+    const conditions: any[] = [eq(AC_bank_transactions.company_id, companyId)];
+    if (accountId) conditions.push(eq(AC_bank_transactions.bank_account_id, accountId));
+    if (startDate) conditions.push(gte(AC_bank_transactions.transaction_date, startDate));
+    if (endDate) conditions.push(lte(AC_bank_transactions.transaction_date, endDate));
+    if (type) conditions.push(eq(AC_bank_transactions.transaction_type, type as any));
     
-    const result = await db.select().from(bankTransactions).where(and(...conditions)).orderBy(desc(bankTransactions.transactionDate)).limit(limit).offset(offset);
-    const total = await db.select().from(bankTransactions).where(and(...conditions));
+    const result = await db.select().from(AC_bank_transactions).where(and(...conditions)).orderBy(desc(AC_bank_transactions.transaction_date)).limit(limit).offset(offset);
+    const total = await db.select().from(AC_bank_transactions).where(and(...conditions));
     return { data: result, total: total.length, page, limit };
   }
   
   public async getBankTransaction(id: string, companyId: string): Promise<BankTransaction | null> {
     const db = getDrizzle();
-    const result = await db.select().from(bankTransactions).where(and(eq(bankTransactions.id, id), eq(bankTransactions.companyId, companyId))).limit(1);
+    const result = await db.select().from(AC_bank_transactions).where(and(eq(AC_bank_transactions.id, id), eq(AC_bank_transactions.company_id, companyId))).limit(1);
     return result[0] || null;
   }
   
@@ -171,47 +171,47 @@ export class BankJournalService {
     const db = getDrizzle();
     const transactionId = uuidv4();
     
-    const account = await this.getBankAccount(data.bankAccountId, data.companyId);
+    const account = await this.getBankAccount(data.bank_account_id, data.company_id);
     if (!account) throw new Error('Bank account not found');
     
     // PAS 10: Verifică dacă contul este activ
-    if (!account.isActive) {
+    if (!account.is_active) {
       throw new Error('Contul bancar nu este activ');
     }
     
     // RECOMANDARE 2: Corecție logică solduri pentru tranzacții speciale
-    const balanceBefore = Number(account.currentBalance);
+    const balanceBefore = Number(account.current_balance);
     
     // Determine if transaction increases or decreases balance based on type
     const isIncoming = 
-      data.transactionType === 'incoming_payment' ||
-      data.transactionType === 'loan_disbursement' ||
-      (data.transactionType === 'bank_interest' && Number(data.amount) > 0) ||
-      (data.transactionType === 'foreign_exchange' && Number(data.amount) > 0);
+      data.transaction_type === 'incoming_payment' ||
+      data.transaction_type === 'loan_disbursement' ||
+      (data.transaction_type === 'bank_interest' && Number(data.amount) > 0) ||
+      (data.transaction_type === 'foreign_exchange' && Number(data.amount) > 0);
     
     const balanceAfter = isIncoming ? balanceBefore + Math.abs(Number(data.amount)) : balanceBefore - Math.abs(Number(data.amount));
     
-    await db.insert(bankTransactions).values({
+    await db.insert(AC_bank_transactions).values({
       id: transactionId,
-      companyId: data.companyId,
-      bankAccountId: data.bankAccountId,
-      referenceNumber: data.referenceNumber || `REF-${Date.now()}`,
-      transactionType: data.transactionType,
-      paymentMethod: data.paymentMethod || 'bank_transfer',
-      transactionDate: data.transactionDate || new Date(),
-      valueDate: data.valueDate || data.transactionDate || new Date(),
+      company_id: data.company_id,
+      bank_account_id: data.bank_account_id,
+      reference_number: data.referenceNumber || `REF-${Date.now()}`,
+      transaction_type: data.transaction_type,
+      payment_method: data.paymentMethod || 'bank_transfer',
+      transaction_date: data.transaction_date || new Date(),
+      value_date: data.valueDate || data.transaction_date || new Date(),
       amount: String(data.amount),
       currency: data.currency || 'RON',
-      exchangeRate: String(data.exchangeRate || 1),
+      exchange_rate: String(data.exchangeRate || 1),
       description: data.description,
-      payerName: data.payerName,
-      payeeName: data.payeeName,
-      balanceBefore: String(balanceBefore),
-      balanceAfter: String(balanceAfter),
-      isPosted: false,
-      invoiceId: data.invoiceId,
-      invoiceNumber: data.invoiceNumber,
-      createdBy: data.userId
+      payer_name: data.payerName,
+      payee_name: data.payeeName,
+      balance_before: String(balanceBefore),
+      balance_after: String(balanceAfter),
+      is_posted: false,
+      invoice_id: data.invoiceId,
+      invoice_number: data.invoiceNumber,
+      created_by: data.userId
     });
     
     // RECOMANDARE 5: Update atomic pentru prevenție race condition
@@ -222,11 +222,11 @@ export class BankJournalService {
       SET current_balance = current_balance + $1, 
           updated_at = NOW()
       WHERE id = $2
-    `, [amountChange, data.bankAccountId]);
+    `, [amountChange, data.bank_account_id]);
     
     // POSTARE AUTOMATĂ
     try {
-      const entry = await this.createBankTransactionEntry({ ...data, transactionId, bankAccountNumber: account.accountNumber });
+      const entry = await this.createBankTransactionEntry({ ...data, transactionId, bankAccountNumber: account.account_number });
       await db.$client.unsafe(`UPDATE bank_transactions SET is_posted = true, ledger_entry_id = $1 WHERE id = $2`, [entry.id, transactionId]);
     } catch (error) {
       console.error('Error posting bank transaction:', error);
@@ -631,7 +631,7 @@ export class BankJournalService {
       amount: Math.abs(amount),
       description: entryDescription,
       userId,
-      lines: ledger_lines
+      lines: ledgerLines
     });
     
     return entry;
@@ -650,11 +650,11 @@ export class BankJournalService {
       errors.push('Transaction ID is required');
     }
     
-    if (!transactionData.bankAccountId) {
+    if (!transactionData.bank_account_id) {
       errors.push('Bank account ID is required');
     }
     
-    if (!transactionData.transactionDate) {
+    if (!transactionData.transaction_date) {
       errors.push('Transaction date is required');
     }
     
@@ -666,12 +666,12 @@ export class BankJournalService {
       errors.push('Transaction amount is required');
     }
     
-    if (!transactionData.transactionType) {
+    if (!transactionData.transaction_type) {
       errors.push('Transaction type is required');
     } else {
       // Check that transaction type is valid
       const validTypes = Object.values(BankTransactionType);
-      if (!validTypes.includes(transactionData.transactionType)) {
+      if (!validTypes.includes(transactionData.transaction_type)) {
         errors.push(`Invalid transaction type. Valid types are: ${validTypes.join(', ')}`);
       }
     }
@@ -680,7 +680,7 @@ export class BankJournalService {
     
     // Romanian fiscal law requires bank statements to be imported within 3 business days
     const currentDate = new Date();
-    const transactionDate = new Date(transactionData.transactionDate);
+    const transactionDate = new Date(transactionData.transaction_date);
     const maxDaysDifference = 3;
     
     // Calculate business days difference (simplified calculation)
@@ -703,7 +703,7 @@ export class BankJournalService {
     }
     
     // Additional validation based on transaction type
-    switch (transactionData.transactionType) {
+    switch (transactionData.transaction_type) {
       case BankTransactionType.INCOMING_PAYMENT:
         if (!transactionData.payerId && !transactionData.payerName) {
           errors.push('Payer information is required for incoming payments');
@@ -751,17 +751,17 @@ export class BankJournalService {
     const db = getDrizzle();
     const accountId = uuidv4();
     
-    await db.insert(bankAccounts).values({
+    await db.insert(AC_bank_accounts).values({
       id: accountId,
-      companyId: data.companyId,
-      accountName: data.accountName,
-      accountNumber: data.accountNumber,
-      bankName: data.bankName,
-      bankCode: data.bankCode,
+      company_id: data.company_id,
+      account_name: data.accountName,
+      account_number: data.accountNumber,
+      bank_name: data.bankName,
+      bank_code: data.bankCode,
       currency: data.currency || 'RON',
-      currentBalance: data.currentBalance || '0',
-      isActive: data.isActive !== undefined ? data.isActive : true,
-      createdBy: data.userId
+      current_balance: data.currentBalance || '0',
+      is_active: data.isActive !== undefined ? data.isActive : true,
+      created_by: data.userId
     });
     
     return accountId;
@@ -784,11 +784,11 @@ export class BankJournalService {
     if (data.currency) updateData.currency = data.currency;
     if (data.isActive !== undefined) updateData.isActive = data.isActive;
     
-    await db.update(bankAccounts)
+    await db.update(AC_bank_accounts)
       .set(updateData)
       .where(and(
-        eq(bankAccounts.id, id),
-        eq(bankAccounts.companyId, companyId)
+        eq(AC_bank_accounts.id, id),
+        eq(AC_bank_accounts.company_id, companyId)
       ));
     
     return true;
@@ -822,7 +822,7 @@ export class BankJournalService {
       data.fromAccountId,
       data.toAccountId,
       parseFloat(data.amount),
-      data.companyId,
+      data.company_id,
       data.description || 'Transfer între conturi',
       data.userId
     );
@@ -841,8 +841,8 @@ export class BankJournalService {
     for (const txn of transactions) {
       try {
         await this.recordBankTransaction({
-          companyId: data.companyId,
-          bankAccountId: data.bankAccountId,
+          company_id: data.company_id,
+          bank_account_id: data.bank_account_id,
           ...txn
         });
         imported++;
@@ -876,22 +876,22 @@ export class BankJournalService {
     
     // Get all transactions up to the specified date
     const transactions = await db.select()
-      .from(bankTransactions)
+      .from(AC_bank_transactions)
       .where(and(
-        eq(bankTransactions.bankAccountId, accountId),
-        eq(bankTransactions.companyId, companyId),
-        lte(bankTransactions.transactionDate, asOfDate)
+        eq(AC_bank_transactions.bank_account_id, accountId),
+        eq(AC_bank_transactions.company_id, companyId),
+        lte(AC_bank_transactions.transaction_date, asOfDate)
       ))
-      .orderBy(desc(bankTransactions.transactionDate))
+      .orderBy(desc(AC_bank_transactions.transaction_date))
       .limit(1);
     
     if (transactions.length > 0) {
-      return transactions[0].balanceAfter as string;
+      return transactions[0].balance_after as string;
     }
     
     // If no transactions, return current balance
     const account = await this.getBankAccount(accountId, companyId);
-    return account?.currentBalance as string || '0';
+    return account?.current_balance as string || '0';
   }
 
   /**
@@ -918,9 +918,9 @@ export class BankJournalService {
     
     return {
       account: {
-        accountName: account.accountName,
-        accountNumber: account.accountNumber,
-        bankName: account.bankName,
+        accountName: account.account_name,
+        accountNumber: account.account_number,
+        bankName: account.bank_name,
         currency: account.currency
       },
       period: {
@@ -942,12 +942,12 @@ export class BankJournalService {
     
     return accounts.data.map(account => ({
       id: account.id,
-      accountName: account.accountName,
-      accountNumber: account.accountNumber,
-      bankName: account.bankName,
+      accountName: account.account_name,
+      accountNumber: account.account_number,
+      bankName: account.bank_name,
       currency: account.currency,
-      currentBalance: account.currentBalance,
-      isActive: account.isActive
+      currentBalance: account.current_balance,
+      isActive: account.is_active
     }));
   }
   
