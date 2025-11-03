@@ -638,8 +638,6 @@ export class CashRegisterService {
         description: `Transfer de la ${data.from_register_name || 'altă casă'}`,
       });
       
-      const fromTransactionId = from_transaction_id;
-      const toTransactionId = to_transaction_id;
       return { from_transaction_id: fromTransactionId, to_transaction_id: toTransactionId };
     } catch (error) {
       console.error('Error transferring cash:', error);
@@ -886,7 +884,7 @@ export class CashRegisterService {
         // Ajustări (pot fi + sau -)
         else if (txn.transaction_type === 'cash_count_adjustment') {
           // Pentru ajustări, folosim direct balanceAfter din tranzacție
-          balance = Number(txn.balanceAfter);
+          balance = Number(txn.balance_after);
         }
       }
       
@@ -967,8 +965,8 @@ export class CashRegisterService {
   public async generateCashRegisterReport(
     companyId: string,
     cashRegisterId: string,
-      start_date: Date,
-      end_date: Date
+      startDate: Date,
+      endDate: Date
   ): Promise<CashRegisterReport> {
     try {
       const db = getDrizzle();
@@ -999,10 +997,10 @@ export class CashRegisterService {
       return {
         cash_register_id: cashRegisterId,
         period: { start_date: startDate, end_date: endDate },
-        totalReceipts,
-        totalPayments,
-        netChange: totalReceipts - totalPayments,
-        transactionCount: transactions.length,
+        total_receipts: totalReceipts,
+        total_payments: totalPayments,
+        net_change: totalReceipts - totalPayments,
+        transaction_count: transactions.length,
         transactions
       };
     } catch (error) {
@@ -1546,7 +1544,7 @@ export class CashRegisterService {
       amount: Math.abs(amount),
       description: entryDescription,
       userId,
-      lines: ledger_lines
+      lines: ledgerLines
     });
     
     return entry;
@@ -1637,8 +1635,8 @@ export class CashRegisterService {
         
         // For certain transaction types, ID number is required by Romanian law
         if (
-          (transactionData.transactionPurpose === CashTransactionPurpose.SUPPLIER_PAYMENT && transactionData.amount > 5000) ||
-          (transactionData.transactionPurpose === CashTransactionPurpose.SALARY_PAYMENT)
+          (transactionData.transaction_purpose === CashTransactionPurpose.SUPPLIER_PAYMENT && transactionData.amount > 5000) ||
+          (transactionData.transaction_purpose === CashTransactionPurpose.SALARY_PAYMENT)
         ) {
           if (!transactionData.person_id_number) {
             errors.push('Person ID number (CNP/ID card) is required for this transaction type according to Romanian regulations');
@@ -1855,8 +1853,8 @@ export class CashRegisterService {
       const job = await accountingQueueService.queueAccountReconciliation({
         accountId: cashRegisterId,
         companyId,
-        startDate: startDate,
-        endDate: endDate
+        startDate,
+        endDate
       });
       
       return {
