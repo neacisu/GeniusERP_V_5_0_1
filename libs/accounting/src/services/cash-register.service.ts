@@ -1843,8 +1843,8 @@ export class CashRegisterService {
   public async reconcileCashRegisterAsync(
     companyId: string,
     cashRegisterId: string,
-      start_date: string,
-      end_date: string,
+      startDate: Date,
+      endDate: Date,
     _userId: string
   ): Promise<ReconciliationJobResult> {
     try {
@@ -1853,8 +1853,8 @@ export class CashRegisterService {
       const job = await accountingQueueService.queueAccountReconciliation({
         accountId: cashRegisterId,
         companyId,
-        startDate: startDate,
-        endDate: endDate
+        startDate:         startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(): endDate
       });
       
       return {
