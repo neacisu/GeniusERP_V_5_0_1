@@ -1694,7 +1694,7 @@ export class CashRegisterService {
           errors.push("Transaction amount does not match the sum of item gross amounts");
         }
         
-        if (transactionData.vatAmount !== undefined && Math.abs(totalVat - Number(transactionData.vatAmount)) > 0.01) {
+        if (transactionData.vat_amount !== undefined && Math.abs(totalVat - Number(transactionData.vat_amount)) > 0.01) {
           errors.push("Transaction VAT amount does not match the sum of item VAT amounts");
         }
       }
