@@ -1,9 +1,7 @@
 /**
-import { numeric, json } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
-import { numeric, json } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
  * Cash Register Schema - Romanian Accounting Standards
+ * 
+ * Prefix AC_ = Accounting Configuration
  * 
  * Implementează Registrul de Casă conform:
  * - OMFP 2861/2009 - Norme metodologice
@@ -20,7 +18,6 @@ import { sql } from "drizzle-orm";
 import { pgTable, uuid, text, timestamp, numeric, boolean, pgEnum, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
-import { sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { companies, users } from '../schema';
 
@@ -65,7 +62,7 @@ export const cashTransactionPurposeValues = [
 export const cashTransactionPurposeEnum = pgEnum('cash_transaction_purpose', cashTransactionPurposeValues);
 
 /**
- * Cash Registers Table
+ * AC_Cash Registers Table (STANDARDIZED with AC_ prefix)
  * Registrele de casă ale companiei
  * 
  * Conform OMFP 2861/2009, fiecare entitate poate avea multiple registre de casă:
@@ -73,190 +70,214 @@ export const cashTransactionPurposeEnum = pgEnum('cash_transaction_purpose', cas
  * - Case secundare (magazine, puncte de lucru)
  * - Casa în valută
  */
-export const cash_registers = pgTable('cash_registers', {
+export const AC_cash_registers = pgTable('AC_cash_registers', {
   id: uuid('id').primaryKey().defaultRandom(),
-  companyId: uuid('company_id').notNull().references(() => companies.id),
-  franchiseId: uuid('franchise_id'), // Pentru lanțuri de magazine
+  company_id: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
+  franchise_id: uuid('franchise_id'),
   
   // Identificare
-  name: text('name').notNull(), // Ex: "Casa Centrală", "Casa Magazin 1"
-  code: text('code').notNull(), // Cod intern (ex: "CC", "CM1")
+  name: text('name').notNull(),
+  code: text('code').notNull(),
   
   // Tip și locație
   type: text('type').notNull().default('main'), // main, secondary, currency, petty_cash
-  location: text('location'), // Locația fizică
+  location: text('location'),
   
   // Currency
   currency: text('currency').notNull().default('RON'),
   
   // Responsabil (Casier)
-  responsiblePersonId: uuid('responsible_person_id').references(() => users.id),
-  responsiblePersonName: text('responsible_person_name'),
+  responsible_person_id: uuid('responsible_person_id').references(() => users.id),
+  responsible_person_name: text('responsible_person_name'),
   
   // Limite (conform legislației)
-  dailyLimit: numeric('daily_limit', { precision: 15, scale: 2 }), // Limită zilnică de numerar
-  maxTransactionAmount: numeric('max_transaction_amount', { precision: 15, scale: 2 }), // Limită per tranzacție
+  daily_limit: numeric('daily_limit', { precision: 15, scale: 2 }),
+  max_transaction_amount: numeric('max_transaction_amount', { precision: 15, scale: 2 }),
   
   // Sold curent (actualizat automat)
-  currentBalance: numeric('current_balance', { precision: 15, scale: 2 }).notNull().default('0'),
+  current_balance: numeric('current_balance', { precision: 15, scale: 2 }).notNull().default('0'),
   
   // Status
   status: cashRegisterStatusEnum('status').notNull().default('active'),
-  isActive: boolean('is_active').notNull().default(true),
+  is_active: boolean('is_active').notNull().default(true),
   
   // Date închidere (pentru case închise)
-  closedAt: timestamp('closed_at'),
-  closedBy: uuid('closed_by').references(() => users.id),
-  closingBalance: numeric('closing_balance', { precision: 15, scale: 2 }),
+  closed_at: timestamp('closed_at'),
+  closed_by: uuid('closed_by').references(() => users.id),
+  closing_balance: numeric('closing_balance', { precision: 15, scale: 2 }),
   
   // Închidere zilnică (ultima zi închisă)
-  lastClosedDate: text('last_closed_date'), // Format: 'YYYY-MM-DD' (tip DATE în DB)
+  last_closed_date: text('last_closed_date'),
   
   // Audit
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-  createdBy: uuid('created_by').references(() => users.id),
-  updatedBy: uuid('updated_by').references(() => users.id),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  updated_at: timestamp('updated_at').notNull().defaultNow(),
+  created_by: uuid('created_by').references(() => users.id),
+  updated_by: uuid('updated_by').references(() => users.id),
 }, (table) => ({
-  companyIdx: index('cash_registers_company_idx').on(table.companyId),
-  statusIdx: index('cash_registers_status_idx').on(table.status),
-  codeIdx: index('cash_registers_code_idx').on(table.companyId, table.code),
+  companyIdx: index('idx_AC_cash_registers_company').on(table.company_id),
+  statusIdx: index('idx_AC_cash_registers_status').on(table.status),
+  codeIdx: index('idx_AC_cash_registers_code').on(table.company_id, table.code),
 }));
 
+// Backward Compatibility Alias
+export const cash_registers = AC_cash_registers;
+
 /**
- * Cash Transactions Table
+ * AC_Cash Transactions Table (STANDARDIZED with AC_ prefix)
  * Tranzacțiile de casă (Chitanțe și Dispoziții de Plată)
- * 
- * Conform OMFP 2861/2009, fiecare operațiune de casă trebuie înregistrată cu:
- * - Număr document (chitanță/dispoziție)
- * - Data și ora
- * - Suma
- * - Persoana (nume, CNP/CI când e necesar)
- * - Baza (factura, contract, etc.)
  */
-export const cash_transactions = pgTable('cash_transactions', {
+export const AC_cash_transactions = pgTable('AC_cash_transactions', {
   id: uuid('id').primaryKey().defaultRandom(),
-  companyId: uuid('company_id').notNull().references(() => companies.id),
-  franchiseId: uuid('franchise_id'),
-  cashRegisterId: uuid('cash_register_id').notNull().references(() => cash_registers.id),
+  company_id: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
+  franchise_id: uuid('franchise_id'),
+  cash_register_id: uuid('cash_register_id').notNull().references(() => AC_cash_registers.id),
   
-  // Numerotare document (Serie + Număr)
-  documentNumber: text('document_number').notNull(), // Ex: "CH-2025-00001"
-  series: text('series').notNull(), // Ex: "CH" pentru chitanță, "DP" pentru dispoziție
-  number: numeric('number').notNull(), // Număr secvențial în serie
+  // Numerotare document
+  document_number: text('document_number').notNull(),
+  series: text('series').notNull(),
+  number: numeric('number').notNull(),
   
-  // Tip și scop tranzacție
-  transactionType: cashTransactionTypeEnum('transaction_type').notNull(),
-  transactionPurpose: cashTransactionPurposeEnum('transaction_purpose').notNull(),
-  
-  // Date și timp (IMPORTANT: conform legislației, data trebuie să fie astăzi)
-  transactionDate: timestamp('transaction_date').notNull(),
+  // Tip și scop
+  transaction_type: cashTransactionTypeEnum('transaction_type').notNull(),
+  transaction_purpose: cashTransactionPurposeEnum('transaction_purpose').notNull(),
+  transaction_date: timestamp('transaction_date').notNull(),
   
   // Sume
   amount: numeric('amount', { precision: 15, scale: 2 }).notNull(),
-  vatAmount: numeric('vat_amount', { precision: 15, scale: 2 }).default('0'),
-  vatRate: numeric('vat_rate', { precision: 5, scale: 2 }).default('19'), // 19% default
-  netAmount: numeric('net_amount', { precision: 15, scale: 2 }),
+  vat_amount: numeric('vat_amount', { precision: 15, scale: 2 }).default('0'),
+  vat_rate: numeric('vat_rate', { precision: 5, scale: 2 }).default('19'),
+  net_amount: numeric('net_amount', { precision: 15, scale: 2 }),
   
-  // Currency și curs
+  // Currency
   currency: text('currency').notNull().default('RON'),
-  exchangeRate: numeric('exchange_rate', { precision: 10, scale: 4 }).default('1.0000'),
+  exchange_rate: numeric('exchange_rate', { precision: 10, scale: 4 }).default('1.0000'),
   
-  // Persoană (Client/Furnizor/Angajat)
-  // IMPORTANT: Conform legislației, pentru anumite tranzacții este obligatoriu CNP/CI
-  personId: uuid('person_id'), // Link către customers/suppliers/employees
-  personName: text('person_name').notNull(), // Nume persoană (obligatoriu)
-  personIdNumber: text('person_id_number'), // CNP sau Serie/Nr. CI (obligatoriu pentru plăți >5000 RON sau salarii)
-  personAddress: text('person_address'), // Adresă (opțional, dar recomandat)
+  // Persoană
+  person_id: uuid('person_id'),
+  person_name: text('person_name').notNull(),
+  person_id_number: text('person_id_number'),
+  person_address: text('person_address'),
   
-  // Baza operațiunii (Factură, Contract, etc.) - pentru urmărire și reconciliere
-  invoiceId: uuid('invoice_id'), // Link către invoices
-  invoiceNumber: text('invoice_number'), // Număr factură (afișat în coloana Referință)
-  contractNumber: text('contract_number'), // Număr contract
-  description: text('description').notNull(), // Descriere operațiune (obligatoriu)
+  // Referințe
+  invoice_id: uuid('invoice_id'),
+  invoice_number: text('invoice_number'),
+  contract_number: text('contract_number'),
+  description: text('description').notNull(),
   
-  // Bon fiscal (pentru case cu POS fiscal)
-  isFiscalReceipt: boolean('is_fiscal_receipt').notNull().default(false),
-  fiscalReceiptNumber: text('fiscal_receipt_number'), // Număr bon fiscal
-  fiscalReceiptData: text('fiscal_receipt_data'), // Date bon fiscal (JSON)
+  // Bon fiscal
+  is_fiscal_receipt: boolean('is_fiscal_receipt').notNull().default(false),
+  fiscal_receipt_number: text('fiscal_receipt_number'),
+  fiscal_receipt_data: text('fiscal_receipt_data'),
   
-  // Sold înainte și după
-  balanceBefore: numeric('balance_before', { precision: 15, scale: 2 }).notNull(),
-  balanceAfter: numeric('balance_after', { precision: 15, scale: 2 }).notNull(),
+  // Solduri
+  balance_before: numeric('balance_before', { precision: 15, scale: 2 }).notNull(),
+  balance_after: numeric('balance_after', { precision: 15, scale: 2 }).notNull(),
   
   // Contabilizare
-  isPosted: boolean('is_posted').notNull().default(false),
-  postedAt: timestamp('posted_at'),
-  ledgerEntryId: uuid('ledger_entry_id'), // Link către AC_accounting_ledger_entries
+  is_posted: boolean('is_posted').notNull().default(false),
+  posted_at: timestamp('posted_at'),
+  ledger_entry_id: uuid('ledger_entry_id'),
   
-  // Anulare (dacă e cazul)
-  isCanceled: boolean('is_canceled').notNull().default(false),
-  canceledAt: timestamp('canceled_at'),
-  canceledBy: uuid('canceled_by').references(() => users.id),
-  cancellationReason: text('cancellation_reason'),
+  // Anulare
+  is_canceled: boolean('is_canceled').notNull().default(false),
+  canceled_at: timestamp('canceled_at'),
+  canceled_by: uuid('canceled_by').references(() => users.id),
+  cancellation_reason: text('cancellation_reason'),
   
-  // Note și metadata
+  // Note
   notes: text('notes'),
-  metadata: text('metadata'), // JSON pentru date suplimentare
+  metadata: text('metadata'),
   
   // Audit
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-  createdBy: uuid('created_by').notNull().references(() => users.id),
-  updatedBy: uuid('updated_by').references(() => users.id),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  updated_at: timestamp('updated_at').notNull().defaultNow(),
+  created_by: uuid('created_by').notNull().references(() => users.id),
+  updated_by: uuid('updated_by').references(() => users.id),
 }, (table) => ({
-  companyIdx: index('cash_transactions_company_idx').on(table.companyId),
-  registerIdx: index('cash_transactions_register_idx').on(table.cashRegisterId),
-  dateIdx: index('cash_transactions_date_idx').on(table.transactionDate),
-  typeIdx: index('cash_transactions_type_idx').on(table.transactionType),
-  documentIdx: index('cash_transactions_document_idx').on(table.companyId, table.series, table.number),
-  personIdx: index('cash_transactions_person_idx').on(table.personId),
-  invoiceIdx: index('cash_transactions_invoice_idx').on(table.invoiceId),
+  companyIdx: index('idx_AC_cash_transactions_company').on(table.company_id),
+  registerIdx: index('idx_AC_cash_transactions_register').on(table.cash_register_id),
+  dateIdx: index('idx_AC_cash_transactions_date').on(table.transaction_date),
+  typeIdx: index('idx_AC_cash_transactions_type').on(table.transaction_type),
+  documentIdx: index('idx_AC_cash_transactions_document').on(table.company_id, table.series, table.number),
+  personIdx: index('idx_AC_cash_transactions_person').on(table.person_id),
+  invoiceIdx: index('idx_AC_cash_transactions_invoice').on(table.invoice_id),
 }));
+
+// Backward Compatibility Alias
+export const cash_transactions = AC_cash_transactions;
 
 /**
  * Relations
  */
-export const cashRegisterRelations = relations(cash_registers, ({ one, many }) => ({
+export const AC_cash_registersRelations = relations(AC_cash_registers, ({ one, many }) => ({
   company: one(companies, {
-    fields: [cash_registers.companyId],
+    fields: [AC_cash_registers.company_id],
     references: [companies.id],
   }),
-  responsiblePerson: one(users, {
-    fields: [cash_registers.responsiblePersonId],
+  responsible_person: one(users, {
+    fields: [AC_cash_registers.responsible_person_id],
     references: [users.id],
   }),
-  transactions: many(cash_transactions),
+  transactions: many(AC_cash_transactions),
 }));
 
-export const cashTransactionRelations = relations(cash_transactions, ({ one }) => ({
+export const AC_cash_transactionsRelations = relations(AC_cash_transactions, ({ one }) => ({
   company: one(companies, {
-    fields: [cash_transactions.companyId],
+    fields: [AC_cash_transactions.company_id],
     references: [companies.id],
   }),
-  cashRegister: one(cash_registers, {
-    fields: [cash_transactions.cashRegisterId],
-    references: [cash_registers.id],
+  cash_register: one(AC_cash_registers, {
+    fields: [AC_cash_transactions.cash_register_id],
+    references: [AC_cash_registers.id],
   }),
-  createdByUser: one(users, {
-    fields: [cash_transactions.createdBy],
+  created_by_user: one(users, {
+    fields: [AC_cash_transactions.created_by],
     references: [users.id],
   }),
 }));
 
-/**
- * Insert schemas
- */
-export const insertCashRegisterSchema = createInsertSchema(cash_registers); // Fixed: removed omit() for drizzle-zod compatibility;
-
-export const insertCashTransactionSchema = createInsertSchema(cash_transactions); // Fixed: removed omit() for drizzle-zod compatibility;
+// Backward Compatibility Aliases
+export const cashRegisterRelations = AC_cash_registersRelations;
+export const cashTransactionRelations = AC_cash_transactionsRelations;
 
 /**
- * Types
+ * Zod Schemas
  */
-export type CashRegister = typeof cash_registers.$inferSelect;
-export type InsertCashRegister = z.infer<typeof insertCashRegisterSchema>;
+export const insertCashRegisterSchema = createInsertSchema(AC_cash_registers);
+export const selectCashRegisterSchema = z.object({
+  id: z.string().uuid(),
+  company_id: z.string().uuid(),
+  name: z.string().min(1),
+  code: z.string().min(1),
+  type: z.enum(['main', 'secondary', 'currency', 'petty_cash']),
+  status: z.enum(cashRegisterStatusValues),
+  current_balance: z.string(),
+});
 
-export type CashTransaction = typeof cash_transactions.$inferSelect;
-export type InsertCashTransaction = z.infer<typeof insertCashTransactionSchema>;
+export const insertCashTransactionSchema = createInsertSchema(AC_cash_transactions);
+export const selectCashTransactionSchema = z.object({
+  id: z.string().uuid(),
+  company_id: z.string().uuid(),
+  cash_register_id: z.string().uuid(),
+  document_number: z.string(),
+  transaction_type: z.enum(cashTransactionTypeValues),
+  transaction_purpose: z.enum(cashTransactionPurposeValues),
+  amount: z.string(),
+  person_name: z.string(),
+});
+
+/**
+ * TypeScript Types
+ */
+export type ACCashRegister = typeof AC_cash_registers.$inferSelect;
+export type InsertACCashRegister = z.infer<typeof insertCashRegisterSchema>;
+export type ACCashTransaction = typeof AC_cash_transactions.$inferSelect;
+export type InsertACCashTransaction = z.infer<typeof insertCashTransactionSchema>;
+
+// Backward Compatibility Type Aliases
+export type CashRegister = ACCashRegister;
+export type InsertCashRegister = InsertACCashRegister;
+export type CashTransaction = ACCashTransaction;
+export type InsertCashTransaction = InsertACCashTransaction;
 

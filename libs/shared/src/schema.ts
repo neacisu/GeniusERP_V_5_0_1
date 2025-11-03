@@ -793,24 +793,8 @@ export const insertInvoicePaymentSchema = createInsertSchema(invoicePayments); /
 export type InvoicePayment = typeof invoicePayments.$inferSelect;
 export type InsertInvoicePayment = z.infer<typeof insertInvoicePaymentSchema>;
 
-// Exchange Rates System
-export const fx_rates = pgTable("fx_rates", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  currency: varchar("currency", { length: 5 }).notNull(),
-  rate: numeric("rate", { precision: 10, scale: 4 }).notNull(),
-  // Source of the exchange rate (BNR = National Bank of Romania)
-  source: varchar("source", { length: 20 }).notNull().default("BNR"),
-  // Base currency (typically RON for Romanian Leu)
-  baseCurrency: varchar("base_currency", { length: 5 }).notNull().default("RON"),
-  date: timestamp("date").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => ({
-  // Create a unique constraint on currency, date, and source to prevent duplicates
-  uniqueRate: unique().on(table.currency, table.date, table.source, table.baseCurrency),
-}));
-
-export const insertFxRateSchema = createInsertSchema(fx_rates); // Fixed: removed omit() for drizzle-zod compatibility;
+// ⚠️ fx_rates is now exported from documents-extended.schema.ts as AC_fx_rates
+// Backward compatibility alias is provided there // Fixed: removed omit() for drizzle-zod compatibility;
 
 export type FxRate = typeof fx_rates.$inferSelect;
 

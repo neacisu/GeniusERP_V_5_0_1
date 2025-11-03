@@ -155,29 +155,9 @@ export const ledgerLines = pgTable('ledger_lines', {
   updatedAt: timestamp('updated_at').notNull()
 });
 
-/**
- * Fiscal periods table
- * Accounting periods configuration
- */
-export const fiscalPeriods = pgTable('fiscal_periods', {
-  id: uuid('id').primaryKey().notNull(),
-  companyId: uuid('company_id').notNull(),
-  year: numeric('year').notNull(),
-  month: numeric('month').notNull(),
-  startDate: timestamp('start_date').notNull(),
-  endDate: timestamp('end_date').notNull(),
-  status: text('status').notNull().default('open'), // 'open', 'soft_close', 'hard_close'
-  isClosed: boolean('is_closed').notNull().default(false),
-  closedAt: timestamp('closed_at'),
-  closedBy: uuid('closed_by'),
-  reopenedAt: timestamp('reopened_at'),
-  reopenedBy: uuid('reopened_by'),
-  reopeningReason: text('reopening_reason'),
-  
-  // Metadata
-  createdAt: timestamp('created_at').notNull().default(sql`now()`),
-  updatedAt: timestamp('updated_at').notNull().default(sql`now()`)
-});
+// ⚠️ fiscal_periods (AC_fiscal_periods) is now exported from libs/shared/src/schema/accounting.schema.ts
+// Import from there instead of defining duplicate here
+// Backward compatibility alias: fiscal_periods = AC_fiscal_periods
 
 /**
  * Document counters table

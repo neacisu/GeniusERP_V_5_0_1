@@ -77,11 +77,11 @@ export const document_versions = pgTable('document_versions', {
 }));
 
 /**
- * FX Rates table
+ * AC_FX Rates table (STANDARDIZED with AC_ prefix)
  * Foreign exchange rates
  * Primary source: BNR (National Bank of Romania)
  */
-export const fx_rates = pgTable('fx_rates', {
+export const AC_fx_rates = pgTable('AC_fx_rates', {
   id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
   currency: varchar('currency', { length: 5 }).notNull(),
   rate: numeric('rate', { precision: 10, scale: 4 }).notNull(),
@@ -91,12 +91,15 @@ export const fx_rates = pgTable('fx_rates', {
   created_at: timestamp('created_at').notNull().default(sql`now()`),
   updated_at: timestamp('updated_at').notNull().default(sql`now()`)
 }, (table) => ({
-  currency_date_unique: unique('fx_rates_currency_date_unique').on(table.currency, table.date, table.source, table.base_currency),
-  currency_idx: index('fx_rates_currency_idx').on(table.currency),
-  date_idx: index('fx_rates_date_idx').on(table.date),
-  source_idx: index('fx_rates_source_idx').on(table.source),
-  currency_date_idx: index('fx_rates_currency_date_idx').on(table.currency, table.date),
+  currency_date_unique: unique('AC_fx_rates_unique').on(table.currency, table.date, table.source, table.base_currency),
+  currency_idx: index('idx_AC_fx_rates_currency').on(table.currency),
+  date_idx: index('idx_AC_fx_rates_date').on(table.date),
+  source_idx: index('idx_AC_fx_rates_source').on(table.source),
+  currency_date_idx: index('idx_AC_fx_rates_currency_date').on(table.currency, table.date),
 }));
+
+// Backward Compatibility
+export const fx_rates = AC_fx_rates;
 
 // ============================================================================
 // RELATIONS

@@ -5288,19 +5288,127 @@ Enable VAT Validation: true (validare CUI activată)
 
 
 
-# 49. cash_registers
-50. cash_transactions
-36. bank_accounts
-37. bank_transactions
+# 15. AC_cash_registers
 
+## 📋 Detalii detaliate tabel: `AC_cash_registers`
+
+**Prefix AC_:** Accounting Configuration (Configurări Contabile)
+
+### 🎯 Scop și Rol în Sistem
+
+Tabelul `AC_cash_registers` gestionează **registrele de casă** ale companiei conform legislației românești (OMFP 2861/2009 și Legea 82/1991). Este esențial pentru:
+
+- **Gestiunea numerarului** în companie (casa centrală, case secundare)
+- **Tracking sold curent** și limite legale
+- **Închidere zilnică** a casei conform obligațiilor fiscale
+- **Responsabilitate casier** (tracking persoană responsabilă)
+- **Multi-currency** (RON, EUR, USD, etc.)
+- **Conformitate fiscală** (limite zilnice, raportări)
+
+**Context legislativ român:**
+- OMFP 2861/2009: Norme metodologice pentru registrul de casă
+- Legea 82/1991: Legea contabilității
+- Codul Fiscal: Limitări operațiuni numerar (max 5,000 RON între firme)
+
+### 🏗️ Structură Tehnică
+
+**Schema DB (PostgreSQL) - REALĂ din producție:**
+```sql
+CREATE TABLE public.cash_registers (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    company_id uuid NOT NULL,
+    franchise_id uuid,
+    name text NOT NULL,
+    code text NOT NULL,
+    type text NOT NULL DEFAULT 'main'::text,
+    location text,
+    currency text NOT NULL DEFAULT 'RON'::text,
+    responsible_person_id uuid,
+    responsible_person_name text,
+    daily_limit numeric(15,2),
+    max_transaction_amount numeric(15,2),
+    current_balance numeric(15,2) NOT NULL DEFAULT 0,
+    status cash_register_status NOT NULL DEFAULT 'active'::cash_register_status,
+    is_active boolean NOT NULL DEFAULT true,
+    closed_at timestamp without time zone,
+    closed_by uuid,
+    closing_balance numeric(15,2),
+    last_closed_date text,
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    updated_at timestamp without time zone NOT NULL DEFAULT now(),
+    created_by uuid,
+    updated_by uuid,
+    CONSTRAINT "cash_registers_pkey" PRIMARY KEY (id)
+);
+
+-- Enum pentru status
+CREATE TYPE cash_register_status AS ENUM ('active', 'closed', 'suspended');
+```
+
+**Indexes:**
+- PRIMARY KEY: `cash_registers_pkey` pe `id`
+- INDEX: `cash_registers_company_idx` pe `company_id`
+- INDEX: `cash_registers_code_idx` pe `(company_id, code)`
+- INDEX: `cash_registers_status_idx` pe `status`
+
+**Foreign Keys:**
+- `company_id` → `companies(id)` (2 FK duplicate!)
+- `responsible_person_id` → `users(id)` (2 FK duplicate!)
+- `closed_by` → `users(id)` (2 FK duplicate!)
+- `created_by` → `users(id)` (2 FK duplicate!)
+- `updated_by` → `users(id)` (2 FK duplicate!)
+- **TOTAL: 10 FK-uri, din care 5 perechi de duplicate!**
+
+**Referenced By:**
+- `cash_transactions.cash_register_id` → `cash_registers.id`
+
+---
+
+# 16. AC_cash_transactions
+**Prefix AC_:** Accounting Configuration | **Rows**: 0 | **Scop**: Chitanțe și dispoziții de plată conform OMFP 2861/2009
+**Coloane**: 40 | **Enums**: cash_transaction_type (8 values), cash_transaction_purpose (10 values)
+**Link**: ledger_entry_id → AC_accounting_ledger_entries | **Schema**: /libs/shared/src/schema/cash-register.schema.ts
+**Migrare**: create_AC_cash_transactions.ts | **Status**: ✅ Standardizat cu snake_case
+
+---
+
+# 17. AC_bank_accounts
+**Prefix AC_:** Accounting Configuration | **Rows**: 0 | **Scop**: Conturi bancare IBAN, multi-currency
+**Coloane**: 12 | **Schema**: /libs/shared/src/schema/bank-journal.schema.ts
+**Migrare**: create_AC_bank_accounts.ts | **Status**: ✅ Standardizat cu snake_case
+
+---
+
+# 18. AC_bank_transactions
+**Prefix AC_:** Accounting Configuration | **Rows**: 0 | **Scop**: Tranzacții bancare, extrase cont
+**Coloane**: 24 | **Enums**: bank_transaction_type (9 values), bank_payment_method (7 values)
+**Link**: ledger_entry_id → AC_accounting_ledger_entries, bank_account_id → AC_bank_accounts
+**Schema**: /libs/shared/src/schema/bank-journal.schema.ts
+**Migrare**: create_AC_bank_transactions.ts | **Status**: ✅ Standardizat cu snake_case
+
+---
+
+# 19. AC_fiscal_periods
+**Prefix AC_:** Accounting Configuration | **Rows**: 0 | **Scop**: Închidere perioade contabile (lună/an)
+**Coloane**: 15 | **Status**: open/soft_close/hard_close | **DUPLICAT ELIMINAT** din libs/accounting/src/schema
+**Schema**: /libs/shared/src/schema/accounting.schema.ts (SINGURĂ DEFINIȚIE)
+**Migrare**: create_AC_fiscal_periods.ts | **Status**: ✅ Standardizat cu snake_case
+
+---
+
+# 20. AC_fx_rates
+**Prefix AC_:** Accounting Configuration | **Rows**: 45 (cursuri BNR active) | **Scop**: Cursuri valutare BNR sync zilnic
+**Coloane**: 8 | **Source**: BNR (Banca Națională) | **UNIQUE**: (currency, date, source, base_currency)
+**DUPLICAT ELIMINAT** din libs/shared/src/schema.ts
+**Schema**: /libs/shared/src/schema/documents-extended.schema.ts (SINGURĂ DEFINIȚIE)
+**Migrare**: create_AC_fx_rates.ts | **Status**: ✅ Standardizat cu snake_case
 
 ---
 
 # 114. financial_data
 115. financial_data_errors
 116. financial_data_jobs
-117. fiscal_periods
-118. fx_rates
+
 
 
 
@@ -5312,17 +5420,17 @@ Enable VAT Validation: true (validare CUI activată)
 
 ---
 
-# 15. anaf_company_data
+# 14.4. anaf_company_data
 
 ---
 
 
 
-16. analytics_alerts
-17. analytics_anomalies
-18. analytics_anomaly_rules
-19. analytics_dashboards
-20. analytics_inventory_optimization
+14.5. analytics_alerts
+14.6. analytics_anomalies
+14.7. analytics_anomaly_rules
+14.8. analytics_dashboards
+14.9. analytics_inventory_optimization
 21. analytics_inventory_optimizations
 22. analytics_metrics
 23. analytics_model_executions

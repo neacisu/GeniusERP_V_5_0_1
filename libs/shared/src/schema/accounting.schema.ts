@@ -292,28 +292,31 @@ export const AC_account_balancesRelations = AC_accounting_account_balancesRelati
 export const account_balancesRelations = AC_accounting_account_balancesRelations;
 
 /**
- * Fiscal periods table
- * Accounting periods configuration
+ * AC_Fiscal Periods table (STANDARDIZED with AC_ prefix)
+ * Accounting periods configuration and locking
  */
-export const fiscal_periods = pgTable('fiscal_periods', {
-  id: uuid('id').primaryKey().notNull(),
-  companyId: uuid('company_id').notNull(),
+export const AC_fiscal_periods = pgTable('AC_fiscal_periods', {
+  id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
+  company_id: uuid('company_id').notNull(),
   year: numeric('year').notNull(),
   month: numeric('month').notNull(),
-  startDate: timestamp('start_date').notNull(),
-  endDate: timestamp('end_date').notNull(),
+  start_date: timestamp('start_date').notNull(),
+  end_date: timestamp('end_date').notNull(),
   status: text('status').notNull().default('open'), // 'open', 'soft_close', 'hard_close'
-  isClosed: boolean('is_closed').notNull().default(false),
-  closedAt: timestamp('closed_at'),
-  closedBy: uuid('closed_by'),
-  reopenedAt: timestamp('reopened_at'),
-  reopenedBy: uuid('reopened_by'),
-  reopeningReason: text('reopening_reason'),
+  is_closed: boolean('is_closed').notNull().default(false),
+  closed_at: timestamp('closed_at'),
+  closed_by: uuid('closed_by'),
+  reopened_at: timestamp('reopened_at'),
+  reopened_by: uuid('reopened_by'),
+  reopening_reason: text('reopening_reason'),
   
   // Metadata
-  createdAt: timestamp('created_at').notNull().default(sql`now()`),
-  updatedAt: timestamp('updated_at').notNull().default(sql`now()`)
+  created_at: timestamp('created_at').notNull().default(sql`now()`),
+  updated_at: timestamp('updated_at').notNull().default(sql`now()`)
 });
+
+// Backward Compatibility
+export const fiscal_periods = AC_fiscal_periods;
 
 /**
  * @deprecated Chart of accounts table - DO NOT USE!

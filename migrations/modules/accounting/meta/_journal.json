@@ -57,6 +57,48 @@
       "when": 1730486600000,
       "tag": "create_AC_opening_balances",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1730590000000,
+      "tag": "create_AC_cash_registers",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1730590100000,
+      "tag": "create_AC_cash_transactions",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1730590200000,
+      "tag": "create_AC_bank_accounts",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1730590300000,
+      "tag": "create_AC_bank_transactions",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1730590400000,
+      "tag": "create_AC_fiscal_periods",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1730590500000,
+      "tag": "create_AC_fx_rates",
+      "breakpoints": true
     }
   ]
 }
