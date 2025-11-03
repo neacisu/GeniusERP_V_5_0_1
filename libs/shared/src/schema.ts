@@ -794,9 +794,7 @@ export type InvoicePayment = typeof invoicePayments.$inferSelect;
 export type InsertInvoicePayment = z.infer<typeof insertInvoicePaymentSchema>;
 
 // ⚠️ fx_rates is now exported from documents-extended.schema.ts as AC_fx_rates
-// Backward compatibility alias is provided there // Fixed: removed omit() for drizzle-zod compatibility;
-
-export type FxRate = typeof fx_rates.$inferSelect;
+// Backward compatibility alias is provided there
 
 // Document Management with Version Control
 export const documents = pgTable("documents", {
@@ -858,7 +856,7 @@ export type DocumentVersion = typeof documentVersions.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type InsertDocumentVersion = z.infer<typeof insertDocumentVersionSchema>;
 export type InsertTaggedDocumentVersion = z.infer<typeof insertTaggedDocumentVersionSchema>;
-export type InsertFxRate = z.infer<typeof insertFxRateSchema>;
+// ⚠️ InsertFxRate is now in documents-extended.schema.ts (AC_fx_rates)
 
 // Additional type aliases for commonly used tables
 export type InventoryProduct = typeof inventoryProducts.$inferSelect;

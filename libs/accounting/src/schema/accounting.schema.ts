@@ -201,8 +201,8 @@ export type InsertJournalType = InsertACJournalType; // Backward compatibility
 export type AccountBalance = typeof accountBalances.$inferSelect;
 export type InsertAccountBalance = typeof accountBalances.$inferInsert;
 
-export type FiscalPeriod = typeof fiscalPeriods.$inferSelect;
-export type InsertFiscalPeriod = typeof fiscalPeriods.$inferInsert;
+// ⚠️ FiscalPeriod types are now in shared schema (AC_fiscal_periods)
+// Import from '@geniuserp/shared' if needed
 
 export type DocumentCounter = typeof documentCounters.$inferSelect;
 export type InsertDocumentCounter = typeof documentCounters.$inferInsert;
@@ -253,8 +253,7 @@ export default {
   insertACAccountingLedgerLineSchema,
   selectACAccountingLedgerLineSchema,
   updateACAccountingLedgerLineSchema,
-  // Other tables
-  fiscalPeriods,
+  // Other tables (fiscal_periods now in shared as AC_fiscal_periods)
   documentCounters,
   chartOfAccounts,
   chartOfAccountsRelations,
