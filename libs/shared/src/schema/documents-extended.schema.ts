@@ -76,30 +76,9 @@ export const document_versions = pgTable('document_versions', {
   created_at_idx: index('document_versions_created_at_idx').on(table.created_at),
 }));
 
-/**
- * AC_FX Rates table (STANDARDIZED with AC_ prefix)
- * Foreign exchange rates
- * Primary source: BNR (National Bank of Romania)
- */
-export const AC_fx_rates = pgTable('AC_fx_rates', {
-  id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
-  currency: varchar('currency', { length: 5 }).notNull(),
-  rate: numeric('rate', { precision: 10, scale: 4 }).notNull(),
-  source: varchar('source', { length: 20 }).notNull().default('BNR'),
-  base_currency: varchar('base_currency', { length: 5 }).notNull().default('RON'),
-  date: timestamp('date').notNull(),
-  created_at: timestamp('created_at').notNull().default(sql`now()`),
-  updated_at: timestamp('updated_at').notNull().default(sql`now()`)
-}, (table) => ({
-  currency_date_unique: unique('AC_fx_rates_unique').on(table.currency, table.date, table.source, table.base_currency),
-  currency_idx: index('idx_AC_fx_rates_currency').on(table.currency),
-  date_idx: index('idx_AC_fx_rates_date').on(table.date),
-  source_idx: index('idx_AC_fx_rates_source').on(table.source),
-  currency_date_idx: index('idx_AC_fx_rates_currency_date').on(table.currency, table.date),
-}));
-
-// Backward Compatibility
-export const fx_rates = AC_fx_rates;
+// ⚠️ AC_fx_rates has been MOVED to accounting.schema.ts where it logically belongs
+// Cursurile valutare sunt folosite de modulul accounting, NU de documents
+// Import from '@geniuserp/shared' (re-exported from accounting.schema.ts)
 
 // ============================================================================
 // RELATIONS

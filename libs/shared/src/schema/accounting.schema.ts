@@ -319,6 +319,34 @@ export const AC_fiscal_periods = pgTable('AC_fiscal_periods', {
 export const fiscal_periods = AC_fiscal_periods;
 
 /**
+ * AC_FX Rates table (STANDARDIZED with AC_ prefix)
+ * Foreign exchange rates for multi-currency accounting
+ * Primary source: BNR (National Bank of Romania)
+ * 
+ * MOVED from documents-extended.schema.ts to accounting.schema.ts
+ * Rationale: fx_rates sunt folosite pentru conversii în tranzacții contabile, NU pentru documente
+ */
+export const AC_fx_rates = pgTable('AC_fx_rates', {
+  id: uuid('id').primaryKey().notNull().default(sql`gen_random_uuid()`),
+  currency: varchar('currency', { length: 5 }).notNull(),
+  rate: numeric('rate', { precision: 10, scale: 4 }).notNull(),
+  source: varchar('source', { length: 20 }).notNull().default('BNR'),
+  base_currency: varchar('base_currency', { length: 5 }).notNull().default('RON'),
+  date: timestamp('date').notNull(),
+  created_at: timestamp('created_at').notNull().default(sql`now()`),
+  updated_at: timestamp('updated_at').notNull().default(sql`now()`)
+}, (table) => ({
+  currency_date_unique: unique('AC_fx_rates_unique').on(table.currency, table.date, table.source, table.base_currency),
+  currency_idx: index('idx_AC_fx_rates_currency').on(table.currency),
+  date_idx: index('idx_AC_fx_rates_date').on(table.date),
+  source_idx: index('idx_AC_fx_rates_source').on(table.source),
+  currency_date_idx: index('idx_AC_fx_rates_currency_date').on(table.currency, table.date),
+}));
+
+// Backward Compatibility
+export const fx_rates = AC_fx_rates;
+
+/**
  * @deprecated Chart of accounts table - DO NOT USE!
  * 
  * ⚠️ NON-CONFORM cu OMFP 1802/2014 - Permite crearea de conturi custom în afara planului oficial

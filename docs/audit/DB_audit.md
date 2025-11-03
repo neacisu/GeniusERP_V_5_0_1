@@ -5400,8 +5400,9 @@ CREATE TYPE cash_register_status AS ENUM ('active', 'closed', 'suspended');
 **Prefix AC_:** Accounting Configuration | **Rows**: 45 (cursuri BNR active) | **Scop**: Cursuri valutare BNR sync zilnic
 **Coloane**: 8 | **Source**: BNR (Banca Națională) | **UNIQUE**: (currency, date, source, base_currency)
 **DUPLICAT ELIMINAT** din libs/shared/src/schema.ts
-**Schema**: /libs/shared/src/schema/documents-extended.schema.ts (SINGURĂ DEFINIȚIE)
+**Schema**: /libs/shared/src/schema/accounting.schema.ts (MUTATĂ din documents-extended - locația CORECTĂ logică!)
 **Migrare**: create_AC_fx_rates.ts | **Status**: ✅ Standardizat cu snake_case
+**Rationale mutare**: fx_rates este folosit de modulul accounting pentru conversii multi-currency, NU de documents
 
 ---
 
