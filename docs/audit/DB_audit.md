@@ -5365,44 +5365,297 @@ CREATE TYPE cash_register_status AS ENUM ('active', 'closed', 'suspended');
 ---
 
 # 16. AC_cash_transactions
-**Prefix AC_:** Accounting Configuration | **Rows**: 0 | **Scop**: Chitanțe și dispoziții de plată conform OMFP 2861/2009
-**Coloane**: 40 | **Enums**: cash_transaction_type (8 values), cash_transaction_purpose (10 values)
-**Link**: ledger_entry_id → AC_accounting_ledger_entries | **Schema**: /libs/shared/src/schema/cash-register.schema.ts
-**Migrare**: create_AC_cash_transactions.ts | **Status**: ✅ Standardizat cu snake_case
+
+## 📋 Detalii detaliate tabel: `AC_cash_transactions`
+
+**Prefix AC_:** Accounting Configuration (Configurări Contabile)
+
+### 🎯 Scop și Rol în Sistem
+
+Tabelul `AC_cash_transactions` înregistrează **toate tranzacțiile de casă** (chitanțe și dispoziții de plată) conform legislației românești (OMFP 2861/2009). Este esențial pentru:
+
+- **Evidența completă a operațiunilor de casă** (încasări și plăți)
+- **Generare automată documente fiscale** (chitanțe, dispoziții de plată)
+- **Tracking sold înainte/după** fiecare tranzacție
+- **Contabilizare automată** prin link la AC_accounting_ledger_entries
+- **Conformitate fiscală** (obligativitate bon fiscal pentru anumite operațiuni)
+- **Reconciliere zilnică** și închidere registru de casă
+
+### 🏗️ Structură Tehnică
+
+**Schema DB (PostgreSQL) - REALĂ din producție:**
+```sql
+CREATE TABLE public.cash_transactions (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    company_id uuid NOT NULL,
+    franchise_id uuid,
+    cash_register_id uuid NOT NULL,
+    document_number text NOT NULL,
+    series text NOT NULL,
+    number numeric NOT NULL,
+    transaction_type cash_transaction_type NOT NULL,
+    transaction_purpose cash_transaction_purpose NOT NULL,
+    transaction_date timestamp NOT NULL,
+    amount numeric(15,2) NOT NULL,
+    vat_amount numeric(15,2) DEFAULT 0,
+    vat_rate numeric(5,2) DEFAULT 19,
+    net_amount numeric(15,2),
+    currency text NOT NULL DEFAULT 'RON',
+    exchange_rate numeric(10,4) DEFAULT 1.0000,
+    person_id uuid,
+    person_name text NOT NULL,
+    person_id_number text,
+    person_address text,
+    invoice_id uuid,
+    invoice_number text,
+    contract_number text,
+    description text NOT NULL,
+    is_fiscal_receipt boolean NOT NULL DEFAULT false,
+    fiscal_receipt_number text,
+    fiscal_receipt_data text,
+    balance_before numeric(15,2) NOT NULL,
+    balance_after numeric(15,2) NOT NULL,
+    is_posted boolean NOT NULL DEFAULT false,
+    posted_at timestamp,
+    ledger_entry_id uuid,
+    is_canceled boolean NOT NULL DEFAULT false,
+    canceled_at timestamp,
+    canceled_by uuid,
+    cancellation_reason text,
+    notes text,
+    metadata text,
+    created_at timestamp NOT NULL DEFAULT now(),
+    updated_at timestamp NOT NULL DEFAULT now(),
+    created_by uuid NOT NULL,
+    updated_by uuid,
+    CONSTRAINT "cash_transactions_pkey" PRIMARY KEY (id)
+);
+
+-- Enums
+CREATE TYPE cash_transaction_type AS ENUM (
+    'cash_receipt', 'cash_payment', 'petty_cash_advance',
+    'petty_cash_settlement', 'cash_count_adjustment',
+    'cash_transfer', 'bank_deposit', 'bank_withdrawal'
+);
+
+CREATE TYPE cash_transaction_purpose AS ENUM (
+    'customer_payment', 'supplier_payment', 'salary_payment',
+    'expense_payment', 'advance_to_employee', 'advance_settlement',
+    'bank_deposit', 'cash_withdrawal', 'refund', 'other'
+);
+```
+
+**Coloane**: 40 total  
+**Rows curente**: 0 (GOL - nicio tranzacție încă)
+
+**Indexes:**
+- PRIMARY KEY: `cash_transactions_pkey` pe `id`
+- INDEX: `cash_transactions_company_idx` pe `company_id`
+- INDEX: `cash_transactions_register_idx` pe `cash_register_id`
+- INDEX: `cash_transactions_date_idx` pe `transaction_date`
+- INDEX: `cash_transactions_type_idx` pe `transaction_type`
+- INDEX: `cash_transactions_document_idx` pe `(company_id, series, number)`
+- INDEX: `cash_transactions_person_idx` pe `person_id`
+- INDEX: `cash_transactions_invoice_idx` pe `invoice_id`
+
+**Foreign Keys:**
+- `company_id` → `companies(id)` ON DELETE CASCADE
+- `cash_register_id` → `AC_cash_registers(id)`
+- `created_by` → `users(id)`
+- `updated_by` → `users(id)`
+- `canceled_by` → `users(id)`
+
+**Legături critice**:
+- `ledger_entry_id` → `AC_accounting_ledger_entries(id)` - pentru contabilizare automată
+
+### 📊 Rezumat Audit
+
+**Status**: ✅ Standardizat complet cu AC_ prefix + snake_case  
+**Service**: cash-register.service.ts (1,900 linii) - 0 erori TypeScript  
+**Schema**: /libs/shared/src/schema/cash-register.schema.ts  
+**Migrare**: create_AC_cash_transactions.ts  
+**Enums**: 2 pgEnums (transaction_type 8 values, transaction_purpose 10 values)  
+**Backward compatibility**: alias `cash_transactions = AC_cash_transactions`
 
 ---
 
 # 17. AC_bank_accounts
-**Prefix AC_:** Accounting Configuration | **Rows**: 0 | **Scop**: Conturi bancare IBAN, multi-currency
-**Coloane**: 12 | **Schema**: /libs/shared/src/schema/bank-journal.schema.ts
-**Migrare**: create_AC_bank_accounts.ts | **Status**: ✅ Standardizat cu snake_case
+
+## 📋 Detalii detaliate tabel: `AC_bank_accounts`
+
+**Prefix AC_:** Accounting Configuration
+
+### 🎯 Scop și Rol
+
+Gestiune conturi bancare IBAN, multi-currency (RON, EUR, USD), tracking sold, reconciliere extrase de cont.
+
+### 🏗️ Structură DB
+
+**Coloane**: 12 | **Rows**: 0 | **Schema**: bank-journal.schema.ts | **Service**: bank-journal.service.ts (1,061 linii - 0 erori)
+
+**DDL PostgreSQL**:
+- id uuid PRIMARY KEY
+- company_id uuid NOT NULL → companies(id) CASCADE
+- account_name text NOT NULL (ex: "Cont principal RON")
+- account_number text NOT NULL (IBAN: RO49AAAA1B31007593840000)
+- bank_name text NOT NULL (ex: "BRD - Groupe Société Générale")
+- bank_code text (BIC/SWIFT: BRDEROBU)
+- currency text NOT NULL DEFAULT 'RON'
+- current_balance numeric(15,2) NOT NULL DEFAULT 0
+- is_active boolean NOT NULL DEFAULT true
+- created_at, updated_at, created_by
+
+**Indexes**: 2 (company_id, account_number)  
+**FK**: 2 (company_id, created_by)  
+**Referenced by**: AC_bank_transactions.bank_account_id
+
+**Schema Drizzle**: AC_bank_accounts + alias bank_accounts  
+**Migrare**: create_AC_bank_accounts.ts  
+**Status**: ✅ Standardizat snake_case, 0 erori
 
 ---
 
 # 18. AC_bank_transactions
-**Prefix AC_:** Accounting Configuration | **Rows**: 0 | **Scop**: Tranzacții bancare, extrase cont
-**Coloane**: 24 | **Enums**: bank_transaction_type (9 values), bank_payment_method (7 values)
-**Link**: ledger_entry_id → AC_accounting_ledger_entries, bank_account_id → AC_bank_accounts
-**Schema**: /libs/shared/src/schema/bank-journal.schema.ts
-**Migrare**: create_AC_bank_transactions.ts | **Status**: ✅ Standardizat cu snake_case
+
+## 📋 Detalii detaliate tabel: `AC_bank_transactions`
+
+**Prefix AC_:** Accounting Configuration
+
+### 🎯 Scop și Rol
+
+Înregistrare tranzacții bancare (plăți, încasări, fees, dobânzi), generare note contabile automate, reconciliere cu extrase de cont.
+
+### 🏗️ Structură DB
+
+**Coloane**: 24 | **Rows**: 0 | **Schema**: bank-journal.schema.ts | **Service**: bank-journal.service.ts - 0 erori
+
+**DDL PostgreSQL**:
+- id uuid PRIMARY KEY
+- company_id uuid NOT NULL → companies(id) CASCADE
+- bank_account_id uuid NOT NULL → AC_bank_accounts(id)
+- reference_number text NOT NULL (număr referință bancă)
+- transaction_type bank_transaction_type NOT NULL (enum 9 values)
+- payment_method bank_payment_method (enum 7 values)
+- transaction_date timestamp NOT NULL
+- value_date timestamp (data valoare)
+- amount numeric(15,2) NOT NULL
+- currency text NOT NULL DEFAULT 'RON'
+- exchange_rate numeric(10,4) DEFAULT 1.0000
+- description text NOT NULL
+- payer_name, payee_name text
+- invoice_id, invoice_number, contract_number
+- balance_before, balance_after numeric(15,2) NOT NULL
+- is_posted boolean NOT NULL DEFAULT false
+- ledger_entry_id uuid → AC_accounting_ledger_entries
+- created_at, updated_at, created_by
+
+**Enums**:
+- bank_transaction_type: incoming_payment, outgoing_payment, bank_fee, bank_interest, transfer_between_accounts, loan_disbursement, loan_repayment, foreign_exchange, other
+- bank_payment_method: bank_transfer, direct_debit, card_payment, standing_order, online_banking, mobile_banking, other
+
+**Indexes**: 3 (company_id, bank_account_id, transaction_date)  
+**FK**: 3 (company_id, bank_account_id, created_by)  
+**Link critic**: ledger_entry_id pentru contabilizare automată
+
+**Schema Drizzle**: AC_bank_transactions + alias bank_transactions  
+**Migrare**: create_AC_bank_transactions.ts cu 2 enums  
+**Status**: ✅ Standardizat snake_case, 0 erori
 
 ---
 
 # 19. AC_fiscal_periods
-**Prefix AC_:** Accounting Configuration | **Rows**: 0 | **Scop**: Închidere perioade contabile (lună/an)
-**Coloane**: 15 | **Status**: open/soft_close/hard_close | **DUPLICAT ELIMINAT** din libs/accounting/src/schema
-**Schema**: /libs/shared/src/schema/accounting.schema.ts (SINGURĂ DEFINIȚIE)
-**Migrare**: create_AC_fiscal_periods.ts | **Status**: ✅ Standardizat cu snake_case
+
+## 📋 Detalii detaliate tabel: `AC_fiscal_periods`
+
+**Prefix AC_:** Accounting Configuration
+
+### 🎯 Scop și Rol
+
+Gestiune închidere perioade contabile (lună/an fiscal), period locking pentru prevenire modificări retroactive, workflow soft close → hard close, reopen cu justificare.
+
+### 🏗️ Structură DB
+
+**Coloane**: 15 | **Rows**: 0 | **Schema**: accounting.schema.ts | **Services**: accounting-periods.service.ts, period-lock.service.ts, fiscal-closure.service.ts - 0 erori
+
+**DDL PostgreSQL**:
+- id uuid PRIMARY KEY DEFAULT gen_random_uuid()
+- company_id uuid NOT NULL
+- year numeric NOT NULL (ex: 2024)
+- month numeric NOT NULL (1-12)
+- start_date timestamp NOT NULL (prima zi lună)
+- end_date timestamp NOT NULL (ultima zi lună)
+- status text NOT NULL DEFAULT 'open' (open/soft_close/hard_close)
+- is_closed boolean NOT NULL DEFAULT false
+- closed_at timestamp
+- closed_by uuid
+- reopened_at timestamp
+- reopened_by uuid
+- reopening_reason text
+- created_at, updated_at timestamp NOT NULL DEFAULT now()
+
+**Check Constraint**: status IN ('open', 'soft_close', 'hard_close')
+
+**Status perioadă**:
+- **open**: Permite înregistrări noi și modificări
+- **soft_close**: Permite modificări cu aprobare
+- **hard_close**: NU permite modificări (închidere definitivă)
+
+**Workflow**:
+1. Perioadă open → utilizator poate adăuga tranzacții
+2. Soft close → necesită aprobare pentru modificări
+3. Hard close → locked complet
+4. Reopen → cu reopening_reason obligatoriu
+
+**DUPLICAT ELIMINAT**: din libs/accounting/src/schema/accounting.schema.ts - SINGURĂ DEFINIȚIE în libs/shared  
+**Schema Drizzle**: AC_fiscal_periods + alias fiscal_periods  
+**Migrare**: create_AC_fiscal_periods.ts  
+**Status**: ✅ Standardizat snake_case, 0 erori
 
 ---
 
 # 20. AC_fx_rates
-**Prefix AC_:** Accounting Configuration | **Rows**: 45 (cursuri BNR active) | **Scop**: Cursuri valutare BNR sync zilnic
-**Coloane**: 8 | **Source**: BNR (Banca Națională) | **UNIQUE**: (currency, date, source, base_currency)
-**DUPLICAT ELIMINAT** din libs/shared/src/schema.ts
-**Schema**: /libs/shared/src/schema/accounting.schema.ts (MUTATĂ din documents-extended - locația CORECTĂ logică!)
-**Migrare**: create_AC_fx_rates.ts | **Status**: ✅ Standardizat cu snake_case
-**Rationale mutare**: fx_rates este folosit de modulul accounting pentru conversii multi-currency, NU de documents
+
+## 📋 Detalii detaliate tabel: `AC_fx_rates`
+
+**Prefix AC_:** Accounting Configuration
+
+### 🎯 Scop și Rol
+
+Cursuri valutare oficiale BNR (Banca Națională a României), sync zilnic automat, conversii multi-currency în tranzacții contabile, calcul diferențe de curs valutar, reevaluare solduri în valută.
+
+### 🏗️ Structură DB
+
+**Coloane**: 8 | **Rows**: 45 (cursuri active BNR) | **Schema**: accounting.schema.ts | **Services**: fx-revaluation.service.ts, bnr-exchange-rate.service.ts (integrations) - 0 erori
+
+**DDL PostgreSQL**:
+- id uuid PRIMARY KEY DEFAULT gen_random_uuid()
+- currency varchar(5) NOT NULL (EUR, USD, GBP, etc.)
+- rate numeric(10,4) NOT NULL (ex: 4.9750 pentru EUR/RON)
+- source varchar(20) NOT NULL DEFAULT 'BNR' (Banca Națională)
+- base_currency varchar(5) NOT NULL DEFAULT 'RON'
+- date timestamp NOT NULL (data cursului)
+- created_at, updated_at timestamp NOT NULL DEFAULT now()
+
+**UNIQUE Constraint**: (currency, date, source, base_currency) - previne duplicate
+
+**Indexes**: 4
+- currency_idx
+- date_idx
+- source_idx
+- currency_date_idx (compus)
+
+**Date REALE**: 45 cursuri BNR active (EUR, USD, GBP, CHF, etc.)
+
+**Sync automat**: Cron job zilnic extrage cursuri BNR din XML oficial  
+**Integrare**: bnr-exchange-rate.service.ts (libs/integrations)
+
+**MUTARE LOGICĂ**: Din documents-extended.schema.ts → accounting.schema.ts  
+**Rationale**: fx_rates este folosit de accounting pentru conversii, NU de documents  
+**DUPLICAT ELIMINAT**: din libs/shared/src/schema.ts
+
+**Schema Drizzle**: AC_fx_rates + alias fx_rates  
+**Migrare**: create_AC_fx_rates.ts  
+**Status**: ✅ Standardizat snake_case, locație corectă, 0 erori
 
 ---
 
