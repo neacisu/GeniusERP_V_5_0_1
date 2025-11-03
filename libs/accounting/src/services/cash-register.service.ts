@@ -12,8 +12,8 @@
 import { JournalService, LedgerEntryType, LedgerEntryData } from './journal.service';
 import { getDrizzle } from "@common/drizzle";
 import { and, desc, eq, gte, lte, SQL, sql } from 'drizzle-orm';
-import { cashRegisters, cashTransactions, CashRegister, CashTransaction } from '@geniuserp/shared/schema/cash-register.schema';
-import { documentCounters } from '@geniuserp/shared/schema/document-counters.schema';
+import { AC_cash_registers, AC_cash_transactions, CashRegister, CashTransaction } from '@geniuserp/shared/schema/cash-register.schema';
+import { document_counters } from '@geniuserp/shared/schema/document-counters.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { AuditLogService } from './audit-log.service';
 import { accountingQueueService } from './accounting-queue.service';
@@ -72,30 +72,30 @@ export enum CashTransactionPurpose {
  * Cash transaction data interface for entry creation
  */
 export interface CashTransactionData {
-  companyId: string;
-  franchiseId?: string;
-  cashRegisterId: string;
-  transactionId: string;
-  receiptNumber: string; // Chitanță/Dispoziție de încasare/plată
-  transactionType: CashTransactionType;
-  transactionPurpose: CashTransactionPurpose;
+  company_id: string;
+  franchise_id?: string;
+  cash_register_id: string;
+  transaction_id: string;
+  receipt_number: string;
+  transaction_type: CashTransactionType;
+  transaction_purpose: CashTransactionPurpose;
   amount: number;
-  vatAmount?: number; // For fiscal receipts with VAT
-  vatRate?: number; // For fiscal receipts with VAT
+  vat_amount?: number;
+  vat_rate?: number;
   currency: string;
-  exchangeRate: number;
-  transactionDate: Date;
+  exchange_rate: number;
+  transaction_date: Date;
   description: string;
-  personId?: string; // Customer, supplier, employee ID
-  personName: string; // Customer, supplier, employee name
-  personIdNumber?: string; // CNP or ID card number (required for certain transactions)
-  invoiceId?: string;
-  invoiceNumber?: string;
+  person_id?: string;
+  person_name: string;
+  person_id_number?: string;
+  invoice_id?: string;
+  invoice_number?: string;
   userId?: string;
-  fiscalReceiptNumber?: string; // Bon fiscal number (for fiscal receipts)
-  isFiscalReceipt: boolean; // Whether this is a fiscal receipt (bon fiscal)
-  items?: CashTransactionItem[]; // Line items for fiscal receipts
-  additionalData?: CashTransactionAdditionalData; // For any additional data needed
+  fiscal_receipt_number?: string;
+  is_fiscal_receipt: boolean;
+  items?: CashTransactionItem[];
+  additional_data?: CashTransactionAdditionalData;
 }
 
 /**
@@ -166,12 +166,12 @@ export class CashRegisterService {
       
       const result = await db
         .select()
-        .from(cashRegisters)
+        .from(AC_cash_registers)
         .where(and(
-          eq(cashRegisters.companyId, companyId),
-          eq(cashRegisters.isActive, true)
+          eq(AC_cash_registers.company_id, companyId),
+          eq(AC_cash_registers.is_active, true)
         ))
-        .orderBy(desc(cashRegisters.createdAt));
+        .orderBy(desc(AC_cash_registers.created_at));
       
       return {
         data: result,
@@ -192,10 +192,10 @@ export class CashRegisterService {
       
       const result = await db
         .select()
-        .from(cashRegisters)
+        .from(AC_cash_registers)
         .where(and(
-          eq(cashRegisters.id, id),
-          eq(cashRegisters.companyId, companyId)
+          eq(AC_cash_registers.id, id),
+          eq(AC_cash_registers.company_id, companyId)
         ))
         .limit(1);
       
@@ -214,23 +214,23 @@ export class CashRegisterService {
       const db = getDrizzle();
       const id = uuidv4();
       
-      await db.insert(cashRegisters).values({
+      await db.insert(AC_cash_registers).values({
         id,
-        companyId: data.companyId,
-        franchiseId: data.franchiseId || null,
+        company_id: data.company_id,
+        franchise_id: data.franchise_id || null,
         name: data.name,
         code: data.code,
         type: data.type || 'main',
         location: data.location || null,
         currency: data.currency || 'RON',
-        responsiblePersonId: data.responsiblePersonId || null,
-        responsiblePersonName: data.responsiblePersonName || null,
-        dailyLimit: data.dailyLimit ? data.dailyLimit.toString() : null,
-        maxTransactionAmount: data.maxTransactionAmount ? data.maxTransactionAmount.toString() : null,
-        currentBalance: '0',
+        responsible_person_id: data.responsible_person_id || null,
+        responsible_person_name: data.responsible_person_name || null,
+        daily_limit: data.daily_limit ? data.daily_limit.toString() : null,
+        max_transaction_amount: data.max_transaction_amount ? data.max_transaction_amount.toString() : null,
+        current_balance: '0',
         status: 'active',
-        isActive: true,
-        createdBy: data.userId,
+        is_active: true,
+        created_by: data.userId,
       });
       
       return id;
@@ -247,22 +247,22 @@ export class CashRegisterService {
     try {
       const db = getDrizzle();
       
-      await db.update(cashRegisters)
+      await db.update(AC_cash_registers)
         .set({
           name: data.name,
           location: data.location,
-          responsiblePersonId: data.responsiblePersonId,
-          responsiblePersonName: data.responsiblePersonName,
-          dailyLimit: data.dailyLimit ? data.dailyLimit.toString() : undefined,
-          maxTransactionAmount: data.maxTransactionAmount ? data.maxTransactionAmount.toString() : undefined,
+          responsible_person_id: data.responsible_person_id,
+          responsible_person_name: data.responsible_person_name,
+          daily_limit: data.daily_limit ? data.daily_limit.toString() : undefined,
+          max_transaction_amount: data.max_transaction_amount ? data.max_transaction_amount.toString() : undefined,
           status: data.status,
-          isActive: data.isActive,
-          updatedBy: userId,
-          updatedAt: new Date(),
+          is_active: data.is_active,
+          updated_by: userId,
+          updated_at: new Date(),
         })
         .where(and(
-          eq(cashRegisters.id, id),
-          eq(cashRegisters.companyId, data.companyId)
+          eq(AC_cash_registers.id, id),
+          eq(AC_cash_registers.company_id, data.company_id)
         ));
     } catch (error) {
       console.error('Error updating cash register:', error);
@@ -290,29 +290,29 @@ export class CashRegisterService {
       const offset = (page - 1) * limit;
       
       // Build conditions
-      const conditions: SQL[] = [eq(cashTransactions.companyId, companyId)];
+      const conditions: SQL[] = [eq(AC_cash_transactions.company_id, companyId)];
       
       if (registerId) {
-        conditions.push(eq(cashTransactions.cashRegisterId, registerId));
+        conditions.push(eq(AC_cash_transactions.cash_register_id, registerId));
       }
       if (startDate) {
-        conditions.push(gte(cashTransactions.transactionDate, startDate));
+        conditions.push(gte(AC_cash_transactions.transaction_date, startDate));
       }
       if (endDate) {
-        conditions.push(lte(cashTransactions.transactionDate, endDate));
+        conditions.push(lte(AC_cash_transactions.transaction_date, endDate));
       }
       
       const result = await db
         .select()
-        .from(cashTransactions)
+        .from(AC_cash_transactions)
         .where(and(...conditions))
-        .orderBy(desc(cashTransactions.transactionDate))
+        .orderBy(desc(AC_cash_transactions.transaction_date))
         .limit(limit)
         .offset(offset);
       
       const totalResult = await db
         .select()
-        .from(cashTransactions)
+        .from(AC_cash_transactions)
         .where(and(...conditions));
       
       return {
@@ -336,10 +336,10 @@ export class CashRegisterService {
       
       const result = await db
         .select()
-        .from(cashTransactions)
+        .from(AC_cash_transactions)
         .where(and(
-          eq(cashTransactions.id, id),
-          eq(cashTransactions.companyId, companyId)
+          eq(AC_cash_transactions.id, id),
+          eq(AC_cash_transactions.company_id, companyId)
         ))
         .limit(1);
       
@@ -359,7 +359,7 @@ export class CashRegisterService {
       const transactionId = uuidv4();
       
       // Get current balance
-      const register = await this.getCashRegister(data.cashRegisterId, data.companyId);
+      const register = await this.getCashRegister(data.cash_register_id, data.company_id);
       if (!register) {
         throw new Error('Cash register not found');
       }
@@ -382,96 +382,96 @@ export class CashRegisterService {
       }
       
       // PAS 2: VALIDARE PLAFOANE Legea 70/2015
-      if (register.maxTransactionAmount && Number(data.amount) > Number(register.maxTransactionAmount)) {
-        throw new Error(`Suma depășește plafonul maxim per tranzacție (${register.maxTransactionAmount} Lei). Conform Legii 70/2015, fragmentați tranzacția sau folosiți banca.`);
+      if (register.max_transaction_amount && Number(data.amount) > Number(register.max_transaction_amount)) {
+        throw new Error(`Suma depășește plafonul maxim per tranzacție (${register.max_transaction_amount} Lei). Conform Legii 70/2015, fragmentați tranzacția sau folosiți banca.`);
       }
       
-      const balanceBefore = Number(register.currentBalance);
+      const balanceBefore = Number(register.current_balance);
       const balanceAfter = balanceBefore + Number(data.amount);
       
       // Verificare plafon zilnic (50,000 Lei)
-      if (register.dailyLimit && balanceAfter > Number(register.dailyLimit)) {
-        console.warn(`ATENȚIE: Soldul casieriei (${balanceAfter} Lei) depășește plafonul zilnic (${register.dailyLimit} Lei). Depuneți excedentul la bancă în max 2 zile conform Legii 70/2015.`);
+      if (register.daily_limit && balanceAfter > Number(register.daily_limit)) {
+        console.warn(`ATENȚIE: Soldul casieriei (${balanceAfter} Lei) depășește plafonul zilnic (${register.daily_limit} Lei). Depuneți excedentul la bancă în max 2 zile conform Legii 70/2015.`);
       }
       
       // Generate document number
-      const documentNumber = await this.generateReceiptNumber(data.companyId, data.cashRegisterId, false);
+      const documentNumber = await this.generateReceiptNumber(data.company_id, data.cash_register_id, false);
       
       // Insert transaction
-      await db.insert(cashTransactions).values({
+      await db.insert(AC_cash_transactions).values({
         id: transactionId,
-        companyId: data.companyId,
-        franchiseId: data.franchiseId || null,
-        cashRegisterId: data.cashRegisterId,
-        documentNumber,
+        company_id: data.company_id,
+        franchise_id: data.franchise_id || null,
+        cash_register_id: data.cash_register_id,
+        document_number: documentNumber,
         series: 'CH',
         number: documentNumber.split('/')[2], // Folosește / ca separator
-        transactionType: 'cash_receipt',
-        transactionPurpose: (data.purpose || 'customer_payment') as typeof cashTransactions.$inferInsert.transactionPurpose,
-        transactionDate: new Date(),
+        transaction_type: 'cash_receipt',
+        transaction_purpose: (data.purpose || 'customer_payment') as typeof AC_cash_transactions.$inferInsert.transaction_purpose,
+        transaction_date: new Date(),
         amount: data.amount.toString(),
-        vatAmount: (data.vatAmount || 0).toString(),
-        vatRate: data.vatRate?.toString() || '19',
-        netAmount: (data.netAmount || data.amount).toString(),
+        vat_amount: (data.vat_amount || 0).toString(),
+        vat_rate: data.vat_rate?.toString() || '19',
+        net_amount: (data.net_amount || data.amount).toString(),
         currency: data.currency || 'RON',
-        exchangeRate: (data.exchangeRate || 1).toString(),
-        personName: data.personName,
-        personIdNumber: data.personIdNumber || null,
-        personId: data.personId || null,
-        invoiceId: data.invoiceId || null,
-        invoiceNumber: data.invoiceNumber || null,
+        exchange_rate: (data.exchange_rate || 1).toString(),
+        person_name: data.person_name,
+        person_id_number: data.person_id_number || null,
+        person_id: data.person_id || null,
+        invoice_id: data.invoice_id || null,
+        invoice_number: data.invoice_number || null,
         description: data.description,
-        balanceBefore: balanceBefore.toString(),
-        balanceAfter: balanceAfter.toString(),
-        isPosted: false,
-        isCanceled: false,
-        createdBy: data.userId,
+        balance_before: balanceBefore.toString(),
+        balance_after: balanceAfter.toString(),
+        is_posted: false,
+        is_canceled: false,
+        created_by: data.userId,
       });
       
       // RECOMANDARE 5: Update atomic pentru prevenție race condition  
       // Folosim Drizzle ORM cu sql pentru update atomic
-      await db.update(cashRegisters)
+      await db.update(AC_cash_registers)
         .set({
-          currentBalance: sql`${cashRegisters.currentBalance} + ${Number(data.amount)}`,
-          updatedAt: new Date(),
+          current_balance: sql`${AC_cash_registers.current_balance} + ${Number(data.amount)}`,
+          updated_at: new Date(),
         })
-        .where(eq(cashRegisters.id, data.cashRegisterId));
+        .where(eq(AC_cash_registers.id, data.cash_register_id));
       
       // PAS 3: POSTARE AUTOMATĂ ÎN CONTABILITATE pentru ÎNCASĂRI
       try {
         const entry = await this.createCashTransactionEntry({
-          companyId: data.companyId,
-          franchiseId: data.franchiseId,
-          cashRegisterId: data.cashRegisterId,
-          transactionId,
-          receiptNumber: documentNumber,
-          transactionType: CashTransactionType.CASH_RECEIPT,
-          transactionPurpose: (data.purpose || 'customer_payment') as CashTransactionPurpose,
+          company_id: data.company_id,
+          franchise_id: data.franchise_id,
+          cash_register_id: data.cash_register_id,
+          transaction_id: transactionId,
+          receipt_number: documentNumber,
+          transaction_type: CashTransactionType.CASH_RECEIPT,
+          transaction_purpose: (data.purpose || 'customer_payment') as CashTransactionPurpose,
           amount: Number(data.amount),
-          vatAmount: Number(data.vatAmount || 0),
-          vatRate: Number(data.vatRate || 19),
+          vat_amount: Number(data.vat_amount || 0),
+          vat_rate: Number(data.vat_rate || 19),
           currency: data.currency || 'RON',
-          exchangeRate: Number(data.exchangeRate || 1),
-          transactionDate: new Date(),
+          exchange_rate: Number(data.exchange_rate || 1),
+          transaction_date: new Date(),
           description: data.description,
-          personId: data.personId,
-          personName: data.personName,
-          personIdNumber: data.personIdNumber,
-          invoiceId: data.invoiceId,
-          invoiceNumber: data.invoiceNumber,
+          person_id: data.person_id,
+          person_name: data.person_name,
+          person_id_number: data.person_id_number,
+          invoice_id: data.invoice_id,
+          invoice_number: data.invoice_number,
           userId: data.userId,
-          isFiscalReceipt: data.isFiscalReceipt || false,
-          fiscalReceiptNumber: data.fiscalReceiptNumber,
+          is_fiscal_receipt: data.is_fiscal_receipt || false,
+          fiscal_receipt_number: data.fiscal_receipt_number,
           items: data.items || []
         });
         
-        await db.update(cashTransactions)
+        await db.update(AC_cash_transactions)
           .set({
-            isPosted: true,
-            postedAt: new Date(),
-            ledgerEntryId: entry.id,
+            is_posted: true,
+            posted_at: new Date(),
+            ledger_entry_id: entry.id,
           })
-          .where(eq(cashTransactions.id, transactionId));
+          .where(eq(AC_cash_transactions.id, transactionId));
       } catch (error) {
         console.error('Error posting cash receipt to ledger:', error);
         // Nu facem rollback - tranzacția rămâne nepostată și poate fi postată manual
@@ -493,7 +493,7 @@ export class CashRegisterService {
       const transactionId = uuidv4();
       
       // Get current balance
-      const register = await this.getCashRegister(data.cashRegisterId, data.companyId);
+      const register = await this.getCashRegister(data.cash_register_id, data.company_id);
       if (!register) {
         throw new Error('Cash register not found');
       }
@@ -516,16 +516,16 @@ export class CashRegisterService {
       }
       
       // VALIDARE CNP pentru plăți mari
-      if (Number(data.amount) > 10000 && !data.personIdNumber) {
+      if (Number(data.amount) > 10000 && !data.person_id_number) {
         throw new Error('CNP obligatoriu pentru plăți peste 10,000 Lei (Legea 70/2015)');
       }
       
       // VALIDARE PLAFOANE
-      if (register.maxTransactionAmount && Number(data.amount) > Number(register.maxTransactionAmount)) {
-        throw new Error(`Plata depășește plafonul legal (${register.maxTransactionAmount} Lei). Conform Legii 70/2015, fragmentați sau plătiți prin bancă.`);
+      if (register.max_transaction_amount && Number(data.amount) > Number(register.max_transaction_amount)) {
+        throw new Error(`Plata depășește plafonul legal (${register.max_transaction_amount} Lei). Conform Legii 70/2015, fragmentați sau plătiți prin bancă.`);
       }
       
-      const balanceBefore = Number(register.currentBalance);
+      const balanceBefore = Number(register.current_balance);
       const balanceAfter = balanceBefore - Number(data.amount);
       
       if (balanceAfter < 0) {
@@ -533,79 +533,79 @@ export class CashRegisterService {
       }
       
       // Generate document number
-      const documentNumber = await this.generateReceiptNumber(data.companyId, data.cashRegisterId, true);
+      const documentNumber = await this.generateReceiptNumber(data.company_id, data.cash_register_id, true);
       
       // Insert transaction
-      await db.insert(cashTransactions).values({
+      await db.insert(AC_cash_transactions).values({
         id: transactionId,
-        companyId: data.companyId,
-        franchiseId: data.franchiseId || null,
-        cashRegisterId: data.cashRegisterId,
-        documentNumber,
+        company_id: data.company_id,
+        franchise_id: data.franchise_id || null,
+        cash_register_id: data.cash_register_id,
+        document_number: documentNumber,
         series: 'DP',
         number: documentNumber.split('-')[2],
-        transactionType: 'cash_payment',
-        transactionPurpose: (data.purpose || 'expense_payment') as typeof cashTransactions.$inferInsert.transactionPurpose,
-        transactionDate: new Date(),
+        transaction_type: 'cash_payment',
+        transaction_purpose: (data.purpose || 'expense_payment') as typeof AC_cash_transactions.$inferInsert.transaction_purpose,
+        transaction_date: new Date(),
         amount: data.amount.toString(),
-        vatAmount: (data.vatAmount || 0).toString(),
-        vatRate: data.vatRate?.toString() || '0',
-        netAmount: (data.netAmount || data.amount).toString(),
+        vat_amount: (data.vat_amount || 0).toString(),
+        vat_rate: data.vat_rate?.toString() || '0',
+        net_amount: (data.net_amount || data.amount).toString(),
         currency: data.currency || 'RON',
-        exchangeRate: (data.exchangeRate || 1).toString(),
-        personName: data.personName,
-        personIdNumber: data.personIdNumber || null,
+        exchange_rate: (data.exchange_rate || 1).toString(),
+        person_name: data.person_name,
+        person_id_number: data.person_id_number || null,
         description: data.description,
-        balanceBefore: balanceBefore.toString(),
-        balanceAfter: balanceAfter.toString(),
-        isPosted: false,
-        isCanceled: false,
-        createdBy: data.userId,
+        balance_before: balanceBefore.toString(),
+        balance_after: balanceAfter.toString(),
+        is_posted: false,
+        is_canceled: false,
+        created_by: data.userId,
       });
       
       // RECOMANDARE 5: Update atomic pentru prevenție race condition
       // Folosim Drizzle ORM cu sql pentru update atomic
-      await db.update(cashRegisters)
+      await db.update(AC_cash_registers)
         .set({
-          currentBalance: sql`${cashRegisters.currentBalance} - ${Number(data.amount)}`,
-          updatedAt: new Date(),
+          current_balance: sql`${AC_cash_registers.current_balance} - ${Number(data.amount)}`,
+          updated_at: new Date(),
         })
-        .where(eq(cashRegisters.id, data.cashRegisterId));
+        .where(eq(AC_cash_registers.id, data.cash_register_id));
       
       // PAS 4: POSTARE AUTOMATĂ ÎN CONTABILITATE
       try {
         const entry = await this.createCashTransactionEntry({
-          companyId: data.companyId,
-          franchiseId: data.franchiseId,
-          cashRegisterId: data.cashRegisterId,
-          transactionId,
-          receiptNumber: documentNumber,
-          transactionType: CashTransactionType.CASH_PAYMENT,
-          transactionPurpose: (data.purpose || 'expense_payment') as CashTransactionPurpose,
+          company_id: data.company_id,
+          franchise_id: data.franchise_id,
+          cash_register_id: data.cash_register_id,
+          transaction_id: transactionId,
+          receipt_number: documentNumber,
+          transaction_type: CashTransactionType.CASH_PAYMENT,
+          transaction_purpose: (data.purpose || 'expense_payment') as CashTransactionPurpose,
           amount: Number(data.amount),
-          vatAmount: Number(data.vatAmount || 0),
-          vatRate: Number(data.vatRate || 0),
+          vat_amount: Number(data.vat_amount || 0),
+          vat_rate: Number(data.vat_rate || 0),
           currency: data.currency || 'RON',
-          exchangeRate: Number(data.exchangeRate || 1),
-          transactionDate: new Date(),
+          exchange_rate: Number(data.exchange_rate || 1),
+          transaction_date: new Date(),
           description: data.description,
-          personId: data.personId,
-          personName: data.personName,
-          personIdNumber: data.personIdNumber,
-          invoiceId: data.invoiceId,
-          invoiceNumber: data.invoiceNumber,
+          person_id: data.person_id,
+          person_name: data.person_name,
+          person_id_number: data.person_id_number,
+          invoice_id: data.invoice_id,
+          invoice_number: data.invoice_number,
           userId: data.userId,
-          isFiscalReceipt: false,
+          is_fiscal_receipt: false,
           items: []
         });
         
-        await db.update(cashTransactions)
+        await db.update(AC_cash_transactions)
           .set({
-            isPosted: true,
-            postedAt: new Date(),
-            ledgerEntryId: entry.id,
+            is_posted: true,
+            posted_at: new Date(),
+            ledger_entry_id: entry.id,
           })
-          .where(eq(cashTransactions.id, transactionId));
+          .where(eq(AC_cash_transactions.id, transactionId));
       } catch (error) {
         console.error('Error posting cash payment to ledger:', error);
       }
@@ -625,20 +625,22 @@ export class CashRegisterService {
       // Record payment from source register
       const fromTransactionId = await this.recordCashPayment({
         ...data,
-        cashRegisterId: data.fromRegisterId,
+        cash_register_id: data.from_register_id,
         purpose: 'cash_withdrawal',
-        description: `Transfer către ${data.toRegisterName || 'altă casă'}`,
+        description: `Transfer către ${data.to_register_name || 'altă casă'}`,
       });
       
       // Record receipt to destination register
       const toTransactionId = await this.recordCashReceipt({
         ...data,
-        cashRegisterId: data.toRegisterId,
+        cash_register_id: data.to_register_id,
         purpose: 'cash_withdrawal',
-        description: `Transfer de la ${data.fromRegisterName || 'altă casă'}`,
+        description: `Transfer de la ${data.from_register_name || 'altă casă'}`,
       });
       
-      return { fromTransactionId, toTransactionId };
+      const fromTransactionId = from_transaction_id;
+      const toTransactionId = to_transaction_id;
+      return { from_transaction_id: fromTransactionId, to_transaction_id: toTransactionId };
     } catch (error) {
       console.error('Error transferring cash:', error);
       throw new Error(`Failed to transfer cash: ${(error as Error).message}`);
@@ -659,26 +661,26 @@ export class CashRegisterService {
       const cashTransactionId = await this.recordCashPayment({
         ...data,
         purpose: 'bank_deposit',
-        description: data.description || `Depunere numerar la bancă - ${data.bankAccountName || 'cont bancar'}`,
+        description: data.description || `Depunere numerar la bancă - ${data.bank_account_name || 'cont bancar'}`,
       });
       
       // 2. Înregistrează încasarea în cont bancar (intrare în bancă)
-      if (data.bankAccountId) {
+      if (data.bank_account_id) {
         try {
           const bankTransactionId = await bankService.recordIncomingPayment({
-            companyId: data.companyId,
-            bankAccountId: data.bankAccountId,
+            company_id: data.company_id,
+            bankAccountId: data.bank_account_id,
             amount: data.amount,
             currency: data.currency || 'RON',
-            exchangeRate: data.exchangeRate || 1,
-            description: `Depunere numerar din casă - ${data.cashRegisterName || 'casierie'}`,
+            exchange_rate: data.exchange_rate || 1,
+            description: `Depunere numerar din casă - ${data.cash_register_name || 'casierie'}`,
             referenceNumber: `CASH-DEP-${Date.now()}`,
-            transactionDate: new Date(),
+            transaction_date: new Date(),
             userId: data.userId,
-            payerName: data.companyName || 'Numerar din casierie',
+            payerName: data.company_name || 'Numerar din casierie',
           });
           
-          return { cashTransactionId, bankTransactionId };
+          return { cash_transaction_id, bank_transaction_id };
         } catch (bankError) {
           console.error('Error creating bank transaction:', bankError);
           // Tranzacția cash a fost creată, dar cea bancară a eșuat
@@ -688,7 +690,7 @@ export class CashRegisterService {
       }
       
       // Dacă nu s-a specificat cont bancar, returnăm doar ID-ul cash
-      return { cashTransactionId, bankTransactionId: '' };
+      return { cash_transaction_id, bank_transaction_id: '' };
     } catch (error) {
       console.error('Error recording cash deposit:', error);
       throw new Error(`Failed to record cash deposit: ${(error as Error).message}`);
@@ -709,33 +711,33 @@ export class CashRegisterService {
       const cashTransactionId = await this.recordCashReceipt({
         ...data,
         purpose: 'cash_withdrawal',
-        description: data.description || `Ridicare numerar de la bancă - ${data.bankAccountName || 'cont bancar'}`,
+        description: data.description || `Ridicare numerar de la bancă - ${data.bank_account_name || 'cont bancar'}`,
       });
       
       // 2. Înregistrează plata din cont bancar (ieșire din bancă)
-      if (data.bankAccountId) {
+      if (data.bank_account_id) {
         try {
           const bankTransactionId = await bankService.recordOutgoingPayment({
-            companyId: data.companyId,
-            bankAccountId: data.bankAccountId,
+            company_id: data.company_id,
+            bankAccountId: data.bank_account_id,
             amount: data.amount,
             currency: data.currency || 'RON',
-            exchangeRate: data.exchangeRate || 1,
-            description: `Ridicare numerar pentru casă - ${data.cashRegisterName || 'casierie'}`,
+            exchange_rate: data.exchange_rate || 1,
+            description: `Ridicare numerar pentru casă - ${data.cash_register_name || 'casierie'}`,
             referenceNumber: `CASH-WD-${Date.now()}`,
-            transactionDate: new Date(),
+            transaction_date: new Date(),
             userId: data.userId,
-            payeeName: data.companyName || 'Numerar pentru casierie',
+            payeeName: data.company_name || 'Numerar pentru casierie',
           });
           
-          return { cashTransactionId, bankTransactionId };
+          return { cash_transaction_id, bank_transaction_id };
         } catch (bankError) {
           console.error('Error creating bank transaction:', bankError);
           throw new Error(`Ridicarea în casă a fost înregistrată (ID: ${cashTransactionId}), dar înregistrarea în bancă a eșuat. Vă rugăm să adăugați manual tranzacția bancară.`);
         }
       }
       
-      return { cashTransactionId, bankTransactionId: '' };
+      return { cash_transaction_id, bank_transaction_id: '' };
     } catch (error) {
       console.error('Error recording cash withdrawal:', error);
       throw new Error(`Failed to record cash withdrawal: ${(error as Error).message}`);
@@ -783,34 +785,34 @@ export class CashRegisterService {
       
       const transactions = await db
         .select()
-        .from(cashTransactions)
+        .from(AC_cash_transactions)
         .where(and(
-          eq(cashTransactions.cashRegisterId, cashRegisterId),
-          gte(cashTransactions.transactionDate, startOfDay),
-          lte(cashTransactions.transactionDate, endOfDay),
-          eq(cashTransactions.isCanceled, false)
+          eq(AC_cash_transactions.cash_register_id, cashRegisterId),
+          gte(AC_cash_transactions.transaction_date, startOfDay),
+          lte(AC_cash_transactions.transaction_date, endOfDay),
+          eq(AC_cash_transactions.is_canceled, false)
         ))
-        .orderBy(cashTransactions.transactionDate);
+        .orderBy(AC_cash_transactions.transaction_date);
       
       if (transactions.length === 0) {
         throw new Error('Nu există tranzacții pentru această zi');
       }
       
       // Calculează soldul de închidere
-      const closingBalance = Number(transactions[transactions.length - 1].balanceAfter);
+      const closingBalance = Number(transactions[transactions.length - 1].balance_after);
       
       // Marchează ziua ca închisă
-      await db.update(cashRegisters)
+      await db.update(AC_cash_registers)
         .set({
-          lastClosedDate: date.toISOString().split('T')[0],
-          updatedAt: new Date(),
-          updatedBy: userId,
+          last_closed_date: date.toISOString().split('T')[0],
+          updated_at: new Date(),
+          updated_by: userId,
         })
-        .where(eq(cashRegisters.id, cashRegisterId));
+        .where(eq(AC_cash_registers.id, cashRegisterId));
       
       // RECOMANDARE 4: Log audit pentru închidere zilnică
       await this.auditService.logDailyClosing(
-        register.companyId,
+        register.company_id,
         userId,
         cashRegisterId,
         date,
@@ -851,7 +853,7 @@ export class CashRegisterService {
       
       if (asOfDate >= today) {
         return {
-          balance: Number(register.currentBalance),
+          balance: Number(register.current_balance),
           currency: register.currency
         };
       }
@@ -859,30 +861,30 @@ export class CashRegisterService {
       // Calculate balance as of date by summing all transactions up to that date
       const transactions = await db
         .select()
-        .from(cashTransactions)
+        .from(AC_cash_transactions)
         .where(and(
-          eq(cashTransactions.cashRegisterId, cashRegisterId),
-          lte(cashTransactions.transactionDate, asOfDate),
-          eq(cashTransactions.isCanceled, false)
+          eq(AC_cash_transactions.cash_register_id, cashRegisterId),
+          lte(AC_cash_transactions.transaction_date, asOfDate),
+          eq(AC_cash_transactions.is_canceled, false)
         ));
       
       // RECOMANDARE 2: Logică corectă pentru toate tipurile de tranzacții
       let balance = 0;
       for (const txn of transactions) {
         // Încasări (cresc soldul)
-        if (txn.transactionType === 'cash_receipt' || 
-            txn.transactionType === 'bank_withdrawal' ||
-            txn.transactionType === 'petty_cash_settlement') {
+        if (txn.transaction_type === 'cash_receipt' || 
+            txn.transaction_type === 'bank_withdrawal' ||
+            txn.transaction_type === 'petty_cash_settlement') {
           balance += Number(txn.amount);
         } 
         // Plăți (scad soldul)
-        else if (txn.transactionType === 'cash_payment' || 
-                 txn.transactionType === 'bank_deposit' ||
-                 txn.transactionType === 'petty_cash_advance') {
+        else if (txn.transaction_type === 'cash_payment' || 
+                 txn.transaction_type === 'bank_deposit' ||
+                 txn.transaction_type === 'petty_cash_advance') {
           balance -= Number(txn.amount);
         }
         // Ajustări (pot fi + sau -)
-        else if (txn.transactionType === 'cash_count_adjustment') {
+        else if (txn.transaction_type === 'cash_count_adjustment') {
           // Pentru ajustări, folosim direct balanceAfter din tranzacție
           balance = Number(txn.balanceAfter);
         }
@@ -906,48 +908,48 @@ export class CashRegisterService {
       const db = getDrizzle();
       
       // Get register and current balance
-      const register = await this.getCashRegister(data.cashRegisterId, data.companyId);
+      const register = await this.getCashRegister(data.cash_register_id, data.company_id);
       if (!register) {
         throw new Error('Cash register not found');
       }
       
-      const systemBalance = Number(register.currentBalance);
-      const physicalCount = Number(data.physicalCount);
+      const systemBalance = Number(register.current_balance);
+      const physicalCount = Number(data.physical_count);
       const difference = physicalCount - systemBalance;
       
       // If there's a difference, create adjustment transaction
       if (Math.abs(difference) > 0.01) {
         const adjustmentId = uuidv4();
         
-        await db.insert(cashTransactions).values({
+        await db.insert(AC_cash_transactions).values({
           id: adjustmentId,
-          companyId: data.companyId,
-          cashRegisterId: data.cashRegisterId,
-          documentNumber: `ADJ-${Date.now()}`,
+          company_id: data.company_id,
+          cash_register_id: data.cash_register_id,
+          document_number: `ADJ-${Date.now()}`,
           series: 'ADJ',
           number: Date.now().toString(),
-          transactionType: 'cash_count_adjustment',
-          transactionPurpose: 'other',
-          transactionDate: new Date(),
+          transaction_type: 'cash_count_adjustment',
+          transaction_purpose: 'other',
+          transaction_date: new Date(),
           amount: Math.abs(difference).toString(),
           currency: register.currency,
-          personName: data.userId,
+          person_name: data.userId,
           description: difference > 0 
             ? `Plus de casă: ${difference} ${register.currency}`
             : `Lipsă de casă: ${Math.abs(difference)} ${register.currency}`,
-          balanceBefore: systemBalance.toString(),
-          balanceAfter: physicalCount.toString(),
+          balance_before: systemBalance.toString(),
+          balance_after: physicalCount.toString(),
           notes: data.notes || null,
-          createdBy: data.userId,
+          created_by: data.userId,
         });
         
         // RECOMANDARE 5: Update atomic - setăm direct la physical count
-        await db.update(cashRegisters)
+        await db.update(AC_cash_registers)
           .set({
-            currentBalance: physicalCount.toString(),
-            updatedAt: new Date(),
+            current_balance: physicalCount.toString(),
+            updated_at: new Date(),
           })
-          .where(eq(cashRegisters.id, data.cashRegisterId));
+          .where(eq(AC_cash_registers.id, data.cash_register_id));
         
         return adjustmentId;
       }
@@ -965,38 +967,38 @@ export class CashRegisterService {
   public async generateCashRegisterReport(
     companyId: string,
     cashRegisterId: string,
-    startDate: Date,
-    endDate: Date
+      start_date: Date,
+      end_date: Date
   ): Promise<CashRegisterReport> {
     try {
       const db = getDrizzle();
       
       const transactions = await db
         .select()
-        .from(cashTransactions)
+        .from(AC_cash_transactions)
         .where(and(
-          eq(cashTransactions.companyId, companyId),
-          eq(cashTransactions.cashRegisterId, cashRegisterId),
-          gte(cashTransactions.transactionDate, startDate),
-          lte(cashTransactions.transactionDate, endDate),
-          eq(cashTransactions.isCanceled, false)
+          eq(AC_cash_transactions.company_id, companyId),
+          eq(AC_cash_transactions.cash_register_id, cashRegisterId),
+          gte(AC_cash_transactions.transaction_date, startDate),
+          lte(AC_cash_transactions.transaction_date, endDate),
+          eq(AC_cash_transactions.is_canceled, false)
         ))
-        .orderBy(cashTransactions.transactionDate);
+        .orderBy(AC_cash_transactions.transaction_date);
       
       let totalReceipts = 0;
       let totalPayments = 0;
       
       for (const txn of transactions) {
-        if (txn.transactionType === 'cash_receipt' || txn.transactionType === 'bank_withdrawal') {
+        if (txn.transaction_type === 'cash_receipt' || txn.transaction_type === 'bank_withdrawal') {
           totalReceipts += Number(txn.amount);
-        } else if (txn.transactionType === 'cash_payment' || txn.transactionType === 'bank_deposit') {
+        } else if (txn.transaction_type === 'cash_payment' || txn.transaction_type === 'bank_deposit') {
           totalPayments += Number(txn.amount);
         }
       }
       
       return {
-        cashRegisterId,
-        period: { startDate, endDate },
+        cash_register_id: cashRegisterId,
+        period: { start_date: startDate, end_date: endDate },
         totalReceipts,
         totalPayments,
         netChange: totalReceipts - totalPayments,
@@ -1038,28 +1040,28 @@ export class CashRegisterService {
    */
   public async createCashTransactionEntry(data: CashTransactionData): Promise<LedgerEntryData> {
     const {
-      companyId,
-      franchiseId,
-      cashRegisterId: _cashRegisterId,
-      transactionId: _transactionId,
-      receiptNumber,
-      transactionType,
-      transactionPurpose,
+      company_id: companyId,
+      franchise_id: franchiseId,
+      cash_register_id: _cashRegisterId,
+      transaction_id: _transactionId,
+      receipt_number: receiptNumber,
+      transaction_type: transactionType,
+      transaction_purpose: transactionPurpose,
       amount,
-      vatAmount,
-      vatRate,
+      vat_amount: vatAmount,
+      vat_rate: vatRate,
       currency,
-      exchangeRate,
-      transactionDate: _transactionDate,
+      exchange_rate: exchangeRate,
+      transaction_date: _transactionDate,
       description,
-      personId: _personId,
-      personName,
-      personIdNumber: _personIdNumber,
-      invoiceId: _invoiceId,
-      invoiceNumber,
+      person_id: _personId,
+      person_name: personName,
+      person_id_number: _personIdNumber,
+      invoice_id: _invoiceId,
+      invoice_number: invoiceNumber,
       userId,
-      fiscalReceiptNumber,
-      isFiscalReceipt,
+      fiscal_receipt_number: fiscalReceiptNumber,
+      is_fiscal_receipt: isFiscalReceipt,
       items
     } = data;
     
@@ -1146,11 +1148,11 @@ export class CashRegisterService {
               // This is a fiscal receipt with direct sales
               // Calculate totals from items
               const netTotal = items && items.length > 0 
-                ? items.reduce((sum, item) => sum + item.netAmount, 0) 
+                ? items.reduce((sum, item) => sum + item.net_amount, 0) 
                 : (amount - (vatAmount || 0));
               
               const vatTotal = vatAmount || (items && items.length > 0 
-                ? items.reduce((sum, item) => sum + item.vatAmount, 0) 
+                ? items.reduce((sum, item) => sum + item.vat_amount, 0) 
                 : 0);
               
               // Debit cash account (Asset +)
@@ -1258,7 +1260,7 @@ export class CashRegisterService {
             let expenseAccount = CASH_ACCOUNTS.OTHER_SERVICES; // Default
             
             // Extract expense type from additional data if available
-            const expenseType = data.additionalData?.['expenseType'];
+            const expenseType = data.additional_data?.['expense_type'];
             if (expenseType) {
               switch (expenseType) {
                 case 'utilities':
@@ -1559,19 +1561,19 @@ export class CashRegisterService {
     const errors: string[] = [];
     
     // Check required fields according to Romanian standards
-    if (!transactionData.transactionId) {
+    if (!transactionData.transaction_id) {
       errors.push('Transaction ID is required');
     }
     
-    if (!transactionData.cashRegisterId) {
+    if (!transactionData.cash_register_id) {
       errors.push('Cash register ID is required');
     }
     
-    if (!transactionData.receiptNumber) {
+    if (!transactionData.receipt_number) {
       errors.push('Receipt number is required');
     }
     
-    if (!transactionData.transactionDate) {
+    if (!transactionData.transaction_date) {
       errors.push('Transaction date is required');
     }
     
@@ -1579,22 +1581,22 @@ export class CashRegisterService {
       errors.push('Transaction amount is required');
     }
     
-    if (!transactionData.transactionType) {
+    if (!transactionData.transaction_type) {
       errors.push('Transaction type is required');
     } else {
       // Check that transaction type is valid
       const validTypes = Object.values(CashTransactionType);
-      if (!validTypes.includes(transactionData.transactionType)) {
+      if (!validTypes.includes(transactionData.transaction_type)) {
         errors.push(`Invalid transaction type. Valid types are: ${validTypes.join(', ')}`);
       }
     }
     
-    if (!transactionData.transactionPurpose) {
+    if (!transactionData.transaction_purpose) {
       errors.push('Transaction purpose is required');
     } else {
       // Check that transaction purpose is valid
       const validPurposes = Object.values(CashTransactionPurpose);
-      if (!validPurposes.includes(transactionData.transactionPurpose)) {
+      if (!validPurposes.includes(transactionData.transaction_purpose)) {
         errors.push(`Invalid transaction purpose. Valid purposes are: ${validPurposes.join(', ')}`);
       }
     }
@@ -1603,7 +1605,7 @@ export class CashRegisterService {
     
     // Transaction date validation
     const currentDate = new Date();
-    const transactionDate = new Date(transactionData.transactionDate);
+    const transactionDate = new Date(transactionData.transaction_date);
     
     // Romanian fiscal law requires cash transactions to be recorded on the same day
     const sameDayRequired = true;
@@ -1626,10 +1628,10 @@ export class CashRegisterService {
     }
     
     // Person information validation
-    switch (transactionData.transactionType) {
+    switch (transactionData.transaction_type) {
       case CashTransactionType.CASH_RECEIPT:
       case CashTransactionType.CASH_PAYMENT:
-        if (!transactionData.personName) {
+        if (!transactionData.person_name) {
           errors.push('Person name is required for cash receipts and payments');
         }
         
@@ -1638,7 +1640,7 @@ export class CashRegisterService {
           (transactionData.transactionPurpose === CashTransactionPurpose.SUPPLIER_PAYMENT && transactionData.amount > 5000) ||
           (transactionData.transactionPurpose === CashTransactionPurpose.SALARY_PAYMENT)
         ) {
-          if (!transactionData.personIdNumber) {
+          if (!transactionData.person_id_number) {
             errors.push('Person ID number (CNP/ID card) is required for this transaction type according to Romanian regulations');
           }
         }
@@ -1646,8 +1648,8 @@ export class CashRegisterService {
     }
     
     // Fiscal receipt validation
-    if (transactionData.isFiscalReceipt) {
-      if (!transactionData.fiscalReceiptNumber) {
+    if (transactionData.is_fiscal_receipt) {
+      if (!transactionData.fiscal_receipt_number) {
         errors.push('Fiscal receipt number is required for fiscal receipts');
       }
       
@@ -1665,30 +1667,30 @@ export class CashRegisterService {
             errors.push(`Item #${index + 1}: Quantity must be positive`);
           }
           
-          if (!item.unitPrice || Number(item.unitPrice) < 0) {
+          if (!item.unit_price || Number(item.unit_price) < 0) {
             errors.push(`Item #${index + 1}: Unit price must be non-negative`);
           }
           
           // Check calculated values
-          const calculatedNet = Number(item.quantity) * Number(item.unitPrice);
-          if (Math.abs(calculatedNet - Number(item.netAmount)) > 0.01) {
+          const calculatedNet = Number(item.quantity) * Number(item.unit_price);
+          if (Math.abs(calculatedNet - Number(item.net_amount)) > 0.01) {
             errors.push(`Item #${index + 1}: Net amount doesn't match quantity × unit price`);
           }
           
-          const calculatedVat = Number(item.netAmount) * (Number(item.vatRate) / 100);
-          if (Math.abs(calculatedVat - Number(item.vatAmount)) > 0.01) {
+          const calculatedVat = Number(item.net_amount) * (Number(item.vat_rate) / 100);
+          if (Math.abs(calculatedVat - Number(item.vat_amount)) > 0.01) {
             errors.push(`Item #${index + 1}: VAT amount doesn't match net amount × VAT rate`);
           }
           
-          const calculatedGross = Number(item.netAmount) + Number(item.vatAmount);
-          if (Math.abs(calculatedGross - Number(item.grossAmount)) > 0.01) {
+          const calculatedGross = Number(item.net_amount) + Number(item.vat_amount);
+          if (Math.abs(calculatedGross - Number(item.gross_amount)) > 0.01) {
             errors.push(`Item #${index + 1}: Gross amount doesn't match net amount + VAT amount`);
           }
         }
         
         // Check totals - validate gross and VAT amounts
-        const totalVat = transactionData.items.reduce((sum: number, item: CashTransactionItem) => sum + Number(item.vatAmount), 0);
-        const totalGross = transactionData.items.reduce((sum: number, item: CashTransactionItem) => sum + Number(item.grossAmount), 0);
+        const totalVat = transactionData.items.reduce((sum: number, item: CashTransactionItem) => sum + Number(item.vat_amount), 0);
+        const totalGross = transactionData.items.reduce((sum: number, item: CashTransactionItem) => sum + Number(item.gross_amount), 0);
         
         if (Math.abs(totalGross - Number(transactionData.amount)) > 0.01) {
           errors.push("Transaction amount does not match the sum of item gross amounts");
@@ -1753,7 +1755,7 @@ export class CashRegisterService {
     try {
       // Obține sau creează counter folosind Drizzle ORM cu upsert pattern
       const [counter] = await db
-        .insert(documentCounters)
+        .insert(document_counters)
         .values({
           companyId,
           counterType: 'CASH',
@@ -1763,17 +1765,17 @@ export class CashRegisterService {
         })
         .onConflictDoUpdate({
           target: [
-            documentCounters.companyId,
-            documentCounters.counterType,
-            documentCounters.series,
-            documentCounters.year,
+            document_counters.companyId,
+            document_counters.counterType,
+            document_counters.series,
+            document_counters.year,
           ],
           set: {
-            lastNumber: sql`${documentCounters.lastNumber} + 1`,
-            updatedAt: new Date(),
+            lastNumber: sql`${document_counters.lastNumber} + 1`,
+            updated_at: new Date(),
           },
         })
-        .returning({ lastNumber: documentCounters.lastNumber });
+        .returning({ lastNumber: document_counters.lastNumber });
       
       const number = counter.lastNumber.toString().padStart(6, '0');
       return `${series}/${year}/${number}`;
@@ -1843,8 +1845,8 @@ export class CashRegisterService {
   public async reconcileCashRegisterAsync(
     companyId: string,
     cashRegisterId: string,
-    startDate: string,
-    endDate: string,
+      start_date: string,
+      end_date: string,
     _userId: string
   ): Promise<ReconciliationJobResult> {
     try {
@@ -1853,8 +1855,8 @@ export class CashRegisterService {
       const job = await accountingQueueService.queueAccountReconciliation({
         accountId: cashRegisterId,
         companyId,
-        startDate,
-        endDate
+        startDate: startDate,
+        endDate: endDate
       });
       
       return {

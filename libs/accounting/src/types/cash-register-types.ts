@@ -20,58 +20,58 @@ export interface CashRegisterWithClosing extends Omit<CashRegister, 'lastClosedD
  * Cash register creation data
  */
 export interface CreateCashRegisterData {
-  companyId: string;
-  franchiseId?: string;
+  company_id: string;
+  franchise_id?: string;
   name: string;
   code: string;
   type?: string;
   location?: string;
   currency?: string;
-  responsiblePersonId?: string;
-  responsiblePersonName?: string;
-  dailyLimit?: number;
-  maxTransactionAmount?: number;
-  userId: string;
+  responsible_person_id?: string;
+  responsible_person_name?: string;
+  daily_limit?: number;
+  max_transaction_amount?: number;
+  userId: string; // userId rămâne camelCase pentru backwards compatibility cu auth
 }
 
 /**
  * Cash register update data
  */
 export interface UpdateCashRegisterData {
-  companyId: string;
+  company_id: string;
   name?: string;
   location?: string;
-  responsiblePersonId?: string;
-  responsiblePersonName?: string;
-  dailyLimit?: number;
-  maxTransactionAmount?: number;
+  responsible_person_id?: string;
+  responsible_person_name?: string;
+  daily_limit?: number;
+  max_transaction_amount?: number;
   status?: 'active' | 'closed' | 'suspended';
-  isActive?: boolean;
+  is_active?: boolean;
 }
 
 /**
  * Cash receipt recording data
  */
 export interface RecordCashReceiptData {
-  companyId: string;
-  franchiseId?: string;
-  cashRegisterId: string;
+  company_id: string;
+  franchise_id?: string;
+  cash_register_id: string;
   amount: number;
-  vatAmount?: number;
-  vatRate?: number;
-  netAmount?: number;
+  vat_amount?: number;
+  vat_rate?: number;
+  net_amount?: number;
   currency?: string;
-  exchangeRate?: number;
+  exchange_rate?: number;
   purpose?: CashTransactionPurpose;
   description: string;
-  personId?: string;
-  personName: string;
-  personIdNumber?: string;
-  invoiceId?: string;
-  invoiceNumber?: string;
+  person_id?: string;
+  person_name: string;
+  person_id_number?: string;
+  invoice_id?: string;
+  invoice_number?: string;
   userId: string;
-  isFiscalReceipt?: boolean;
-  fiscalReceiptNumber?: string;
+  is_fiscal_receipt?: boolean;
+  fiscal_receipt_number?: string;
   items?: CashTransactionItem[];
 }
 
@@ -79,41 +79,41 @@ export interface RecordCashReceiptData {
  * Cash payment recording data
  */
 export interface RecordCashPaymentData {
-  companyId: string;
-  franchiseId?: string;
-  cashRegisterId: string;
+  company_id: string;
+  franchise_id?: string;
+  cash_register_id: string;
   amount: number;
-  vatAmount?: number;
-  vatRate?: number;
-  netAmount?: number;
+  vat_amount?: number;
+  vat_rate?: number;
+  net_amount?: number;
   currency?: string;
-  exchangeRate?: number;
+  exchange_rate?: number;
   purpose?: CashTransactionPurpose;
   description: string;
-  personId?: string;
-  personName: string;
-  personIdNumber?: string;
-  invoiceId?: string;
-  invoiceNumber?: string;
+  person_id?: string;
+  person_name: string;
+  person_id_number?: string;
+  invoice_id?: string;
+  invoice_number?: string;
   userId: string;
-  expenseType?: string;
+  expense_type?: string;
 }
 
 /**
  * Cash transfer data
  */
 export interface TransferCashData {
-  companyId: string;
-  franchiseId?: string;
-  fromRegisterId: string;
-  toRegisterId: string;
-  fromRegisterName?: string;
-  toRegisterName?: string;
+  company_id: string;
+  franchise_id?: string;
+  from_register_id: string;
+  to_register_id: string;
+  from_register_name?: string;
+  to_register_name?: string;
   amount: number;
   currency?: string;
-  exchangeRate?: number;
+  exchange_rate?: number;
   description?: string;
-  personName: string;
+  person_name: string;
   userId: string;
 }
 
@@ -121,18 +121,18 @@ export interface TransferCashData {
  * Cash deposit to bank data
  */
 export interface CashDepositToBankData {
-  companyId: string;
-  franchiseId?: string;
-  cashRegisterId: string;
-  cashRegisterName?: string;
-  bankAccountId?: string;
-  bankAccountName?: string;
+  company_id: string;
+  franchise_id?: string;
+  cash_register_id: string;
+  cash_register_name?: string;
+  bank_account_id?: string;
+  bank_account_name?: string;
   amount: number;
   currency?: string;
-  exchangeRate?: number;
+  exchange_rate?: number;
   description?: string;
-  companyName?: string;
-  personName: string;
+  company_name?: string;
+  person_name: string;
   userId: string;
 }
 
@@ -140,18 +140,18 @@ export interface CashDepositToBankData {
  * Cash withdrawal from bank data
  */
 export interface CashWithdrawalFromBankData {
-  companyId: string;
-  franchiseId?: string;
-  cashRegisterId: string;
-  cashRegisterName?: string;
-  bankAccountId?: string;
-  bankAccountName?: string;
+  company_id: string;
+  franchise_id?: string;
+  cash_register_id: string;
+  cash_register_name?: string;
+  bank_account_id?: string;
+  bank_account_name?: string;
   amount: number;
   currency?: string;
-  exchangeRate?: number;
+  exchange_rate?: number;
   description?: string;
-  companyName?: string;
-  personName: string;
+  company_name?: string;
+  person_name: string;
   userId: string;
 }
 
@@ -159,9 +159,9 @@ export interface CashWithdrawalFromBankData {
  * Cash reconciliation data
  */
 export interface CreateReconciliationData {
-  companyId: string;
-  cashRegisterId: string;
-  physicalCount: number;
+  company_id: string;
+  cash_register_id: string;
+  physical_count: number;
   notes?: string;
   userId: string;
 }
@@ -172,39 +172,39 @@ export interface CreateReconciliationData {
 export interface CashTransactionItem {
   description: string;
   quantity: number;
-  unitPrice: number;
-  netAmount: number;
-  vatAmount: number;
-  vatRate: number;
-  grossAmount: number;
+  unit_price: number;
+  net_amount: number;
+  vat_amount: number;
+  vat_rate: number;
+  gross_amount: number;
 }
 
 /**
  * Additional data for cash transactions (replaces Record<string, any>)
  */
 export interface CashTransactionAdditionalData {
-  expenseType?: string;
+  expense_type?: string;
   category?: string;
-  projectId?: string;
-  departmentId?: string;
-  costCenterId?: string;
+  project_id?: string;
+  department_id?: string;
+  cost_center_id?: string;
   tags?: string[];
-  customFields?: Record<string, string | number | boolean>;
+  custom_fields?: Record<string, string | number | boolean>;
 }
 
 /**
  * Cash register report data
  */
 export interface CashRegisterReport {
-  cashRegisterId: string;
+  cash_register_id: string;
   period: {
-    startDate: Date;
-    endDate: Date;
+    start_date: Date;
+    end_date: Date;
   };
-  totalReceipts: number;
-  totalPayments: number;
-  netChange: number;
-  transactionCount: number;
+  total_receipts: number;
+  total_payments: number;
+  net_change: number;
+  transaction_count: number;
   transactions: CashTransaction[];
 }
 
@@ -213,8 +213,8 @@ export interface CashRegisterReport {
  */
 export interface DailyClosingResult {
   success: boolean;
-  closingBalance: number;
-  pdfPath?: string;
+  closing_balance: number;
+  pdf_path?: string;
 }
 
 /**
@@ -247,16 +247,16 @@ export interface CashTransactionsListResponse {
  * Cash transfer result
  */
 export interface CashTransferResult {
-  fromTransactionId: string;
-  toTransactionId: string;
+  from_transaction_id: string;
+  to_transaction_id: string;
 }
 
 /**
  * Bank transaction result
  */
 export interface BankTransactionResult {
-  cashTransactionId: string;
-  bankTransactionId: string;
+  cash_transaction_id: string;
+  bank_transaction_id: string;
 }
 
 /**
