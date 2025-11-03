@@ -4,7 +4,7 @@
  * Database schema for the accounting module.
  */
 
-import { pgTable, uuid, text, timestamp, numeric, jsonb, boolean, integer, varchar, date, decimal } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, numeric, jsonb, boolean, integer, varchar, date, decimal, unique, index } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
